@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>P9.1 · Đọc và tái hiện paper · AI Engineer</title>
-<meta name="description" content="Đọc và tái hiện paper: Đọc paper 3 lượt, đọc bảng kết quả và ablation; Tìm code, tái hiện, so sánh với số trong paper">
+<meta name="description" content="Đọc và tái hiện paper: lý thuyết, bài tập và thực hành. Đọc paper 3 lượt, đọc bảng kết quả và ablation; Tìm code, tái hiện, so sánh với số trong paper">
 <meta property="og:title" content="P9.1 · Đọc và tái hiện paper · AI Engineer">
-<meta property="og:description" content="Đọc và tái hiện paper: Đọc paper 3 lượt, đọc bảng kết quả và ablation; Tìm code, tái hiện, so sánh với số trong paper">
+<meta property="og:description" content="Đọc và tái hiện paper: lý thuyết, bài tập và thực hành. Đọc paper 3 lượt, đọc bảng kết quả và ablation; Tìm code, tái hiện, so sánh với số trong paper">
 <meta name="theme-color" content="#F4F6FB">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23131A33'/%3E%3Cpath d='M9 22 L16 10 L23 19' stroke='%23E5E9FB' stroke-width='2' fill='none'/%3E%3Ccircle cx='9' cy='22' r='3' fill='%23E5E9FB'/%3E%3Ccircle cx='16' cy='10' r='3' fill='%23E5E9FB'/%3E%3Ccircle cx='23' cy='19' r='3' fill='%23FF9361'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -14,23 +14,127 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="../assets/chrome.css">
 <link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/lesson.css">
 </head>
 <body data-mid="p9.1">
 <header class="sh"><div class="sh-in"><a class="sh-brand" href="../index.html"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="var(--ink)"/><circle cx="9" cy="22" r="2.6" fill="var(--accent-soft)"/><circle cx="16" cy="10" r="2.6" fill="var(--accent-soft)"/><circle cx="23" cy="19" r="2.6" fill="#FF9361"/><path d="M9 22 L16 10 L23 19" stroke="var(--accent-soft)" stroke-width="1.8" fill="none"/></svg><span>AI Engineer<small>lộ trình tự học</small></span></a><nav class="sh-nav" id="sh-nav" aria-label="Chính"><a href="../index.html">Trang chủ</a><a href="../bai-hoc.html" aria-current="page">Bài học</a><a href="../lo-trinh.html">Lộ trình</a><a href="../notebooks.html">Notebook</a><a class="sh-cta-m" href="../bai01.html" data-next-lesson>Học tiếp →</a></nav><a class="sh-cta" href="../bai01.html" data-next-lesson>Học tiếp <span class="arr">→</span></a><button class="sh-burger" type="button" aria-expanded="false" aria-controls="sh-nav">Menu</button></div></header>
 
 <main class="container">
   <div class="crumbs"><a href="../bai-hoc.html">Bài học</a><span>/</span><a href="../bai-hoc.html#p9">P9 · Nâng cao và nghiên cứu</a><span>/</span><span>P9.1</span></div>
-  <section class="lhero"><div class="code">P9.1</div><h1>Đọc và tái hiện paper</h1><div class="lmeta"><span class="m">Giai đoạn P9 · Nâng cao và nghiên cứu</span><span class="m">Tuần 40–45</span><span class="chip planned">Đề cương</span></div></section>
-  <div class="lgrid">
-    <div>
-      <div class="goal"><b>Mục tiêu giai đoạn:</b> Đọc, hiểu và tái hiện được paper; nắm cách train ở quy mô lớn. Hợp với hướng nghiên cứu bạn quan tâm.</div>
-      <div class="soon">Nội dung đầy đủ (trang lý thuyết tương tác và notebook tự chấm) đang được soạn và sẽ có khi bạn học tới bài này. Đề cương dưới đây là phạm vi chính xác của bài.</div>
-      <section class="pblock reveal"><div class="pblock-head"><span class="num">1</span><h2>Lý thuyết<span style="display:block;font:400 13.5px var(--f-body);color:var(--muted);margin-top:4px">Những gì cần hiểu</span></h2><label class="tick" for="cb-t"><input type="checkbox" id="cb-t" data-key="p9.1:t">Xong</label></div><ol><li>Đọc paper 3 lượt, đọc bảng kết quả và ablation</li><li>Tìm code, tái hiện, so sánh với số trong paper</li></ol></section><section class="pblock reveal"><div class="pblock-head"><span class="num">2</span><h2>Bài tập<span style="display:block;font:400 13.5px var(--f-body);color:var(--muted);margin-top:4px">Tính tay và tự kiểm tra</span></h2><label class="tick" for="cb-b"><input type="checkbox" id="cb-b" data-key="p9.1:b">Xong</label></div><ol><li>Mỗi tuần tóm tắt 1 paper trong 1 trang</li></ol></section><section class="pblock reveal"><div class="pblock-head"><span class="num">3</span><h2>Thực hành<span style="display:block;font:400 13.5px var(--f-body);color:var(--muted);margin-top:4px">Code và dự án</span></h2><label class="tick" for="cb-p"><input type="checkbox" id="cb-p" data-key="p9.1:p">Xong</label></div><ol><li>Tái hiện kết quả chính của một paper nhỏ (ví dụ LoRA hoặc DDPM)</li></ol></section>
-      <div class="donewhen reveal"><b>Xong khi</b>Blog tiếng Anh giải thích paper và kết quả tái hiện của bạn.</div>
+  <section class="lhero"><div class="code">P9.1</div><h1>Đọc và tái hiện paper</h1><div class="lmeta"><span class="m">Giai đoạn P9 · Nâng cao và nghiên cứu</span><span class="m">Tuần 40–45</span><span class="chip ready"><span class="dot"></span>Có nội dung đầy đủ</span></div>
+    <div class="intro"><p>AI thay đổi nhanh đến mức kiến thức trong khóa học nào cũng cũ sau một năm. Kỹ năng bền nhất là <strong>tự học từ bài báo</strong>: đọc nhanh để biết bài nào đáng đọc kỹ, hiểu đúng kết quả, và tự tái hiện để kiểm chứng. Đây cũng là kỹ năng cốt lõi nếu bạn đi theo hướng nghiên cứu.</p></div></section>
+  
+  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">4 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
+  <div class="lgrid" style="margin-top:22px">
+    <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">Đọc bài báo theo ba lượt</h2>
+<table>
+<thead>
+<tr>
+<th>Lượt</th>
+<th>Thời gian</th>
+<th>Đọc gì</th>
+<th>Trả lời được</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>10 phút</td>
+<td>tiêu đề, tóm tắt, hình 1, tiêu đề các mục, kết luận</td>
+<td>bài này giải quyết vấn đề gì, có liên quan tới mình không</td>
+</tr>
+<tr>
+<td>2</td>
+<td>1 giờ</td>
+<td>toàn bài trừ chứng minh, kỹ từng hình và bảng</td>
+<td>phương pháp làm gì, so với cái gì, kết quả chính</td>
+</tr>
+<tr>
+<td>3</td>
+<td>vài giờ</td>
+<td>mọi chi tiết, tự dựng lại lập luận, đọc phụ lục</td>
+<td>tự cài đặt lại được, chỉ ra được điểm yếu</td>
+</tr>
+</tbody>
+</table>
+<p>Phần lớn bài chỉ cần lượt 1. Chọn kỹ bài đáng đọc lượt 3.</p>
+<h2 id="lt-2">Đọc bảng kết quả và ablation</h2>
+<ul>
+<li><strong>So với cái gì?</strong> Baseline có mạnh và mới không, có được tune công bằng như phương pháp mới không.</li>
+<li><strong>Cùng điều kiện?</strong> Cùng dữ liệu, cùng lượng tính toán, cùng kích thước model.</li>
+<li><strong>Chênh bao nhiêu và dao động bao nhiêu?</strong> Cải thiện 0.3 điểm trên một seed có thể chỉ là nhiễu. Bài tốt báo nhiều seed hoặc khoảng tin cậy.</li>
+<li><strong>Ablation:</strong> bỏ từng thành phần đi thì kết quả tụt bao nhiêu. Cho biết thành phần nào thật sự quan trọng.</li>
+<li><strong>Đo trên tập nào?</strong> Tập test công khai lâu năm có nguy cơ bị "học thuộc" gián tiếp qua nhiều vòng chọn model.</li>
+</ul>
+<h2 id="lt-3">Tìm code và tái hiện</h2>
+<ol>
+<li>Tìm code chính thức (link trong bài, trang Papers with Code, Hugging Face). Không có thì tìm bản cài đặt lại uy tín.</li>
+<li><strong>Tái hiện một con số</strong> trong bảng trước, ở quy mô nhỏ nhất có thể (một dataset nhỏ, một cấu hình).</li>
+<li>Ghi lại mọi khác biệt: phiên bản thư viện, siêu tham số bài không nêu, số GPU.</li>
+<li>Nếu lệch: kiểm tra từng bước so với bài, đọc issue trên GitHub của repo (thường có người gặp cùng vấn đề).</li>
+</ol>
+<p>Tái hiện được rồi mới thay đổi: thêm một ý tưởng, đổi dữ liệu, chạy ablation của riêng bạn.</p>
+<h2 id="lt-4">Ghi chép và chia sẻ</h2>
+<p>Mỗi bài đọc lượt 2 trở lên, viết <strong>một trang</strong>: vấn đề, ý tưởng chính trong 3 câu, phương pháp, kết quả chính kèm số, điểm yếu, câu hỏi mở, liên hệ với việc của bạn. Sau vài tháng bạn có một kho ghi chú tra cứu được. Viết blog giải thích một bài báo bằng tiếng Anh là cách tốt để vừa hiểu sâu vừa xây hồ sơ.</p>
+<div class="keep">
+<p><strong>Ghi nhớ:</strong> con số trong bài báo là một tuyên bố cần kiểm chứng, không phải sự thật. Tái hiện là cách học sâu nhất.</p>
+</div></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p9.1:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 2</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Cải thiện tương đối</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Baseline có error rate 8%, phương pháp mới 6%.</p>
+<div class="ans" id="p9-1-e1-a1"><div class="ans-fields"><label>Giảm tuyệt đối (điểm %)<input inputmode="decimal" data-ans="2.0" data-tol="0.001" autocomplete="off"></label><label>Giảm tương đối (%)<input inputmode="decimal" data-ans="25.0" data-tol="0.001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+
+<details class="fold solution">
+<summary>Lời giải</summary>
+<p>Giảm 2 điểm phần trăm, tương đương giảm 25% lỗi. Bài báo thường chọn cách nói nghe ấn tượng hơn; khi đọc, quy về cả hai.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 2</span><h3>Nhiễu giữa các seed</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Phương pháp A qua 3 seed: 71.2, 72.0, 70.8. Phương pháp B: 72.1, 71.5, 72.4. Độ lệch chuẩn chia n.</p>
+<div class="ans" id="p9-1-e2-a1"><div class="ans-fields"><label>Trung bình A<input inputmode="decimal" data-ans="71.333" data-tol="0.001" autocomplete="off"></label><label>Trung bình B<input inputmode="decimal" data-ans="72.0" data-tol="0.001" autocomplete="off"></label><label>Độ lệch chuẩn A<input inputmode="decimal" data-ans="0.4989" data-tol="0.001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+
+<details class="fold solution">
+<summary>Lời giải</summary>
+<p>A ≈ 71.33 ± 0.50, B = 72.0 ± 0.37. Chênh 0.67 cỡ một độ lệch chuẩn: có xu hướng B tốt hơn nhưng chưa chắc chắn với 3 seed. Nếu bài báo chỉ báo một seed, bạn không biết điều này.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 3</span><h3>Đánh giá một tuyên bố</h3><span class="ex-tag concept">khái niệm</span></div><div class="prose"><p>Một bài báo viết: "Phương pháp của chúng tôi vượt baseline 1,2 điểm trên benchmark X." Đọc bảng thấy: baseline lấy số từ một bài 3 năm trước, phương pháp mới dùng model nền lớn gấp đôi, train lâu gấp 3, chỉ báo một seed. Liệt kê các vấn đề và thí nghiệm cần có để tin tuyên bố.</p>
+<details class="fold solution">
+<summary>Lời giải</summary>
+<p>Vấn đề: baseline cũ, không chạy lại trong cùng điều kiện; model lớn hơn và train lâu hơn có thể tự giải thích 1,2 điểm; một seed không biết độ dao động. Cần: chạy lại baseline với cùng model nền, cùng lượng tính toán; báo nhiều seed và khoảng tin cậy; ablation bỏ thành phần mới nhưng giữ nguyên model lớn.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 4</span><h3>Tóm tắt một trang</h3><span class="ex-tag concept">đọc hiểu</span></div><div class="prose"><p>Chọn bài "LoRA: Low-Rank Adaptation of Large Language Models" hoặc "Denoising Diffusion Probabilistic Models". Viết tóm tắt một trang theo khung ở phần lý thuyết.</p>
+<details class="fold solution">
+<summary>Lời giải</summary>
+<p>Một bản tóm tắt đạt yêu cầu có đủ 7 phần (vấn đề, ý tưởng 3 câu, phương pháp, kết quả kèm số, điểm yếu, câu hỏi mở, liên hệ), có ít nhất một con số cụ thể lấy từ bảng kết quả, và phần điểm yếu không chép lại từ mục "Limitations" của bài mà là nhận xét của bạn. Gửi Claude để được góp ý.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 5</span><h3>Kiểm tra một con số</h3><span class="ex-tag code">code</span></div><div class="prose"><p>Tái hiện ở quy mô nhỏ một tuyên bố của LoRA: trên một tác vụ phân loại văn bản nhỏ, LoRA rank 8 đạt gần bằng fine-tune toàn bộ với số tham số train ít hơn rất nhiều. Viết code đếm số tham số train của hai cách cho một model encoder nhỏ.</p>
+<details class="fold code">
+<summary>Code tham khảo</summary>
+<div class="hl"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">transformers</span><span class="w"> </span><span class="kn">import</span> <span class="n">AutoModelForSequenceClassification</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">peft</span><span class="w"> </span><span class="kn">import</span> <span class="n">LoraConfig</span><span class="p">,</span> <span class="n">get_peft_model</span>
+
+<span class="n">name</span> <span class="o">=</span> <span class="s2">"distilbert-base-uncased"</span>
+<span class="n">full</span> <span class="o">=</span> <span class="n">AutoModelForSequenceClassification</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">num_labels</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">n_full</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">numel</span><span class="p">()</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">full</span><span class="o">.</span><span class="n">parameters</span><span class="p">()</span> <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">requires_grad</span><span class="p">)</span>
+
+<span class="n">lora</span> <span class="o">=</span> <span class="n">get_peft_model</span><span class="p">(</span><span class="n">AutoModelForSequenceClassification</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">num_labels</span><span class="o">=</span><span class="mi">2</span><span class="p">),</span>
+                      <span class="n">LoraConfig</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">lora_alpha</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span> <span class="n">target_modules</span><span class="o">=</span><span class="p">[</span><span class="s2">"q_lin"</span><span class="p">,</span> <span class="s2">"v_lin"</span><span class="p">],</span> <span class="n">task_type</span><span class="o">=</span><span class="s2">"SEQ_CLS"</span><span class="p">))</span>
+<span class="n">n_lora</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">numel</span><span class="p">()</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">lora</span><span class="o">.</span><span class="n">parameters</span><span class="p">()</span> <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">requires_grad</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"full </span><span class="si">{</span><span class="n">n_full</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2"> | LoRA </span><span class="si">{</span><span class="n">n_lora</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2"> | tỉ lệ </span><span class="si">{</span><span class="n">n_lora</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">n_full</span><span class="si">:</span><span class="s2">.2%</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</code></pre></div>
+
+</details></div></article><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p9.1:b">Tôi đã xong phần bài tập</label><button class="btn" type="button" data-goto="thuc-hanh">Sang thực hành <span class="arr">→</span></button></div></section><section class="panel" id="thuc-hanh" role="tabpanel" hidden><div class="prose"><h2>Tái hiện kết quả chính của một bài báo nhỏ</h2>
+<p><strong>Các bước</strong></p>
+<ol>
+<li>Chọn một bài có code và chạy được trên một GPU, ví dụ DDPM trên CIFAR-10 ở quy mô nhỏ, LoRA trên một tác vụ GLUE, hoặc một bài bạn gặp trong dự án EPIC-KITCHENS.</li>
+<li>Đọc ba lượt, viết tóm tắt một trang.</li>
+<li>Chọn một con số trong bảng kết quả để tái hiện. Viết trước: bạn kỳ vọng lệch bao nhiêu và vì sao.</li>
+<li>Chạy với 3 seed, báo trung bình và độ lệch chuẩn. Ghi mọi khác biệt so với bài.</li>
+<li>Chạy một ablation không có trong bài (ví dụ đổi rank LoRA, đổi lịch nhiễu).</li>
+<li>Viết blog tiếng Anh 1.000–1.500 từ: bài báo nói gì, bạn tái hiện thế nào, kết quả của bạn, điều bất ngờ.</li>
+</ol>
+<p><strong>Xong khi</strong></p>
+<ul>
+<li>Có bảng so sánh số trong bài với số của bạn (3 seed).</li>
+<li>Blog đã đăng (Medium, dev.to, hoặc GitHub Pages) và link trong README.</li>
+</ul></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p9.1:p">Tôi đã xong phần thực hành</label></div></section>
+      <div class="donewhen"><b>Xong bài khi</b>Blog tiếng Anh giải thích paper và kết quả tái hiện của bạn.</div>
       <nav class="pn" aria-label="Bài trước, bài sau"><a href="p8-4.html"><span class="dir">← Bài trước · P8.4</span><span class="tt">Backend và dữ liệu cho AI</span></a><a class="nx" href="p9-2.html"><span class="dir">Bài sau · P9.2 →</span><span class="tt">Train ở quy mô lớn</span></a></nav>
     </div>
     <aside class="aside">
       <div class="abox"><h4>Tiến độ bài này</h4><div class="ring"><svg viewBox="0 0 64 64" aria-hidden="true"><circle class="bg" cx="32" cy="32" r="28"/><circle class="fg" cx="32" cy="32" r="28" stroke-dasharray="176" stroke-dashoffset="176"/></svg><div><b id="ring-n">0/3</b><span id="ring-sub">phần đã xong</span></div></div></div>
+      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Đọc bài báo theo ba lượt</a></li><li><a href="#lt-2">Đọc bảng kết quả và ablation</a></li><li><a href="#lt-3">Tìm code và tái hiện</a></li><li><a href="#lt-4">Ghi chép và chia sẻ</a></li></ol></div>
       
       <div class="abox"><h4>Cùng giai đoạn</h4><ul><li><span class=cur>Đọc và tái hiện paper</span></li><li><a href="p9-2.html">Train ở quy mô lớn</a></li><li><a href="p9-3.html">Kiến trúc và hướng mới</a></li></ul></div>
     </aside>
@@ -43,16 +147,75 @@
 
 (function () {
   const mid = document.body.dataset.mid; let d = AIE.load();
+  const EXK = "aie-ex-" + mid;
+  let solved = {}; try { solved = JSON.parse(localStorage.getItem(EXK) || "{}") || {}; } catch (e) {}
+  const saveSolved = () => { try { localStorage.setItem(EXK, JSON.stringify(solved)); } catch (e) {} };
+  const tabs = [...document.querySelectorAll(".tab")], panels = [...document.querySelectorAll(".panel")];
   const boxes = [...document.querySelectorAll("input[data-key]")], ring = document.querySelector(".ring .fg"), rt = document.getElementById("ring-n");
-  const skipped = () => !!d[mid + ":skip"];
+  const toc = document.getElementById("toc-box");
+  function show(id, scroll) {
+    tabs.forEach((t) => t.setAttribute("aria-selected", String(t.dataset.tab === id)));
+    panels.forEach((p) => { const on = p.id === id; if (on && p.hidden) { p.classList.remove("enter"); void p.offsetWidth; p.classList.add("enter"); } p.hidden = !on; });
+    if (toc) toc.hidden = id !== "ly-thuyet";
+    if (scroll) document.querySelector(".tabs").scrollIntoView({ block: "start" });
+  }
+  tabs.forEach((t) => t.addEventListener("click", () => { history.replaceState(null, "", "#" + t.dataset.tab); show(t.dataset.tab, true); }));
+  document.querySelectorAll("[data-goto]").forEach((b) => b.addEventListener("click", () => { history.replaceState(null, "", "#" + b.dataset.goto); show(b.dataset.goto, true); }));
+  const start = ["ly-thuyet", "bai-tap", "thuc-hanh"].includes(location.hash.slice(1)) ? location.hash.slice(1) : "ly-thuyet";
+  show(start, false);
+  window.addEventListener("hashchange", () => { const h = location.hash.slice(1); if (["ly-thuyet", "bai-tap", "thuc-hanh"].includes(h)) show(h, true); });
+  document.querySelectorAll(".toc a").forEach((a) => a.addEventListener("click", () => show("ly-thuyet", false)));
+
   function render() {
     let n = 0;
-    boxes.forEach((b) => { const on = skipped() || !!d[b.dataset.key]; b.checked = on; b.disabled = skipped(); b.closest(".pblock").classList.toggle("done", on); if (on) n++; });
+    const skip = !!d[mid + ":skip"];
+    boxes.forEach((b) => { const on = skip || !!d[b.dataset.key]; b.checked = on; if (on) n++; });
+    const kmap = { t: "ly-thuyet", b: "bai-tap", p: "thuc-hanh" };
+    tabs.forEach((t) => { const k = Object.keys(kmap).find((x) => kmap[x] === t.dataset.tab); t.classList.toggle("is-done", skip || !!d[mid + ":" + k]); });
     ring.style.strokeDashoffset = String(176 * (1 - n / 3)); rt.textContent = n + "/3";
-    document.getElementById("ring-sub").textContent = skipped() ? "đã đánh dấu bỏ qua" : n === 3 ? "hoàn thành bài này" : "phần đã xong";
+    document.getElementById("ring-sub").textContent = n === 3 ? "hoàn thành bài này" : "phần đã xong";
   }
-  boxes.forEach((b) => b.addEventListener("change", () => { d = AIE.load(); if (b.checked) d[b.dataset.key] = true; else delete d[b.dataset.key]; AIE.save(d); render(); }));
+  boxes.forEach((b) => b.addEventListener("change", () => {
+    d = AIE.load(); if (b.checked) d[b.dataset.key] = true; else delete d[b.dataset.key]; AIE.save(d);
+    boxes.filter((x) => x.dataset.key === b.dataset.key).forEach((x) => (x.checked = b.checked)); render();
+  }));
   render();
+
+  /* answer boxes */
+  const parse = (s) => parseFloat(String(s).trim().replace(",", ".").replace("−", "-"));
+  const allAns = [...document.querySelectorAll(".ans")];
+  function score() {
+    const ok = allAns.filter((a) => solved[a.id]).length;
+    const el = document.getElementById("ex-score");
+    if (el) { el.querySelector("b").textContent = `${ok} / ${allAns.length}`; el.querySelector(".bar i").style.width = (allAns.length ? ok / allAns.length * 100 : 0) + "%"; }
+    document.querySelectorAll(".excard").forEach((c) => { const as = [...c.querySelectorAll(".ans")]; c.classList.toggle("solved", as.length > 0 && as.every((a) => solved[a.id])); });
+  }
+  allAns.forEach((box) => {
+    const inputs = [...box.querySelectorAll("input")], fb = box.querySelector(".ans-fb");
+    const mark = () => { box.classList.add("ok"); inputs.forEach((i) => { i.classList.add("ok"); if (!i.value) i.value = i.dataset.ans; }); fb.className = "ans-fb ok"; fb.textContent = "Chính xác."; };
+    if (solved[box.id]) mark();
+    const run = () => {
+      let all = true, empty = false;
+      inputs.forEach((i) => {
+        const v = parse(i.value);
+        if (i.value.trim() === "" || Number.isNaN(v)) { empty = true; all = false; i.classList.remove("ok", "bad"); return; }
+        const good = Math.abs(v - parseFloat(i.dataset.ans)) <= parseFloat(i.dataset.tol) + 1e-9;
+        i.classList.toggle("ok", good); i.classList.toggle("bad", !good); if (!good) all = false;
+      });
+      if (all) { solved[box.id] = true; saveSolved(); mark(); box.classList.remove("pop"); void box.offsetWidth; box.classList.add("pop"); score(); }
+      else { fb.className = "ans-fb bad"; fb.textContent = empty ? "Điền đủ các ô bằng số (dấu chấm hoặc phẩy đều được)." : "Ô màu cam chưa đúng. Xem lại bước đó, hoặc mở gợi ý."; }
+    };
+    box.querySelector(".btn-check").addEventListener("click", run);
+    inputs.forEach((i) => i.addEventListener("keydown", (e) => { if (e.key === "Enter") run(); }));
+  });
+  score();
+
+  /* highlight current theory section in the toc */
+  if (toc && "IntersectionObserver" in window) {
+    const links = [...toc.querySelectorAll("a")];
+    const io = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) links.forEach((a) => a.classList.toggle("on", a.getAttribute("href") === "#" + e.target.id)); }), { rootMargin: "-140px 0px -65% 0px" });
+    document.querySelectorAll("#ly-thuyet h2[id]").forEach((h) => io.observe(h));
+  }
 })();
 
 </script>

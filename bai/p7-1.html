@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>P7.1 · Bài 9 · ViT và CLIP · AI Engineer</title>
-<meta name="description" content="Bài 9 · ViT và CLIP: Patch embedding, Vision Transformer; Học tương phản (contrastive), zero-shot classification">
+<meta name="description" content="Bài 9 · ViT và CLIP: lý thuyết, bài tập và thực hành. Patch embedding, Vision Transformer; Học tương phản (contrastive), zero-shot classification">
 <meta property="og:title" content="P7.1 · Bài 9 · ViT và CLIP · AI Engineer">
-<meta property="og:description" content="Bài 9 · ViT và CLIP: Patch embedding, Vision Transformer; Học tương phản (contrastive), zero-shot classification">
+<meta property="og:description" content="Bài 9 · ViT và CLIP: lý thuyết, bài tập và thực hành. Patch embedding, Vision Transformer; Học tương phản (contrastive), zero-shot classification">
 <meta name="theme-color" content="#F4F6FB">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23131A33'/%3E%3Cpath d='M9 22 L16 10 L23 19' stroke='%23E5E9FB' stroke-width='2' fill='none'/%3E%3Ccircle cx='9' cy='22' r='3' fill='%23E5E9FB'/%3E%3Ccircle cx='16' cy='10' r='3' fill='%23E5E9FB'/%3E%3Ccircle cx='23' cy='19' r='3' fill='%23FF9361'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -14,23 +14,154 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="../assets/chrome.css">
 <link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/lesson.css">
 </head>
 <body data-mid="p7.1">
 <header class="sh"><div class="sh-in"><a class="sh-brand" href="../index.html"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="var(--ink)"/><circle cx="9" cy="22" r="2.6" fill="var(--accent-soft)"/><circle cx="16" cy="10" r="2.6" fill="var(--accent-soft)"/><circle cx="23" cy="19" r="2.6" fill="#FF9361"/><path d="M9 22 L16 10 L23 19" stroke="var(--accent-soft)" stroke-width="1.8" fill="none"/></svg><span>AI Engineer<small>lộ trình tự học</small></span></a><nav class="sh-nav" id="sh-nav" aria-label="Chính"><a href="../index.html">Trang chủ</a><a href="../bai-hoc.html" aria-current="page">Bài học</a><a href="../lo-trinh.html">Lộ trình</a><a href="../notebooks.html">Notebook</a><a class="sh-cta-m" href="../bai01.html" data-next-lesson>Học tiếp →</a></nav><a class="sh-cta" href="../bai01.html" data-next-lesson>Học tiếp <span class="arr">→</span></a><button class="sh-burger" type="button" aria-expanded="false" aria-controls="sh-nav">Menu</button></div></header>
 
 <main class="container">
   <div class="crumbs"><a href="../bai-hoc.html">Bài học</a><span>/</span><a href="../bai-hoc.html#p7">P7 · Thị giác và đa phương thức</a><span>/</span><span>P7.1</span></div>
-  <section class="lhero"><div class="code">P7.1</div><h1>Bài 9 · ViT và CLIP</h1><div class="lmeta"><span class="m">Giai đoạn P7 · Thị giác và đa phương thức</span><span class="m">Tuần 31–34</span><span class="chip planned">Đề cương</span></div></section>
-  <div class="lgrid">
-    <div>
-      <div class="goal"><b>Mục tiêu giai đoạn:</b> Làm việc với ảnh, video và model kết hợp ảnh với ngôn ngữ.</div>
-      <div class="soon">Nội dung đầy đủ (trang lý thuyết tương tác và notebook tự chấm) đang được soạn và sẽ có khi bạn học tới bài này. Đề cương dưới đây là phạm vi chính xác của bài.</div>
-      <section class="pblock reveal"><div class="pblock-head"><span class="num">1</span><h2>Lý thuyết<span style="display:block;font:400 13.5px var(--f-body);color:var(--muted);margin-top:4px">Những gì cần hiểu</span></h2><label class="tick" for="cb-t"><input type="checkbox" id="cb-t" data-key="p7.1:t">Xong</label></div><ol><li>Patch embedding, Vision Transformer</li><li>Học tương phản (contrastive), zero-shot classification</li></ol></section><section class="pblock reveal"><div class="pblock-head"><span class="num">2</span><h2>Bài tập<span style="display:block;font:400 13.5px var(--f-body);color:var(--muted);margin-top:4px">Tính tay và tự kiểm tra</span></h2><label class="tick" for="cb-b"><input type="checkbox" id="cb-b" data-key="p7.1:b">Xong</label></div><ol><li>Tính số patch và độ dài chuỗi cho ảnh 224×224, patch 16</li></ol></section><section class="pblock reveal"><div class="pblock-head"><span class="num">3</span><h2>Thực hành<span style="display:block;font:400 13.5px var(--f-body);color:var(--muted);margin-top:4px">Code và dự án</span></h2><label class="tick" for="cb-p"><input type="checkbox" id="cb-p" data-key="p7.1:p">Xong</label></div><ol><li>Lab 10: CLIP zero-shot, linear probe và fine-tune trên ảnh sản phẩm, có confusion matrix</li></ol></section>
-      <div class="donewhen reveal"><b>Xong khi</b>So sánh 3 cách trong một bảng, giải thích vì sao cách tốt nhất thắng.</div>
+  <section class="lhero"><div class="code">P7.1</div><h1>Bài 9 · ViT và CLIP</h1><div class="lmeta"><span class="m">Giai đoạn P7 · Thị giác và đa phương thức</span><span class="m">Tuần 31–34</span><span class="chip ready"><span class="dot"></span>Có nội dung đầy đủ</span></div>
+    <div class="intro"><p>Transformer không chỉ dành cho chữ. <strong>Vision Transformer (ViT)</strong> cắt ảnh thành các mảnh và xử lý chúng như token. <strong>CLIP</strong> ghép một ViT với một Transformer văn bản để hiểu ảnh qua ngôn ngữ, cho phép phân loại ảnh vào những lớp chưa từng được train. Đây là nền móng của mọi model đa phương thức hiện nay, kể cả text encoder trong Stable Diffusion bạn đã dùng ở dự án Diffusion.</p></div></section>
+  
+  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">5 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
+  <div class="lgrid" style="margin-top:22px">
+    <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">Patch embedding</h2>
+<p>ViT chia ảnh thành các mảnh vuông không chồng nhau (thường 16×16 pixel), duỗi mỗi mảnh thành vector rồi chiếu tuyến tính thành embedding d chiều. Phép chiếu này tương đương một lớp Conv2d có kernel và stride bằng kích thước mảnh.</p>
+<div class="hl"><pre><span></span><code>ảnh 224×224×3 → 14×14 = 196 mảnh, mỗi mảnh 16·16·3 = 768 số → Linear → 196 token × d
+thêm 1 token [CLS] + embedding vị trí → Transformer encoder → đầu ra của [CLS] dùng để phân loại
+</code></pre></div>
+
+<p>Từ đây ViT chỉ là Transformer encoder như BERT (Bài 3). Mỗi lớp, mọi mảnh nhìn được mọi mảnh khác: tầm nhìn toàn cục ngay từ lớp đầu, khác CNN phải xếp nhiều lớp mới "nhìn" rộng ra.</p>
+<h2 id="lt-2">ViT so với CNN</h2>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>CNN</th>
+<th>ViT</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Giả định có sẵn</td>
+<td>cục bộ, dùng chung trọng số theo vị trí</td>
+<td>gần như không có</td>
+</tr>
+<tr>
+<td>Dữ liệu ít</td>
+<td>tốt hơn</td>
+<td>cần pretrain trên dữ liệu lớn</td>
+</tr>
+<tr>
+<td>Dữ liệu rất lớn</td>
+<td>bão hòa sớm hơn</td>
+<td>tiếp tục cải thiện</td>
+</tr>
+<tr>
+<td>Chi phí theo độ phân giải</td>
+<td>tuyến tính theo số pixel</td>
+<td>attention tăng theo bình phương số mảnh</td>
+</tr>
+</tbody>
+</table>
+<p>Thực tế: dùng ViT <strong>đã pretrain</strong> (ImageNet-21k, hoặc tự giám sát như DINOv2), không train từ đầu.</p>
+<h2 id="lt-3">CLIP và học tương phản</h2>
+<p>CLIP train hai encoder (ảnh và văn bản) trên hàng trăm triệu cặp (ảnh, chú thích) từ internet. Trong mỗi batch N cặp, ma trận N×N cosine giữa mọi ảnh và mọi chú thích; loss là cross-entropy đối xứng kéo đường chéo (cặp đúng) lên cao, phần còn lại xuống thấp. Kết quả là một không gian chung cho ảnh và chữ.</p>
+<h2 id="lt-4">Zero-shot classification</h2>
+<p>Không cần train gì thêm: biến mỗi lớp thành một câu ("a photo of a chair"), mã hóa, rồi chọn lớp có cosine cao nhất với ảnh.</p>
+<div class="hl"><pre><span></span><code>logits = 100 · cos(ảnh, câu_lớp_i)        (100 là nhiệt độ CLIP học được, xấp xỉ)
+p = softmax(logits)
+</code></pre></div>
+
+<p>Mẹo <strong>prompt ensembling</strong>: lấy trung bình embedding của nhiều mẫu câu ("a photo of a {}", "a product photo of a {}", "a close-up photo of a {}") cho mỗi lớp, thường tăng độ chính xác vài phần trăm.</p>
+<h2 id="lt-5">Linear probe và fine-tune</h2>
+<ul>
+<li><strong>Zero-shot:</strong> không cần dữ liệu nhãn, tốt cho lớp phổ biến.</li>
+<li><strong>Linear probe:</strong> đóng băng encoder ảnh, train một lớp Linear trên embedding. Vài chục ảnh mỗi lớp đã vượt zero-shot rõ rệt.</li>
+<li><strong>Fine-tune:</strong> mở khóa encoder với learning rate nhỏ. Tốt nhất khi có nhiều dữ liệu và miền khác ảnh internet, nhưng dễ làm mất khả năng zero-shot.</li>
+</ul>
+<div class="keep">
+<p><strong>Ghi nhớ:</strong> với một bài toán ảnh mới, thử theo thứ tự zero-shot CLIP → linear probe → fine-tune. Thường linear probe đã đủ tốt mà rẻ nhất.</p>
+</div></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p7.1:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 3</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Đếm patch</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Ảnh 224×224, patch 16, có thêm token [CLS].</p>
+<div class="ans" id="p7-1-e1-a1"><div class="ans-fields"><label>Số mảnh<input inputmode="decimal" data-ans="196.0" data-tol="0.0" autocomplete="off"></label><label>Độ dài chuỗi<input inputmode="decimal" data-ans="197.0" data-tol="0.0" autocomplete="off"></label><label>Tham số patch embedding (d = 768, có bias)<input inputmode="decimal" data-ans="590592.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+
+<details class="fold solution">
+<summary>Lời giải</summary>
+<p>14 × 14 = 196 mảnh, cộng CLS là 197. Mỗi mảnh 768 số chiếu sang 768 chiều: 768·768 + 768 = 590.592.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 2</span><h3>Tăng độ phân giải</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Đổi ảnh từ 224 lên 448, patch giữ 16.</p>
+<div class="ans" id="p7-1-e2-a1"><div class="ans-fields"><label>Số mảnh mới<input inputmode="decimal" data-ans="784.0" data-tol="0.0" autocomplete="off"></label><label>Chi phí ma trận attention tăng bao nhiêu lần<input inputmode="decimal" data-ans="16.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+
+<details class="fold solution">
+<summary>Lời giải</summary>
+<p>28 × 28 = 784 mảnh, gấp 4. Attention tăng theo bình phương: 16 lần. Đó là lý do model đa phương thức hay cắt ảnh lớn thành nhiều ô hoặc gộp bớt token.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 3</span><h3>Zero-shot bằng tay</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Cosine giữa ảnh và ba câu lớp: ghế 0.28, bàn 0.31, đèn 0.22. Nhiệt độ 100.</p>
+<div class="ans" id="p7-1-e3-a1"><div class="ans-fields"><label>p(bàn)<input inputmode="decimal" data-ans="0.9524" data-tol="0.001" autocomplete="off"></label><label>p(ghế)<input inputmode="decimal" data-ans="0.0474" data-tol="0.001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+
+<details class="fold solution">
+<summary>Lời giải</summary>
+<p>Logits [28, 31, 22]. Trừ max: [−3, 0, −9]. e⁻³ ≈ 0.0498, e⁻⁹ ≈ 0.0001. p(bàn) = 1/1.0499 ≈ 0.952, p(ghế) ≈ 0.047. Chênh 0.03 về cosine thành chênh rất lớn về xác suất vì nhân 100.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 4</span><h3>Chọn cách tiếp cận</h3><span class="ex-tag concept">khái niệm</span></div><div class="prose"><p>Chọn zero-shot, linear probe hay fine-tune, giải thích:</p>
+<ol>
+<li>Phân loại ảnh sản phẩm vào 8 danh mục nội thất phổ biến, chưa có ảnh nhãn nào.</li>
+<li>Như trên nhưng có 50 ảnh nhãn mỗi lớp, cần thêm 3 điểm phần trăm.</li>
+<li>Phân loại ảnh hiển vi tế bào thành 5 loại, có 20.000 ảnh nhãn.</li>
+</ol>
+<details class="fold solution">
+<summary>Lời giải</summary>
+<ol>
+<li>Zero-shot CLIP với prompt ensembling. 2. Linear probe trên embedding CLIP: rẻ, ít overfit. 3. Fine-tune (CLIP hoặc ViT pretrain): miền rất khác ảnh internet và có nhiều dữ liệu.</li>
+</ol>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 5</span><h3>Zero-shot với transformers</h3><span class="ex-tag code">code</span></div><div class="prose"><p>Viết hàm phân loại zero-shot một ảnh với danh sách lớp, dùng prompt ensembling 3 mẫu câu.</p>
+<details class="fold code">
+<summary>Code tham khảo</summary>
+<div class="hl"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">PIL</span><span class="w"> </span><span class="kn">import</span> <span class="n">Image</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">transformers</span><span class="w"> </span><span class="kn">import</span> <span class="n">CLIPModel</span><span class="p">,</span> <span class="n">CLIPProcessor</span>
+
+<span class="n">model</span> <span class="o">=</span> <span class="n">CLIPModel</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="s2">"openai/clip-vit-base-patch16"</span><span class="p">)</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+<span class="n">proc</span> <span class="o">=</span> <span class="n">CLIPProcessor</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="s2">"openai/clip-vit-base-patch16"</span><span class="p">)</span>
+<span class="n">TEMPLATES</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"a photo of a </span><span class="si">{}</span><span class="s2">."</span><span class="p">,</span> <span class="s2">"a product photo of a </span><span class="si">{}</span><span class="s2">."</span><span class="p">,</span> <span class="s2">"a close-up photo of a </span><span class="si">{}</span><span class="s2">."</span><span class="p">]</span>
+
+<span class="nd">@torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">()</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">class_embeddings</span><span class="p">(</span><span class="n">classes</span><span class="p">):</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">classes</span><span class="p">:</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="n">proc</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="p">[</span><span class="n">tpl</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="k">for</span> <span class="n">tpl</span> <span class="ow">in</span> <span class="n">TEMPLATES</span><span class="p">],</span> <span class="n">return_tensors</span><span class="o">=</span><span class="s2">"pt"</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">e</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">get_text_features</span><span class="p">(</span><span class="o">**</span><span class="n">t</span><span class="p">)</span>
+        <span class="n">e</span> <span class="o">=</span> <span class="n">e</span> <span class="o">/</span> <span class="n">e</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdim</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">/</span> <span class="n">e</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">norm</span><span class="p">())</span>
+    <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+
+<span class="nd">@torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">()</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">zero_shot</span><span class="p">(</span><span class="n">image_path</span><span class="p">,</span> <span class="n">classes</span><span class="p">):</span>
+    <span class="n">img</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">get_image_features</span><span class="p">(</span><span class="o">**</span><span class="n">proc</span><span class="p">(</span><span class="n">images</span><span class="o">=</span><span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">image_path</span><span class="p">)</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="s2">"RGB"</span><span class="p">),</span> <span class="n">return_tensors</span><span class="o">=</span><span class="s2">"pt"</span><span class="p">))</span>
+    <span class="n">img</span> <span class="o">=</span> <span class="n">img</span> <span class="o">/</span> <span class="n">img</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdim</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">probs</span> <span class="o">=</span> <span class="p">(</span><span class="mi">100</span> <span class="o">*</span> <span class="n">img</span> <span class="o">@</span> <span class="n">class_embeddings</span><span class="p">(</span><span class="n">classes</span><span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">softmax</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">classes</span><span class="p">,</span> <span class="n">probs</span><span class="o">.</span><span class="n">tolist</span><span class="p">()))</span>
+</code></pre></div>
+
+</details></div></article><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p7.1:b">Tôi đã xong phần bài tập</label><button class="btn" type="button" data-goto="thuc-hanh">Sang thực hành <span class="arr">→</span></button></div></section><section class="panel" id="thuc-hanh" role="tabpanel" hidden><div class="prose"><h2>Lab 10: ba cách phân loại ảnh sản phẩm</h2>
+<p>Dùng bộ ảnh sản phẩm ở P2.3 (hoặc một bộ ảnh tương tự 5–10 lớp).</p>
+<p><strong>Các bước</strong></p>
+<ol>
+<li><strong>Zero-shot:</strong> CLIP ViT-B/16, thử prompt đơn và prompt ensembling. Đo accuracy trên test.</li>
+<li><strong>Linear probe:</strong> trích embedding ảnh (đóng băng), train <code>LogisticRegression</code> với 5, 20, 50 ảnh mỗi lớp. Vẽ accuracy theo số ảnh.</li>
+<li><strong>Fine-tune:</strong> mở khóa encoder ảnh, lr 1e-5, 5 epoch, head mới. Đo lại zero-shot trên một tập lớp khác để xem khả năng zero-shot có bị mất không.</li>
+<li>Confusion matrix cho cả ba cách. Hiển thị 8 ảnh khó nhất.</li>
+<li>So sánh với ResNet-18 fine-tune ở P2.3.</li>
+</ol>
+<p><strong>Xong khi</strong></p>
+<ul>
+<li>Bảng so sánh ba cách (và ResNet), giải thích vì sao cách tốt nhất thắng.</li>
+<li>Biểu đồ linear probe theo số ảnh mỗi lớp.</li>
+</ul></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p7.1:p">Tôi đã xong phần thực hành</label></div></section>
+      <div class="donewhen"><b>Xong bài khi</b>So sánh 3 cách trong một bảng, giải thích vì sao cách tốt nhất thắng.</div>
       <nav class="pn" aria-label="Bài trước, bài sau"><a href="p6-3.html"><span class="dir">← Bài trước · P6.3</span><span class="tt">Quantization và inference nhanh</span></a><a class="nx" href="p7-2.html"><span class="dir">Bài sau · P7.2 →</span><span class="tt">Vision-language model</span></a></nav>
     </div>
     <aside class="aside">
       <div class="abox"><h4>Tiến độ bài này</h4><div class="ring"><svg viewBox="0 0 64 64" aria-hidden="true"><circle class="bg" cx="32" cy="32" r="28"/><circle class="fg" cx="32" cy="32" r="28" stroke-dasharray="176" stroke-dashoffset="176"/></svg><div><b id="ring-n">0/3</b><span id="ring-sub">phần đã xong</span></div></div></div>
+      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Patch embedding</a></li><li><a href="#lt-2">ViT so với CNN</a></li><li><a href="#lt-3">CLIP và học tương phản</a></li><li><a href="#lt-4">Zero-shot classification</a></li><li><a href="#lt-5">Linear probe và fine-tune</a></li></ol></div>
       
       <div class="abox"><h4>Cùng giai đoạn</h4><ul><li><span class=cur>Bài 9 · ViT và CLIP</span></li><li><a href="p7-2.html">Vision-language model</a></li><li><a href="p7-3.html">Video và embodied AI (nâng cao)</a></li></ul></div>
     </aside>
@@ -43,16 +174,75 @@
 
 (function () {
   const mid = document.body.dataset.mid; let d = AIE.load();
+  const EXK = "aie-ex-" + mid;
+  let solved = {}; try { solved = JSON.parse(localStorage.getItem(EXK) || "{}") || {}; } catch (e) {}
+  const saveSolved = () => { try { localStorage.setItem(EXK, JSON.stringify(solved)); } catch (e) {} };
+  const tabs = [...document.querySelectorAll(".tab")], panels = [...document.querySelectorAll(".panel")];
   const boxes = [...document.querySelectorAll("input[data-key]")], ring = document.querySelector(".ring .fg"), rt = document.getElementById("ring-n");
-  const skipped = () => !!d[mid + ":skip"];
+  const toc = document.getElementById("toc-box");
+  function show(id, scroll) {
+    tabs.forEach((t) => t.setAttribute("aria-selected", String(t.dataset.tab === id)));
+    panels.forEach((p) => { const on = p.id === id; if (on && p.hidden) { p.classList.remove("enter"); void p.offsetWidth; p.classList.add("enter"); } p.hidden = !on; });
+    if (toc) toc.hidden = id !== "ly-thuyet";
+    if (scroll) document.querySelector(".tabs").scrollIntoView({ block: "start" });
+  }
+  tabs.forEach((t) => t.addEventListener("click", () => { history.replaceState(null, "", "#" + t.dataset.tab); show(t.dataset.tab, true); }));
+  document.querySelectorAll("[data-goto]").forEach((b) => b.addEventListener("click", () => { history.replaceState(null, "", "#" + b.dataset.goto); show(b.dataset.goto, true); }));
+  const start = ["ly-thuyet", "bai-tap", "thuc-hanh"].includes(location.hash.slice(1)) ? location.hash.slice(1) : "ly-thuyet";
+  show(start, false);
+  window.addEventListener("hashchange", () => { const h = location.hash.slice(1); if (["ly-thuyet", "bai-tap", "thuc-hanh"].includes(h)) show(h, true); });
+  document.querySelectorAll(".toc a").forEach((a) => a.addEventListener("click", () => show("ly-thuyet", false)));
+
   function render() {
     let n = 0;
-    boxes.forEach((b) => { const on = skipped() || !!d[b.dataset.key]; b.checked = on; b.disabled = skipped(); b.closest(".pblock").classList.toggle("done", on); if (on) n++; });
+    const skip = !!d[mid + ":skip"];
+    boxes.forEach((b) => { const on = skip || !!d[b.dataset.key]; b.checked = on; if (on) n++; });
+    const kmap = { t: "ly-thuyet", b: "bai-tap", p: "thuc-hanh" };
+    tabs.forEach((t) => { const k = Object.keys(kmap).find((x) => kmap[x] === t.dataset.tab); t.classList.toggle("is-done", skip || !!d[mid + ":" + k]); });
     ring.style.strokeDashoffset = String(176 * (1 - n / 3)); rt.textContent = n + "/3";
-    document.getElementById("ring-sub").textContent = skipped() ? "đã đánh dấu bỏ qua" : n === 3 ? "hoàn thành bài này" : "phần đã xong";
+    document.getElementById("ring-sub").textContent = n === 3 ? "hoàn thành bài này" : "phần đã xong";
   }
-  boxes.forEach((b) => b.addEventListener("change", () => { d = AIE.load(); if (b.checked) d[b.dataset.key] = true; else delete d[b.dataset.key]; AIE.save(d); render(); }));
+  boxes.forEach((b) => b.addEventListener("change", () => {
+    d = AIE.load(); if (b.checked) d[b.dataset.key] = true; else delete d[b.dataset.key]; AIE.save(d);
+    boxes.filter((x) => x.dataset.key === b.dataset.key).forEach((x) => (x.checked = b.checked)); render();
+  }));
   render();
+
+  /* answer boxes */
+  const parse = (s) => parseFloat(String(s).trim().replace(",", ".").replace("−", "-"));
+  const allAns = [...document.querySelectorAll(".ans")];
+  function score() {
+    const ok = allAns.filter((a) => solved[a.id]).length;
+    const el = document.getElementById("ex-score");
+    if (el) { el.querySelector("b").textContent = `${ok} / ${allAns.length}`; el.querySelector(".bar i").style.width = (allAns.length ? ok / allAns.length * 100 : 0) + "%"; }
+    document.querySelectorAll(".excard").forEach((c) => { const as = [...c.querySelectorAll(".ans")]; c.classList.toggle("solved", as.length > 0 && as.every((a) => solved[a.id])); });
+  }
+  allAns.forEach((box) => {
+    const inputs = [...box.querySelectorAll("input")], fb = box.querySelector(".ans-fb");
+    const mark = () => { box.classList.add("ok"); inputs.forEach((i) => { i.classList.add("ok"); if (!i.value) i.value = i.dataset.ans; }); fb.className = "ans-fb ok"; fb.textContent = "Chính xác."; };
+    if (solved[box.id]) mark();
+    const run = () => {
+      let all = true, empty = false;
+      inputs.forEach((i) => {
+        const v = parse(i.value);
+        if (i.value.trim() === "" || Number.isNaN(v)) { empty = true; all = false; i.classList.remove("ok", "bad"); return; }
+        const good = Math.abs(v - parseFloat(i.dataset.ans)) <= parseFloat(i.dataset.tol) + 1e-9;
+        i.classList.toggle("ok", good); i.classList.toggle("bad", !good); if (!good) all = false;
+      });
+      if (all) { solved[box.id] = true; saveSolved(); mark(); box.classList.remove("pop"); void box.offsetWidth; box.classList.add("pop"); score(); }
+      else { fb.className = "ans-fb bad"; fb.textContent = empty ? "Điền đủ các ô bằng số (dấu chấm hoặc phẩy đều được)." : "Ô màu cam chưa đúng. Xem lại bước đó, hoặc mở gợi ý."; }
+    };
+    box.querySelector(".btn-check").addEventListener("click", run);
+    inputs.forEach((i) => i.addEventListener("keydown", (e) => { if (e.key === "Enter") run(); }));
+  });
+  score();
+
+  /* highlight current theory section in the toc */
+  if (toc && "IntersectionObserver" in window) {
+    const links = [...toc.querySelectorAll("a")];
+    const io = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) links.forEach((a) => a.classList.toggle("on", a.getAttribute("href") === "#" + e.target.id)); }), { rootMargin: "-140px 0px -65% 0px" });
+    document.querySelectorAll("#ly-thuyet h2[id]").forEach((h) => io.observe(h));
+  }
 })();
 
 </script>

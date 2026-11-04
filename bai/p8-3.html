@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>P8.3 · Bài 10b · Giám sát và chi phí · AI Engineer</title>
-<meta name="description" content="Bài 10b · Giám sát và chi phí: Logging, tracing, latency p50/p95, tỉ lệ lỗi; Data drift, vòng phản hồi từ người dùng, A/B test; Chi phí mỗi request, cache">
+<meta name="description" content="Bài 10b · Giám sát và chi phí: lý thuyết, bài tập và thực hành. Logging, tracing, latency p50/p95, tỉ lệ lỗi; Data drift, vòng phản hồi từ người dùng, A/B test">
 <meta property="og:title" content="P8.3 · Bài 10b · Giám sát và chi phí · AI Engineer">
-<meta property="og:description" content="Bài 10b · Giám sát và chi phí: Logging, tracing, latency p50/p95, tỉ lệ lỗi; Data drift, vòng phản hồi từ người dùng, A/B test; Chi phí mỗi request, cache">
+<meta property="og:description" content="Bài 10b · Giám sát và chi phí: lý thuyết, bài tập và thực hành. Logging, tracing, latency p50/p95, tỉ lệ lỗi; Data drift, vòng phản hồi từ người dùng, A/B test">
 <meta name="theme-color" content="#F4F6FB">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23131A33'/%3E%3Cpath d='M9 22 L16 10 L23 19' stroke='%23E5E9FB' stroke-width='2' fill='none'/%3E%3Ccircle cx='9' cy='22' r='3' fill='%23E5E9FB'/%3E%3Ccircle cx='16' cy='10' r='3' fill='%23E5E9FB'/%3E%3Ccircle cx='23' cy='19' r='3' fill='%23FF9361'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -14,23 +14,168 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="../assets/chrome.css">
 <link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/lesson.css">
 </head>
 <body data-mid="p8.3">
 <header class="sh"><div class="sh-in"><a class="sh-brand" href="../index.html"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="var(--ink)"/><circle cx="9" cy="22" r="2.6" fill="var(--accent-soft)"/><circle cx="16" cy="10" r="2.6" fill="var(--accent-soft)"/><circle cx="23" cy="19" r="2.6" fill="#FF9361"/><path d="M9 22 L16 10 L23 19" stroke="var(--accent-soft)" stroke-width="1.8" fill="none"/></svg><span>AI Engineer<small>lộ trình tự học</small></span></a><nav class="sh-nav" id="sh-nav" aria-label="Chính"><a href="../index.html">Trang chủ</a><a href="../bai-hoc.html" aria-current="page">Bài học</a><a href="../lo-trinh.html">Lộ trình</a><a href="../notebooks.html">Notebook</a><a class="sh-cta-m" href="../bai01.html" data-next-lesson>Học tiếp →</a></nav><a class="sh-cta" href="../bai01.html" data-next-lesson>Học tiếp <span class="arr">→</span></a><button class="sh-burger" type="button" aria-expanded="false" aria-controls="sh-nav">Menu</button></div></header>
 
 <main class="container">
   <div class="crumbs"><a href="../bai-hoc.html">Bài học</a><span>/</span><a href="../bai-hoc.html#p8">P8 · Production và MLOps</a><span>/</span><span>P8.3</span></div>
-  <section class="lhero"><div class="code">P8.3</div><h1>Bài 10b · Giám sát và chi phí</h1><div class="lmeta"><span class="m">Giai đoạn P8 · Production và MLOps</span><span class="m">Tuần 35–39</span><span class="chip planned">Đề cương</span></div></section>
-  <div class="lgrid">
-    <div>
-      <div class="goal"><b>Mục tiêu giai đoạn:</b> Đưa model ra khỏi notebook: API, Docker, cloud, giám sát. Đây là thứ phân biệt người làm được việc thật.</div>
-      <div class="soon">Nội dung đầy đủ (trang lý thuyết tương tác và notebook tự chấm) đang được soạn và sẽ có khi bạn học tới bài này. Đề cương dưới đây là phạm vi chính xác của bài.</div>
-      <section class="pblock reveal"><div class="pblock-head"><span class="num">1</span><h2>Lý thuyết<span style="display:block;font:400 13.5px var(--f-body);color:var(--muted);margin-top:4px">Những gì cần hiểu</span></h2><label class="tick" for="cb-t"><input type="checkbox" id="cb-t" data-key="p8.3:t">Xong</label></div><ol><li>Logging, tracing, latency p50/p95, tỉ lệ lỗi</li><li>Data drift, vòng phản hồi từ người dùng, A/B test</li><li>Chi phí mỗi request, cache</li></ol></section><section class="pblock reveal"><div class="pblock-head"><span class="num">2</span><h2>Bài tập<span style="display:block;font:400 13.5px var(--f-body);color:var(--muted);margin-top:4px">Tính tay và tự kiểm tra</span></h2><label class="tick" for="cb-b"><input type="checkbox" id="cb-b" data-key="p8.3:b">Xong</label></div><ol><li>Thiết kế dashboard 6 chỉ số cho một chatbot</li></ol></section><section class="pblock reveal"><div class="pblock-head"><span class="num">3</span><h2>Thực hành<span style="display:block;font:400 13.5px var(--f-body);color:var(--muted);margin-top:4px">Code và dự án</span></h2><label class="tick" for="cb-p"><input type="checkbox" id="cb-p" data-key="p8.3:p">Xong</label></div><ol><li>Lab 12: log từng request, dashboard, cảnh báo khi latency vượt ngưỡng</li></ol></section>
-      <div class="donewhen reveal"><b>Xong khi</b>Cảnh báo bắn ra khi bạn cố tình làm chậm API.</div>
+  <section class="lhero"><div class="code">P8.3</div><h1>Bài 10b · Giám sát và chi phí</h1><div class="lmeta"><span class="m">Giai đoạn P8 · Production và MLOps</span><span class="m">Tuần 35–39</span><span class="chip ready"><span class="dot"></span>Có nội dung đầy đủ</span></div>
+    <div class="intro"><p>Hệ thống chạy tốt hôm deploy chưa chắc chạy tốt tuần sau: người dùng hỏi kiểu mới, dữ liệu thay đổi, nhà cung cấp API đổi model, chi phí tăng vọt vì một tính năng mới. <strong>Giám sát</strong> cho bạn biết sớm khi có chuyện, và <strong>quản lý chi phí</strong> giữ cho sản phẩm có lãi. Bài này dạy các chỉ số cần theo dõi, cách phát hiện dữ liệu trôi, vòng phản hồi từ người dùng, A/B test và các cách giảm chi phí.</p></div></section>
+  
+  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">5 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
+  <div class="lgrid" style="margin-top:22px">
+    <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">Ba lớp chỉ số</h2>
+<table>
+<thead>
+<tr>
+<th>Lớp</th>
+<th>Chỉ số</th>
+<th>Ví dụ ngưỡng cảnh báo</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Hệ thống</td>
+<td>độ trễ p50/p95/p99, tỉ lệ lỗi, số request/giây, GPU utilization</td>
+<td>p95 &gt; 3 s trong 5 phút</td>
+</tr>
+<tr>
+<td>Model</td>
+<td>phân phối nhãn dự đoán, độ tự tin, độ dài đầu ra, tỉ lệ JSON hỏng, tỉ lệ từ chối</td>
+<td>tỉ lệ JSON hỏng &gt; 2%</td>
+</tr>
+<tr>
+<td>Kinh doanh</td>
+<td>tỉ lệ người dùng bấm thích, tỉ lệ chuyển cho nhân viên, chi phí mỗi hội thoại</td>
+<td>chi phí/ngày vượt ngân sách 20%</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Phân vị</strong> quan trọng hơn trung bình: trung bình 1 giây có thể che giấu 5% yêu cầu mất 10 giây. p95 là giá trị mà 95% yêu cầu nhanh hơn.</p>
+<h2 id="lt-2">Log và tracing</h2>
+<p>Mỗi yêu cầu ghi một bản log có cấu trúc (JSON): id, thời gian, phiên bản model và prompt, token vào/ra, độ trễ từng bước, lỗi, phản hồi của người dùng. Với hệ RAG/agent, <strong>tracing</strong> ghi cả cây các bước (truy vấn, đoạn tìm được, từng lần gọi tool). Khi người dùng báo lỗi, bạn tra id và thấy toàn bộ chuyện đã xảy ra. Nhớ che thông tin cá nhân trong log (P4.8).</p>
+<h2 id="lt-3">Dữ liệu trôi (drift)</h2>
+<p>Phân phối đầu vào thay đổi theo thời gian: mùa mua sắm, sản phẩm mới, người dùng mới. Model train trên dữ liệu cũ sẽ tệ dần mà không báo lỗi.</p>
+<p><strong>PSI (Population Stability Index)</strong> so phân phối của một đặc trưng giữa lúc train (e) và hiện tại (a), chia thành các nhóm:</p>
+<div class="hl"><pre><span></span><code>PSI = Σ (aᵢ − eᵢ) · ln(aᵢ / eᵢ)
+PSI &lt; 0.1: ổn | 0.1–0.25: thay đổi vừa, theo dõi | &gt; 0.25: thay đổi lớn, xem xét train lại
+</code></pre></div>
+
+<p>Với văn bản, theo dõi phân phối độ dài, chủ đề (cụm embedding), ngôn ngữ, và tỉ lệ câu hỏi mà hệ thống trả lời "không biết".</p>
+<h2 id="lt-4">Vòng phản hồi và A/B test</h2>
+<ul>
+<li><strong>Phản hồi:</strong> nút thích/không thích, người dùng sửa câu trả lời, chuyển cho nhân viên. Những ca bị chê là nguồn tốt nhất để bổ sung bộ eval và dữ liệu fine-tune.</li>
+<li><strong>A/B test:</strong> chia ngẫu nhiên người dùng thành hai nhóm dùng phiên bản cũ và mới, so chỉ số kinh doanh. Chỉ A/B test sau khi phiên bản mới đã qua eval offline; quyết định đặt trước ngưỡng và cỡ mẫu, không dừng sớm khi thấy kết quả đẹp.</li>
+</ul>
+<h2 id="lt-5">Giảm chi phí</h2>
+<table>
+<thead>
+<tr>
+<th>Cách</th>
+<th>Ý tưởng</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Model nhỏ hơn</td>
+<td>dùng model nhỏ nhất qua được eval; định tuyến câu dễ sang model rẻ</td>
+</tr>
+<tr>
+<td>Cache</td>
+<td>câu hỏi trùng (hoặc gần trùng) trả kết quả đã lưu</td>
+</tr>
+<tr>
+<td>Prompt caching</td>
+<td>phần system prompt và tài liệu dài lặp lại được nhà cung cấp tính giá rẻ hơn</td>
+</tr>
+<tr>
+<td>Rút gọn context</td>
+<td>ít đoạn RAG hơn nhưng chọn tốt hơn (reranker), tóm tắt lịch sử</td>
+</tr>
+<tr>
+<td>Batch API</td>
+<td>việc không cần ngay (phân loại hàng loạt) chạy batch giá rẻ hơn</td>
+</tr>
+</tbody>
+</table>
+<div class="keep">
+<p><strong>Ghi nhớ:</strong> đặt cảnh báo cho cả chất lượng lẫn chi phí. Một vòng lặp agent lỗi có thể đốt ngân sách cả tháng trong một đêm.</p>
+</div></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p8.3:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 3</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Phân vị</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>20 độ trễ (giây), đã sắp xếp: 0.4, 0.5, 0.5, 0.6, 0.6, 0.7, 0.7, 0.7, 0.8, 0.8, 0.9, 0.9, 1.0, 1.0, 1.1, 1.2, 1.4, 1.8, 4.5, 9.0. Dùng quy ước p95 = giá trị thứ ⌈0.95·n⌉.</p>
+<div class="ans" id="p8-3-e1-a1"><div class="ans-fields"><label>Trung bình (s)<input inputmode="decimal" data-ans="1.455" data-tol="0.001" autocomplete="off"></label><label>p50 theo quy ước giá trị thứ ⌈0.5·n⌉ (s)<input inputmode="decimal" data-ans="0.8" data-tol="0.001" autocomplete="off"></label><label>p95 (s)<input inputmode="decimal" data-ans="4.5" data-tol="0.001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+
+<details class="fold solution">
+<summary>Lời giải</summary>
+<p>Trung bình 1,455 s bị kéo lên bởi hai giá trị chậm. p50 = giá trị thứ 10 = 0,8 s. p95 = giá trị thứ 19 = 4,5 s. Trung bình không cho thấy 10% yêu cầu chậm gấp 5–10 lần bình thường.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 2</span><h3>PSI</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Đặc trưng "độ dài câu hỏi" chia 2 nhóm (ngắn, dài). Lúc train: 50% / 50%. Tuần này: 70% / 30%.</p>
+<div class="ans" id="p8-3-e2-a1"><div class="ans-fields"><label>PSI<input inputmode="decimal" data-ans="0.1695" data-tol="0.001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+
+<details class="fold solution">
+<summary>Lời giải</summary>
+<p>(0.7 − 0.5)·ln(1.4) + (0.3 − 0.5)·ln(0.6) = 0.0673 + 0.1022 ≈ 0.17: thay đổi vừa, cần theo dõi và kiểm tra chất lượng trên câu hỏi ngắn.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 3</span><h3>Tác động của cache</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Chi phí LLM 300 USD/ngày. Cache trả lời được 30% yêu cầu, mỗi lần trúng cache tốn gần như 0.</p>
+<div class="ans" id="p8-3-e3-a1"><div class="ans-fields"><label>Chi phí còn lại mỗi ngày (USD)<input inputmode="decimal" data-ans="210.0" data-tol="0.001" autocomplete="off"></label><label>Tiết kiệm mỗi tháng 30 ngày (USD)<input inputmode="decimal" data-ans="2700.0" data-tol="0.001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+
+<details class="fold solution">
+<summary>Lời giải</summary>
+<p>300 × 0,7 = 210 USD/ngày, tiết kiệm 90 USD/ngày, 2.700 USD/tháng. Cache gần trùng (theo embedding) trúng nhiều hơn nhưng có rủi ro trả lời sai câu hỏi hơi khác; đặt ngưỡng tương đồng chặt và đo.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 4</span><h3>Thiết kế dashboard</h3><span class="ex-tag concept">thiết kế</span></div><div class="prose"><p>Thiết kế dashboard 6 chỉ số cho chatbot chăm sóc khách hàng dùng RAG. Mỗi chỉ số: tên, cách tính, ngưỡng cảnh báo, ai nhận cảnh báo.</p>
+<details class="fold solution">
+<summary>Lời giải</summary>
+<ol>
+<li>p95 độ trễ trả lời: phân vị 95 trong 5 phút; &gt; 5 s; kỹ sư trực. 2. Tỉ lệ lỗi (HTTP 5xx, timeout): lỗi/tổng; &gt; 1%; kỹ sư trực. 3. Tỉ lệ "không có thông tin": câu trả lời từ chối/tổng; tăng gấp đôi so với tuần trước; nhóm nội dung (có thể thiếu tài liệu mới). 4. Tỉ lệ thích: thích/(thích + không thích); &lt; 70%; nhóm sản phẩm. 5. Tỉ lệ chuyển nhân viên: chuyển/tổng hội thoại; &gt; 15%; nhóm CSKH. 6. Chi phí mỗi hội thoại và tổng theo ngày: token × giá; vượt ngân sách 20%; trưởng nhóm kỹ thuật.</li>
+</ol>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 5</span><h3>Log và metric cho API</h3><span class="ex-tag code">code</span></div><div class="prose"><p>Thêm vào FastAPI ở P8.1: middleware ghi log JSON mỗi request (id, đường dẫn, mã trạng thái, độ trễ) và metric Prometheus (histogram độ trễ, bộ đếm lỗi) tại <code>/metrics</code>.</p>
+<details class="fold code">
+<summary>Code tham khảo</summary>
+<div class="hl"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">json</span><span class="o">,</span><span class="w"> </span><span class="nn">time</span><span class="o">,</span><span class="w"> </span><span class="nn">uuid</span><span class="o">,</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">fastapi</span><span class="w"> </span><span class="kn">import</span> <span class="n">FastAPI</span><span class="p">,</span> <span class="n">Request</span><span class="p">,</span> <span class="n">Response</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">prometheus_client</span><span class="w"> </span><span class="kn">import</span> <span class="n">Histogram</span><span class="p">,</span> <span class="n">Counter</span><span class="p">,</span> <span class="n">generate_latest</span><span class="p">,</span> <span class="n">CONTENT_TYPE_LATEST</span>
+
+<span class="n">app</span> <span class="o">=</span> <span class="n">FastAPI</span><span class="p">()</span>
+<span class="n">log</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">"api"</span><span class="p">);</span> <span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">"</span><span class="si">%(message)s</span><span class="s2">"</span><span class="p">)</span>
+<span class="n">LATENCY</span> <span class="o">=</span> <span class="n">Histogram</span><span class="p">(</span><span class="s2">"request_latency_seconds"</span><span class="p">,</span> <span class="s2">"Độ trễ request"</span><span class="p">,</span> <span class="p">[</span><span class="s2">"path"</span><span class="p">],</span> <span class="n">buckets</span><span class="o">=</span><span class="p">[</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.25</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">10</span><span class="p">])</span>
+<span class="n">ERRORS</span> <span class="o">=</span> <span class="n">Counter</span><span class="p">(</span><span class="s2">"request_errors_total"</span><span class="p">,</span> <span class="s2">"Số request lỗi"</span><span class="p">,</span> <span class="p">[</span><span class="s2">"path"</span><span class="p">,</span> <span class="s2">"status"</span><span class="p">])</span>
+
+<span class="nd">@app</span><span class="o">.</span><span class="n">middleware</span><span class="p">(</span><span class="s2">"http"</span><span class="p">)</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">observe</span><span class="p">(</span><span class="n">request</span><span class="p">:</span> <span class="n">Request</span><span class="p">,</span> <span class="n">call_next</span><span class="p">):</span>
+    <span class="n">rid</span><span class="p">,</span> <span class="n">t0</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">()),</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="n">call_next</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+    <span class="n">dt</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span> <span class="o">-</span> <span class="n">t0</span>
+    <span class="n">LATENCY</span><span class="o">.</span><span class="n">labels</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">url</span><span class="o">.</span><span class="n">path</span><span class="p">)</span><span class="o">.</span><span class="n">observe</span><span class="p">(</span><span class="n">dt</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">&gt;=</span> <span class="mi">500</span><span class="p">:</span>
+        <span class="n">ERRORS</span><span class="o">.</span><span class="n">labels</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">url</span><span class="o">.</span><span class="n">path</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">))</span><span class="o">.</span><span class="n">inc</span><span class="p">()</span>
+    <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">({</span><span class="s2">"id"</span><span class="p">:</span> <span class="n">rid</span><span class="p">,</span> <span class="s2">"path"</span><span class="p">:</span> <span class="n">request</span><span class="o">.</span><span class="n">url</span><span class="o">.</span><span class="n">path</span><span class="p">,</span> <span class="s2">"status"</span><span class="p">:</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">,</span> <span class="s2">"latency_s"</span><span class="p">:</span> <span class="nb">round</span><span class="p">(</span><span class="n">dt</span><span class="p">,</span> <span class="mi">3</span><span class="p">)}))</span>
+    <span class="n">response</span><span class="o">.</span><span class="n">headers</span><span class="p">[</span><span class="s2">"X-Request-ID"</span><span class="p">]</span> <span class="o">=</span> <span class="n">rid</span>
+    <span class="k">return</span> <span class="n">response</span>
+
+<span class="nd">@app</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"/metrics"</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">metrics</span><span class="p">():</span>
+    <span class="k">return</span> <span class="n">Response</span><span class="p">(</span><span class="n">generate_latest</span><span class="p">(),</span> <span class="n">media_type</span><span class="o">=</span><span class="n">CONTENT_TYPE_LATEST</span><span class="p">)</span>
+</code></pre></div>
+
+</details></div></article><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p8.3:b">Tôi đã xong phần bài tập</label><button class="btn" type="button" data-goto="thuc-hanh">Sang thực hành <span class="arr">→</span></button></div></section><section class="panel" id="thuc-hanh" role="tabpanel" hidden><div class="prose"><h2>Lab 12: giám sát API của Lab 11</h2>
+<p><strong>Các bước</strong></p>
+<ol>
+<li>Thêm middleware log và metric như bài tập 5, cộng metric riêng cho LLM: token vào, token ra, chi phí ước tính mỗi request, tỉ lệ JSON hỏng.</li>
+<li>Chạy Prometheus và Grafana bằng <code>docker compose</code> cùng API. Dựng dashboard: request/giây, p50/p95/p99, tỉ lệ lỗi, token và chi phí theo giờ.</li>
+<li>Đặt cảnh báo: p95 &gt; 3 giây trong 5 phút, tỉ lệ lỗi &gt; 1%.</li>
+<li>Thử nghiệm: cố tình làm chậm API (thêm <code>sleep</code> ngẫu nhiên vào 10% request), chạy load test, xác nhận cảnh báo bắn ra.</li>
+<li>Thêm cache cho <code>/predict</code> (khóa là hash của đầu vào), đo tỉ lệ trúng và chi phí giảm.</li>
+<li>Viết một trang "runbook": khi cảnh báo p95 bắn, kiểm tra những gì theo thứ tự nào.</li>
+</ol>
+<p><strong>Xong khi</strong></p>
+<ul>
+<li>Cảnh báo bắn ra khi bạn cố tình làm chậm API, có ảnh chụp dashboard.</li>
+<li>Có số liệu tỉ lệ trúng cache và chi phí trước/sau.</li>
+</ul></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p8.3:p">Tôi đã xong phần thực hành</label></div></section>
+      <div class="donewhen"><b>Xong bài khi</b>Cảnh báo bắn ra khi bạn cố tình làm chậm API.</div>
       <nav class="pn" aria-label="Bài trước, bài sau"><a href="p8-2.html"><span class="dir">← Bài trước · P8.2</span><span class="tt">MLOps</span></a><a class="nx" href="p8-4.html"><span class="dir">Bài sau · P8.4 →</span><span class="tt">Backend và dữ liệu cho AI</span></a></nav>
     </div>
     <aside class="aside">
       <div class="abox"><h4>Tiến độ bài này</h4><div class="ring"><svg viewBox="0 0 64 64" aria-hidden="true"><circle class="bg" cx="32" cy="32" r="28"/><circle class="fg" cx="32" cy="32" r="28" stroke-dasharray="176" stroke-dashoffset="176"/></svg><div><b id="ring-n">0/3</b><span id="ring-sub">phần đã xong</span></div></div></div>
+      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Ba lớp chỉ số</a></li><li><a href="#lt-2">Log và tracing</a></li><li><a href="#lt-3">Dữ liệu trôi (drift)</a></li><li><a href="#lt-4">Vòng phản hồi và A/B test</a></li><li><a href="#lt-5">Giảm chi phí</a></li></ol></div>
       
       <div class="abox"><h4>Cùng giai đoạn</h4><ul><li><a href="p8-1.html">Bài 10a · Serving</a></li><li><a href="p8-2.html">MLOps</a></li><li><span class=cur>Bài 10b · Giám sát và chi phí</span></li><li><a href="p8-4.html">Backend và dữ liệu cho AI</a></li></ul></div>
     </aside>
@@ -43,16 +188,75 @@
 
 (function () {
   const mid = document.body.dataset.mid; let d = AIE.load();
+  const EXK = "aie-ex-" + mid;
+  let solved = {}; try { solved = JSON.parse(localStorage.getItem(EXK) || "{}") || {}; } catch (e) {}
+  const saveSolved = () => { try { localStorage.setItem(EXK, JSON.stringify(solved)); } catch (e) {} };
+  const tabs = [...document.querySelectorAll(".tab")], panels = [...document.querySelectorAll(".panel")];
   const boxes = [...document.querySelectorAll("input[data-key]")], ring = document.querySelector(".ring .fg"), rt = document.getElementById("ring-n");
-  const skipped = () => !!d[mid + ":skip"];
+  const toc = document.getElementById("toc-box");
+  function show(id, scroll) {
+    tabs.forEach((t) => t.setAttribute("aria-selected", String(t.dataset.tab === id)));
+    panels.forEach((p) => { const on = p.id === id; if (on && p.hidden) { p.classList.remove("enter"); void p.offsetWidth; p.classList.add("enter"); } p.hidden = !on; });
+    if (toc) toc.hidden = id !== "ly-thuyet";
+    if (scroll) document.querySelector(".tabs").scrollIntoView({ block: "start" });
+  }
+  tabs.forEach((t) => t.addEventListener("click", () => { history.replaceState(null, "", "#" + t.dataset.tab); show(t.dataset.tab, true); }));
+  document.querySelectorAll("[data-goto]").forEach((b) => b.addEventListener("click", () => { history.replaceState(null, "", "#" + b.dataset.goto); show(b.dataset.goto, true); }));
+  const start = ["ly-thuyet", "bai-tap", "thuc-hanh"].includes(location.hash.slice(1)) ? location.hash.slice(1) : "ly-thuyet";
+  show(start, false);
+  window.addEventListener("hashchange", () => { const h = location.hash.slice(1); if (["ly-thuyet", "bai-tap", "thuc-hanh"].includes(h)) show(h, true); });
+  document.querySelectorAll(".toc a").forEach((a) => a.addEventListener("click", () => show("ly-thuyet", false)));
+
   function render() {
     let n = 0;
-    boxes.forEach((b) => { const on = skipped() || !!d[b.dataset.key]; b.checked = on; b.disabled = skipped(); b.closest(".pblock").classList.toggle("done", on); if (on) n++; });
+    const skip = !!d[mid + ":skip"];
+    boxes.forEach((b) => { const on = skip || !!d[b.dataset.key]; b.checked = on; if (on) n++; });
+    const kmap = { t: "ly-thuyet", b: "bai-tap", p: "thuc-hanh" };
+    tabs.forEach((t) => { const k = Object.keys(kmap).find((x) => kmap[x] === t.dataset.tab); t.classList.toggle("is-done", skip || !!d[mid + ":" + k]); });
     ring.style.strokeDashoffset = String(176 * (1 - n / 3)); rt.textContent = n + "/3";
-    document.getElementById("ring-sub").textContent = skipped() ? "đã đánh dấu bỏ qua" : n === 3 ? "hoàn thành bài này" : "phần đã xong";
+    document.getElementById("ring-sub").textContent = n === 3 ? "hoàn thành bài này" : "phần đã xong";
   }
-  boxes.forEach((b) => b.addEventListener("change", () => { d = AIE.load(); if (b.checked) d[b.dataset.key] = true; else delete d[b.dataset.key]; AIE.save(d); render(); }));
+  boxes.forEach((b) => b.addEventListener("change", () => {
+    d = AIE.load(); if (b.checked) d[b.dataset.key] = true; else delete d[b.dataset.key]; AIE.save(d);
+    boxes.filter((x) => x.dataset.key === b.dataset.key).forEach((x) => (x.checked = b.checked)); render();
+  }));
   render();
+
+  /* answer boxes */
+  const parse = (s) => parseFloat(String(s).trim().replace(",", ".").replace("−", "-"));
+  const allAns = [...document.querySelectorAll(".ans")];
+  function score() {
+    const ok = allAns.filter((a) => solved[a.id]).length;
+    const el = document.getElementById("ex-score");
+    if (el) { el.querySelector("b").textContent = `${ok} / ${allAns.length}`; el.querySelector(".bar i").style.width = (allAns.length ? ok / allAns.length * 100 : 0) + "%"; }
+    document.querySelectorAll(".excard").forEach((c) => { const as = [...c.querySelectorAll(".ans")]; c.classList.toggle("solved", as.length > 0 && as.every((a) => solved[a.id])); });
+  }
+  allAns.forEach((box) => {
+    const inputs = [...box.querySelectorAll("input")], fb = box.querySelector(".ans-fb");
+    const mark = () => { box.classList.add("ok"); inputs.forEach((i) => { i.classList.add("ok"); if (!i.value) i.value = i.dataset.ans; }); fb.className = "ans-fb ok"; fb.textContent = "Chính xác."; };
+    if (solved[box.id]) mark();
+    const run = () => {
+      let all = true, empty = false;
+      inputs.forEach((i) => {
+        const v = parse(i.value);
+        if (i.value.trim() === "" || Number.isNaN(v)) { empty = true; all = false; i.classList.remove("ok", "bad"); return; }
+        const good = Math.abs(v - parseFloat(i.dataset.ans)) <= parseFloat(i.dataset.tol) + 1e-9;
+        i.classList.toggle("ok", good); i.classList.toggle("bad", !good); if (!good) all = false;
+      });
+      if (all) { solved[box.id] = true; saveSolved(); mark(); box.classList.remove("pop"); void box.offsetWidth; box.classList.add("pop"); score(); }
+      else { fb.className = "ans-fb bad"; fb.textContent = empty ? "Điền đủ các ô bằng số (dấu chấm hoặc phẩy đều được)." : "Ô màu cam chưa đúng. Xem lại bước đó, hoặc mở gợi ý."; }
+    };
+    box.querySelector(".btn-check").addEventListener("click", run);
+    inputs.forEach((i) => i.addEventListener("keydown", (e) => { if (e.key === "Enter") run(); }));
+  });
+  score();
+
+  /* highlight current theory section in the toc */
+  if (toc && "IntersectionObserver" in window) {
+    const links = [...toc.querySelectorAll("a")];
+    const io = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) links.forEach((a) => a.classList.toggle("on", a.getAttribute("href") === "#" + e.target.id)); }), { rootMargin: "-140px 0px -65% 0px" });
+    document.querySelectorAll("#ly-thuyet h2[id]").forEach((h) => io.observe(h));
+  }
 })();
 
 </script>

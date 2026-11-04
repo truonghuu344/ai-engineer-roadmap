@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>P7.2 · Vision-language model · AI Engineer</title>
-<meta name="description" content="Vision-language model: Kiến trúc LLaVA: vision encoder + projector + LLM; VLM mã nguồn mở hiện nay, hiểu tài liệu và OCR">
+<meta name="description" content="Vision-language model: lý thuyết, bài tập và thực hành. Kiến trúc LLaVA: vision encoder + projector + LLM; VLM mã nguồn mở hiện nay, hiểu tài liệu và OCR">
 <meta property="og:title" content="P7.2 · Vision-language model · AI Engineer">
-<meta property="og:description" content="Vision-language model: Kiến trúc LLaVA: vision encoder + projector + LLM; VLM mã nguồn mở hiện nay, hiểu tài liệu và OCR">
+<meta property="og:description" content="Vision-language model: lý thuyết, bài tập và thực hành. Kiến trúc LLaVA: vision encoder + projector + LLM; VLM mã nguồn mở hiện nay, hiểu tài liệu và OCR">
 <meta name="theme-color" content="#F4F6FB">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23131A33'/%3E%3Cpath d='M9 22 L16 10 L23 19' stroke='%23E5E9FB' stroke-width='2' fill='none'/%3E%3Ccircle cx='9' cy='22' r='3' fill='%23E5E9FB'/%3E%3Ccircle cx='16' cy='10' r='3' fill='%23E5E9FB'/%3E%3Ccircle cx='23' cy='19' r='3' fill='%23FF9361'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -14,23 +14,137 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="../assets/chrome.css">
 <link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/lesson.css">
 </head>
 <body data-mid="p7.2">
 <header class="sh"><div class="sh-in"><a class="sh-brand" href="../index.html"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="var(--ink)"/><circle cx="9" cy="22" r="2.6" fill="var(--accent-soft)"/><circle cx="16" cy="10" r="2.6" fill="var(--accent-soft)"/><circle cx="23" cy="19" r="2.6" fill="#FF9361"/><path d="M9 22 L16 10 L23 19" stroke="var(--accent-soft)" stroke-width="1.8" fill="none"/></svg><span>AI Engineer<small>lộ trình tự học</small></span></a><nav class="sh-nav" id="sh-nav" aria-label="Chính"><a href="../index.html">Trang chủ</a><a href="../bai-hoc.html" aria-current="page">Bài học</a><a href="../lo-trinh.html">Lộ trình</a><a href="../notebooks.html">Notebook</a><a class="sh-cta-m" href="../bai01.html" data-next-lesson>Học tiếp →</a></nav><a class="sh-cta" href="../bai01.html" data-next-lesson>Học tiếp <span class="arr">→</span></a><button class="sh-burger" type="button" aria-expanded="false" aria-controls="sh-nav">Menu</button></div></header>
 
 <main class="container">
   <div class="crumbs"><a href="../bai-hoc.html">Bài học</a><span>/</span><a href="../bai-hoc.html#p7">P7 · Thị giác và đa phương thức</a><span>/</span><span>P7.2</span></div>
-  <section class="lhero"><div class="code">P7.2</div><h1>Vision-language model</h1><div class="lmeta"><span class="m">Giai đoạn P7 · Thị giác và đa phương thức</span><span class="m">Tuần 31–34</span><span class="chip planned">Đề cương</span></div></section>
-  <div class="lgrid">
-    <div>
-      <div class="goal"><b>Mục tiêu giai đoạn:</b> Làm việc với ảnh, video và model kết hợp ảnh với ngôn ngữ.</div>
-      <div class="soon">Nội dung đầy đủ (trang lý thuyết tương tác và notebook tự chấm) đang được soạn và sẽ có khi bạn học tới bài này. Đề cương dưới đây là phạm vi chính xác của bài.</div>
-      <section class="pblock reveal"><div class="pblock-head"><span class="num">1</span><h2>Lý thuyết<span style="display:block;font:400 13.5px var(--f-body);color:var(--muted);margin-top:4px">Những gì cần hiểu</span></h2><label class="tick" for="cb-t"><input type="checkbox" id="cb-t" data-key="p7.2:t">Xong</label></div><ol><li>Kiến trúc LLaVA: vision encoder + projector + LLM</li><li>VLM mã nguồn mở hiện nay, hiểu tài liệu và OCR</li></ol></section><section class="pblock reveal"><div class="pblock-head"><span class="num">2</span><h2>Bài tập<span style="display:block;font:400 13.5px var(--f-body);color:var(--muted);margin-top:4px">Tính tay và tự kiểm tra</span></h2><label class="tick" for="cb-b"><input type="checkbox" id="cb-b" data-key="p7.2:b">Xong</label></div><ol><li>Vẽ luồng dữ liệu từ ảnh tới token đầu vào của LLM</li></ol></section><section class="pblock reveal"><div class="pblock-head"><span class="num">3</span><h2>Thực hành<span style="display:block;font:400 13.5px var(--f-body);color:var(--muted);margin-top:4px">Code và dự án</span></h2><label class="tick" for="cb-p"><input type="checkbox" id="cb-p" data-key="p7.2:p">Xong</label></div><ol><li>Fine-tune một VLM nhỏ bằng LoRA cho hỏi đáp trên ảnh sản phẩm</li></ol></section>
-      <div class="donewhen reveal"><b>Xong khi</b>Độ chính xác trên 100 câu hỏi tự tạo tăng rõ so với trước fine-tune.</div>
+  <section class="lhero"><div class="code">P7.2</div><h1>Vision-language model</h1><div class="lmeta"><span class="m">Giai đoạn P7 · Thị giác và đa phương thức</span><span class="m">Tuần 31–34</span><span class="chip ready"><span class="dot"></span>Có nội dung đầy đủ</span></div>
+    <div class="intro"><p>Vision-language model (VLM) đọc được cả ảnh lẫn chữ và trả lời bằng chữ: mô tả ảnh, đọc hóa đơn, trả lời câu hỏi về biểu đồ, so sánh hai sản phẩm. Bài này giải thích kiến trúc chung của hầu hết VLM mã nguồn mở, cách chúng được train, và cách fine-tune một VLM nhỏ cho bài toán của riêng bạn.</p></div></section>
+  
+  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">4 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
+  <div class="lgrid" style="margin-top:22px">
+    <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">Kiến trúc kiểu LLaVA</h2>
+<div class="hl"><pre><span></span><code>ảnh ──▶ vision encoder (ViT, thường từ CLIP/SigLIP) ──▶ N vector đặc trưng
+                                                         │
+                                       projector (MLP 2 lớp) ──▶ N "token ảnh" cùng chiều với LLM
+                                                         │
+[token văn bản hệ thống] [token ảnh × N] [câu hỏi] ──▶ LLM ──▶ câu trả lời
+</code></pre></div>
+
+<ul>
+<li><strong>Vision encoder</strong> đã pretrain, biến ảnh thành dãy vector theo mảnh.</li>
+<li><strong>Projector</strong> chiếu vector ảnh sang không gian embedding của LLM. Với LLM, token ảnh trông như những "từ" đặc biệt.</li>
+<li><strong>LLM</strong> xử lý dãy token hỗn hợp và sinh câu trả lời như bình thường.</li>
+</ul>
+<p>Ý tưởng then chốt: không cần train lại từ đầu. Ghép hai model đã giỏi (một hiểu ảnh, một hiểu ngôn ngữ) bằng một cầu nối nhỏ.</p>
+<h2 id="lt-2">Train một VLM</h2>
+<ol>
+<li><strong>Căn chỉnh (alignment):</strong> đóng băng vision encoder và LLM, chỉ train projector trên cặp (ảnh, chú thích). Projector học "dịch" đặc trưng ảnh sang ngôn ngữ.</li>
+<li><strong>Instruction tuning:</strong> mở khóa LLM (hoặc dùng LoRA), train trên dữ liệu hội thoại có ảnh: hỏi đáp, mô tả chi tiết, suy luận, đọc chữ.</li>
+</ol>
+<h2 id="lt-3">Độ phân giải và số token ảnh</h2>
+<p>Ảnh độ phân giải thấp thì không đọc được chữ nhỏ; ảnh cao thì quá nhiều token. Các VLM hiện đại xử lý <strong>độ phân giải động</strong>: cắt ảnh lớn thành nhiều ô, mỗi ô mã hóa riêng, kèm một bản thu nhỏ của cả ảnh; hoặc gộp các mảnh liền kề để giảm số token. Mỗi ảnh có thể tốn từ vài trăm tới vài nghìn token context.</p>
+<h2 id="lt-4">VLM so với OCR truyền thống</h2>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>OCR + quy tắc</th>
+<th>VLM</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Văn bản in rõ, bố cục cố định</td>
+<td>rất tốt, rẻ, nhanh</td>
+<td>tốt nhưng đắt hơn</td>
+</tr>
+<tr>
+<td>Bố cục thay đổi, chữ viết tay, bảng phức tạp</td>
+<td>yếu</td>
+<td>mạnh</td>
+</tr>
+<tr>
+<td>Hiểu ngữ nghĩa ("tổng tiền sau thuế là bao nhiêu?")</td>
+<td>cần viết luật</td>
+<td>trả lời trực tiếp</td>
+</tr>
+<tr>
+<td>Rủi ro</td>
+<td>sai ký tự</td>
+<td>có thể "bịa" số không có trong ảnh</td>
+</tr>
+</tbody>
+</table>
+<p>Với tài liệu quan trọng (hóa đơn, hợp đồng), kết hợp: VLM trích xuất có cấu trúc, rồi kiểm tra chéo (tổng các dòng có bằng tổng tiền không).</p>
+<div class="keep">
+<p><strong>Ghi nhớ:</strong> VLM là LLM có thêm "mắt". Mọi kỹ thuật ở P4 (prompt, structured output, eval, RAG) đều áp dụng được, chỉ cần thêm ảnh vào đầu vào.</p>
+</div></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p7.2:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 3</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Số token ảnh</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Một VLM dùng ảnh 336×336, patch 14, mỗi mảnh một token.</p>
+<div class="ans" id="p7-2-e1-a1"><div class="ans-fields"><label>Token mỗi ảnh<input inputmode="decimal" data-ans="576.0" data-tol="0.0" autocomplete="off"></label><label>4 ảnh trong một câu hỏi<input inputmode="decimal" data-ans="2304.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+
+<details class="fold solution">
+<summary>Lời giải</summary>
+<p>24 × 24 = 576 token mỗi ảnh. 4 ảnh tốn 2.304 token trước khi có chữ nào: so sánh nhiều ảnh nhanh chóng chiếm context và chi phí.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 2</span><h3>Tham số projector</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Projector MLP 2 lớp: 1024 → 4096 → 4096, có bias.</p>
+<div class="ans" id="p7-2-e2-a1"><div class="ans-fields"><label>Số tham số<input inputmode="decimal" data-ans="20979712.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+
+<details class="fold solution">
+<summary>Lời giải</summary>
+<p>1024·4096 + 4096 + 4096·4096 + 4096 = 20.979.712, khoảng 21 triệu. Rất nhỏ so với LLM 7 tỉ, nên giai đoạn căn chỉnh train rất nhanh.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 3</span><h3>Kiểm tra chéo hóa đơn</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>VLM trích xuất 3 dòng hóa đơn: 2 × 450.000, 1 × 1.200.000, 3 × 85.000 (đồng), và tổng tiền in trên hóa đơn là 2.355.000.</p>
+<div class="ans" id="p7-2-e3-a1"><div class="ans-fields"><label>Tổng tính lại từ các dòng<input inputmode="decimal" data-ans="2355000.0" data-tol="0.0" autocomplete="off"></label><label>Chênh lệch với tổng in trên hóa đơn<input inputmode="decimal" data-ans="0.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+
+<details class="fold solution">
+<summary>Lời giải</summary>
+<p>900.000 + 1.200.000 + 255.000 = 2.355.000, khớp. Nếu lệch, đánh dấu hóa đơn để người kiểm tra thay vì tin vào số model đọc. Kiểm tra chéo kiểu này bắt được phần lớn lỗi đọc số của VLM.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 4</span><h3>Chọn công cụ</h3><span class="ex-tag concept">khái niệm</span></div><div class="prose"><p>Chọn OCR + quy tắc, VLM, hay kết hợp cho từng việc:</p>
+<ol>
+<li>Đọc mã vạch và số serial in máy trên tem sản phẩm, 100.000 ảnh mỗi ngày.</li>
+<li>Trả lời câu hỏi khách hàng kèm ảnh "món đồ này lắp thế nào?".</li>
+<li>Trích xuất 15 trường từ hóa đơn của 200 nhà cung cấp khác nhau.</li>
+</ol>
+<details class="fold solution">
+<summary>Lời giải</summary>
+<ol>
+<li>OCR/đọc mã vạch chuyên dụng: định dạng cố định, khối lượng lớn, cần rẻ và chính xác tuyệt đối. 2. VLM: cần hiểu ảnh và suy luận. 3. Kết hợp: VLM trích xuất JSON có schema, quy tắc kiểm tra chéo (tổng tiền, định dạng mã số thuế, ngày hợp lệ), ca lỗi chuyển người duyệt.</li>
+</ol>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 5</span><h3>Hỏi đáp ảnh với VLM mã nguồn mở</h3><span class="ex-tag code">code</span></div><div class="prose"><p>Dùng <code>pipeline("image-text-to-text")</code> của transformers với một VLM nhỏ để hỏi về một ảnh sản phẩm, yêu cầu trả JSON.</p>
+<details class="fold code">
+<summary>Code tham khảo</summary>
+<div class="hl"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">transformers</span><span class="w"> </span><span class="kn">import</span> <span class="n">pipeline</span>
+
+<span class="n">vlm</span> <span class="o">=</span> <span class="n">pipeline</span><span class="p">(</span><span class="s2">"image-text-to-text"</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s2">"Qwen/Qwen2.5-VL-3B-Instruct"</span><span class="p">,</span> <span class="n">device_map</span><span class="o">=</span><span class="s2">"auto"</span><span class="p">)</span>
+<span class="n">messages</span> <span class="o">=</span> <span class="p">[{</span><span class="s2">"role"</span><span class="p">:</span> <span class="s2">"user"</span><span class="p">,</span> <span class="s2">"content"</span><span class="p">:</span> <span class="p">[</span>
+    <span class="p">{</span><span class="s2">"type"</span><span class="p">:</span> <span class="s2">"image"</span><span class="p">,</span> <span class="s2">"url"</span><span class="p">:</span> <span class="s2">"san_pham.jpg"</span><span class="p">},</span>
+    <span class="p">{</span><span class="s2">"type"</span><span class="p">:</span> <span class="s2">"text"</span><span class="p">,</span> <span class="s2">"text"</span><span class="p">:</span> <span class="s1">'Đây là sản phẩm gì, màu gì, chất liệu gì? Chỉ trả JSON {"loai": "", "mau": "", "chat_lieu": ""}.'</span><span class="p">},</span>
+<span class="p">]}]</span>
+<span class="n">out</span> <span class="o">=</span> <span class="n">vlm</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="n">messages</span><span class="p">,</span> <span class="n">max_new_tokens</span><span class="o">=</span><span class="mi">120</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">out</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s2">"generated_text"</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="s2">"content"</span><span class="p">])</span>
+</code></pre></div>
+
+</details></div></article><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p7.2:b">Tôi đã xong phần bài tập</label><button class="btn" type="button" data-goto="thuc-hanh">Sang thực hành <span class="arr">→</span></button></div></section><section class="panel" id="thuc-hanh" role="tabpanel" hidden><div class="prose"><h2>Fine-tune VLM nhỏ cho hỏi đáp ảnh sản phẩm</h2>
+<p><strong>Các bước</strong></p>
+<ol>
+<li>Tạo 300–500 mẫu (ảnh sản phẩm, câu hỏi, câu trả lời): loại sản phẩm, màu, chất liệu, kích thước ước lượng, có phù hợp phòng nhỏ không. Dùng ảnh của bạn hoặc ảnh có giấy phép.</li>
+<li>Tạo 100 câu hỏi test tách riêng, có đáp án.</li>
+<li><strong>Baseline:</strong> VLM nhỏ (2–3 tỉ tham số) zero-shot trên tập test, chấm bằng so khớp trường JSON và LLM-as-judge.</li>
+<li>Fine-tune bằng LoRA trên phần LLM (đóng băng vision encoder), 2–3 epoch, nạp 4 bit nếu thiếu bộ nhớ.</li>
+<li>Đánh giá lại trên cùng tập test, phân tích lỗi: sai màu, sai chất liệu, bịa thông tin không thấy trong ảnh.</li>
+</ol>
+<p><strong>Xong khi</strong></p>
+<ul>
+<li>Độ chính xác trên 100 câu hỏi test tăng rõ so với trước fine-tune.</li>
+<li>Có phân loại lỗi và ví dụ cho từng loại.</li>
+</ul></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p7.2:p">Tôi đã xong phần thực hành</label></div></section>
+      <div class="donewhen"><b>Xong bài khi</b>Độ chính xác trên 100 câu hỏi tự tạo tăng rõ so với trước fine-tune.</div>
       <nav class="pn" aria-label="Bài trước, bài sau"><a href="p7-1.html"><span class="dir">← Bài trước · P7.1</span><span class="tt">Bài 9 · ViT và CLIP</span></a><a class="nx" href="p7-3.html"><span class="dir">Bài sau · P7.3 →</span><span class="tt">Video và embodied AI (nâng cao)</span></a></nav>
     </div>
     <aside class="aside">
       <div class="abox"><h4>Tiến độ bài này</h4><div class="ring"><svg viewBox="0 0 64 64" aria-hidden="true"><circle class="bg" cx="32" cy="32" r="28"/><circle class="fg" cx="32" cy="32" r="28" stroke-dasharray="176" stroke-dashoffset="176"/></svg><div><b id="ring-n">0/3</b><span id="ring-sub">phần đã xong</span></div></div></div>
+      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Kiến trúc kiểu LLaVA</a></li><li><a href="#lt-2">Train một VLM</a></li><li><a href="#lt-3">Độ phân giải và số token ảnh</a></li><li><a href="#lt-4">VLM so với OCR truyền thống</a></li></ol></div>
       
       <div class="abox"><h4>Cùng giai đoạn</h4><ul><li><a href="p7-1.html">Bài 9 · ViT và CLIP</a></li><li><span class=cur>Vision-language model</span></li><li><a href="p7-3.html">Video và embodied AI (nâng cao)</a></li></ul></div>
     </aside>
@@ -43,16 +157,75 @@
 
 (function () {
   const mid = document.body.dataset.mid; let d = AIE.load();
+  const EXK = "aie-ex-" + mid;
+  let solved = {}; try { solved = JSON.parse(localStorage.getItem(EXK) || "{}") || {}; } catch (e) {}
+  const saveSolved = () => { try { localStorage.setItem(EXK, JSON.stringify(solved)); } catch (e) {} };
+  const tabs = [...document.querySelectorAll(".tab")], panels = [...document.querySelectorAll(".panel")];
   const boxes = [...document.querySelectorAll("input[data-key]")], ring = document.querySelector(".ring .fg"), rt = document.getElementById("ring-n");
-  const skipped = () => !!d[mid + ":skip"];
+  const toc = document.getElementById("toc-box");
+  function show(id, scroll) {
+    tabs.forEach((t) => t.setAttribute("aria-selected", String(t.dataset.tab === id)));
+    panels.forEach((p) => { const on = p.id === id; if (on && p.hidden) { p.classList.remove("enter"); void p.offsetWidth; p.classList.add("enter"); } p.hidden = !on; });
+    if (toc) toc.hidden = id !== "ly-thuyet";
+    if (scroll) document.querySelector(".tabs").scrollIntoView({ block: "start" });
+  }
+  tabs.forEach((t) => t.addEventListener("click", () => { history.replaceState(null, "", "#" + t.dataset.tab); show(t.dataset.tab, true); }));
+  document.querySelectorAll("[data-goto]").forEach((b) => b.addEventListener("click", () => { history.replaceState(null, "", "#" + b.dataset.goto); show(b.dataset.goto, true); }));
+  const start = ["ly-thuyet", "bai-tap", "thuc-hanh"].includes(location.hash.slice(1)) ? location.hash.slice(1) : "ly-thuyet";
+  show(start, false);
+  window.addEventListener("hashchange", () => { const h = location.hash.slice(1); if (["ly-thuyet", "bai-tap", "thuc-hanh"].includes(h)) show(h, true); });
+  document.querySelectorAll(".toc a").forEach((a) => a.addEventListener("click", () => show("ly-thuyet", false)));
+
   function render() {
     let n = 0;
-    boxes.forEach((b) => { const on = skipped() || !!d[b.dataset.key]; b.checked = on; b.disabled = skipped(); b.closest(".pblock").classList.toggle("done", on); if (on) n++; });
+    const skip = !!d[mid + ":skip"];
+    boxes.forEach((b) => { const on = skip || !!d[b.dataset.key]; b.checked = on; if (on) n++; });
+    const kmap = { t: "ly-thuyet", b: "bai-tap", p: "thuc-hanh" };
+    tabs.forEach((t) => { const k = Object.keys(kmap).find((x) => kmap[x] === t.dataset.tab); t.classList.toggle("is-done", skip || !!d[mid + ":" + k]); });
     ring.style.strokeDashoffset = String(176 * (1 - n / 3)); rt.textContent = n + "/3";
-    document.getElementById("ring-sub").textContent = skipped() ? "đã đánh dấu bỏ qua" : n === 3 ? "hoàn thành bài này" : "phần đã xong";
+    document.getElementById("ring-sub").textContent = n === 3 ? "hoàn thành bài này" : "phần đã xong";
   }
-  boxes.forEach((b) => b.addEventListener("change", () => { d = AIE.load(); if (b.checked) d[b.dataset.key] = true; else delete d[b.dataset.key]; AIE.save(d); render(); }));
+  boxes.forEach((b) => b.addEventListener("change", () => {
+    d = AIE.load(); if (b.checked) d[b.dataset.key] = true; else delete d[b.dataset.key]; AIE.save(d);
+    boxes.filter((x) => x.dataset.key === b.dataset.key).forEach((x) => (x.checked = b.checked)); render();
+  }));
   render();
+
+  /* answer boxes */
+  const parse = (s) => parseFloat(String(s).trim().replace(",", ".").replace("−", "-"));
+  const allAns = [...document.querySelectorAll(".ans")];
+  function score() {
+    const ok = allAns.filter((a) => solved[a.id]).length;
+    const el = document.getElementById("ex-score");
+    if (el) { el.querySelector("b").textContent = `${ok} / ${allAns.length}`; el.querySelector(".bar i").style.width = (allAns.length ? ok / allAns.length * 100 : 0) + "%"; }
+    document.querySelectorAll(".excard").forEach((c) => { const as = [...c.querySelectorAll(".ans")]; c.classList.toggle("solved", as.length > 0 && as.every((a) => solved[a.id])); });
+  }
+  allAns.forEach((box) => {
+    const inputs = [...box.querySelectorAll("input")], fb = box.querySelector(".ans-fb");
+    const mark = () => { box.classList.add("ok"); inputs.forEach((i) => { i.classList.add("ok"); if (!i.value) i.value = i.dataset.ans; }); fb.className = "ans-fb ok"; fb.textContent = "Chính xác."; };
+    if (solved[box.id]) mark();
+    const run = () => {
+      let all = true, empty = false;
+      inputs.forEach((i) => {
+        const v = parse(i.value);
+        if (i.value.trim() === "" || Number.isNaN(v)) { empty = true; all = false; i.classList.remove("ok", "bad"); return; }
+        const good = Math.abs(v - parseFloat(i.dataset.ans)) <= parseFloat(i.dataset.tol) + 1e-9;
+        i.classList.toggle("ok", good); i.classList.toggle("bad", !good); if (!good) all = false;
+      });
+      if (all) { solved[box.id] = true; saveSolved(); mark(); box.classList.remove("pop"); void box.offsetWidth; box.classList.add("pop"); score(); }
+      else { fb.className = "ans-fb bad"; fb.textContent = empty ? "Điền đủ các ô bằng số (dấu chấm hoặc phẩy đều được)." : "Ô màu cam chưa đúng. Xem lại bước đó, hoặc mở gợi ý."; }
+    };
+    box.querySelector(".btn-check").addEventListener("click", run);
+    inputs.forEach((i) => i.addEventListener("keydown", (e) => { if (e.key === "Enter") run(); }));
+  });
+  score();
+
+  /* highlight current theory section in the toc */
+  if (toc && "IntersectionObserver" in window) {
+    const links = [...toc.querySelectorAll("a")];
+    const io = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) links.forEach((a) => a.classList.toggle("on", a.getAttribute("href") === "#" + e.target.id)); }), { rootMargin: "-140px 0px -65% 0px" });
+    document.querySelectorAll("#ly-thuyet h2[id]").forEach((h) => io.observe(h));
+  }
 })();
 
 </script>

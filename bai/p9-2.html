@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>P9.2 · Train ở quy mô lớn · AI Engineer</title>
-<meta name="description" content="Train ở quy mô lớn: Mixed precision, gradient accumulation, gradient checkpointing; DDP, FSDP, DeepSpeed ZeRO; Scaling law, trộn dữ liệu">
+<meta name="description" content="Train ở quy mô lớn: lý thuyết, bài tập và thực hành. Mixed precision, gradient accumulation, gradient checkpointing; DDP, FSDP, DeepSpeed ZeRO">
 <meta property="og:title" content="P9.2 · Train ở quy mô lớn · AI Engineer">
-<meta property="og:description" content="Train ở quy mô lớn: Mixed precision, gradient accumulation, gradient checkpointing; DDP, FSDP, DeepSpeed ZeRO; Scaling law, trộn dữ liệu">
+<meta property="og:description" content="Train ở quy mô lớn: lý thuyết, bài tập và thực hành. Mixed precision, gradient accumulation, gradient checkpointing; DDP, FSDP, DeepSpeed ZeRO">
 <meta name="theme-color" content="#F4F6FB">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23131A33'/%3E%3Cpath d='M9 22 L16 10 L23 19' stroke='%23E5E9FB' stroke-width='2' fill='none'/%3E%3Ccircle cx='9' cy='22' r='3' fill='%23E5E9FB'/%3E%3Ccircle cx='16' cy='10' r='3' fill='%23E5E9FB'/%3E%3Ccircle cx='23' cy='19' r='3' fill='%23FF9361'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -14,23 +14,180 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="../assets/chrome.css">
 <link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/lesson.css">
 </head>
 <body data-mid="p9.2">
 <header class="sh"><div class="sh-in"><a class="sh-brand" href="../index.html"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="var(--ink)"/><circle cx="9" cy="22" r="2.6" fill="var(--accent-soft)"/><circle cx="16" cy="10" r="2.6" fill="var(--accent-soft)"/><circle cx="23" cy="19" r="2.6" fill="#FF9361"/><path d="M9 22 L16 10 L23 19" stroke="var(--accent-soft)" stroke-width="1.8" fill="none"/></svg><span>AI Engineer<small>lộ trình tự học</small></span></a><nav class="sh-nav" id="sh-nav" aria-label="Chính"><a href="../index.html">Trang chủ</a><a href="../bai-hoc.html" aria-current="page">Bài học</a><a href="../lo-trinh.html">Lộ trình</a><a href="../notebooks.html">Notebook</a><a class="sh-cta-m" href="../bai01.html" data-next-lesson>Học tiếp →</a></nav><a class="sh-cta" href="../bai01.html" data-next-lesson>Học tiếp <span class="arr">→</span></a><button class="sh-burger" type="button" aria-expanded="false" aria-controls="sh-nav">Menu</button></div></header>
 
 <main class="container">
   <div class="crumbs"><a href="../bai-hoc.html">Bài học</a><span>/</span><a href="../bai-hoc.html#p9">P9 · Nâng cao và nghiên cứu</a><span>/</span><span>P9.2</span></div>
-  <section class="lhero"><div class="code">P9.2</div><h1>Train ở quy mô lớn</h1><div class="lmeta"><span class="m">Giai đoạn P9 · Nâng cao và nghiên cứu</span><span class="m">Tuần 40–45</span><span class="chip planned">Đề cương</span></div></section>
-  <div class="lgrid">
-    <div>
-      <div class="goal"><b>Mục tiêu giai đoạn:</b> Đọc, hiểu và tái hiện được paper; nắm cách train ở quy mô lớn. Hợp với hướng nghiên cứu bạn quan tâm.</div>
-      <div class="soon">Nội dung đầy đủ (trang lý thuyết tương tác và notebook tự chấm) đang được soạn và sẽ có khi bạn học tới bài này. Đề cương dưới đây là phạm vi chính xác của bài.</div>
-      <section class="pblock reveal"><div class="pblock-head"><span class="num">1</span><h2>Lý thuyết<span style="display:block;font:400 13.5px var(--f-body);color:var(--muted);margin-top:4px">Những gì cần hiểu</span></h2><label class="tick" for="cb-t"><input type="checkbox" id="cb-t" data-key="p9.2:t">Xong</label></div><ol><li>Mixed precision, gradient accumulation, gradient checkpointing</li><li>DDP, FSDP, DeepSpeed ZeRO</li><li>Scaling law, trộn dữ liệu</li></ol></section><section class="pblock reveal"><div class="pblock-head"><span class="num">2</span><h2>Bài tập<span style="display:block;font:400 13.5px var(--f-body);color:var(--muted);margin-top:4px">Tính tay và tự kiểm tra</span></h2><label class="tick" for="cb-b"><input type="checkbox" id="cb-b" data-key="p9.2:b">Xong</label></div><ol><li>Tính bộ nhớ cho tham số, gradient, optimizer state của model 1B với Adam</li></ol></section><section class="pblock reveal"><div class="pblock-head"><span class="num">3</span><h2>Thực hành<span style="display:block;font:400 13.5px var(--f-body);color:var(--muted);margin-top:4px">Code và dự án</span></h2><label class="tick" for="cb-p"><input type="checkbox" id="cb-p" data-key="p9.2:p">Xong</label></div><ol><li>Train mini-GPT ở 3.3 trên 2 GPU (Kaggle 2×T4) bằng DDP</li></ol></section>
-      <div class="donewhen reveal"><b>Xong khi</b>Thông lượng gần gấp đôi so với 1 GPU, loss trùng với bản 1 GPU.</div>
+  <section class="lhero"><div class="code">P9.2</div><h1>Train ở quy mô lớn</h1><div class="lmeta"><span class="m">Giai đoạn P9 · Nâng cao và nghiên cứu</span><span class="m">Tuần 40–45</span><span class="chip ready"><span class="dot"></span>Có nội dung đầy đủ</span></div>
+    <div class="intro"><p>Mọi model bạn đã train đều vừa một GPU. LLM thật có hàng tỉ tham số, train trên hàng nghìn GPU trong nhiều tuần. Bài này dạy các kỹ thuật cho phép train lớn hơn bộ nhớ một GPU và nhanh hơn nhờ nhiều GPU: mixed precision, gradient accumulation, gradient checkpointing, DDP, FSDP/ZeRO, và cách lập kế hoạch tính toán bằng scaling law.</p></div></section>
+  
+  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">5 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
+  <div class="lgrid" style="margin-top:22px">
+    <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">Bộ nhớ khi train đi đâu</h2>
+<p>Với Adam và mixed precision, mỗi tham số tốn khoảng <strong>16 byte</strong> cho trạng thái train:</p>
+<table>
+<thead>
+<tr>
+<th>Thành phần</th>
+<th>Byte/tham số</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Trọng số bf16/fp16</td>
+<td>2</td>
+</tr>
+<tr>
+<td>Gradient bf16/fp16</td>
+<td>2</td>
+</tr>
+<tr>
+<td>Bản trọng số chính fp32</td>
+<td>4</td>
+</tr>
+<tr>
+<td>Adam: m và v (fp32)</td>
+<td>8</td>
+</tr>
+</tbody>
+</table>
+<p>Cộng thêm <strong>activation</strong> (kết quả trung gian của forward, lưu để backward), tỉ lệ với batch × độ dài chuỗi × số lớp. Model 1 tỉ tham số cần khoảng 16 GB chỉ cho trạng thái, chưa tính activation.</p>
+<h2 id="lt-2">Ba kỹ thuật trên một GPU</h2>
+<ul>
+<li><strong>Mixed precision (bf16):</strong> tính forward/backward ở 16 bit, nhanh hơn và giảm activation. Đã học ở P2.3.</li>
+<li><strong>Gradient accumulation:</strong> muốn batch 128 nhưng chỉ vừa 16? Chạy 8 lần forward/backward, cộng dồn gradient, rồi mới <code>optimizer.step()</code>. Batch hiệu dụng = batch mỗi bước × số bước tích lũy × số GPU.</li>
+<li><strong>Gradient checkpointing:</strong> không lưu mọi activation, chỉ lưu một số điểm; khi backward thì tính lại phần thiếu. Giảm mạnh bộ nhớ activation, đổi lại chậm hơn khoảng 20–30%.</li>
+</ul>
+<h2 id="lt-3">Song song dữ liệu: DDP</h2>
+<p><strong>DistributedDataParallel:</strong> mỗi GPU giữ một bản sao đầy đủ của model, xử lý một phần batch khác nhau; sau backward, gradient được <strong>trung bình</strong> giữa các GPU (all-reduce) nên mọi bản sao cập nhật giống hệt nhau. Thông lượng tăng gần tuyến tính theo số GPU. Hạn chế: model phải vừa bộ nhớ một GPU.</p>
+<div class="hl"><pre><span></span><code>torchrun<span class="w"> </span>--nproc_per_node<span class="o">=</span><span class="m">2</span><span class="w"> </span>train_ddp.py<span class="w">      </span><span class="c1"># 2 GPU trên một máy</span>
+</code></pre></div>
+
+<h2 id="lt-4">Chia nhỏ trạng thái: ZeRO và FSDP</h2>
+<p>Khi model không vừa một GPU, chia trạng thái ra các GPU thay vì sao chép:</p>
+<table>
+<thead>
+<tr>
+<th>Mức (ZeRO)</th>
+<th>Chia giữa các GPU</th>
+<th>Bộ nhớ trạng thái mỗi GPU (N GPU)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Stage 1</td>
+<td>trạng thái optimizer</td>
+<td>giảm phần Adam đi N lần</td>
+</tr>
+<tr>
+<td>Stage 2</td>
+<td>+ gradient</td>
+<td></td>
+</tr>
+<tr>
+<td>Stage 3 / FSDP</td>
+<td>+ chính trọng số</td>
+<td>khoảng 16·P / N byte</td>
+</tr>
+</tbody>
+</table>
+<p>Với Stage 3/FSDP, mỗi lớp được gom đủ trọng số ngay trước khi dùng rồi giải phóng. Tốn thêm băng thông giữa các GPU để đổi lấy khả năng train model lớn hơn nhiều lần. Ngoài ra còn <strong>tensor parallel</strong> (chia từng ma trận) và <strong>pipeline parallel</strong> (chia các lớp) cho model rất lớn.</p>
+<h2 id="lt-5">Scaling law và lập kế hoạch tính toán</h2>
+<ul>
+<li><strong>Chi phí train</strong> ≈ 6 · N · D phép tính (N: số tham số, D: số token).</li>
+<li>Nghiên cứu <strong>Chinchilla</strong> cho thấy với một ngân sách tính toán cố định, tối ưu là khoảng <strong>20 token cho mỗi tham số</strong>. Model 1B nên train khoảng 20B token.</li>
+<li>Thực tế nhiều model nhỏ được train <strong>vượt xa</strong> tỉ lệ đó, vì model nhỏ rẻ khi chạy suy luận; train lâu hơn bù lại.</li>
+<li>Chất lượng và tỉ lệ trộn dữ liệu (code, sách, web, tiếng Việt) ảnh hưởng mạnh như kích thước.</li>
+</ul>
+<div class="keep">
+<p><strong>Ghi nhớ:</strong> trước khi train lớn, tính bộ nhớ và số phép tính trên giấy. Thử chạy vài trăm bước ở quy mô nhỏ để đo thông lượng thật, rồi mới ước tính thời gian và chi phí.</p>
+</div></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p9.2:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 3</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Batch hiệu dụng</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>8 mẫu mỗi GPU mỗi bước, 4 GPU, tích lũy gradient 4 bước.</p>
+<div class="ans" id="p9-2-e1-a1"><div class="ans-fields"><label>Batch hiệu dụng<input inputmode="decimal" data-ans="128.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+
+<details class="fold solution">
+<summary>Lời giải</summary>
+<p>8 × 4 × 4 = 128. Muốn giữ batch hiệu dụng khi đổi số GPU, đổi số bước tích lũy tương ứng.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 2</span><h3>Bộ nhớ trạng thái</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Model 1 tỉ tham số, 16 byte mỗi tham số (1 GB = 10⁹ byte).</p>
+<div class="ans" id="p9-2-e2-a1"><div class="ans-fields"><label>Một GPU (GB)<input inputmode="decimal" data-ans="16.0" data-tol="0.001" autocomplete="off"></label><label>Chia đều bằng ZeRO-3 trên 8 GPU (GB)<input inputmode="decimal" data-ans="2.0" data-tol="0.001" autocomplete="off"></label><label>Model 7 tỉ với ZeRO-3 trên 8 GPU (GB mỗi GPU)<input inputmode="decimal" data-ans="14.0" data-tol="0.001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+
+<details class="fold solution">
+<summary>Lời giải</summary>
+<p>16 GB không vừa GPU 16 GB khi cộng activation. ZeRO-3 trên 8 GPU: 2 GB mỗi GPU. Model 7B: 112 GB tổng, 14 GB mỗi GPU, vừa GPU 24–40 GB với activation và checkpointing.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 3</span><h3>Chinchilla</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Model 1 tỉ tham số theo tỉ lệ 20 token/tham số.</p>
+<div class="ans" id="p9-2-e3-a1"><div class="ans-fields"><label>Số token (tỉ)<input inputmode="decimal" data-ans="20.0" data-tol="0.001" autocomplete="off"></label><label>Số phép tính 6ND<input inputmode="decimal" data-ans="1.2e+20" data-tol="1e+18" autocomplete="off"></label><label>Số ngày trên 1 GPU đạt 100 TFLOP/s thực tế<input inputmode="decimal" data-ans="13.89" data-tol="0.01" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+
+<details class="fold solution">
+<summary>Lời giải</summary>
+<p>20 tỉ token, 6 × 10⁹ × 2·10¹⁰ = 1,2·10²⁰ phép tính. Với 10¹⁴ phép/giây: 1,2·10⁶ giây ≈ 13,9 ngày. Trên 8 GPU với hiệu suất song song tốt, khoảng 2 ngày.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 4</span><h3>Chọn chiến lược</h3><span class="ex-tag concept">khái niệm</span></div><div class="prose"><p>Chọn kỹ thuật cho từng trường hợp:</p>
+<ol>
+<li>Model 300M vừa một GPU, muốn train nhanh hơn, có 4 GPU.</li>
+<li>Fine-tune toàn bộ model 7B, có 4 GPU 24 GB.</li>
+<li>Model vừa GPU nhưng batch tối đa chỉ được 4 vì chuỗi dài 8K token.</li>
+</ol>
+<details class="fold solution">
+<summary>Lời giải</summary>
+<ol>
+<li>DDP: model vừa, nhân thông lượng. 2. FSDP/ZeRO-3 (cộng bf16, gradient checkpointing): 7B × 16 byte = 112 GB phải chia; hoặc cân nhắc LoRA nếu không cần full fine-tune. 3. Gradient checkpointing để giảm activation, gradient accumulation để đạt batch hiệu dụng mong muốn, FlashAttention.</li>
+</ol>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 5</span><h3>Train DDP</h3><span class="ex-tag code">code</span></div><div class="prose"><p>Viết script train tối giản với DDP: khởi tạo process group, <code>DistributedSampler</code>, bọc model bằng <code>DDP</code>, chỉ rank 0 in log và lưu checkpoint. Chạy bằng <code>torchrun</code>.</p>
+<details class="fold code">
+<summary>Code tham khảo</summary>
+<div class="hl"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">os</span><span class="o">,</span><span class="w"> </span><span class="nn">torch</span><span class="o">,</span><span class="w"> </span><span class="nn">torch.distributed</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">dist</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">torch.nn.parallel</span><span class="w"> </span><span class="kn">import</span> <span class="n">DistributedDataParallel</span> <span class="k">as</span> <span class="n">DDP</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">torch.utils.data</span><span class="w"> </span><span class="kn">import</span> <span class="n">DataLoader</span><span class="p">,</span> <span class="n">DistributedSampler</span><span class="p">,</span> <span class="n">TensorDataset</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span>
+    <span class="n">dist</span><span class="o">.</span><span class="n">init_process_group</span><span class="p">(</span><span class="s2">"nccl"</span><span class="p">)</span>
+    <span class="n">rank</span><span class="p">,</span> <span class="n">local</span> <span class="o">=</span> <span class="n">dist</span><span class="o">.</span><span class="n">get_rank</span><span class="p">(),</span> <span class="nb">int</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">"LOCAL_RANK"</span><span class="p">])</span>
+    <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">set_device</span><span class="p">(</span><span class="n">local</span><span class="p">)</span>
+    <span class="n">ds</span> <span class="o">=</span> <span class="n">TensorDataset</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">10000</span><span class="p">,</span> <span class="mi">128</span><span class="p">),</span> <span class="n">torch</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="p">(</span><span class="mi">10000</span><span class="p">,)))</span>
+    <span class="n">sampler</span> <span class="o">=</span> <span class="n">DistributedSampler</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">dl</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">sampler</span><span class="o">=</span><span class="n">sampler</span><span class="p">)</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">DDP</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="mi">256</span><span class="p">),</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(),</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">256</span><span class="p">,</span> <span class="mi">10</span><span class="p">))</span><span class="o">.</span><span class="n">cuda</span><span class="p">(),</span> <span class="n">device_ids</span><span class="o">=</span><span class="p">[</span><span class="n">local</span><span class="p">])</span>
+    <span class="n">opt</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">AdamW</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="mf">1e-3</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
+        <span class="n">sampler</span><span class="o">.</span><span class="n">set_epoch</span><span class="p">(</span><span class="n">epoch</span><span class="p">)</span>                       <span class="c1"># xáo khác nhau mỗi epoch</span>
+        <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">dl</span><span class="p">:</span>
+            <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">cuda</span><span class="p">(),</span> <span class="n">y</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span>
+            <span class="n">loss</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">functional</span><span class="o">.</span><span class="n">cross_entropy</span><span class="p">(</span><span class="n">model</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">y</span><span class="p">)</span>
+            <span class="n">opt</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">();</span> <span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">();</span> <span class="n">opt</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>   <span class="c1"># all-reduce gradient tự động</span>
+        <span class="k">if</span> <span class="n">rank</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">epoch</span><span class="p">,</span> <span class="n">loss</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">module</span><span class="o">.</span><span class="n">state_dict</span><span class="p">(),</span> <span class="s2">"ckpt.pt"</span><span class="p">)</span>
+    <span class="n">dist</span><span class="o">.</span><span class="n">destroy_process_group</span><span class="p">()</span>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">"__main__"</span><span class="p">:</span>
+    <span class="n">main</span><span class="p">()</span>
+<span class="c1"># chạy: torchrun --nproc_per_node=2 train_ddp.py</span>
+</code></pre></div>
+
+</details></div></article><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p9.2:b">Tôi đã xong phần bài tập</label><button class="btn" type="button" data-goto="thuc-hanh">Sang thực hành <span class="arr">→</span></button></div></section><section class="panel" id="thuc-hanh" role="tabpanel" hidden><div class="prose"><h2>Train mini-GPT trên 2 GPU</h2>
+<p>Dùng Kaggle Notebook (có lựa chọn 2 GPU T4) và mini-GPT của Lab 3.</p>
+<p><strong>Các bước</strong></p>
+<ol>
+<li>Chuyển code Lab 3 thành script, thêm mixed precision (fp16 trên T4) và gradient accumulation.</li>
+<li>Đo thông lượng (token/giây) và loss trên 1 GPU, 500 bước.</li>
+<li>Chuyển sang DDP với <code>torchrun --nproc_per_node=2</code>, giữ nguyên batch hiệu dụng (giảm tích lũy một nửa). Đo lại.</li>
+<li>Bật gradient checkpointing, đo bộ nhớ đỉnh và thông lượng.</li>
+<li>Tăng model gấp đôi số lớp: nếu không vừa, dùng FSDP và ghi lại cấu hình.</li>
+<li>Vẽ đường loss của 1 GPU và 2 GPU theo số token đã thấy (phải gần trùng nhau).</li>
+</ol>
+<p><strong>Xong khi</strong></p>
+<ul>
+<li>Thông lượng 2 GPU gần gấp đôi 1 GPU.</li>
+<li>Đường loss theo số token của hai cấu hình gần trùng nhau.</li>
+<li>Bảng: cấu hình, bộ nhớ đỉnh, token/giây.</li>
+</ul></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p9.2:p">Tôi đã xong phần thực hành</label></div></section>
+      <div class="donewhen"><b>Xong bài khi</b>Thông lượng gần gấp đôi so với 1 GPU, loss trùng với bản 1 GPU.</div>
       <nav class="pn" aria-label="Bài trước, bài sau"><a href="p9-1.html"><span class="dir">← Bài trước · P9.1</span><span class="tt">Đọc và tái hiện paper</span></a><a class="nx" href="p9-3.html"><span class="dir">Bài sau · P9.3 →</span><span class="tt">Kiến trúc và hướng mới</span></a></nav>
     </div>
     <aside class="aside">
       <div class="abox"><h4>Tiến độ bài này</h4><div class="ring"><svg viewBox="0 0 64 64" aria-hidden="true"><circle class="bg" cx="32" cy="32" r="28"/><circle class="fg" cx="32" cy="32" r="28" stroke-dasharray="176" stroke-dashoffset="176"/></svg><div><b id="ring-n">0/3</b><span id="ring-sub">phần đã xong</span></div></div></div>
+      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Bộ nhớ khi train đi đâu</a></li><li><a href="#lt-2">Ba kỹ thuật trên một GPU</a></li><li><a href="#lt-3">Song song dữ liệu: DDP</a></li><li><a href="#lt-4">Chia nhỏ trạng thái: ZeRO và FSDP</a></li><li><a href="#lt-5">Scaling law và lập kế hoạch tính toán</a></li></ol></div>
       
       <div class="abox"><h4>Cùng giai đoạn</h4><ul><li><a href="p9-1.html">Đọc và tái hiện paper</a></li><li><span class=cur>Train ở quy mô lớn</span></li><li><a href="p9-3.html">Kiến trúc và hướng mới</a></li></ul></div>
     </aside>
@@ -43,16 +200,75 @@
 
 (function () {
   const mid = document.body.dataset.mid; let d = AIE.load();
+  const EXK = "aie-ex-" + mid;
+  let solved = {}; try { solved = JSON.parse(localStorage.getItem(EXK) || "{}") || {}; } catch (e) {}
+  const saveSolved = () => { try { localStorage.setItem(EXK, JSON.stringify(solved)); } catch (e) {} };
+  const tabs = [...document.querySelectorAll(".tab")], panels = [...document.querySelectorAll(".panel")];
   const boxes = [...document.querySelectorAll("input[data-key]")], ring = document.querySelector(".ring .fg"), rt = document.getElementById("ring-n");
-  const skipped = () => !!d[mid + ":skip"];
+  const toc = document.getElementById("toc-box");
+  function show(id, scroll) {
+    tabs.forEach((t) => t.setAttribute("aria-selected", String(t.dataset.tab === id)));
+    panels.forEach((p) => { const on = p.id === id; if (on && p.hidden) { p.classList.remove("enter"); void p.offsetWidth; p.classList.add("enter"); } p.hidden = !on; });
+    if (toc) toc.hidden = id !== "ly-thuyet";
+    if (scroll) document.querySelector(".tabs").scrollIntoView({ block: "start" });
+  }
+  tabs.forEach((t) => t.addEventListener("click", () => { history.replaceState(null, "", "#" + t.dataset.tab); show(t.dataset.tab, true); }));
+  document.querySelectorAll("[data-goto]").forEach((b) => b.addEventListener("click", () => { history.replaceState(null, "", "#" + b.dataset.goto); show(b.dataset.goto, true); }));
+  const start = ["ly-thuyet", "bai-tap", "thuc-hanh"].includes(location.hash.slice(1)) ? location.hash.slice(1) : "ly-thuyet";
+  show(start, false);
+  window.addEventListener("hashchange", () => { const h = location.hash.slice(1); if (["ly-thuyet", "bai-tap", "thuc-hanh"].includes(h)) show(h, true); });
+  document.querySelectorAll(".toc a").forEach((a) => a.addEventListener("click", () => show("ly-thuyet", false)));
+
   function render() {
     let n = 0;
-    boxes.forEach((b) => { const on = skipped() || !!d[b.dataset.key]; b.checked = on; b.disabled = skipped(); b.closest(".pblock").classList.toggle("done", on); if (on) n++; });
+    const skip = !!d[mid + ":skip"];
+    boxes.forEach((b) => { const on = skip || !!d[b.dataset.key]; b.checked = on; if (on) n++; });
+    const kmap = { t: "ly-thuyet", b: "bai-tap", p: "thuc-hanh" };
+    tabs.forEach((t) => { const k = Object.keys(kmap).find((x) => kmap[x] === t.dataset.tab); t.classList.toggle("is-done", skip || !!d[mid + ":" + k]); });
     ring.style.strokeDashoffset = String(176 * (1 - n / 3)); rt.textContent = n + "/3";
-    document.getElementById("ring-sub").textContent = skipped() ? "đã đánh dấu bỏ qua" : n === 3 ? "hoàn thành bài này" : "phần đã xong";
+    document.getElementById("ring-sub").textContent = n === 3 ? "hoàn thành bài này" : "phần đã xong";
   }
-  boxes.forEach((b) => b.addEventListener("change", () => { d = AIE.load(); if (b.checked) d[b.dataset.key] = true; else delete d[b.dataset.key]; AIE.save(d); render(); }));
+  boxes.forEach((b) => b.addEventListener("change", () => {
+    d = AIE.load(); if (b.checked) d[b.dataset.key] = true; else delete d[b.dataset.key]; AIE.save(d);
+    boxes.filter((x) => x.dataset.key === b.dataset.key).forEach((x) => (x.checked = b.checked)); render();
+  }));
   render();
+
+  /* answer boxes */
+  const parse = (s) => parseFloat(String(s).trim().replace(",", ".").replace("−", "-"));
+  const allAns = [...document.querySelectorAll(".ans")];
+  function score() {
+    const ok = allAns.filter((a) => solved[a.id]).length;
+    const el = document.getElementById("ex-score");
+    if (el) { el.querySelector("b").textContent = `${ok} / ${allAns.length}`; el.querySelector(".bar i").style.width = (allAns.length ? ok / allAns.length * 100 : 0) + "%"; }
+    document.querySelectorAll(".excard").forEach((c) => { const as = [...c.querySelectorAll(".ans")]; c.classList.toggle("solved", as.length > 0 && as.every((a) => solved[a.id])); });
+  }
+  allAns.forEach((box) => {
+    const inputs = [...box.querySelectorAll("input")], fb = box.querySelector(".ans-fb");
+    const mark = () => { box.classList.add("ok"); inputs.forEach((i) => { i.classList.add("ok"); if (!i.value) i.value = i.dataset.ans; }); fb.className = "ans-fb ok"; fb.textContent = "Chính xác."; };
+    if (solved[box.id]) mark();
+    const run = () => {
+      let all = true, empty = false;
+      inputs.forEach((i) => {
+        const v = parse(i.value);
+        if (i.value.trim() === "" || Number.isNaN(v)) { empty = true; all = false; i.classList.remove("ok", "bad"); return; }
+        const good = Math.abs(v - parseFloat(i.dataset.ans)) <= parseFloat(i.dataset.tol) + 1e-9;
+        i.classList.toggle("ok", good); i.classList.toggle("bad", !good); if (!good) all = false;
+      });
+      if (all) { solved[box.id] = true; saveSolved(); mark(); box.classList.remove("pop"); void box.offsetWidth; box.classList.add("pop"); score(); }
+      else { fb.className = "ans-fb bad"; fb.textContent = empty ? "Điền đủ các ô bằng số (dấu chấm hoặc phẩy đều được)." : "Ô màu cam chưa đúng. Xem lại bước đó, hoặc mở gợi ý."; }
+    };
+    box.querySelector(".btn-check").addEventListener("click", run);
+    inputs.forEach((i) => i.addEventListener("keydown", (e) => { if (e.key === "Enter") run(); }));
+  });
+  score();
+
+  /* highlight current theory section in the toc */
+  if (toc && "IntersectionObserver" in window) {
+    const links = [...toc.querySelectorAll("a")];
+    const io = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) links.forEach((a) => a.classList.toggle("on", a.getAttribute("href") === "#" + e.target.id)); }), { rootMargin: "-140px 0px -65% 0px" });
+    document.querySelectorAll("#ly-thuyet h2[id]").forEach((h) => io.observe(h));
+  }
 })();
 
 </script>

@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>P8.2 · MLOps · AI Engineer</title>
-<meta name="description" content="MLOps: Theo dõi thí nghiệm (W&amp;B, MLflow); Quản lý phiên bản dữ liệu và model; CI/CD bằng GitHub Actions, chặn deploy khi eval tụt">
+<meta name="description" content="MLOps: lý thuyết, bài tập và thực hành. Theo dõi thí nghiệm (W&amp;B, MLflow); Quản lý phiên bản dữ liệu và model">
 <meta property="og:title" content="P8.2 · MLOps · AI Engineer">
-<meta property="og:description" content="MLOps: Theo dõi thí nghiệm (W&amp;B, MLflow); Quản lý phiên bản dữ liệu và model; CI/CD bằng GitHub Actions, chặn deploy khi eval tụt">
+<meta property="og:description" content="MLOps: lý thuyết, bài tập và thực hành. Theo dõi thí nghiệm (W&amp;B, MLflow); Quản lý phiên bản dữ liệu và model">
 <meta name="theme-color" content="#F4F6FB">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23131A33'/%3E%3Cpath d='M9 22 L16 10 L23 19' stroke='%23E5E9FB' stroke-width='2' fill='none'/%3E%3Ccircle cx='9' cy='22' r='3' fill='%23E5E9FB'/%3E%3Ccircle cx='16' cy='10' r='3' fill='%23E5E9FB'/%3E%3Ccircle cx='23' cy='19' r='3' fill='%23FF9361'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -14,23 +14,139 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="../assets/chrome.css">
 <link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/lesson.css">
 </head>
 <body data-mid="p8.2">
 <header class="sh"><div class="sh-in"><a class="sh-brand" href="../index.html"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="var(--ink)"/><circle cx="9" cy="22" r="2.6" fill="var(--accent-soft)"/><circle cx="16" cy="10" r="2.6" fill="var(--accent-soft)"/><circle cx="23" cy="19" r="2.6" fill="#FF9361"/><path d="M9 22 L16 10 L23 19" stroke="var(--accent-soft)" stroke-width="1.8" fill="none"/></svg><span>AI Engineer<small>lộ trình tự học</small></span></a><nav class="sh-nav" id="sh-nav" aria-label="Chính"><a href="../index.html">Trang chủ</a><a href="../bai-hoc.html" aria-current="page">Bài học</a><a href="../lo-trinh.html">Lộ trình</a><a href="../notebooks.html">Notebook</a><a class="sh-cta-m" href="../bai01.html" data-next-lesson>Học tiếp →</a></nav><a class="sh-cta" href="../bai01.html" data-next-lesson>Học tiếp <span class="arr">→</span></a><button class="sh-burger" type="button" aria-expanded="false" aria-controls="sh-nav">Menu</button></div></header>
 
 <main class="container">
   <div class="crumbs"><a href="../bai-hoc.html">Bài học</a><span>/</span><a href="../bai-hoc.html#p8">P8 · Production và MLOps</a><span>/</span><span>P8.2</span></div>
-  <section class="lhero"><div class="code">P8.2</div><h1>MLOps</h1><div class="lmeta"><span class="m">Giai đoạn P8 · Production và MLOps</span><span class="m">Tuần 35–39</span><span class="chip planned">Đề cương</span></div></section>
-  <div class="lgrid">
-    <div>
-      <div class="goal"><b>Mục tiêu giai đoạn:</b> Đưa model ra khỏi notebook: API, Docker, cloud, giám sát. Đây là thứ phân biệt người làm được việc thật.</div>
-      <div class="soon">Nội dung đầy đủ (trang lý thuyết tương tác và notebook tự chấm) đang được soạn và sẽ có khi bạn học tới bài này. Đề cương dưới đây là phạm vi chính xác của bài.</div>
-      <section class="pblock reveal"><div class="pblock-head"><span class="num">1</span><h2>Lý thuyết<span style="display:block;font:400 13.5px var(--f-body);color:var(--muted);margin-top:4px">Những gì cần hiểu</span></h2><label class="tick" for="cb-t"><input type="checkbox" id="cb-t" data-key="p8.2:t">Xong</label></div><ol><li>Theo dõi thí nghiệm (W&amp;B, MLflow)</li><li>Quản lý phiên bản dữ liệu và model</li><li>CI/CD bằng GitHub Actions, chặn deploy khi eval tụt</li><li>Tái lập kết quả: seed, config, lock phiên bản</li></ol></section><section class="pblock reveal"><div class="pblock-head"><span class="num">2</span><h2>Bài tập<span style="display:block;font:400 13.5px var(--f-body);color:var(--muted);margin-top:4px">Tính tay và tự kiểm tra</span></h2><label class="tick" for="cb-b"><input type="checkbox" id="cb-b" data-key="p8.2:b">Xong</label></div><ol><li>Viết workflow CI chạy test và eval cho mỗi pull request</li></ol></section><section class="pblock reveal"><div class="pblock-head"><span class="num">3</span><h2>Thực hành<span style="display:block;font:400 13.5px var(--f-body);color:var(--muted);margin-top:4px">Code và dự án</span></h2><label class="tick" for="cb-p"><input type="checkbox" id="cb-p" data-key="p8.2:p">Xong</label></div><ol><li>Pipeline train → eval → deploy tự động cho một model nhỏ</li></ol></section>
-      <div class="donewhen reveal"><b>Xong khi</b>Một pull request làm eval tụt bị CI chặn lại.</div>
+  <section class="lhero"><div class="code">P8.2</div><h1>MLOps</h1><div class="lmeta"><span class="m">Giai đoạn P8 · Production và MLOps</span><span class="m">Tuần 35–39</span><span class="chip ready"><span class="dot"></span>Có nội dung đầy đủ</span></div>
+    <div class="intro"><p>Sau vài tuần thí nghiệm, câu hỏi "model đang chạy được train từ dữ liệu nào, code nào, siêu tham số nào?" thường không ai trả lời được. <strong>MLOps</strong> là bộ thói quen và công cụ giúp mọi kết quả <strong>tái lập được</strong>, mọi thay đổi <strong>được kiểm tra tự động</strong>, và việc đưa model mới lên production an toàn. Bài này dạy theo dõi thí nghiệm, quản lý phiên bản dữ liệu và model, CI/CD có cổng chặn theo eval.</p></div></section>
+  
+  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">4 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
+  <div class="lgrid" style="margin-top:22px">
+    <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">Theo dõi thí nghiệm</h2>
+<p>Mỗi lần train, ghi lại tự động: commit code, config (siêu tham số), dữ liệu dùng, metric theo thời gian, artifact (model, biểu đồ), môi trường (phiên bản thư viện, GPU).</p>
+<div class="hl"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">wandb</span>
+<span class="n">run</span> <span class="o">=</span> <span class="n">wandb</span><span class="o">.</span><span class="n">init</span><span class="p">(</span><span class="n">project</span><span class="o">=</span><span class="s2">"lab08-extract"</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="p">{</span><span class="s2">"lr"</span><span class="p">:</span> <span class="mf">2e-4</span><span class="p">,</span> <span class="s2">"r"</span><span class="p">:</span> <span class="mi">16</span><span class="p">,</span> <span class="s2">"epochs"</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s2">"data"</span><span class="p">:</span> <span class="s2">"v3"</span><span class="p">})</span>
+<span class="k">for</span> <span class="n">step</span><span class="p">,</span> <span class="n">loss</span> <span class="ow">in</span> <span class="n">train</span><span class="p">():</span>
+    <span class="n">wandb</span><span class="o">.</span><span class="n">log</span><span class="p">({</span><span class="s2">"train/loss"</span><span class="p">:</span> <span class="n">loss</span><span class="p">},</span> <span class="n">step</span><span class="o">=</span><span class="n">step</span><span class="p">)</span>
+<span class="n">wandb</span><span class="o">.</span><span class="n">log</span><span class="p">({</span><span class="s2">"test/f1"</span><span class="p">:</span> <span class="n">f1</span><span class="p">})</span>
+<span class="n">run</span><span class="o">.</span><span class="n">finish</span><span class="p">()</span>
+</code></pre></div>
+
+<p><strong>Weights &amp; Biases</strong> (dịch vụ) và <strong>MLflow</strong> (tự host được) là hai lựa chọn phổ biến. Lợi ích lớn nhất: so sánh hàng chục lần chạy trên cùng biểu đồ và biết chính xác cấu hình của lần tốt nhất.</p>
+<h2 id="lt-2">Phiên bản dữ liệu và model</h2>
+<p>Git không hợp với file lớn. Các cách:</p>
+<ul>
+<li><strong>DVC:</strong> lưu file lớn ở kho ngoài (S3, Google Drive), git chỉ giữ một file nhỏ chứa mã hash. <code>git checkout</code> một commit cũ rồi <code>dvc pull</code> là có đúng dữ liệu của lúc đó.</li>
+<li><strong>Hugging Face Hub:</strong> dataset và model có phiên bản (mỗi lần đẩy là một commit), có model card.</li>
+<li><strong>Model registry</strong> (MLflow, W&amp;B): đánh dấu phiên bản model nào đang ở "staging", "production".</li>
+</ul>
+<h2 id="lt-3">Tái lập kết quả</h2>
+<ul>
+<li>Cố định <strong>seed</strong> (Python, numpy, torch) và ghi lại; với GPU vẫn có sai khác nhỏ, nên chạy 3 seed và báo trung bình.</li>
+<li><strong>Config ra file</strong> (YAML) thay vì sửa số trong code; mỗi lần chạy lưu kèm config.</li>
+<li><strong>Khóa phiên bản thư viện</strong> (<code>requirements.txt</code> có số phiên bản cụ thể, hoặc <code>uv.lock</code>), Docker image cho môi trường.</li>
+<li>Chia dữ liệu train/val/test <strong>một lần</strong>, lưu danh sách id, dùng lại cho mọi thí nghiệm.</li>
+</ul>
+<h2 id="lt-4">CI/CD cho hệ thống ML</h2>
+<p><strong>CI (continuous integration):</strong> mỗi pull request tự động chạy:</p>
+<ol>
+<li>Kiểm tra code: lint, unit test (hàm tiền xử lý, parser đầu ra).</li>
+<li><strong>Eval nhanh:</strong> chạy bộ eval nhỏ (50–100 mẫu) với prompt/model mới.</li>
+<li><strong>Cổng chặn:</strong> nếu metric tụt quá ngưỡng so với baseline đang chạy, CI báo đỏ, không cho merge.</li>
+</ol>
+<p><strong>CD (continuous delivery):</strong> khi merge vào main, tự build Docker image, deploy lên staging, chạy smoke test, rồi lên production (có thể dần dần: 10% lưu lượng trước).</p>
+<div class="keep">
+<p><strong>Ghi nhớ:</strong> với hệ thống LLM, thay đổi prompt cũng là thay đổi model. Prompt nằm trong git và đi qua cùng cổng eval như code.</p>
+</div></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p8.2:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 3</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Cổng chặn eval</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Model đang chạy có F1 0.82. Pull request mới đạt 0.80. Quy tắc: chặn nếu tụt quá 0.01.</p>
+<div class="ans" id="p8-2-e1-a1"><div class="ans-fields"><label>Mức tụt<input inputmode="decimal" data-ans="0.02" data-tol="0.0001" autocomplete="off"></label><label>CI cho qua? (1 = qua, 0 = chặn)<input inputmode="decimal" data-ans="0.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+
+<details class="fold solution">
+<summary>Lời giải</summary>
+<p>Tụt 0.02 &gt; 0.01 nên chặn. Nhưng nhớ bài P4.3: với 100 mẫu, sai số khoảng ±0.08, nên ngưỡng 0.01 trên bộ nhỏ có thể chặn nhầm. Cách tốt hơn: bộ eval lớn hơn, so theo cặp trên cùng mẫu, hoặc ngưỡng dựa trên khoảng tin cậy.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 2</span><h3>Dung lượng checkpoint</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>10 lần chạy, mỗi lần lưu 5 checkpoint, mỗi checkpoint 300 MB (1 GB = 1000 MB).</p>
+<div class="ans" id="p8-2-e2-a1"><div class="ans-fields"><label>Tổng dung lượng (GB)<input inputmode="decimal" data-ans="15.0" data-tol="0.001" autocomplete="off"></label><label>Nếu chỉ giữ checkpoint tốt nhất và cuối cùng (GB)<input inputmode="decimal" data-ans="6.0" data-tol="0.001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+
+<details class="fold solution">
+<summary>Lời giải</summary>
+<p>15 GB so với 6 GB. Quy tắc giữ checkpoint (best + last) và xóa lần chạy hỏng giúp kho lưu trữ không phình.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 3</span><h3>Trung bình nhiều seed</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Ba seed cho F1: 0.80, 0.84, 0.82. Dùng độ lệch chuẩn chia cho n.</p>
+<div class="ans" id="p8-2-e3-a1"><div class="ans-fields"><label>Trung bình<input inputmode="decimal" data-ans="0.82" data-tol="0.0001" autocomplete="off"></label><label>Độ lệch chuẩn<input inputmode="decimal" data-ans="0.0163" data-tol="0.0002" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+
+<details class="fold solution">
+<summary>Lời giải</summary>
+<p>Trung bình 0.82, độ lệch chuẩn khoảng 0.016. Một cải tiến 0.01 nhỏ hơn độ dao động giữa các seed: chưa đủ bằng chứng.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 4</span><h3>Tình huống không tái lập được</h3><span class="ex-tag concept">khái niệm</span></div><div class="prose"><p>Đồng nghiệp báo: "Tuần trước model đạt 0.86, giờ chạy lại cùng notebook chỉ được 0.81." Liệt kê 5 nguyên nhân có thể và cách phòng mỗi cái.</p>
+<details class="fold solution">
+<summary>Lời giải</summary>
+<ol>
+<li>Dữ liệu đã đổi (ai đó cập nhật file): DVC/Hub có phiên bản. 2. Thư viện cập nhật: khóa phiên bản, Docker. 3. Seed khác hoặc không cố định: ghi seed, chạy nhiều seed. 4. Chia train/test lại ngẫu nhiên: lưu danh sách id cố định. 5. Code notebook chạy không theo thứ tự hoặc biến cũ còn trong bộ nhớ: chuyển sang script, chạy lại từ đầu, theo dõi thí nghiệm ghi commit và config.</li>
+</ol>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 5</span><h3>Workflow CI có cổng eval</h3><span class="ex-tag code">code</span></div><div class="prose"><p>Viết workflow GitHub Actions chạy test và script eval cho mỗi pull request, và script <code>eval_gate.py</code> so kết quả với baseline.</p>
+<details class="fold code">
+<summary>Code tham khảo</summary>
+<div class="hl"><pre><span></span><code><span class="c1"># eval_gate.py: chạy bộ eval nhỏ, so với baseline đã lưu, thoát mã 1 nếu tụt quá ngưỡng</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span><span class="o">,</span><span class="w"> </span><span class="nn">sys</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span><span class="n">results_path</span><span class="o">=</span><span class="s2">"eval_results.json"</span><span class="p">,</span> <span class="n">baseline_path</span><span class="o">=</span><span class="s2">"baseline.json"</span><span class="p">,</span> <span class="n">max_drop</span><span class="o">=</span><span class="mf">0.01</span><span class="p">):</span>
+    <span class="n">cur</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">results_path</span><span class="p">))</span>
+    <span class="n">base</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">baseline_path</span><span class="p">))</span>
+    <span class="n">failed</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">metric</span><span class="p">,</span> <span class="n">base_val</span> <span class="ow">in</span> <span class="n">base</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">drop</span> <span class="o">=</span> <span class="n">base_val</span> <span class="o">-</span> <span class="n">cur</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">metric</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">status</span> <span class="o">=</span> <span class="s2">"OK"</span> <span class="k">if</span> <span class="n">drop</span> <span class="o">&lt;=</span> <span class="n">max_drop</span> <span class="k">else</span> <span class="s2">"TỤT"</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">metric</span><span class="si">:</span><span class="s2">12s</span><span class="si">}</span><span class="s2"> baseline </span><span class="si">{</span><span class="n">base_val</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2"> | mới </span><span class="si">{</span><span class="n">cur</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">metric</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2"> | </span><span class="si">{</span><span class="n">status</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">drop</span> <span class="o">&gt;</span> <span class="n">max_drop</span><span class="p">:</span>
+            <span class="n">failed</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">metric</span><span class="p">)</span>
+    <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span> <span class="k">if</span> <span class="n">failed</span> <span class="k">else</span> <span class="mi">0</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">"__main__"</span><span class="p">:</span>
+    <span class="n">main</span><span class="p">()</span>
+</code></pre></div>
+
+<div class="hl"><pre><span></span><code><span class="c1"># .github/workflows/ci.yml</span>
+<span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ci</span>
+<span class="nt">on</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">pull_request</span>
+<span class="nt">jobs</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">test-and-eval</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">runs-on</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ubuntu-latest</span>
+<span class="w">    </span><span class="nt">steps</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">actions/checkout@v4</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">actions/setup-python@v5</span>
+<span class="w">        </span><span class="nt">with</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt"> python-version</span><span class="p">:</span><span class="w"> </span><span class="s">"3.11"</span><span class="w"> </span><span class="p p-Indicator">}</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">run</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">pip install -r requirements.txt</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">run</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">pytest -q</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">run</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">python run_eval.py --n 100 --out eval_results.json</span>
+<span class="w">        </span><span class="nt">env</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">ANTHROPIC_API_KEY</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${{ secrets.ANTHROPIC_API_KEY }}</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">run</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">python eval_gate.py</span>
+</code></pre></div>
+
+</details></div></article><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p8.2:b">Tôi đã xong phần bài tập</label><button class="btn" type="button" data-goto="thuc-hanh">Sang thực hành <span class="arr">→</span></button></div></section><section class="panel" id="thuc-hanh" role="tabpanel" hidden><div class="prose"><h2>Pipeline train → eval → deploy tự động</h2>
+<p>Dùng một model nhỏ của bạn (ví dụ PhoBERT ở P3.4 hoặc hệ RAG ở Lab 5).</p>
+<p><strong>Các bước</strong></p>
+<ol>
+<li>Chuyển code train từ notebook sang script <code>train.py</code> đọc config YAML, cố định seed, log lên W&amp;B hoặc MLflow.</li>
+<li>Đưa dữ liệu vào DVC (hoặc dataset có phiên bản trên Hub), ghi phiên bản dữ liệu vào config.</li>
+<li>Viết unit test cho hàm tiền xử lý và hàm parse đầu ra.</li>
+<li>Workflow CI: test + eval nhỏ + cổng chặn như bài tập 5. Lưu <code>baseline.json</code> của model hiện tại.</li>
+<li>Workflow CD: khi merge vào main, build Docker image, đẩy lên registry (GitHub Container Registry).</li>
+<li>Mở một pull request cố tình làm model tệ đi (ví dụ đổi prompt hoặc giảm epoch) và xác nhận CI chặn nó.</li>
+</ol>
+<p><strong>Xong khi</strong></p>
+<ul>
+<li>Một pull request làm eval tụt bị CI chặn, có ảnh chụp màn hình.</li>
+<li>Chạy lại một thí nghiệm cũ từ commit và config cho cùng kết quả (trong sai số giữa các seed).</li>
+</ul></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p8.2:p">Tôi đã xong phần thực hành</label></div></section>
+      <div class="donewhen"><b>Xong bài khi</b>Một pull request làm eval tụt bị CI chặn lại.</div>
       <nav class="pn" aria-label="Bài trước, bài sau"><a href="p8-1.html"><span class="dir">← Bài trước · P8.1</span><span class="tt">Bài 10a · Serving</span></a><a class="nx" href="p8-3.html"><span class="dir">Bài sau · P8.3 →</span><span class="tt">Bài 10b · Giám sát và chi phí</span></a></nav>
     </div>
     <aside class="aside">
       <div class="abox"><h4>Tiến độ bài này</h4><div class="ring"><svg viewBox="0 0 64 64" aria-hidden="true"><circle class="bg" cx="32" cy="32" r="28"/><circle class="fg" cx="32" cy="32" r="28" stroke-dasharray="176" stroke-dashoffset="176"/></svg><div><b id="ring-n">0/3</b><span id="ring-sub">phần đã xong</span></div></div></div>
+      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Theo dõi thí nghiệm</a></li><li><a href="#lt-2">Phiên bản dữ liệu và model</a></li><li><a href="#lt-3">Tái lập kết quả</a></li><li><a href="#lt-4">CI/CD cho hệ thống ML</a></li></ol></div>
       
       <div class="abox"><h4>Cùng giai đoạn</h4><ul><li><a href="p8-1.html">Bài 10a · Serving</a></li><li><span class=cur>MLOps</span></li><li><a href="p8-3.html">Bài 10b · Giám sát và chi phí</a></li><li><a href="p8-4.html">Backend và dữ liệu cho AI</a></li></ul></div>
     </aside>
@@ -43,16 +159,75 @@
 
 (function () {
   const mid = document.body.dataset.mid; let d = AIE.load();
+  const EXK = "aie-ex-" + mid;
+  let solved = {}; try { solved = JSON.parse(localStorage.getItem(EXK) || "{}") || {}; } catch (e) {}
+  const saveSolved = () => { try { localStorage.setItem(EXK, JSON.stringify(solved)); } catch (e) {} };
+  const tabs = [...document.querySelectorAll(".tab")], panels = [...document.querySelectorAll(".panel")];
   const boxes = [...document.querySelectorAll("input[data-key]")], ring = document.querySelector(".ring .fg"), rt = document.getElementById("ring-n");
-  const skipped = () => !!d[mid + ":skip"];
+  const toc = document.getElementById("toc-box");
+  function show(id, scroll) {
+    tabs.forEach((t) => t.setAttribute("aria-selected", String(t.dataset.tab === id)));
+    panels.forEach((p) => { const on = p.id === id; if (on && p.hidden) { p.classList.remove("enter"); void p.offsetWidth; p.classList.add("enter"); } p.hidden = !on; });
+    if (toc) toc.hidden = id !== "ly-thuyet";
+    if (scroll) document.querySelector(".tabs").scrollIntoView({ block: "start" });
+  }
+  tabs.forEach((t) => t.addEventListener("click", () => { history.replaceState(null, "", "#" + t.dataset.tab); show(t.dataset.tab, true); }));
+  document.querySelectorAll("[data-goto]").forEach((b) => b.addEventListener("click", () => { history.replaceState(null, "", "#" + b.dataset.goto); show(b.dataset.goto, true); }));
+  const start = ["ly-thuyet", "bai-tap", "thuc-hanh"].includes(location.hash.slice(1)) ? location.hash.slice(1) : "ly-thuyet";
+  show(start, false);
+  window.addEventListener("hashchange", () => { const h = location.hash.slice(1); if (["ly-thuyet", "bai-tap", "thuc-hanh"].includes(h)) show(h, true); });
+  document.querySelectorAll(".toc a").forEach((a) => a.addEventListener("click", () => show("ly-thuyet", false)));
+
   function render() {
     let n = 0;
-    boxes.forEach((b) => { const on = skipped() || !!d[b.dataset.key]; b.checked = on; b.disabled = skipped(); b.closest(".pblock").classList.toggle("done", on); if (on) n++; });
+    const skip = !!d[mid + ":skip"];
+    boxes.forEach((b) => { const on = skip || !!d[b.dataset.key]; b.checked = on; if (on) n++; });
+    const kmap = { t: "ly-thuyet", b: "bai-tap", p: "thuc-hanh" };
+    tabs.forEach((t) => { const k = Object.keys(kmap).find((x) => kmap[x] === t.dataset.tab); t.classList.toggle("is-done", skip || !!d[mid + ":" + k]); });
     ring.style.strokeDashoffset = String(176 * (1 - n / 3)); rt.textContent = n + "/3";
-    document.getElementById("ring-sub").textContent = skipped() ? "đã đánh dấu bỏ qua" : n === 3 ? "hoàn thành bài này" : "phần đã xong";
+    document.getElementById("ring-sub").textContent = n === 3 ? "hoàn thành bài này" : "phần đã xong";
   }
-  boxes.forEach((b) => b.addEventListener("change", () => { d = AIE.load(); if (b.checked) d[b.dataset.key] = true; else delete d[b.dataset.key]; AIE.save(d); render(); }));
+  boxes.forEach((b) => b.addEventListener("change", () => {
+    d = AIE.load(); if (b.checked) d[b.dataset.key] = true; else delete d[b.dataset.key]; AIE.save(d);
+    boxes.filter((x) => x.dataset.key === b.dataset.key).forEach((x) => (x.checked = b.checked)); render();
+  }));
   render();
+
+  /* answer boxes */
+  const parse = (s) => parseFloat(String(s).trim().replace(",", ".").replace("−", "-"));
+  const allAns = [...document.querySelectorAll(".ans")];
+  function score() {
+    const ok = allAns.filter((a) => solved[a.id]).length;
+    const el = document.getElementById("ex-score");
+    if (el) { el.querySelector("b").textContent = `${ok} / ${allAns.length}`; el.querySelector(".bar i").style.width = (allAns.length ? ok / allAns.length * 100 : 0) + "%"; }
+    document.querySelectorAll(".excard").forEach((c) => { const as = [...c.querySelectorAll(".ans")]; c.classList.toggle("solved", as.length > 0 && as.every((a) => solved[a.id])); });
+  }
+  allAns.forEach((box) => {
+    const inputs = [...box.querySelectorAll("input")], fb = box.querySelector(".ans-fb");
+    const mark = () => { box.classList.add("ok"); inputs.forEach((i) => { i.classList.add("ok"); if (!i.value) i.value = i.dataset.ans; }); fb.className = "ans-fb ok"; fb.textContent = "Chính xác."; };
+    if (solved[box.id]) mark();
+    const run = () => {
+      let all = true, empty = false;
+      inputs.forEach((i) => {
+        const v = parse(i.value);
+        if (i.value.trim() === "" || Number.isNaN(v)) { empty = true; all = false; i.classList.remove("ok", "bad"); return; }
+        const good = Math.abs(v - parseFloat(i.dataset.ans)) <= parseFloat(i.dataset.tol) + 1e-9;
+        i.classList.toggle("ok", good); i.classList.toggle("bad", !good); if (!good) all = false;
+      });
+      if (all) { solved[box.id] = true; saveSolved(); mark(); box.classList.remove("pop"); void box.offsetWidth; box.classList.add("pop"); score(); }
+      else { fb.className = "ans-fb bad"; fb.textContent = empty ? "Điền đủ các ô bằng số (dấu chấm hoặc phẩy đều được)." : "Ô màu cam chưa đúng. Xem lại bước đó, hoặc mở gợi ý."; }
+    };
+    box.querySelector(".btn-check").addEventListener("click", run);
+    inputs.forEach((i) => i.addEventListener("keydown", (e) => { if (e.key === "Enter") run(); }));
+  });
+  score();
+
+  /* highlight current theory section in the toc */
+  if (toc && "IntersectionObserver" in window) {
+    const links = [...toc.querySelectorAll("a")];
+    const io = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) links.forEach((a) => a.classList.toggle("on", a.getAttribute("href") === "#" + e.target.id)); }), { rootMargin: "-140px 0px -65% 0px" });
+    document.querySelectorAll("#ly-thuyet h2[id]").forEach((h) => io.observe(h));
+  }
 })();
 
 </script>
