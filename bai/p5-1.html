@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>P5.1 · GĐ 1 · Diffusion tạo ảnh thế nào · AI Engineer</title>
-<meta name="description" content="GĐ 1 · Diffusion tạo ảnh thế nào: Nhiễu Gaussian, cộng phương sai; Forward process, lịch nhiễu, ᾱ, nhảy thẳng tới bước t; Model dự đoán nhiễu, loss MSE">
+<meta name="description" content="GĐ 1 · Diffusion tạo ảnh thế nào: lý thuyết, bài tập và thực hành. Nhiễu Gaussian, cộng phương sai; Forward process, lịch nhiễu, ᾱ, nhảy thẳng tới bước t">
 <meta property="og:title" content="P5.1 · GĐ 1 · Diffusion tạo ảnh thế nào · AI Engineer">
-<meta property="og:description" content="GĐ 1 · Diffusion tạo ảnh thế nào: Nhiễu Gaussian, cộng phương sai; Forward process, lịch nhiễu, ᾱ, nhảy thẳng tới bước t; Model dự đoán nhiễu, loss MSE">
+<meta property="og:description" content="GĐ 1 · Diffusion tạo ảnh thế nào: lý thuyết, bài tập và thực hành. Nhiễu Gaussian, cộng phương sai; Forward process, lịch nhiễu, ᾱ, nhảy thẳng tới bước t">
 <meta name="theme-color" content="#F4F6FB">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23131A33'/%3E%3Cpath d='M9 22 L16 10 L23 19' stroke='%23E5E9FB' stroke-width='2' fill='none'/%3E%3Ccircle cx='9' cy='22' r='3' fill='%23E5E9FB'/%3E%3Ccircle cx='16' cy='10' r='3' fill='%23E5E9FB'/%3E%3Ccircle cx='23' cy='19' r='3' fill='%23FF9361'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -14,23 +14,111 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="../assets/chrome.css">
 <link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/lesson.css">
 </head>
 <body data-mid="p5.1">
 <header class="sh"><div class="sh-in"><a class="sh-brand" href="../index.html"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="var(--ink)"/><circle cx="9" cy="22" r="2.6" fill="var(--accent-soft)"/><circle cx="16" cy="10" r="2.6" fill="var(--accent-soft)"/><circle cx="23" cy="19" r="2.6" fill="#FF9361"/><path d="M9 22 L16 10 L23 19" stroke="var(--accent-soft)" stroke-width="1.8" fill="none"/></svg><span>AI Engineer<small>lộ trình tự học</small></span></a><nav class="sh-nav" id="sh-nav" aria-label="Chính"><a href="../index.html">Trang chủ</a><a href="../bai-hoc.html" aria-current="page">Bài học</a><a href="../lo-trinh.html">Lộ trình</a><a href="../notebooks.html">Notebook</a><a class="sh-cta-m" href="../bai01.html" data-next-lesson>Học tiếp →</a></nav><a class="sh-cta" href="../bai01.html" data-next-lesson>Học tiếp <span class="arr">→</span></a><button class="sh-burger" type="button" aria-expanded="false" aria-controls="sh-nav">Menu</button></div></header>
 
 <main class="container">
   <div class="crumbs"><a href="../bai-hoc.html">Bài học</a><span>/</span><a href="../bai-hoc.html#p5">P5 · Dự án Diffusion: tạo ảnh từ con số 0</a><span>/</span><span>P5.1</span></div>
-  <section class="lhero side"><div class="code">P5.1</div><h1>GĐ 1 · Diffusion tạo ảnh thế nào</h1><div class="lmeta"><span class="m">Giai đoạn P5 · Dự án Diffusion: tạo ảnh từ con số 0</span><span class="m">Tuần 10–30</span><span class="chip ready"><span class="dot"></span>Có nội dung đầy đủ</span></div></section>
-  <div class="lgrid">
-    <div>
-      <div class="goal"><b>Mục tiêu giai đoạn:</b> Làm lại đồ án tạo ảnh theo hướng hiểu sâu: tự viết diffusion, mổ xẻ Stable Diffusion, fine-tune LoRA, đóng gói thành sản phẩm.</div>
-      <div class="full-cta"><div><b>Bài này đã có nội dung đầy đủ</b><p>Trang lý thuyết tương tác, bài tính tay và bài kiểm tra cuối bài.</p></div><a class="btn primary" href="../diffusion-gd1.html">Vào bài học <span class="arr">→</span></a></div>
-      <section class="pblock reveal"><div class="pblock-head"><span class="num">1</span><h2>Lý thuyết<span style="display:block;font:400 13.5px var(--f-body);color:var(--muted);margin-top:4px">Những gì cần hiểu</span></h2><label class="tick" for="cb-t"><input type="checkbox" id="cb-t" data-key="p5.1:t">Xong</label></div><ol><li>Nhiễu Gaussian, cộng phương sai</li><li>Forward process, lịch nhiễu, ᾱ, nhảy thẳng tới bước t</li><li>Model dự đoán nhiễu, loss MSE</li><li>Sampling DDPM, vai trò của σₜ·z, học thuộc và tổng quát hóa</li></ol></section><section class="pblock reveal"><div class="pblock-head"><span class="num">2</span><h2>Bài tập<span style="display:block;font:400 13.5px var(--f-body);color:var(--muted);margin-top:4px">Tính tay và tự kiểm tra</span></h2><label class="tick" for="cb-b"><input type="checkbox" id="cb-b" data-key="p5.1:b">Xong</label></div><ol><li>7 bài tính tay trong trang lý thuyết</li><li>Bài kiểm tra 9 câu (đạt ≥ 7)</li></ol></section><section class="pblock reveal"><div class="pblock-head"><span class="num">3</span><h2>Thực hành<span style="display:block;font:400 13.5px var(--f-body);color:var(--muted);margin-top:4px">Code và dự án</span></h2><label class="tick" for="cb-p"><input type="checkbox" id="cb-p" data-key="p5.1:p">Xong</label></div><ol><li>Notebook GĐ1: tự viết DDPM trên điểm 2D, chạy trên CPU</li></ol></section>
-      <div class="donewhen reveal"><b>Xong khi</b>Điểm sinh ra nằm trên xoắn ốc (precision &lt; 0.06) và trả lời 4 câu hỏi nộp bài.</div>
+  <section class="lhero side"><div class="code">P5.1</div><h1>GĐ 1 · Diffusion tạo ảnh thế nào</h1><div class="lmeta"><span class="m">Giai đoạn P5 · Dự án Diffusion: tạo ảnh từ con số 0</span><span class="m">Tuần 10–30</span><span class="chip ready"><span class="dot"></span>Có nội dung đầy đủ</span></div>
+    <div class="intro"><p>Giai đoạn mở đầu của dự án làm lại đồ án tạo ảnh. Trang lý thuyết tương tác đầy đủ (demo kéo t để xem xoắn ốc tan thành nhiễu, demo sinh 400 điểm từ nhiễu, 7 bài tính tay, bài kiểm tra 9 câu) nằm ở nút <strong>Vào bài học</strong> phía trên. Trang này tóm tắt ý chính, có bộ bài tập mới và hướng dẫn thực hành.</p></div></section>
+  <div class="full-cta"><div><b>Bài này đã có nội dung đầy đủ</b><p>Trang lý thuyết tương tác, bài tính tay và bài kiểm tra cuối bài.</p></div><a class="btn primary" href="../diffusion-gd1.html">Vào bài học <span class="arr">→</span></a></div>
+  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">4 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
+  <div class="lgrid" style="margin-top:22px">
+    <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">Ý tưởng</h2>
+<p>Thêm nhiễu vào dữ liệu thì dễ và không cần học. Diffusion model học cách <strong>gỡ nhiễu</strong>: bắt đầu từ nhiễu thuần, gỡ dần qua khoảng 1000 bước để ra dữ liệu mới.</p>
+<h2 id="lt-2">Forward process</h2>
+<p>Lịch nhiễu βₜ tăng từ 0.0001 tới 0.02. Đặt αₜ = 1 − βₜ, ᾱₜ = α₁·…·αₜ. Có thể nhảy thẳng tới bước t:</p>
+<div class="hl"><pre><span></span><code>xₜ = √ᾱₜ · x₀ + √(1 − ᾱₜ) · ε,    ε ~ N(0, I)
+</code></pre></div>
+
+<p>Hai hệ số có bình phương cộng lại bằng 1, nên độ lớn tổng thể của dữ liệu giữ nguyên trong khi tín hiệu yếu dần.</p>
+<h2 id="lt-3">Model và loss</h2>
+<p>Model ε_θ(xₜ, t) đoán nhiễu đã thêm vào. Loss chỉ là MSE: <code>‖ε − ε_θ(xₜ, t)‖²</code>. Đoán được nhiễu thì khôi phục được dữ liệu: <code>x̂₀ = (xₜ − √(1−ᾱₜ)·ε̂) / √ᾱₜ</code>.</p>
+<h2 id="lt-4">Sampling</h2>
+<p>Từ x_T ~ N(0, I), đi ngược từng bước:</p>
+<div class="hl"><pre><span></span><code>xₜ₋₁ = (xₜ − βₜ/√(1 − ᾱₜ) · ε̂) / √αₜ + σₜ·z
+</code></pre></div>
+
+<p>Nhiễu mới σₜ·z ở mỗi bước giữ cho các mẫu đa dạng; bỏ nó đi thì mọi mẫu sụp về vài điểm.</p>
+<div class="keep">
+<p><strong>Ghi nhớ:</strong> bộ khử nhiễu tối ưu tuyệt đối trên tập train hữu hạn chỉ chép lại dữ liệu train. Mạng nơ-ron tạo được dữ liệu mới chính vì nó không đạt tới tối ưu đó.</p>
+</div></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p5.1:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 4</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>ᾱ với β hằng số</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>β = 0.2 ở mọi bước. x₀ = 1, nhiễu rút được ε = 1.</p>
+<div class="ans" id="p5-1-e1-a1"><div class="ans-fields"><label>ᾱ₂<input inputmode="decimal" data-ans="0.64" data-tol="0.001" autocomplete="off"></label><label>x₂<input inputmode="decimal" data-ans="1.4" data-tol="0.001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+
+<details class="fold solution">
+<summary>Lời giải</summary>
+<p>α = 0.8, ᾱ₂ = 0.64. x₂ = √0.64·1 + √0.36·1 = 0.8 + 0.6 = 1.4.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 2</span><h3>Hệ số tín hiệu và nhiễu</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Ở một bước t nào đó, ᾱₜ = 0.36.</p>
+<div class="ans" id="p5-1-e2-a1"><div class="ans-fields"><label>Hệ số tín hiệu √ᾱₜ<input inputmode="decimal" data-ans="0.6" data-tol="0.001" autocomplete="off"></label><label>Hệ số nhiễu √(1 − ᾱₜ)<input inputmode="decimal" data-ans="0.8" data-tol="0.001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+
+<details class="fold solution">
+<summary>Lời giải</summary>
+<p>√0.36 = 0.6 và √0.64 = 0.8. Lúc này nhiễu đã mạnh hơn tín hiệu.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 3</span><h3>Khôi phục x₀</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>xₜ = 1.4, ᾱₜ = 0.64, model đoán ε̂ = 1.</p>
+<div class="ans" id="p5-1-e3-a1"><div class="ans-fields"><label>x̂₀<input inputmode="decimal" data-ans="1.0" data-tol="0.001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+
+<details class="fold solution">
+<summary>Lời giải</summary>
+<p>(1.4 − 0.6·1)/0.8 = 0.8/0.8 = 1. Khớp với x₀ ở bài 1 vì model đoán đúng nhiễu.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 4</span><h3>Loss trên một batch nhỏ</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Hai giá trị nhiễu thật ε = [0.2, −0.4]. Model chưa train đoán ε̂ = [0, 0].</p>
+<div class="ans" id="p5-1-e4-a1"><div class="ans-fields"><label>MSE<input inputmode="decimal" data-ans="0.1" data-tol="0.001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+
+<details class="fold solution">
+<summary>Lời giải</summary>
+<p>(0.04 + 0.16)/2 = 0.1. Với nhiễu chuẩn, model đoán toàn số 0 có loss kỳ vọng bằng 1: đó là loss bạn thấy ở bước đầu của notebook.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 5</span><h3>Vì sao t nhỏ khó hơn t lớn</h3><span class="ex-tag concept">khái niệm</span></div><div class="prose"><p>Trong notebook, loss của model đã train ở t = 1 là khoảng 0.99, còn ở t = 1000 chỉ khoảng 0.003. Giải thích vì sao, và điều này gợi ý gì về cách chọn t khi train.</p>
+<details class="fold solution">
+<summary>Lời giải</summary>
+<p>Ở t lớn, xₜ gần như chính là ε, nên đoán ε̂ ≈ xₜ là gần đúng. Ở t rất nhỏ, nhiễu thêm vào bé hơn chi tiết của dữ liệu, không thể tách nhiễu khỏi dữ liệu, nên loss gần bằng phương sai của nhiễu. Gợi ý: lấy mẫu t đều thì nhiều bước train bị "phí" vào các t quá dễ hoặc không thể học; các bài báo sau chọn lại lịch nhiễu (cosine) và trọng số loss theo t để cân bằng.</p>
+</details></div></article><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p5.1:b">Tôi đã xong phần bài tập</label><button class="btn" type="button" data-goto="thuc-hanh">Sang thực hành <span class="arr">→</span></button></div></section><section class="panel" id="thuc-hanh" role="tabpanel" hidden><div class="prose"><h2>Notebook diffusion_gd1_thuc_hanh.ipynb</h2>
+<p>Tải notebook ở cột bên, chạy trên CPU (train khoảng 30 giây).</p>
+<table>
+<thead>
+<tr>
+<th>Phần</th>
+<th>Bạn tự viết</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A</td>
+<td><code>betas</code>, <code>alphas</code>, <code>alpha_bars</code> bằng <code>torch.cumprod</code></td>
+</tr>
+<tr>
+<td>B</td>
+<td><code>q_sample</code> nhảy thẳng tới bước t cho cả batch</td>
+</tr>
+<tr>
+<td>C</td>
+<td>time embedding sin/cos và mạng khử nhiễu MLP</td>
+</tr>
+<tr>
+<td>D</td>
+<td>vòng lặp train (Algorithm 1), đo loss theo từng t</td>
+</tr>
+<tr>
+<td>E</td>
+<td>vòng lặp sampling (Algorithm 2), đo precision và coverage</td>
+</tr>
+<tr>
+<td>F</td>
+<td>thí nghiệm bỏ σₜ·z và bộ khử nhiễu "hoàn hảo"</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Xong khi</strong></p>
+<ul>
+<li>Mọi ô ✅ đều qua, điểm sinh ra nằm trên xoắn ốc (precision &lt; 0.06).</li>
+<li>Trả lời 4 câu hỏi nộp bài ở cuối notebook.</li>
+</ul></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p5.1:p">Tôi đã xong phần thực hành</label></div></section>
+      <div class="donewhen"><b>Xong bài khi</b>Điểm sinh ra nằm trên xoắn ốc (precision &lt; 0.06) và trả lời 4 câu hỏi nộp bài.</div>
       <nav class="pn" aria-label="Bài trước, bài sau"><a href="p2-3.html"><span class="dir">← Bài trước · P2.3</span><span class="tt">CNN hiện đại và transfer learning</span></a><a class="nx" href="p5-2.html"><span class="dir">Bài sau · P5.2 →</span><span class="tt">GĐ 2 · Diffusion cho ảnh</span></a></nav>
     </div>
     <aside class="aside">
       <div class="abox"><h4>Tiến độ bài này</h4><div class="ring"><svg viewBox="0 0 64 64" aria-hidden="true"><circle class="bg" cx="32" cy="32" r="28"/><circle class="fg" cx="32" cy="32" r="28" stroke-dasharray="176" stroke-dashoffset="176"/></svg><div><b id="ring-n">0/3</b><span id="ring-sub">phần đã xong</span></div></div></div>
+      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Ý tưởng</a></li><li><a href="#lt-2">Forward process</a></li><li><a href="#lt-3">Model và loss</a></li><li><a href="#lt-4">Sampling</a></li></ol></div>
       <div class="abox"><h4>Notebook</h4><div style="display:grid;gap:8px"><a class="dl" href="../notebooks/diffusion_gd1_thuc_hanh.ipynb" download><span class="ext">IPYNB</span><span>Bài tập<span style="display:block;font:400 12px var(--f-mono);color:var(--muted)">diffusion_gd1_thuc_hanh.ipynb</span></span></a><a class="dl" href="../notebooks/diffusion_gd1_thuc_hanh_LOI_GIAI.ipynb" download><span class="ext">IPYNB</span><span>Lời giải<span style="display:block;font:400 12px var(--f-mono);color:var(--muted)">diffusion_gd1_thuc_hanh_LOI_GIAI.ipynb</span></span></a></div></div>
       <div class="abox"><h4>Cùng giai đoạn</h4><ul><li><span class=cur>GĐ 1 · Diffusion tạo ảnh thế nào</span></li><li><a href="p5-2.html">GĐ 2 · Diffusion cho ảnh</a></li><li><a href="p5-3.html">GĐ 3 · Điều khiển bằng chữ</a></li><li><a href="p5-4.html">GĐ 4 · Latent diffusion và Stable Diffusion</a></li><li><a href="p5-5.html">GĐ 5 · Fine-tune LoRA</a></li><li><a href="p5-6.html">GĐ 6 · Đánh giá và rectified flow</a></li><li><a href="p5-7.html">GĐ 7 · Đóng gói sản phẩm</a></li></ul></div>
     </aside>
@@ -43,16 +131,75 @@
 
 (function () {
   const mid = document.body.dataset.mid; let d = AIE.load();
+  const EXK = "aie-ex-" + mid;
+  let solved = {}; try { solved = JSON.parse(localStorage.getItem(EXK) || "{}") || {}; } catch (e) {}
+  const saveSolved = () => { try { localStorage.setItem(EXK, JSON.stringify(solved)); } catch (e) {} };
+  const tabs = [...document.querySelectorAll(".tab")], panels = [...document.querySelectorAll(".panel")];
   const boxes = [...document.querySelectorAll("input[data-key]")], ring = document.querySelector(".ring .fg"), rt = document.getElementById("ring-n");
-  const skipped = () => !!d[mid + ":skip"];
+  const toc = document.getElementById("toc-box");
+  function show(id, scroll) {
+    tabs.forEach((t) => t.setAttribute("aria-selected", String(t.dataset.tab === id)));
+    panels.forEach((p) => { const on = p.id === id; if (on && p.hidden) { p.classList.remove("enter"); void p.offsetWidth; p.classList.add("enter"); } p.hidden = !on; });
+    if (toc) toc.hidden = id !== "ly-thuyet";
+    if (scroll) document.querySelector(".tabs").scrollIntoView({ block: "start" });
+  }
+  tabs.forEach((t) => t.addEventListener("click", () => { history.replaceState(null, "", "#" + t.dataset.tab); show(t.dataset.tab, true); }));
+  document.querySelectorAll("[data-goto]").forEach((b) => b.addEventListener("click", () => { history.replaceState(null, "", "#" + b.dataset.goto); show(b.dataset.goto, true); }));
+  const start = ["ly-thuyet", "bai-tap", "thuc-hanh"].includes(location.hash.slice(1)) ? location.hash.slice(1) : "ly-thuyet";
+  show(start, false);
+  window.addEventListener("hashchange", () => { const h = location.hash.slice(1); if (["ly-thuyet", "bai-tap", "thuc-hanh"].includes(h)) show(h, true); });
+  document.querySelectorAll(".toc a").forEach((a) => a.addEventListener("click", () => show("ly-thuyet", false)));
+
   function render() {
     let n = 0;
-    boxes.forEach((b) => { const on = skipped() || !!d[b.dataset.key]; b.checked = on; b.disabled = skipped(); b.closest(".pblock").classList.toggle("done", on); if (on) n++; });
+    const skip = !!d[mid + ":skip"];
+    boxes.forEach((b) => { const on = skip || !!d[b.dataset.key]; b.checked = on; if (on) n++; });
+    const kmap = { t: "ly-thuyet", b: "bai-tap", p: "thuc-hanh" };
+    tabs.forEach((t) => { const k = Object.keys(kmap).find((x) => kmap[x] === t.dataset.tab); t.classList.toggle("is-done", skip || !!d[mid + ":" + k]); });
     ring.style.strokeDashoffset = String(176 * (1 - n / 3)); rt.textContent = n + "/3";
-    document.getElementById("ring-sub").textContent = skipped() ? "đã đánh dấu bỏ qua" : n === 3 ? "hoàn thành bài này" : "phần đã xong";
+    document.getElementById("ring-sub").textContent = n === 3 ? "hoàn thành bài này" : "phần đã xong";
   }
-  boxes.forEach((b) => b.addEventListener("change", () => { d = AIE.load(); if (b.checked) d[b.dataset.key] = true; else delete d[b.dataset.key]; AIE.save(d); render(); }));
+  boxes.forEach((b) => b.addEventListener("change", () => {
+    d = AIE.load(); if (b.checked) d[b.dataset.key] = true; else delete d[b.dataset.key]; AIE.save(d);
+    boxes.filter((x) => x.dataset.key === b.dataset.key).forEach((x) => (x.checked = b.checked)); render();
+  }));
   render();
+
+  /* answer boxes */
+  const parse = (s) => parseFloat(String(s).trim().replace(",", ".").replace("−", "-"));
+  const allAns = [...document.querySelectorAll(".ans")];
+  function score() {
+    const ok = allAns.filter((a) => solved[a.id]).length;
+    const el = document.getElementById("ex-score");
+    if (el) { el.querySelector("b").textContent = `${ok} / ${allAns.length}`; el.querySelector(".bar i").style.width = (allAns.length ? ok / allAns.length * 100 : 0) + "%"; }
+    document.querySelectorAll(".excard").forEach((c) => { const as = [...c.querySelectorAll(".ans")]; c.classList.toggle("solved", as.length > 0 && as.every((a) => solved[a.id])); });
+  }
+  allAns.forEach((box) => {
+    const inputs = [...box.querySelectorAll("input")], fb = box.querySelector(".ans-fb");
+    const mark = () => { box.classList.add("ok"); inputs.forEach((i) => { i.classList.add("ok"); if (!i.value) i.value = i.dataset.ans; }); fb.className = "ans-fb ok"; fb.textContent = "Chính xác."; };
+    if (solved[box.id]) mark();
+    const run = () => {
+      let all = true, empty = false;
+      inputs.forEach((i) => {
+        const v = parse(i.value);
+        if (i.value.trim() === "" || Number.isNaN(v)) { empty = true; all = false; i.classList.remove("ok", "bad"); return; }
+        const good = Math.abs(v - parseFloat(i.dataset.ans)) <= parseFloat(i.dataset.tol) + 1e-9;
+        i.classList.toggle("ok", good); i.classList.toggle("bad", !good); if (!good) all = false;
+      });
+      if (all) { solved[box.id] = true; saveSolved(); mark(); box.classList.remove("pop"); void box.offsetWidth; box.classList.add("pop"); score(); }
+      else { fb.className = "ans-fb bad"; fb.textContent = empty ? "Điền đủ các ô bằng số (dấu chấm hoặc phẩy đều được)." : "Ô màu cam chưa đúng. Xem lại bước đó, hoặc mở gợi ý."; }
+    };
+    box.querySelector(".btn-check").addEventListener("click", run);
+    inputs.forEach((i) => i.addEventListener("keydown", (e) => { if (e.key === "Enter") run(); }));
+  });
+  score();
+
+  /* highlight current theory section in the toc */
+  if (toc && "IntersectionObserver" in window) {
+    const links = [...toc.querySelectorAll("a")];
+    const io = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) links.forEach((a) => a.classList.toggle("on", a.getAttribute("href") === "#" + e.target.id)); }), { rootMargin: "-140px 0px -65% 0px" });
+    document.querySelectorAll("#ly-thuyet h2[id]").forEach((h) => io.observe(h));
+  }
 })();
 
 </script>

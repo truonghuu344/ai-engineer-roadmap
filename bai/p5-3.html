@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>P5.3 · GĐ 3 · Điều khiển bằng chữ · AI Engineer</title>
-<meta name="description" content="GĐ 3 · Điều khiển bằng chữ: Conditioning theo lớp, classifier-free guidance; CLIP text encoder, cross-attention">
+<meta name="description" content="GĐ 3 · Điều khiển bằng chữ: lý thuyết, bài tập và thực hành. Conditioning theo lớp, classifier-free guidance; CLIP text encoder, cross-attention">
 <meta property="og:title" content="P5.3 · GĐ 3 · Điều khiển bằng chữ · AI Engineer">
-<meta property="og:description" content="GĐ 3 · Điều khiển bằng chữ: Conditioning theo lớp, classifier-free guidance; CLIP text encoder, cross-attention">
+<meta property="og:description" content="GĐ 3 · Điều khiển bằng chữ: lý thuyết, bài tập và thực hành. Conditioning theo lớp, classifier-free guidance; CLIP text encoder, cross-attention">
 <meta name="theme-color" content="#F4F6FB">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23131A33'/%3E%3Cpath d='M9 22 L16 10 L23 19' stroke='%23E5E9FB' stroke-width='2' fill='none'/%3E%3Ccircle cx='9' cy='22' r='3' fill='%23E5E9FB'/%3E%3Ccircle cx='16' cy='10' r='3' fill='%23E5E9FB'/%3E%3Ccircle cx='23' cy='19' r='3' fill='%23FF9361'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -14,23 +14,127 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="../assets/chrome.css">
 <link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/lesson.css">
 </head>
 <body data-mid="p5.3">
 <header class="sh"><div class="sh-in"><a class="sh-brand" href="../index.html"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="var(--ink)"/><circle cx="9" cy="22" r="2.6" fill="var(--accent-soft)"/><circle cx="16" cy="10" r="2.6" fill="var(--accent-soft)"/><circle cx="23" cy="19" r="2.6" fill="#FF9361"/><path d="M9 22 L16 10 L23 19" stroke="var(--accent-soft)" stroke-width="1.8" fill="none"/></svg><span>AI Engineer<small>lộ trình tự học</small></span></a><nav class="sh-nav" id="sh-nav" aria-label="Chính"><a href="../index.html">Trang chủ</a><a href="../bai-hoc.html" aria-current="page">Bài học</a><a href="../lo-trinh.html">Lộ trình</a><a href="../notebooks.html">Notebook</a><a class="sh-cta-m" href="../bai01.html" data-next-lesson>Học tiếp →</a></nav><a class="sh-cta" href="../bai01.html" data-next-lesson>Học tiếp <span class="arr">→</span></a><button class="sh-burger" type="button" aria-expanded="false" aria-controls="sh-nav">Menu</button></div></header>
 
 <main class="container">
   <div class="crumbs"><a href="../bai-hoc.html">Bài học</a><span>/</span><a href="../bai-hoc.html#p5">P5 · Dự án Diffusion: tạo ảnh từ con số 0</a><span>/</span><span>P5.3</span></div>
-  <section class="lhero side"><div class="code">P5.3</div><h1>GĐ 3 · Điều khiển bằng chữ</h1><div class="lmeta"><span class="m">Giai đoạn P5 · Dự án Diffusion: tạo ảnh từ con số 0</span><span class="m">Tuần 10–30</span><span class="chip planned">Đề cương</span><span class="chip side">cần học xong Bài 3</span></div></section>
-  <div class="lgrid">
-    <div>
-      <div class="goal"><b>Mục tiêu giai đoạn:</b> Làm lại đồ án tạo ảnh theo hướng hiểu sâu: tự viết diffusion, mổ xẻ Stable Diffusion, fine-tune LoRA, đóng gói thành sản phẩm.</div>
-      <div class="soon">Nội dung đầy đủ (trang lý thuyết tương tác và notebook tự chấm) đang được soạn và sẽ có khi bạn học tới bài này. Đề cương dưới đây là phạm vi chính xác của bài.</div>
-      <section class="pblock reveal"><div class="pblock-head"><span class="num">1</span><h2>Lý thuyết<span style="display:block;font:400 13.5px var(--f-body);color:var(--muted);margin-top:4px">Những gì cần hiểu</span></h2><label class="tick" for="cb-t"><input type="checkbox" id="cb-t" data-key="p5.3:t">Xong</label></div><ol><li>Conditioning theo lớp, classifier-free guidance</li><li>CLIP text encoder, cross-attention</li></ol></section><section class="pblock reveal"><div class="pblock-head"><span class="num">2</span><h2>Bài tập<span style="display:block;font:400 13.5px var(--f-body);color:var(--muted);margin-top:4px">Tính tay và tự kiểm tra</span></h2><label class="tick" for="cb-b"><input type="checkbox" id="cb-b" data-key="p5.3:b">Xong</label></div><ol><li>Tính tay một bước guidance với w = 3</li></ol></section><section class="pblock reveal"><div class="pblock-head"><span class="num">3</span><h2>Thực hành<span style="display:block;font:400 13.5px var(--f-body);color:var(--muted);margin-top:4px">Code và dự án</span></h2><label class="tick" for="cb-p"><input type="checkbox" id="cb-p" data-key="p5.3:p">Xong</label></div><ol><li>Sinh Fashion-MNIST theo lớp, rồi theo câu mô tả ngắn</li></ol></section>
-      <div class="donewhen reveal"><b>Xong khi</b>Đổi guidance scale cho thấy rõ đánh đổi giữa đa dạng và bám đề.</div>
+  <section class="lhero side"><div class="code">P5.3</div><h1>GĐ 3 · Điều khiển bằng chữ</h1><div class="lmeta"><span class="m">Giai đoạn P5 · Dự án Diffusion: tạo ảnh từ con số 0</span><span class="m">Tuần 10–30</span><span class="chip ready"><span class="dot"></span>Có nội dung đầy đủ</span><span class="chip side">cần học xong Bài 3</span></div>
+    <div class="intro"><p>Model ở GĐ2 sinh ảnh ngẫu nhiên: áo hay giày là do may rủi. Đồ án tạo ảnh của bạn cần <strong>điều khiển</strong>: "vẽ một chiếc túi", rồi "một chiếc ghế gỗ màu trắng". Bài này đi từ điều kiện theo lớp, tới kỹ thuật <strong>classifier-free guidance</strong> mà mọi model tạo ảnh đều dùng, rồi tới cách đưa câu mô tả vào model qua <strong>CLIP</strong> và <strong>cross-attention</strong>.</p></div></section>
+  
+  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">5 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
+  <div class="lgrid" style="margin-top:22px">
+    <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">Điều kiện theo lớp</h2>
+<p>Thêm nhãn lớp y làm đầu vào thứ ba: model thành ε_θ(xₜ, t, y). Cách đơn giản nhất: một bảng embedding cho các lớp, <strong>cộng</strong> vector của lớp vào time embedding. Mọi ResBlock nhận được "đang ở bước t và đang vẽ lớp y".</p>
+<p>Loss không đổi: vẫn là MSE giữa nhiễu thật và nhiễu đoán, chỉ là model được biết thêm y.</p>
+<h2 id="lt-2">Classifier-free guidance (CFG)</h2>
+<p>Chỉ thêm điều kiện thì ảnh thường "mờ nhạt", không bám sát lớp. CFG làm model <strong>phóng đại</strong> sự khác biệt mà điều kiện tạo ra:</p>
+<div class="hl"><pre><span></span><code>Khi train: với xác suất 10%, thay y bằng nhãn rỗng ∅ → model học cả ε(xₜ, t, y) lẫn ε(xₜ, t, ∅)
+Khi sinh:  ε̂ = ε(xₜ, t, ∅) + w · ( ε(xₜ, t, y) − ε(xₜ, t, ∅) )
+</code></pre></div>
+
+<ul>
+<li>w = 0: bỏ qua điều kiện. w = 1: điều kiện bình thường. w &gt; 1 (thường 3–8): bám đề mạnh hơn, ảnh rõ nét và đúng lớp hơn, nhưng <strong>kém đa dạng</strong>, và w quá lớn làm màu bão hòa, ảnh "cháy".</li>
+<li>Mỗi bước sinh cần <strong>hai</strong> lần chạy model (có điều kiện và không), thường gộp thành một batch đôi.</li>
+</ul>
+<p>Tham số <code>guidance_scale</code> bạn chỉnh trong Stable Diffusion chính là w.</p>
+<h2 id="lt-3">CLIP: nối chữ với ảnh</h2>
+<p><strong>CLIP</strong> gồm một encoder ảnh và một encoder văn bản, train trên hàng trăm triệu cặp (ảnh, chú thích) bằng <strong>học tương phản</strong>: trong một batch N cặp, kéo embedding của các cặp đúng lại gần nhau, đẩy N² − N cặp sai ra xa.</p>
+<p>Kết quả là một không gian chung: câu "một chiếc ghế gỗ" nằm gần ảnh ghế gỗ. Stable Diffusion dùng <strong>encoder văn bản</strong> của CLIP để biến prompt thành chuỗi vector: mỗi token một vector (với SD 1.5 là 77 token × 768 chiều).</p>
+<h2 id="lt-4">Cross-attention: đưa chuỗi văn bản vào U-Net</h2>
+<p>Một vector lớp cộng vào là đủ cho 10 lớp, nhưng không đủ cho câu "ghế gỗ màu trắng bên cửa sổ". <strong>Cross-attention</strong> (Bài 3) cho mỗi vị trí trong ảnh tự chọn phần nào của câu để chú ý:</p>
+<div class="hl"><pre><span></span><code>Query  = từ feature map của ảnh   (mỗi pixel ở độ phân giải thấp là một query)
+Key, Value = từ embedding văn bản  (mỗi token là một key/value)
+</code></pre></div>
+
+<p>Vùng đang vẽ chân ghế chú ý vào từ "gỗ", vùng nền chú ý vào "cửa sổ". Các lớp cross-attention được chèn vào nhiều mức của U-Net, xen kẽ với self-attention.</p>
+<div class="keep">
+<p><strong>Ghi nhớ:</strong> prompt điều khiển ảnh qua cross-attention, còn guidance scale quyết định model nghe prompt "mạnh" tới đâu.</p>
+</div>
+<h2 id="lt-5">Negative prompt</h2>
+<p>Trong CFG, thay nhánh không điều kiện ε(xₜ, t, ∅) bằng ε(xₜ, t, câu phủ định), ví dụ "mờ, méo, chữ ký". Công thức đẩy ảnh <strong>ra xa</strong> câu phủ định và <strong>lại gần</strong> prompt. Đó là cách negative prompt hoạt động.</p></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p5.3:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 4</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Một bước CFG</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Tại một pixel, ε(xₜ, t, ∅) = 0.2 và ε(xₜ, t, y) = 0.5.</p>
+<div class="ans" id="p5-3-e1-a1"><div class="ans-fields"><label>ε̂ với w = 1<input inputmode="decimal" data-ans="0.5" data-tol="0.001" autocomplete="off"></label><label>ε̂ với w = 3<input inputmode="decimal" data-ans="1.1" data-tol="0.001" autocomplete="off"></label><label>ε̂ với w = 0<input inputmode="decimal" data-ans="0.2" data-tol="0.001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+
+<details class="fold solution">
+<summary>Lời giải</summary>
+<p>w = 1 cho đúng dự đoán có điều kiện 0.5. w = 3 đẩy xa gấp ba theo hướng điều kiện: 0.2 + 0.9 = 1.1. w = 0 bỏ qua điều kiện.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 2</span><h3>Bỏ nhãn khi train</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Batch 128 ảnh, xác suất thay nhãn bằng ∅ là 10%.</p>
+<div class="ans" id="p5-3-e2-a1"><div class="ans-fields"><label>Số ảnh trung bình mỗi batch mang nhãn rỗng<input inputmode="decimal" data-ans="12.8" data-tol="0.001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+
+<details class="fold solution">
+<summary>Lời giải</summary>
+<p>128 × 0.1 = 12.8. Một model duy nhất học cả hai chế độ, không cần train model không điều kiện riêng. Đó là chữ "classifier-free": không cần một bộ phân loại riêng như cách làm cũ.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 3</span><h3>Kích thước cross-attention</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Feature map 64×64 ở một mức của U-Net, prompt mã hóa thành 77 token.</p>
+<div class="ans" id="p5-3-e3-a1"><div class="ans-fields"><label>Số query<input inputmode="decimal" data-ans="4096.0" data-tol="0.0" autocomplete="off"></label><label>Số phần tử ma trận attention<input inputmode="decimal" data-ans="315392.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+
+<details class="fold solution">
+<summary>Lời giải</summary>
+<p>4096 query (mỗi vị trí một query) × 77 key = 315.392 phần tử. Nhỏ hơn rất nhiều so với self-attention 4096 × 4096 ở cùng mức, nên self-attention thường chỉ đặt ở độ phân giải thấp.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 4</span><h3>Học tương phản của CLIP</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Một batch CLIP có 32 cặp (ảnh, chú thích).</p>
+<div class="ans" id="p5-3-e4-a1"><div class="ans-fields"><label>Số cặp ảnh–chú thích được so sánh<input inputmode="decimal" data-ans="1024.0" data-tol="0.0" autocomplete="off"></label><label>Số cặp đúng<input inputmode="decimal" data-ans="32.0" data-tol="0.0" autocomplete="off"></label><label>Loss phân loại nếu model đoán đều (mỗi ảnh chọn 1 trong 32 chú thích)<input inputmode="decimal" data-ans="3.4657" data-tol="0.001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+
+<details class="fold solution">
+<summary>Lời giải</summary>
+<p>32 × 32 = 1024 cặp, 32 đúng nằm trên đường chéo. Với mỗi ảnh, loss là cross-entropy chọn đúng chú thích trong 32; đoán đều cho ln 32 ≈ 3.47. Batch lớn hơn làm bài toán khó hơn và học tốt hơn, nên CLIP gốc train với batch hàng chục nghìn.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 5</span><h3>Chọn guidance scale</h3><span class="ex-tag concept">khái niệm</span></div><div class="prose"><p>Mô tả bạn kỳ vọng thấy gì ở ảnh sinh ra với w = 1, 4, 15. Nếu sản phẩm cần cho người dùng nhiều phương án khác nhau để chọn, bạn đặt w thế nào?</p>
+<details class="fold solution">
+<summary>Lời giải</summary>
+<p>w = 1: ảnh đa dạng nhưng đôi khi lạc đề, chi tiết nhòe. w = 4: bám đề, rõ nét, vẫn khá đa dạng. w = 15: màu gắt, tương phản quá mức, các ảnh gần giống nhau. Cần nhiều phương án thì chọn w thấp-trung bình (3–5) và sinh nhiều seed; cần một ảnh bám sát mô tả thì tăng w lên 7–8.</p>
+</details></div></article><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p5.3:b">Tôi đã xong phần bài tập</label><button class="btn" type="button" data-goto="thuc-hanh">Sang thực hành <span class="arr">→</span></button></div></section><section class="panel" id="thuc-hanh" role="tabpanel" hidden><div class="prose"><h2>Sinh Fashion-MNIST theo lớp với CFG</h2>
+<p>Dùng lại code GĐ2, thêm điều kiện lớp.</p>
+<p><strong>Các bước</strong></p>
+<ol>
+<li><code>UNet2DModel(..., num_class_embeds=11)</code>: 10 lớp thật + lớp 10 là nhãn rỗng ∅.</li>
+<li>Khi train, thay nhãn bằng 10 với xác suất 10%, gọi <code>model(x_t, t, class_labels=y)</code>.</li>
+<li>Sampler DDIM có CFG: mỗi bước ghép batch đôi (nhãn thật và nhãn rỗng), tách kết quả, áp công thức guidance.</li>
+<li>Sinh lưới 10 hàng × 8 cột, mỗi hàng một lớp, với w = 0, 1, 3, 7.</li>
+<li>Đo độ chính xác: train nhanh một CNN phân loại Fashion-MNIST, cho nó phân loại ảnh sinh ra và đo tỉ lệ đúng lớp theo w. Đo thêm độ đa dạng (khoảng cách trung bình giữa các ảnh cùng lớp).</li>
+</ol>
+<p><strong>Xong khi</strong></p>
+<ul>
+<li>Lưới ảnh cho thấy mỗi hàng đúng lớp.</li>
+<li>Biểu đồ "độ chính xác lớp" và "độ đa dạng" theo w, cho thấy rõ đánh đổi.</li>
+</ul>
+<details class="fold code">
+<summary>Code tham khảo</summary>
+<div class="hl"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span><span class="o">,</span><span class="w"> </span><span class="nn">torch.nn.functional</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">F</span>
+<span class="n">NULL</span> <span class="o">=</span> <span class="mi">10</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">train_step</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">opt</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">abar</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">p_uncond</span><span class="o">=</span><span class="mf">0.1</span><span class="p">):</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">rand_like</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">p_uncond</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">full_like</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">NULL</span><span class="p">),</span> <span class="n">y</span><span class="p">)</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="p">(</span><span class="n">x0</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">),),</span> <span class="n">device</span><span class="o">=</span><span class="n">x0</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+    <span class="n">eps</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn_like</span><span class="p">(</span><span class="n">x0</span><span class="p">)</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="n">abar</span><span class="p">[</span><span class="n">t</span><span class="p">]</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">loss</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">mse_loss</span><span class="p">(</span><span class="n">model</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">sqrt</span><span class="p">()</span> <span class="o">*</span> <span class="n">x0</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">a</span><span class="p">)</span><span class="o">.</span><span class="n">sqrt</span><span class="p">()</span> <span class="o">*</span> <span class="n">eps</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">class_labels</span><span class="o">=</span><span class="n">y</span><span class="p">)</span><span class="o">.</span><span class="n">sample</span><span class="p">,</span> <span class="n">eps</span><span class="p">)</span>
+    <span class="n">opt</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">();</span> <span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">();</span> <span class="n">opt</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">loss</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+
+<span class="nd">@torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">()</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">sample_cfg</span><span class="p">(</span><span class="n">net</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">abar</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">w</span><span class="o">=</span><span class="mf">3.0</span><span class="p">,</span> <span class="n">steps</span><span class="o">=</span><span class="mi">50</span><span class="p">):</span>
+    <span class="n">n</span><span class="p">,</span> <span class="n">dev</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">labels</span><span class="p">),</span> <span class="n">labels</span><span class="o">.</span><span class="n">device</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">dev</span><span class="p">)</span>
+    <span class="n">ts</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">T</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">steps</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">dev</span><span class="p">)</span><span class="o">.</span><span class="n">long</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">ts</span><span class="p">):</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">net</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">x</span><span class="p">,</span> <span class="n">x</span><span class="p">]),</span> <span class="n">t</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">n</span><span class="p">),</span> <span class="n">class_labels</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">labels</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">full_like</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">NULL</span><span class="p">)]))</span><span class="o">.</span><span class="n">sample</span>
+        <span class="n">e_c</span><span class="p">,</span> <span class="n">e_u</span> <span class="o">=</span> <span class="n">out</span><span class="o">.</span><span class="n">chunk</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+        <span class="n">eps</span> <span class="o">=</span> <span class="n">e_u</span> <span class="o">+</span> <span class="n">w</span> <span class="o">*</span> <span class="p">(</span><span class="n">e_c</span> <span class="o">-</span> <span class="n">e_u</span><span class="p">)</span>
+        <span class="n">x0</span> <span class="o">=</span> <span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">abar</span><span class="p">[</span><span class="n">t</span><span class="p">])</span><span class="o">.</span><span class="n">sqrt</span><span class="p">()</span> <span class="o">*</span> <span class="n">eps</span><span class="p">)</span> <span class="o">/</span> <span class="n">abar</span><span class="p">[</span><span class="n">t</span><span class="p">]</span><span class="o">.</span><span class="n">sqrt</span><span class="p">()</span>
+        <span class="n">a_next</span> <span class="o">=</span> <span class="n">abar</span><span class="p">[</span><span class="n">ts</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]]</span> <span class="k">if</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">&lt;</span> <span class="n">steps</span> <span class="k">else</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">dev</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">a_next</span><span class="o">.</span><span class="n">sqrt</span><span class="p">()</span> <span class="o">*</span> <span class="n">x0</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">a_next</span><span class="p">)</span><span class="o">.</span><span class="n">sqrt</span><span class="p">()</span> <span class="o">*</span> <span class="n">eps</span>
+    <span class="k">return</span> <span class="n">x</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+<span class="n">labels</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span><span class="o">.</span><span class="n">repeat_interleave</span><span class="p">(</span><span class="mi">8</span><span class="p">)</span>          <span class="c1"># 10 lớp × 8 ảnh</span>
+</code></pre></div>
+
+</details></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p5.3:p">Tôi đã xong phần thực hành</label></div></section>
+      <div class="donewhen"><b>Xong bài khi</b>Đổi guidance scale cho thấy rõ đánh đổi giữa đa dạng và bám đề.</div>
       <nav class="pn" aria-label="Bài trước, bài sau"><a href="p5-2.html"><span class="dir">← Bài trước · P5.2</span><span class="tt">GĐ 2 · Diffusion cho ảnh</span></a><a class="nx" href="p5-4.html"><span class="dir">Bài sau · P5.4 →</span><span class="tt">GĐ 4 · Latent diffusion và Stable Diffusion</span></a></nav>
     </div>
     <aside class="aside">
       <div class="abox"><h4>Tiến độ bài này</h4><div class="ring"><svg viewBox="0 0 64 64" aria-hidden="true"><circle class="bg" cx="32" cy="32" r="28"/><circle class="fg" cx="32" cy="32" r="28" stroke-dasharray="176" stroke-dashoffset="176"/></svg><div><b id="ring-n">0/3</b><span id="ring-sub">phần đã xong</span></div></div></div>
+      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Điều kiện theo lớp</a></li><li><a href="#lt-2">Classifier-free guidance (CFG)</a></li><li><a href="#lt-3">CLIP: nối chữ với ảnh</a></li><li><a href="#lt-4">Cross-attention: đưa chuỗi văn bản vào U-Net</a></li><li><a href="#lt-5">Negative prompt</a></li></ol></div>
       
       <div class="abox"><h4>Cùng giai đoạn</h4><ul><li><a href="p5-1.html">GĐ 1 · Diffusion tạo ảnh thế nào</a></li><li><a href="p5-2.html">GĐ 2 · Diffusion cho ảnh</a></li><li><span class=cur>GĐ 3 · Điều khiển bằng chữ</span></li><li><a href="p5-4.html">GĐ 4 · Latent diffusion và Stable Diffusion</a></li><li><a href="p5-5.html">GĐ 5 · Fine-tune LoRA</a></li><li><a href="p5-6.html">GĐ 6 · Đánh giá và rectified flow</a></li><li><a href="p5-7.html">GĐ 7 · Đóng gói sản phẩm</a></li></ul></div>
     </aside>
@@ -43,16 +147,75 @@
 
 (function () {
   const mid = document.body.dataset.mid; let d = AIE.load();
+  const EXK = "aie-ex-" + mid;
+  let solved = {}; try { solved = JSON.parse(localStorage.getItem(EXK) || "{}") || {}; } catch (e) {}
+  const saveSolved = () => { try { localStorage.setItem(EXK, JSON.stringify(solved)); } catch (e) {} };
+  const tabs = [...document.querySelectorAll(".tab")], panels = [...document.querySelectorAll(".panel")];
   const boxes = [...document.querySelectorAll("input[data-key]")], ring = document.querySelector(".ring .fg"), rt = document.getElementById("ring-n");
-  const skipped = () => !!d[mid + ":skip"];
+  const toc = document.getElementById("toc-box");
+  function show(id, scroll) {
+    tabs.forEach((t) => t.setAttribute("aria-selected", String(t.dataset.tab === id)));
+    panels.forEach((p) => { const on = p.id === id; if (on && p.hidden) { p.classList.remove("enter"); void p.offsetWidth; p.classList.add("enter"); } p.hidden = !on; });
+    if (toc) toc.hidden = id !== "ly-thuyet";
+    if (scroll) document.querySelector(".tabs").scrollIntoView({ block: "start" });
+  }
+  tabs.forEach((t) => t.addEventListener("click", () => { history.replaceState(null, "", "#" + t.dataset.tab); show(t.dataset.tab, true); }));
+  document.querySelectorAll("[data-goto]").forEach((b) => b.addEventListener("click", () => { history.replaceState(null, "", "#" + b.dataset.goto); show(b.dataset.goto, true); }));
+  const start = ["ly-thuyet", "bai-tap", "thuc-hanh"].includes(location.hash.slice(1)) ? location.hash.slice(1) : "ly-thuyet";
+  show(start, false);
+  window.addEventListener("hashchange", () => { const h = location.hash.slice(1); if (["ly-thuyet", "bai-tap", "thuc-hanh"].includes(h)) show(h, true); });
+  document.querySelectorAll(".toc a").forEach((a) => a.addEventListener("click", () => show("ly-thuyet", false)));
+
   function render() {
     let n = 0;
-    boxes.forEach((b) => { const on = skipped() || !!d[b.dataset.key]; b.checked = on; b.disabled = skipped(); b.closest(".pblock").classList.toggle("done", on); if (on) n++; });
+    const skip = !!d[mid + ":skip"];
+    boxes.forEach((b) => { const on = skip || !!d[b.dataset.key]; b.checked = on; if (on) n++; });
+    const kmap = { t: "ly-thuyet", b: "bai-tap", p: "thuc-hanh" };
+    tabs.forEach((t) => { const k = Object.keys(kmap).find((x) => kmap[x] === t.dataset.tab); t.classList.toggle("is-done", skip || !!d[mid + ":" + k]); });
     ring.style.strokeDashoffset = String(176 * (1 - n / 3)); rt.textContent = n + "/3";
-    document.getElementById("ring-sub").textContent = skipped() ? "đã đánh dấu bỏ qua" : n === 3 ? "hoàn thành bài này" : "phần đã xong";
+    document.getElementById("ring-sub").textContent = n === 3 ? "hoàn thành bài này" : "phần đã xong";
   }
-  boxes.forEach((b) => b.addEventListener("change", () => { d = AIE.load(); if (b.checked) d[b.dataset.key] = true; else delete d[b.dataset.key]; AIE.save(d); render(); }));
+  boxes.forEach((b) => b.addEventListener("change", () => {
+    d = AIE.load(); if (b.checked) d[b.dataset.key] = true; else delete d[b.dataset.key]; AIE.save(d);
+    boxes.filter((x) => x.dataset.key === b.dataset.key).forEach((x) => (x.checked = b.checked)); render();
+  }));
   render();
+
+  /* answer boxes */
+  const parse = (s) => parseFloat(String(s).trim().replace(",", ".").replace("−", "-"));
+  const allAns = [...document.querySelectorAll(".ans")];
+  function score() {
+    const ok = allAns.filter((a) => solved[a.id]).length;
+    const el = document.getElementById("ex-score");
+    if (el) { el.querySelector("b").textContent = `${ok} / ${allAns.length}`; el.querySelector(".bar i").style.width = (allAns.length ? ok / allAns.length * 100 : 0) + "%"; }
+    document.querySelectorAll(".excard").forEach((c) => { const as = [...c.querySelectorAll(".ans")]; c.classList.toggle("solved", as.length > 0 && as.every((a) => solved[a.id])); });
+  }
+  allAns.forEach((box) => {
+    const inputs = [...box.querySelectorAll("input")], fb = box.querySelector(".ans-fb");
+    const mark = () => { box.classList.add("ok"); inputs.forEach((i) => { i.classList.add("ok"); if (!i.value) i.value = i.dataset.ans; }); fb.className = "ans-fb ok"; fb.textContent = "Chính xác."; };
+    if (solved[box.id]) mark();
+    const run = () => {
+      let all = true, empty = false;
+      inputs.forEach((i) => {
+        const v = parse(i.value);
+        if (i.value.trim() === "" || Number.isNaN(v)) { empty = true; all = false; i.classList.remove("ok", "bad"); return; }
+        const good = Math.abs(v - parseFloat(i.dataset.ans)) <= parseFloat(i.dataset.tol) + 1e-9;
+        i.classList.toggle("ok", good); i.classList.toggle("bad", !good); if (!good) all = false;
+      });
+      if (all) { solved[box.id] = true; saveSolved(); mark(); box.classList.remove("pop"); void box.offsetWidth; box.classList.add("pop"); score(); }
+      else { fb.className = "ans-fb bad"; fb.textContent = empty ? "Điền đủ các ô bằng số (dấu chấm hoặc phẩy đều được)." : "Ô màu cam chưa đúng. Xem lại bước đó, hoặc mở gợi ý."; }
+    };
+    box.querySelector(".btn-check").addEventListener("click", run);
+    inputs.forEach((i) => i.addEventListener("keydown", (e) => { if (e.key === "Enter") run(); }));
+  });
+  score();
+
+  /* highlight current theory section in the toc */
+  if (toc && "IntersectionObserver" in window) {
+    const links = [...toc.querySelectorAll("a")];
+    const io = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) links.forEach((a) => a.classList.toggle("on", a.getAttribute("href") === "#" + e.target.id)); }), { rootMargin: "-140px 0px -65% 0px" });
+    document.querySelectorAll("#ly-thuyet h2[id]").forEach((h) => io.observe(h));
+  }
 })();
 
 </script>

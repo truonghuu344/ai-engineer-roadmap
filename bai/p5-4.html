@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>P5.4 · GĐ 4 · Latent diffusion và Stable Diffusion · AI Engineer</title>
-<meta name="description" content="GĐ 4 · Latent diffusion và Stable Diffusion: VAE, không gian latent 64×64×4; Mổ xẻ pipeline: tokenizer → text encoder → U-Net → scheduler → VAE decode">
+<meta name="description" content="GĐ 4 · Latent diffusion và Stable Diffusion: lý thuyết, bài tập và thực hành. VAE, không gian latent 64×64×4; Mổ xẻ pipeline: tokenizer → text encoder → U-Net → scheduler → VAE decode">
 <meta property="og:title" content="P5.4 · GĐ 4 · Latent diffusion và Stable Diffusion · AI Engineer">
-<meta property="og:description" content="GĐ 4 · Latent diffusion và Stable Diffusion: VAE, không gian latent 64×64×4; Mổ xẻ pipeline: tokenizer → text encoder → U-Net → scheduler → VAE decode">
+<meta property="og:description" content="GĐ 4 · Latent diffusion và Stable Diffusion: lý thuyết, bài tập và thực hành. VAE, không gian latent 64×64×4; Mổ xẻ pipeline: tokenizer → text encoder → U-Net → scheduler → VAE decode">
 <meta name="theme-color" content="#F4F6FB">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23131A33'/%3E%3Cpath d='M9 22 L16 10 L23 19' stroke='%23E5E9FB' stroke-width='2' fill='none'/%3E%3Ccircle cx='9' cy='22' r='3' fill='%23E5E9FB'/%3E%3Ccircle cx='16' cy='10' r='3' fill='%23E5E9FB'/%3E%3Ccircle cx='23' cy='19' r='3' fill='%23FF9361'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -14,23 +14,185 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="../assets/chrome.css">
 <link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/lesson.css">
 </head>
 <body data-mid="p5.4">
 <header class="sh"><div class="sh-in"><a class="sh-brand" href="../index.html"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="var(--ink)"/><circle cx="9" cy="22" r="2.6" fill="var(--accent-soft)"/><circle cx="16" cy="10" r="2.6" fill="var(--accent-soft)"/><circle cx="23" cy="19" r="2.6" fill="#FF9361"/><path d="M9 22 L16 10 L23 19" stroke="var(--accent-soft)" stroke-width="1.8" fill="none"/></svg><span>AI Engineer<small>lộ trình tự học</small></span></a><nav class="sh-nav" id="sh-nav" aria-label="Chính"><a href="../index.html">Trang chủ</a><a href="../bai-hoc.html" aria-current="page">Bài học</a><a href="../lo-trinh.html">Lộ trình</a><a href="../notebooks.html">Notebook</a><a class="sh-cta-m" href="../bai01.html" data-next-lesson>Học tiếp →</a></nav><a class="sh-cta" href="../bai01.html" data-next-lesson>Học tiếp <span class="arr">→</span></a><button class="sh-burger" type="button" aria-expanded="false" aria-controls="sh-nav">Menu</button></div></header>
 
 <main class="container">
   <div class="crumbs"><a href="../bai-hoc.html">Bài học</a><span>/</span><a href="../bai-hoc.html#p5">P5 · Dự án Diffusion: tạo ảnh từ con số 0</a><span>/</span><span>P5.4</span></div>
-  <section class="lhero side"><div class="code">P5.4</div><h1>GĐ 4 · Latent diffusion và Stable Diffusion</h1><div class="lmeta"><span class="m">Giai đoạn P5 · Dự án Diffusion: tạo ảnh từ con số 0</span><span class="m">Tuần 10–30</span><span class="chip planned">Đề cương</span></div></section>
-  <div class="lgrid">
-    <div>
-      <div class="goal"><b>Mục tiêu giai đoạn:</b> Làm lại đồ án tạo ảnh theo hướng hiểu sâu: tự viết diffusion, mổ xẻ Stable Diffusion, fine-tune LoRA, đóng gói thành sản phẩm.</div>
-      <div class="soon">Nội dung đầy đủ (trang lý thuyết tương tác và notebook tự chấm) đang được soạn và sẽ có khi bạn học tới bài này. Đề cương dưới đây là phạm vi chính xác của bài.</div>
-      <section class="pblock reveal"><div class="pblock-head"><span class="num">1</span><h2>Lý thuyết<span style="display:block;font:400 13.5px var(--f-body);color:var(--muted);margin-top:4px">Những gì cần hiểu</span></h2><label class="tick" for="cb-t"><input type="checkbox" id="cb-t" data-key="p5.4:t">Xong</label></div><ol><li>VAE, không gian latent 64×64×4</li><li>Mổ xẻ pipeline: tokenizer → text encoder → U-Net → scheduler → VAE decode</li></ol></section><section class="pblock reveal"><div class="pblock-head"><span class="num">2</span><h2>Bài tập<span style="display:block;font:400 13.5px var(--f-body);color:var(--muted);margin-top:4px">Tính tay và tự kiểm tra</span></h2><label class="tick" for="cb-b"><input type="checkbox" id="cb-b" data-key="p5.4:b">Xong</label></div><ol><li>Tính bộ nhớ tiết kiệm được khi khử nhiễu trong latent thay vì pixel</li></ol></section><section class="pblock reveal"><div class="pblock-head"><span class="num">3</span><h2>Thực hành<span style="display:block;font:400 13.5px var(--f-body);color:var(--muted);margin-top:4px">Code và dự án</span></h2><label class="tick" for="cb-p"><input type="checkbox" id="cb-p" data-key="p5.4:p">Xong</label></div><ol><li>Tự viết vòng lặp sampling Stable Diffusion thay cho pipeline() của diffusers</li></ol></section>
-      <div class="donewhen reveal"><b>Xong khi</b>Cùng seed và prompt, ảnh của bạn trùng ảnh của pipeline().</div>
+  <section class="lhero side"><div class="code">P5.4</div><h1>GĐ 4 · Latent diffusion và Stable Diffusion</h1><div class="lmeta"><span class="m">Giai đoạn P5 · Dự án Diffusion: tạo ảnh từ con số 0</span><span class="m">Tuần 10–30</span><span class="chip ready"><span class="dot"></span>Có nội dung đầy đủ</span></div>
+    <div class="intro"><p>Khử nhiễu trực tiếp trên ảnh 512×512×3 thì mỗi bước U-Net phải xử lý gần 800 nghìn con số: quá chậm và tốn bộ nhớ. <strong>Latent diffusion</strong>, nền tảng của Stable Diffusion, nén ảnh vào một không gian nhỏ hơn 48 lần bằng <strong>VAE</strong>, khử nhiễu ở đó, rồi giải nén ra ảnh. Bài này mổ xẻ từng thành phần của Stable Diffusion, và phần thực hành bạn tự viết vòng lặp sinh ảnh thay cho hàm <code>pipeline()</code> một dòng.</p></div></section>
+  
+  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">5 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
+  <div class="lgrid" style="margin-top:22px">
+    <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">VAE: nén ảnh vào không gian latent</h2>
+<p><strong>Autoencoder</strong> gồm encoder nén ảnh thành vector nhỏ và decoder dựng lại ảnh. <strong>VAE</strong> (variational autoencoder) thêm ràng buộc để không gian latent trơn tru, lấy mẫu được.</p>
+<p>Với Stable Diffusion 1.5:</p>
+<div class="hl"><pre><span></span><code>ảnh 512×512×3  ──encoder──▶  latent 64×64×4  ──decoder──▶  ảnh 512×512×3
+                (giảm 8 lần mỗi chiều)
+</code></pre></div>
+
+<p>VAE được train <strong>riêng và trước</strong>, rồi đóng băng. Nó học giữ lại cấu trúc có nghĩa và bỏ chi tiết pixel mà mắt người khó thấy. Diffusion chỉ cần học trên latent nhỏ gọn. Latent được nhân với một hệ số (<code>vae.config.scaling_factor</code>, khoảng 0.18 với SD 1.5) để có phương sai gần 1, đúng giả định của lịch nhiễu.</p>
+<h2 id="lt-2">Bốn thành phần của Stable Diffusion</h2>
+<table>
+<thead>
+<tr>
+<th>Thành phần</th>
+<th>Vai trò</th>
+<th>SD 1.5</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Tokenizer</td>
+<td>prompt → tối đa 77 token id</td>
+<td>CLIP tokenizer</td>
+</tr>
+<tr>
+<td>Text encoder</td>
+<td>token id → 77 vector ngữ nghĩa</td>
+<td>CLIP ViT-L/14, 768 chiều</td>
+</tr>
+<tr>
+<td>U-Net</td>
+<td>đoán nhiễu trên latent, nhận văn bản qua cross-attention</td>
+<td>khoảng 860 triệu tham số</td>
+</tr>
+<tr>
+<td>Scheduler</td>
+<td>quy tắc cập nhật latent mỗi bước</td>
+<td>DDPM, DDIM, DPM-Solver, Euler…</td>
+</tr>
+<tr>
+<td>VAE decoder</td>
+<td>latent → ảnh</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>Khi sinh ảnh với guidance, U-Net chạy cho cả prompt và prompt rỗng (hoặc negative prompt) ở mỗi bước, gộp bằng CFG (GĐ3).</p>
+<h2 id="lt-3">Vòng lặp sinh ảnh, từng dòng</h2>
+<div class="hl"><pre><span></span><code>1. Mã hóa prompt và prompt rỗng → hai chuỗi 77×768
+2. Lấy latent nhiễu z ~ N(0, I) shape (1, 4, 64, 64) từ seed
+3. scheduler.set_timesteps(30)
+4. Với mỗi t:
+     đầu vào = [z, z] (nhân đôi cho CFG), scheduler.scale_model_input
+     ε_u, ε_c = U-Net(đầu vào, t, [rỗng, prompt])
+     ε = ε_u + w·(ε_c − ε_u)
+     z = scheduler.step(ε, t, z)
+5. ảnh = VAE.decode(z / scaling_factor)
+</code></pre></div>
+
+<p>Bạn đã viết mọi mảnh này ở GĐ1–3. Stable Diffusion chỉ là ghép lại ở quy mô lớn.</p>
+<h2 id="lt-4">Scheduler và các tham số người dùng chỉnh</h2>
+<ul>
+<li><strong>Số bước:</strong> sampler hiện đại như DPM-Solver++ cho ảnh tốt ở 20–30 bước.</li>
+<li><strong>Guidance scale:</strong> 7–7.5 là mặc định phổ biến với SD 1.5.</li>
+<li><strong>Seed:</strong> quyết định nhiễu ban đầu. Cùng seed, prompt, scheduler và số bước thì ra cùng ảnh.</li>
+<li><strong>Độ phân giải:</strong> SD 1.5 train ở 512×512; sinh ở kích thước khác xa dễ bị lặp vật thể.</li>
+</ul>
+<h2 id="lt-5">Các biến thể dựa trên cùng cơ chế</h2>
+<ul>
+<li><strong>img2img:</strong> thay vì bắt đầu từ nhiễu thuần, mã hóa một ảnh có sẵn, thêm nhiễu tới bước t ở giữa (độ mạnh <code>strength</code>), rồi khử nhiễu từ đó.</li>
+<li><strong>Inpainting:</strong> chỉ khử nhiễu vùng bị che, giữ nguyên phần còn lại.</li>
+<li><strong>ControlNet:</strong> thêm một mạng phụ đưa điều kiện không gian (đường viền, tư thế, độ sâu) vào U-Net.</li>
+</ul>
+<div class="keep">
+<p><strong>Ghi nhớ:</strong> latent diffusion = VAE (nén) + diffusion trên latent + điều kiện văn bản qua cross-attention. Hiểu ba mảnh này là hiểu hầu hết model tạo ảnh hiện nay.</p>
+</div></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p5.4:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 3</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Kích thước latent</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Ảnh 512×512×3, VAE giảm 8 lần mỗi chiều, latent có 4 kênh.</p>
+<div class="ans" id="p5-4-e1-a1"><div class="ans-fields"><label>Cạnh của latent<input inputmode="decimal" data-ans="64.0" data-tol="0.0" autocomplete="off"></label><label>Số phần tử latent<input inputmode="decimal" data-ans="16384.0" data-tol="0.0" autocomplete="off"></label><label>Ảnh gốc lớn gấp bao nhiêu lần latent<input inputmode="decimal" data-ans="48.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+
+<details class="fold solution">
+<summary>Lời giải</summary>
+<p>512/8 = 64. Latent 64·64·4 = 16.384 số; ảnh 786.432 số; tỉ lệ 48. U-Net làm việc trên dữ liệu nhỏ hơn 48 lần, nên nhanh và nhẹ hơn rất nhiều.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 2</span><h3>Bộ nhớ và số lần chạy U-Net</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>U-Net có khoảng 860 triệu tham số, lưu fp16 (1 GB = 10⁹ byte). Sinh 1 ảnh, 30 bước, có CFG.</p>
+<div class="ans" id="p5-4-e2-a1"><div class="ans-fields"><label>Trọng số U-Net ở fp16 (GB)<input inputmode="decimal" data-ans="1.72" data-tol="0.01" autocomplete="off"></label><label>Số lần U-Net xử lý một latent<input inputmode="decimal" data-ans="60.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+
+<details class="fold solution">
+<summary>Lời giải</summary>
+<p>860·10⁶ × 2 byte = 1,72 GB. CFG nhân đôi: 30 bước × 2 = 60 lượt xử lý latent (thường gộp thành 30 lần chạy với batch 2). Tắt CFG (w = 1) nhanh gấp đôi nhưng ảnh kém bám đề.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 3</span><h3>Giới hạn prompt</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Tokenizer CLIP nhận tối đa 77 token, trong đó có 1 token bắt đầu và 1 token kết thúc.</p>
+<div class="ans" id="p5-4-e3-a1"><div class="ans-fields"><label>Số token dành cho nội dung prompt<input inputmode="decimal" data-ans="75.0" data-tol="0.0" autocomplete="off"></label><label>Prompt dài 90 token bị cắt mất bao nhiêu token<input inputmode="decimal" data-ans="15.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+
+<details class="fold solution">
+<summary>Lời giải</summary>
+<p>75 token cho nội dung. Prompt 90 token mất 15 token cuối: các chi tiết đặt cuối prompt dài sẽ bị bỏ qua mà không báo lỗi. Đặt thông tin quan trọng ở đầu.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 4</span><h3>img2img strength</h3><span class="ex-tag concept">khái niệm</span></div><div class="prose"><p>Với img2img, <code>strength = 0.3</code> và <code>strength = 0.9</code> cho kết quả khác nhau thế nào? Giải thích bằng quá trình thêm nhiễu và khử nhiễu.</p>
+<details class="fold solution">
+<summary>Lời giải</summary>
+<p>strength là tỉ lệ quãng đường nhiễu: 0.3 thêm ít nhiễu (dừng ở khoảng 30% lịch nhiễu) rồi khử nhiễu 30% số bước, nên ảnh giữ gần hết bố cục và màu của ảnh gốc, chỉ đổi chi tiết. 0.9 gần như phá hết ảnh gốc, chỉ còn bố cục mờ nhạt, ảnh mới chủ yếu theo prompt.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 5</span><h3>Đọc pipeline</h3><span class="ex-tag code">code</span></div><div class="prose"><p>Viết đoạn code in ra kiến trúc của các thành phần trong một pipeline Stable Diffusion: số tham số của U-Net, text encoder, VAE; scaling factor của VAE; tên scheduler mặc định; độ dài tối đa của tokenizer.</p>
+<details class="fold code">
+<summary>Code tham khảo</summary>
+<div class="hl"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">diffusers</span><span class="w"> </span><span class="kn">import</span> <span class="n">StableDiffusionPipeline</span>
+<span class="n">pipe</span> <span class="o">=</span> <span class="n">StableDiffusionPipeline</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="s2">"stable-diffusion-v1-5/stable-diffusion-v1-5"</span><span class="p">,</span> <span class="n">torch_dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float16</span><span class="p">)</span>
+<span class="n">count</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">m</span><span class="p">:</span> <span class="nb">sum</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">numel</span><span class="p">()</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">m</span><span class="o">.</span><span class="n">parameters</span><span class="p">())</span> <span class="o">/</span> <span class="mf">1e6</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"U-Net </span><span class="si">{</span><span class="n">count</span><span class="p">(</span><span class="n">pipe</span><span class="o">.</span><span class="n">unet</span><span class="p">)</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2">M | text encoder </span><span class="si">{</span><span class="n">count</span><span class="p">(</span><span class="n">pipe</span><span class="o">.</span><span class="n">text_encoder</span><span class="p">)</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2">M | VAE </span><span class="si">{</span><span class="n">count</span><span class="p">(</span><span class="n">pipe</span><span class="o">.</span><span class="n">vae</span><span class="p">)</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2">M"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"scaling factor:"</span><span class="p">,</span> <span class="n">pipe</span><span class="o">.</span><span class="n">vae</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">scaling_factor</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"scheduler:"</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">pipe</span><span class="o">.</span><span class="n">scheduler</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="s2">"| max tokens:"</span><span class="p">,</span> <span class="n">pipe</span><span class="o">.</span><span class="n">tokenizer</span><span class="o">.</span><span class="n">model_max_length</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"cross-attention dim:"</span><span class="p">,</span> <span class="n">pipe</span><span class="o">.</span><span class="n">unet</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">cross_attention_dim</span><span class="p">)</span>
+</code></pre></div>
+
+</details></div></article><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p5.4:b">Tôi đã xong phần bài tập</label><button class="btn" type="button" data-goto="thuc-hanh">Sang thực hành <span class="arr">→</span></button></div></section><section class="panel" id="thuc-hanh" role="tabpanel" hidden><div class="prose"><h2>Tự viết vòng lặp sinh ảnh Stable Diffusion</h2>
+<p>Chạy trên Colab T4. Mục tiêu: thay <code>pipe(prompt)</code> bằng vòng lặp của chính bạn, và chứng minh cho cùng kết quả.</p>
+<p><strong>Các bước</strong></p>
+<ol>
+<li>Tải pipeline SD 1.5 ở fp16, đổi scheduler sang <code>DPMSolverMultistepScheduler</code>.</li>
+<li>Viết <code>encode_prompt(text)</code> bằng tokenizer và text encoder.</li>
+<li>Viết <code>generate(prompt, negative, seed, steps=30, w=7.5)</code> theo vòng lặp ở phần lý thuyết.</li>
+<li>So với <code>pipe(prompt, negative_prompt=..., generator=torch.Generator("cuda").manual_seed(seed), num_inference_steps=30, guidance_scale=7.5)</code>: tính sai số pixel trung bình giữa hai ảnh.</li>
+<li>Thí nghiệm: lưới ảnh theo w ∈ {1, 3, 7.5, 12} × 3 seed; ảnh theo số bước 10, 20, 30, 50; hiển thị latent trung gian (decode x̂₀) ở các bước 5, 15, 25.</li>
+<li>Viết img2img đơn giản: mã hóa một ảnh bằng VAE encoder, thêm nhiễu tới bước tương ứng strength, chạy phần còn lại của vòng lặp.</li>
+</ol>
+<p><strong>Xong khi</strong></p>
+<ul>
+<li>Cùng seed và prompt, ảnh của bạn trùng ảnh của <code>pipeline()</code> (sai số trung bình rất nhỏ, mắt thường không phân biệt được).</li>
+<li>Có 3 lưới thí nghiệm kèm nhận xét.</li>
+</ul>
+<details class="fold code">
+<summary>Code tham khảo</summary>
+<div class="hl"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">diffusers</span><span class="w"> </span><span class="kn">import</span> <span class="n">StableDiffusionPipeline</span><span class="p">,</span> <span class="n">DPMSolverMultistepScheduler</span>
+<span class="n">dev</span> <span class="o">=</span> <span class="s2">"cuda"</span>
+<span class="n">pipe</span> <span class="o">=</span> <span class="n">StableDiffusionPipeline</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="s2">"stable-diffusion-v1-5/stable-diffusion-v1-5"</span><span class="p">,</span> <span class="n">torch_dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float16</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">dev</span><span class="p">)</span>
+<span class="n">pipe</span><span class="o">.</span><span class="n">scheduler</span> <span class="o">=</span> <span class="n">DPMSolverMultistepScheduler</span><span class="o">.</span><span class="n">from_config</span><span class="p">(</span><span class="n">pipe</span><span class="o">.</span><span class="n">scheduler</span><span class="o">.</span><span class="n">config</span><span class="p">)</span>
+<span class="n">tok</span><span class="p">,</span> <span class="n">te</span><span class="p">,</span> <span class="n">unet</span><span class="p">,</span> <span class="n">vae</span><span class="p">,</span> <span class="n">sched</span> <span class="o">=</span> <span class="n">pipe</span><span class="o">.</span><span class="n">tokenizer</span><span class="p">,</span> <span class="n">pipe</span><span class="o">.</span><span class="n">text_encoder</span><span class="p">,</span> <span class="n">pipe</span><span class="o">.</span><span class="n">unet</span><span class="p">,</span> <span class="n">pipe</span><span class="o">.</span><span class="n">vae</span><span class="p">,</span> <span class="n">pipe</span><span class="o">.</span><span class="n">scheduler</span>
+
+<span class="nd">@torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">()</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">encode_prompt</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+    <span class="n">ids</span> <span class="o">=</span> <span class="n">tok</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="s2">"max_length"</span><span class="p">,</span> <span class="n">max_length</span><span class="o">=</span><span class="n">tok</span><span class="o">.</span><span class="n">model_max_length</span><span class="p">,</span> <span class="n">truncation</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">return_tensors</span><span class="o">=</span><span class="s2">"pt"</span><span class="p">)</span><span class="o">.</span><span class="n">input_ids</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">dev</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">te</span><span class="p">(</span><span class="n">ids</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+<span class="nd">@torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">()</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">generate</span><span class="p">(</span><span class="n">prompt</span><span class="p">,</span> <span class="n">negative</span><span class="o">=</span><span class="s2">""</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">steps</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">w</span><span class="o">=</span><span class="mf">7.5</span><span class="p">):</span>
+    <span class="n">emb</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">encode_prompt</span><span class="p">([</span><span class="n">negative</span><span class="p">]),</span> <span class="n">encode_prompt</span><span class="p">([</span><span class="n">prompt</span><span class="p">])])</span>
+    <span class="n">g</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">Generator</span><span class="p">(</span><span class="n">dev</span><span class="p">)</span><span class="o">.</span><span class="n">manual_seed</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
+    <span class="n">lat</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">unet</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">in_channels</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">64</span><span class="p">),</span> <span class="n">generator</span><span class="o">=</span><span class="n">g</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">dev</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float16</span><span class="p">)</span>
+    <span class="n">sched</span><span class="o">.</span><span class="n">set_timesteps</span><span class="p">(</span><span class="n">steps</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">dev</span><span class="p">)</span>
+    <span class="n">lat</span> <span class="o">=</span> <span class="n">lat</span> <span class="o">*</span> <span class="n">sched</span><span class="o">.</span><span class="n">init_noise_sigma</span>
+    <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">sched</span><span class="o">.</span><span class="n">timesteps</span><span class="p">:</span>
+        <span class="n">inp</span> <span class="o">=</span> <span class="n">sched</span><span class="o">.</span><span class="n">scale_model_input</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">lat</span><span class="p">,</span> <span class="n">lat</span><span class="p">]),</span> <span class="n">t</span><span class="p">)</span>
+        <span class="n">e_u</span><span class="p">,</span> <span class="n">e_c</span> <span class="o">=</span> <span class="n">unet</span><span class="p">(</span><span class="n">inp</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">encoder_hidden_states</span><span class="o">=</span><span class="n">emb</span><span class="p">)</span><span class="o">.</span><span class="n">sample</span><span class="o">.</span><span class="n">chunk</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+        <span class="n">lat</span> <span class="o">=</span> <span class="n">sched</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">e_u</span> <span class="o">+</span> <span class="n">w</span> <span class="o">*</span> <span class="p">(</span><span class="n">e_c</span> <span class="o">-</span> <span class="n">e_u</span><span class="p">),</span> <span class="n">t</span><span class="p">,</span> <span class="n">lat</span><span class="p">)</span><span class="o">.</span><span class="n">prev_sample</span>
+    <span class="n">img</span> <span class="o">=</span> <span class="n">vae</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="n">lat</span> <span class="o">/</span> <span class="n">vae</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">scaling_factor</span><span class="p">)</span><span class="o">.</span><span class="n">sample</span>
+    <span class="k">return</span> <span class="n">pipe</span><span class="o">.</span><span class="n">image_processor</span><span class="o">.</span><span class="n">postprocess</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">output_type</span><span class="o">=</span><span class="s2">"pil"</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+<span class="n">prompt</span> <span class="o">=</span> <span class="s2">"a white wooden vanity table with a round mirror, product photo, soft light"</span>
+<span class="n">mine</span> <span class="o">=</span> <span class="n">generate</span><span class="p">(</span><span class="n">prompt</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+<span class="n">ref</span> <span class="o">=</span> <span class="n">pipe</span><span class="p">(</span><span class="n">prompt</span><span class="p">,</span> <span class="n">generator</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">Generator</span><span class="p">(</span><span class="n">dev</span><span class="p">)</span><span class="o">.</span><span class="n">manual_seed</span><span class="p">(</span><span class="mi">42</span><span class="p">),</span> <span class="n">num_inference_steps</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">guidance_scale</span><span class="o">=</span><span class="mf">7.5</span><span class="p">)</span><span class="o">.</span><span class="n">images</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"sai số pixel trung bình:"</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">mine</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">ref</span><span class="p">,</span> <span class="nb">float</span><span class="p">))</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span>
+</code></pre></div>
+
+</details></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p5.4:p">Tôi đã xong phần thực hành</label></div></section>
+      <div class="donewhen"><b>Xong bài khi</b>Cùng seed và prompt, ảnh của bạn trùng ảnh của pipeline().</div>
       <nav class="pn" aria-label="Bài trước, bài sau"><a href="p5-3.html"><span class="dir">← Bài trước · P5.3</span><span class="tt">GĐ 3 · Điều khiển bằng chữ</span></a><a class="nx" href="p5-5.html"><span class="dir">Bài sau · P5.5 →</span><span class="tt">GĐ 5 · Fine-tune LoRA</span></a></nav>
     </div>
     <aside class="aside">
       <div class="abox"><h4>Tiến độ bài này</h4><div class="ring"><svg viewBox="0 0 64 64" aria-hidden="true"><circle class="bg" cx="32" cy="32" r="28"/><circle class="fg" cx="32" cy="32" r="28" stroke-dasharray="176" stroke-dashoffset="176"/></svg><div><b id="ring-n">0/3</b><span id="ring-sub">phần đã xong</span></div></div></div>
+      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">VAE: nén ảnh vào không gian latent</a></li><li><a href="#lt-2">Bốn thành phần của Stable Diffusion</a></li><li><a href="#lt-3">Vòng lặp sinh ảnh, từng dòng</a></li><li><a href="#lt-4">Scheduler và các tham số người dùng chỉnh</a></li><li><a href="#lt-5">Các biến thể dựa trên cùng cơ chế</a></li></ol></div>
       
       <div class="abox"><h4>Cùng giai đoạn</h4><ul><li><a href="p5-1.html">GĐ 1 · Diffusion tạo ảnh thế nào</a></li><li><a href="p5-2.html">GĐ 2 · Diffusion cho ảnh</a></li><li><a href="p5-3.html">GĐ 3 · Điều khiển bằng chữ</a></li><li><span class=cur>GĐ 4 · Latent diffusion và Stable Diffusion</span></li><li><a href="p5-5.html">GĐ 5 · Fine-tune LoRA</a></li><li><a href="p5-6.html">GĐ 6 · Đánh giá và rectified flow</a></li><li><a href="p5-7.html">GĐ 7 · Đóng gói sản phẩm</a></li></ul></div>
     </aside>
@@ -43,16 +205,75 @@
 
 (function () {
   const mid = document.body.dataset.mid; let d = AIE.load();
+  const EXK = "aie-ex-" + mid;
+  let solved = {}; try { solved = JSON.parse(localStorage.getItem(EXK) || "{}") || {}; } catch (e) {}
+  const saveSolved = () => { try { localStorage.setItem(EXK, JSON.stringify(solved)); } catch (e) {} };
+  const tabs = [...document.querySelectorAll(".tab")], panels = [...document.querySelectorAll(".panel")];
   const boxes = [...document.querySelectorAll("input[data-key]")], ring = document.querySelector(".ring .fg"), rt = document.getElementById("ring-n");
-  const skipped = () => !!d[mid + ":skip"];
+  const toc = document.getElementById("toc-box");
+  function show(id, scroll) {
+    tabs.forEach((t) => t.setAttribute("aria-selected", String(t.dataset.tab === id)));
+    panels.forEach((p) => { const on = p.id === id; if (on && p.hidden) { p.classList.remove("enter"); void p.offsetWidth; p.classList.add("enter"); } p.hidden = !on; });
+    if (toc) toc.hidden = id !== "ly-thuyet";
+    if (scroll) document.querySelector(".tabs").scrollIntoView({ block: "start" });
+  }
+  tabs.forEach((t) => t.addEventListener("click", () => { history.replaceState(null, "", "#" + t.dataset.tab); show(t.dataset.tab, true); }));
+  document.querySelectorAll("[data-goto]").forEach((b) => b.addEventListener("click", () => { history.replaceState(null, "", "#" + b.dataset.goto); show(b.dataset.goto, true); }));
+  const start = ["ly-thuyet", "bai-tap", "thuc-hanh"].includes(location.hash.slice(1)) ? location.hash.slice(1) : "ly-thuyet";
+  show(start, false);
+  window.addEventListener("hashchange", () => { const h = location.hash.slice(1); if (["ly-thuyet", "bai-tap", "thuc-hanh"].includes(h)) show(h, true); });
+  document.querySelectorAll(".toc a").forEach((a) => a.addEventListener("click", () => show("ly-thuyet", false)));
+
   function render() {
     let n = 0;
-    boxes.forEach((b) => { const on = skipped() || !!d[b.dataset.key]; b.checked = on; b.disabled = skipped(); b.closest(".pblock").classList.toggle("done", on); if (on) n++; });
+    const skip = !!d[mid + ":skip"];
+    boxes.forEach((b) => { const on = skip || !!d[b.dataset.key]; b.checked = on; if (on) n++; });
+    const kmap = { t: "ly-thuyet", b: "bai-tap", p: "thuc-hanh" };
+    tabs.forEach((t) => { const k = Object.keys(kmap).find((x) => kmap[x] === t.dataset.tab); t.classList.toggle("is-done", skip || !!d[mid + ":" + k]); });
     ring.style.strokeDashoffset = String(176 * (1 - n / 3)); rt.textContent = n + "/3";
-    document.getElementById("ring-sub").textContent = skipped() ? "đã đánh dấu bỏ qua" : n === 3 ? "hoàn thành bài này" : "phần đã xong";
+    document.getElementById("ring-sub").textContent = n === 3 ? "hoàn thành bài này" : "phần đã xong";
   }
-  boxes.forEach((b) => b.addEventListener("change", () => { d = AIE.load(); if (b.checked) d[b.dataset.key] = true; else delete d[b.dataset.key]; AIE.save(d); render(); }));
+  boxes.forEach((b) => b.addEventListener("change", () => {
+    d = AIE.load(); if (b.checked) d[b.dataset.key] = true; else delete d[b.dataset.key]; AIE.save(d);
+    boxes.filter((x) => x.dataset.key === b.dataset.key).forEach((x) => (x.checked = b.checked)); render();
+  }));
   render();
+
+  /* answer boxes */
+  const parse = (s) => parseFloat(String(s).trim().replace(",", ".").replace("−", "-"));
+  const allAns = [...document.querySelectorAll(".ans")];
+  function score() {
+    const ok = allAns.filter((a) => solved[a.id]).length;
+    const el = document.getElementById("ex-score");
+    if (el) { el.querySelector("b").textContent = `${ok} / ${allAns.length}`; el.querySelector(".bar i").style.width = (allAns.length ? ok / allAns.length * 100 : 0) + "%"; }
+    document.querySelectorAll(".excard").forEach((c) => { const as = [...c.querySelectorAll(".ans")]; c.classList.toggle("solved", as.length > 0 && as.every((a) => solved[a.id])); });
+  }
+  allAns.forEach((box) => {
+    const inputs = [...box.querySelectorAll("input")], fb = box.querySelector(".ans-fb");
+    const mark = () => { box.classList.add("ok"); inputs.forEach((i) => { i.classList.add("ok"); if (!i.value) i.value = i.dataset.ans; }); fb.className = "ans-fb ok"; fb.textContent = "Chính xác."; };
+    if (solved[box.id]) mark();
+    const run = () => {
+      let all = true, empty = false;
+      inputs.forEach((i) => {
+        const v = parse(i.value);
+        if (i.value.trim() === "" || Number.isNaN(v)) { empty = true; all = false; i.classList.remove("ok", "bad"); return; }
+        const good = Math.abs(v - parseFloat(i.dataset.ans)) <= parseFloat(i.dataset.tol) + 1e-9;
+        i.classList.toggle("ok", good); i.classList.toggle("bad", !good); if (!good) all = false;
+      });
+      if (all) { solved[box.id] = true; saveSolved(); mark(); box.classList.remove("pop"); void box.offsetWidth; box.classList.add("pop"); score(); }
+      else { fb.className = "ans-fb bad"; fb.textContent = empty ? "Điền đủ các ô bằng số (dấu chấm hoặc phẩy đều được)." : "Ô màu cam chưa đúng. Xem lại bước đó, hoặc mở gợi ý."; }
+    };
+    box.querySelector(".btn-check").addEventListener("click", run);
+    inputs.forEach((i) => i.addEventListener("keydown", (e) => { if (e.key === "Enter") run(); }));
+  });
+  score();
+
+  /* highlight current theory section in the toc */
+  if (toc && "IntersectionObserver" in window) {
+    const links = [...toc.querySelectorAll("a")];
+    const io = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) links.forEach((a) => a.classList.toggle("on", a.getAttribute("href") === "#" + e.target.id)); }), { rootMargin: "-140px 0px -65% 0px" });
+    document.querySelectorAll("#ly-thuyet h2[id]").forEach((h) => io.observe(h));
+  }
 })();
 
 </script>

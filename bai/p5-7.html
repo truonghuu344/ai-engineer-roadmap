@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>P5.7 · GĐ 7 · Đóng gói sản phẩm · AI Engineer</title>
-<meta name="description" content="GĐ 7 · Đóng gói sản phẩm: Gradio hoặc Streamlit, hàng đợi, giới hạn tài nguyên; Deploy HuggingFace Spaces, viết README cho CV">
+<meta name="description" content="GĐ 7 · Đóng gói sản phẩm: lý thuyết, bài tập và thực hành. Gradio hoặc Streamlit, hàng đợi, giới hạn tài nguyên; Deploy HuggingFace Spaces, viết README cho CV">
 <meta property="og:title" content="P5.7 · GĐ 7 · Đóng gói sản phẩm · AI Engineer">
-<meta property="og:description" content="GĐ 7 · Đóng gói sản phẩm: Gradio hoặc Streamlit, hàng đợi, giới hạn tài nguyên; Deploy HuggingFace Spaces, viết README cho CV">
+<meta property="og:description" content="GĐ 7 · Đóng gói sản phẩm: lý thuyết, bài tập và thực hành. Gradio hoặc Streamlit, hàng đợi, giới hạn tài nguyên; Deploy HuggingFace Spaces, viết README cho CV">
 <meta name="theme-color" content="#F4F6FB">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23131A33'/%3E%3Cpath d='M9 22 L16 10 L23 19' stroke='%23E5E9FB' stroke-width='2' fill='none'/%3E%3Ccircle cx='9' cy='22' r='3' fill='%23E5E9FB'/%3E%3Ccircle cx='16' cy='10' r='3' fill='%23E5E9FB'/%3E%3Ccircle cx='23' cy='19' r='3' fill='%23FF9361'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -14,23 +14,166 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="../assets/chrome.css">
 <link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/lesson.css">
 </head>
 <body data-mid="p5.7">
 <header class="sh"><div class="sh-in"><a class="sh-brand" href="../index.html"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="var(--ink)"/><circle cx="9" cy="22" r="2.6" fill="var(--accent-soft)"/><circle cx="16" cy="10" r="2.6" fill="var(--accent-soft)"/><circle cx="23" cy="19" r="2.6" fill="#FF9361"/><path d="M9 22 L16 10 L23 19" stroke="var(--accent-soft)" stroke-width="1.8" fill="none"/></svg><span>AI Engineer<small>lộ trình tự học</small></span></a><nav class="sh-nav" id="sh-nav" aria-label="Chính"><a href="../index.html">Trang chủ</a><a href="../bai-hoc.html" aria-current="page">Bài học</a><a href="../lo-trinh.html">Lộ trình</a><a href="../notebooks.html">Notebook</a><a class="sh-cta-m" href="../bai01.html" data-next-lesson>Học tiếp →</a></nav><a class="sh-cta" href="../bai01.html" data-next-lesson>Học tiếp <span class="arr">→</span></a><button class="sh-burger" type="button" aria-expanded="false" aria-controls="sh-nav">Menu</button></div></header>
 
 <main class="container">
   <div class="crumbs"><a href="../bai-hoc.html">Bài học</a><span>/</span><a href="../bai-hoc.html#p5">P5 · Dự án Diffusion: tạo ảnh từ con số 0</a><span>/</span><span>P5.7</span></div>
-  <section class="lhero side"><div class="code">P5.7</div><h1>GĐ 7 · Đóng gói sản phẩm</h1><div class="lmeta"><span class="m">Giai đoạn P5 · Dự án Diffusion: tạo ảnh từ con số 0</span><span class="m">Tuần 10–30</span><span class="chip planned">Đề cương</span></div></section>
-  <div class="lgrid">
-    <div>
-      <div class="goal"><b>Mục tiêu giai đoạn:</b> Làm lại đồ án tạo ảnh theo hướng hiểu sâu: tự viết diffusion, mổ xẻ Stable Diffusion, fine-tune LoRA, đóng gói thành sản phẩm.</div>
-      <div class="soon">Nội dung đầy đủ (trang lý thuyết tương tác và notebook tự chấm) đang được soạn và sẽ có khi bạn học tới bài này. Đề cương dưới đây là phạm vi chính xác của bài.</div>
-      <section class="pblock reveal"><div class="pblock-head"><span class="num">1</span><h2>Lý thuyết<span style="display:block;font:400 13.5px var(--f-body);color:var(--muted);margin-top:4px">Những gì cần hiểu</span></h2><label class="tick" for="cb-t"><input type="checkbox" id="cb-t" data-key="p5.7:t">Xong</label></div><ol><li>Gradio hoặc Streamlit, hàng đợi, giới hạn tài nguyên</li><li>Deploy HuggingFace Spaces, viết README cho CV</li></ol></section><section class="pblock reveal"><div class="pblock-head"><span class="num">2</span><h2>Bài tập<span style="display:block;font:400 13.5px var(--f-body);color:var(--muted);margin-top:4px">Tính tay và tự kiểm tra</span></h2><label class="tick" for="cb-b"><input type="checkbox" id="cb-b" data-key="p5.7:b">Xong</label></div><ol><li>Viết README 1 trang: vấn đề, cách làm, kết quả, hạn chế</li></ol></section><section class="pblock reveal"><div class="pblock-head"><span class="num">3</span><h2>Thực hành<span style="display:block;font:400 13.5px var(--f-body);color:var(--muted);margin-top:4px">Code và dự án</span></h2><label class="tick" for="cb-p"><input type="checkbox" id="cb-p" data-key="p5.7:p">Xong</label></div><ol><li>App tạo ảnh chạy model và LoRA của bạn, có demo công khai</li></ol></section>
-      <div class="donewhen reveal"><b>Xong khi</b>Người lạ mở link tạo được ảnh, README có số đo từ GĐ 6.</div>
+  <section class="lhero side"><div class="code">P5.7</div><h1>GĐ 7 · Đóng gói sản phẩm</h1><div class="lmeta"><span class="m">Giai đoạn P5 · Dự án Diffusion: tạo ảnh từ con số 0</span><span class="m">Tuần 10–30</span><span class="chip ready"><span class="dot"></span>Có nội dung đầy đủ</span></div>
+    <div class="intro"><p>Giai đoạn cuối của dự án: biến mọi thứ đã làm thành một <strong>sản phẩm</strong> người khác mở link là dùng được, và một <strong>README</strong> khiến nhà tuyển dụng hiểu bạn đã làm gì trong 2 phút. Đây là phiên bản làm lại của đồ án tạo ảnh, nhưng lần này chạy model và LoRA của chính bạn, có số đo chất lượng thật.</p></div></section>
+  
+  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">5 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
+  <div class="lgrid" style="margin-top:22px">
+    <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">Kiến trúc một app tạo ảnh</h2>
+<div class="hl"><pre><span></span><code>Người dùng ──▶ Giao diện (Gradio) ──▶ Hàng đợi ──▶ Worker GPU: pipeline + LoRA ──▶ Ảnh
+                    │                                        │
+                    └── kiểm tra đầu vào, giới hạn tần suất   └── log: prompt, seed, thời gian, lỗi
+</code></pre></div>
+
+<ul>
+<li><strong>Nạp model một lần</strong> khi khởi động, không nạp lại mỗi yêu cầu (nạp SD mất hàng chục giây).</li>
+<li><strong>Hàng đợi:</strong> một GPU chỉ sinh hiệu quả một (hoặc vài) ảnh cùng lúc. Hàng đợi giữ thứ tự, báo vị trí cho người dùng, và giới hạn độ dài để không quá tải.</li>
+<li><strong>Giới hạn tài nguyên:</strong> chặn số bước quá lớn, độ phân giải quá lớn, prompt quá dài.</li>
+</ul>
+<h2 id="lt-2">Gradio</h2>
+<p>Gradio dựng giao diện web cho hàm Python trong vài chục dòng: ô nhập, thanh trượt, ảnh đầu ra, ví dụ mẫu, hàng đợi tích hợp. Phù hợp để demo model; khi cần sản phẩm thật nhiều người dùng, tách thành API (FastAPI, P8) và frontend riêng.</p>
+<h2 id="lt-3">Deploy</h2>
+<table>
+<thead>
+<tr>
+<th>Cách</th>
+<th>Ưu</th>
+<th>Nhược</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Hugging Face Spaces có GPU</td>
+<td>link công khai cố định, dễ nhất cho portfolio</td>
+<td>GPU trả phí theo giờ (hoặc ZeroGPU nếu tài khoản đủ điều kiện)</td>
+</tr>
+<tr>
+<td>Colab + <code>share=True</code></td>
+<td>miễn phí, nhanh để demo</td>
+<td>link tạm thời, tắt khi phiên kết thúc</td>
+</tr>
+<tr>
+<td>VPS/cloud GPU + Docker</td>
+<td>toàn quyền</td>
+<td>tự lo bảo trì, chi phí</td>
+</tr>
+</tbody>
+</table>
+<p>Với portfolio: Space có GPU cho buổi demo, còn README luôn có ảnh kết quả và video ngắn để người xem hiểu được kể cả khi Space đang tắt.</p>
+<h2 id="lt-4">An toàn và giấy phép</h2>
+<ul>
+<li><strong>Giấy phép model:</strong> SD 1.5 dùng giấy phép CreativeML OpenRAIL-M, cho phép dùng thương mại nhưng có danh sách cách dùng bị cấm. Đọc giấy phép của model nền và mọi LoRA bạn dùng.</li>
+<li><strong>Lọc nội dung:</strong> dùng bộ lọc an toàn cho đầu ra, và lọc prompt rõ ràng vi phạm.</li>
+<li><strong>Không tạo ảnh người thật</strong> khi không có sự đồng ý, không bắt chước thương hiệu.</li>
+<li>Ghi rõ trong README: model nền, dữ liệu LoRA (của bạn, có quyền dùng), giới hạn đã biết.</li>
+</ul>
+<h2 id="lt-5">README cho CV</h2>
+<p>Người đọc README là nhà tuyển dụng có 2 phút. Cấu trúc:</p>
+<ol>
+<li><strong>Một câu:</strong> app làm gì, khác gì.</li>
+<li><strong>Ảnh/GIF demo</strong> ngay đầu trang và link demo.</li>
+<li><strong>Kết quả đo được:</strong> bảng CLIP score, KID, tỉ lệ thắng khảo sát, thời gian sinh (từ GĐ6).</li>
+<li><strong>Kỹ thuật:</strong> sơ đồ kiến trúc, những gì bạn <strong>tự viết</strong> (DDPM từ đầu, vòng lặp sampling, LoRA).</li>
+<li><strong>Cách chạy:</strong> vài lệnh.</li>
+<li><strong>Hạn chế và việc tiếp theo:</strong> trung thực, cho thấy bạn hiểu giới hạn.</li>
+</ol>
+<div class="keep">
+<p><strong>Ghi nhớ:</strong> dự án portfolio được đánh giá qua README và demo, không phải qua số dòng code. Một app nhỏ chạy được, có số đo, hơn một hệ thống lớn không ai chạy thử được.</p>
+</div></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p5.7:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 2</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Hàng đợi</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Mỗi ảnh mất 4 giây, có 1 GPU xử lý tuần tự, 10 người gửi yêu cầu cùng lúc.</p>
+<div class="ans" id="p5-7-e1-a1"><div class="ans-fields"><label>Người thứ 10 chờ bao lâu trước khi bắt đầu (s)<input inputmode="decimal" data-ans="36.0" data-tol="0.0" autocomplete="off"></label><label>Người thứ 10 nhận ảnh sau (s)<input inputmode="decimal" data-ans="40.0" data-tol="0.0" autocomplete="off"></label><label>Thông lượng tối đa (ảnh mỗi giờ)<input inputmode="decimal" data-ans="900.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+
+<details class="fold solution">
+<summary>Lời giải</summary>
+<p>Người thứ 10 chờ 9 × 4 = 36 giây, nhận ảnh sau 40 giây. Một GPU sinh tối đa 900 ảnh/giờ. Giảm thời gian chờ: ít bước hơn, sampler nhanh hơn, batch nhiều yêu cầu, hoặc thêm GPU.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 2</span><h3>Chi phí mỗi ảnh</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Giả sử thuê GPU giá ví dụ 0.6 USD/giờ, mỗi ảnh 4 giây, GPU bận 50% thời gian.</p>
+<div class="ans" id="p5-7-e2-a1"><div class="ans-fields"><label>Chi phí mỗi ảnh khi GPU bận 100% (USD)<input inputmode="decimal" data-ans="0.000667" data-tol="1e-06" autocomplete="off"></label><label>Khi chỉ bận 50% (USD)<input inputmode="decimal" data-ans="0.001333" data-tol="1e-06" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+
+<details class="fold solution">
+<summary>Lời giải</summary>
+<p>900 ảnh/giờ → 0.6/900 ≈ 0.00067 USD mỗi ảnh. Bận 50% thì chỉ 450 ảnh/giờ, chi phí gấp đôi. GPU nhàn rỗi vẫn tính tiền, nên app ít người dùng nên tắt khi không dùng hoặc dùng dịch vụ tính theo lượt.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 3</span><h3>Giới hạn đầu vào</h3><span class="ex-tag concept">thiết kế</span></div><div class="prose"><p>Liệt kê các giới hạn bạn đặt cho app (bước, kích thước, prompt, tần suất…) kèm giá trị và lý do.</p>
+<details class="fold solution">
+<summary>Lời giải</summary>
+<p>Số bước 10–40 (trên 40 gần như không cải thiện, tốn GPU). Kích thước 512×512 cố định (đúng kích thước train của SD 1.5). Prompt tối đa 300 ký tự (CLIP chỉ đọc 75 token). Guidance 1–12. Seed là số nguyên, có nút ngẫu nhiên. Tối đa 1 yêu cầu đang chờ mỗi người dùng, hàng đợi tối đa 20. Lọc prompt chứa từ khóa vi phạm chính sách.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 4</span><h3>Viết đoạn mở đầu README</h3><span class="ex-tag concept">khái niệm</span></div><div class="prose"><p>Viết 4–6 dòng đầu README cho app của bạn: câu giới thiệu, link demo, và một bảng kết quả rút gọn (dùng số đo thật của bạn từ GĐ6).</p>
+<details class="fold solution">
+<summary>Lời giải</summary>
+<p>Mẫu (thay số của bạn):</p>
+<div class="hl"><pre><span></span><code><span class="gh"># Tạo ảnh sản phẩm nội thất bằng diffusion + LoRA</span>
+Sinh ảnh sản phẩm nền trắng phong cách thống nhất từ mô tả tiếng Anh. LoRA tự train trên 20 ảnh, chạy trên Stable Diffusion 1.5.
+<span class="gs">**Demo:**</span> &lt;link Space&gt; · <span class="gs">**Video 2 phút:**</span> &lt;link&gt;
+| | CLIP score | Tỉ lệ thắng (10 người) | Thời gian/ảnh (T4) |
+|---|---|---|---|
+| SD 1.5 gốc | … | … | … s |
+| + LoRA của tôi | … | … | … s |
+</code></pre></div>
+
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 5</span><h3>App Gradio</h3><span class="ex-tag code">code</span></div><div class="prose"><p>Viết app Gradio: ô prompt, negative prompt, thanh trượt số bước (10–40), guidance (1–12), độ mạnh LoRA (0–1), ô seed, nút sinh, ảnh đầu ra, 3 ví dụ mẫu, hàng đợi tối đa 20.</p>
+<details class="fold code">
+<summary>Code tham khảo</summary>
+<div class="hl"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">gradio</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gr</span><span class="o">,</span><span class="w"> </span><span class="nn">torch</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">diffusers</span><span class="w"> </span><span class="kn">import</span> <span class="n">StableDiffusionPipeline</span><span class="p">,</span> <span class="n">DPMSolverMultistepScheduler</span>
+
+<span class="n">pipe</span> <span class="o">=</span> <span class="n">StableDiffusionPipeline</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="s2">"stable-diffusion-v1-5/stable-diffusion-v1-5"</span><span class="p">,</span> <span class="n">torch_dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float16</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">"cuda"</span><span class="p">)</span>
+<span class="n">pipe</span><span class="o">.</span><span class="n">scheduler</span> <span class="o">=</span> <span class="n">DPMSolverMultistepScheduler</span><span class="o">.</span><span class="n">from_config</span><span class="p">(</span><span class="n">pipe</span><span class="o">.</span><span class="n">scheduler</span><span class="o">.</span><span class="n">config</span><span class="p">)</span>
+<span class="n">pipe</span><span class="o">.</span><span class="n">load_lora_weights</span><span class="p">(</span><span class="s2">"lora-tthstyle"</span><span class="p">)</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">generate</span><span class="p">(</span><span class="n">prompt</span><span class="p">,</span> <span class="n">negative</span><span class="p">,</span> <span class="n">steps</span><span class="p">,</span> <span class="n">guidance</span><span class="p">,</span> <span class="n">lora_scale</span><span class="p">,</span> <span class="n">seed</span><span class="p">):</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">prompt</span><span class="o">.</span><span class="n">strip</span><span class="p">():</span>
+        <span class="k">raise</span> <span class="n">gr</span><span class="o">.</span><span class="n">Error</span><span class="p">(</span><span class="s2">"Hãy nhập mô tả ảnh."</span><span class="p">)</span>
+    <span class="n">g</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">Generator</span><span class="p">(</span><span class="s2">"cuda"</span><span class="p">)</span><span class="o">.</span><span class="n">manual_seed</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">seed</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">pipe</span><span class="p">(</span><span class="n">prompt</span><span class="p">[:</span><span class="mi">300</span><span class="p">],</span> <span class="n">negative_prompt</span><span class="o">=</span><span class="n">negative</span><span class="p">[:</span><span class="mi">300</span><span class="p">],</span> <span class="n">num_inference_steps</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">steps</span><span class="p">),</span> <span class="n">guidance_scale</span><span class="o">=</span><span class="n">guidance</span><span class="p">,</span>
+                <span class="n">generator</span><span class="o">=</span><span class="n">g</span><span class="p">,</span> <span class="n">cross_attention_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">"scale"</span><span class="p">:</span> <span class="n">lora_scale</span><span class="p">})</span><span class="o">.</span><span class="n">images</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+<span class="k">with</span> <span class="n">gr</span><span class="o">.</span><span class="n">Blocks</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="s2">"Tạo ảnh sản phẩm nội thất"</span><span class="p">)</span> <span class="k">as</span> <span class="n">demo</span><span class="p">:</span>
+    <span class="n">gr</span><span class="o">.</span><span class="n">Markdown</span><span class="p">(</span><span class="s2">"## Tạo ảnh sản phẩm nội thất</span><span class="se">\n</span><span class="s2">Stable Diffusion 1.5 + LoRA phong cách ảnh sản phẩm."</span><span class="p">)</span>
+    <span class="k">with</span> <span class="n">gr</span><span class="o">.</span><span class="n">Row</span><span class="p">():</span>
+        <span class="k">with</span> <span class="n">gr</span><span class="o">.</span><span class="n">Column</span><span class="p">():</span>
+            <span class="n">prompt</span> <span class="o">=</span> <span class="n">gr</span><span class="o">.</span><span class="n">Textbox</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="s2">"Mô tả (tiếng Anh)"</span><span class="p">,</span> <span class="n">lines</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+            <span class="n">negative</span> <span class="o">=</span> <span class="n">gr</span><span class="o">.</span><span class="n">Textbox</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="s2">"Không muốn có"</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="s2">"blurry, text, watermark"</span><span class="p">)</span>
+            <span class="n">steps</span> <span class="o">=</span> <span class="n">gr</span><span class="o">.</span><span class="n">Slider</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">40</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="mi">25</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">"Số bước"</span><span class="p">)</span>
+            <span class="n">guidance</span> <span class="o">=</span> <span class="n">gr</span><span class="o">.</span><span class="n">Slider</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">"Guidance"</span><span class="p">)</span>
+            <span class="n">lora_scale</span> <span class="o">=</span> <span class="n">gr</span><span class="o">.</span><span class="n">Slider</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="mf">0.8</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">"Độ mạnh phong cách"</span><span class="p">)</span>
+            <span class="n">seed</span> <span class="o">=</span> <span class="n">gr</span><span class="o">.</span><span class="n">Number</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="mi">42</span><span class="p">,</span> <span class="n">precision</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">"Seed"</span><span class="p">)</span>
+            <span class="n">btn</span> <span class="o">=</span> <span class="n">gr</span><span class="o">.</span><span class="n">Button</span><span class="p">(</span><span class="s2">"Tạo ảnh"</span><span class="p">,</span> <span class="n">variant</span><span class="o">=</span><span class="s2">"primary"</span><span class="p">)</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">gr</span><span class="o">.</span><span class="n">Image</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="s2">"Kết quả"</span><span class="p">)</span>
+    <span class="n">gr</span><span class="o">.</span><span class="n">Examples</span><span class="p">([[</span><span class="s2">"a vanity table with round mirror, tthstyle product photo"</span><span class="p">],</span>
+                 <span class="p">[</span><span class="s2">"a rattan armchair, tthstyle product photo"</span><span class="p">],</span>
+                 <span class="p">[</span><span class="s2">"a ceramic table lamp, tthstyle product photo"</span><span class="p">]],</span> <span class="n">inputs</span><span class="o">=</span><span class="p">[</span><span class="n">prompt</span><span class="p">])</span>
+    <span class="n">btn</span><span class="o">.</span><span class="n">click</span><span class="p">(</span><span class="n">generate</span><span class="p">,</span> <span class="p">[</span><span class="n">prompt</span><span class="p">,</span> <span class="n">negative</span><span class="p">,</span> <span class="n">steps</span><span class="p">,</span> <span class="n">guidance</span><span class="p">,</span> <span class="n">lora_scale</span><span class="p">,</span> <span class="n">seed</span><span class="p">],</span> <span class="n">out</span><span class="p">)</span>
+
+<span class="n">demo</span><span class="o">.</span><span class="n">queue</span><span class="p">(</span><span class="n">max_size</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span><span class="o">.</span><span class="n">launch</span><span class="p">()</span>
+</code></pre></div>
+
+</details></div></article><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p5.7:b">Tôi đã xong phần bài tập</label><button class="btn" type="button" data-goto="thuc-hanh">Sang thực hành <span class="arr">→</span></button></div></section><section class="panel" id="thuc-hanh" role="tabpanel" hidden><div class="prose"><h2>Sản phẩm hoàn chỉnh cho CV</h2>
+<p><strong>Các bước</strong></p>
+<ol>
+<li>Gộp code các giai đoạn vào một repo: <code>gd1-ddpm-2d/</code>, <code>gd2-fashion-ddpm/</code>, <code>gd3-cfg/</code>, <code>gd4-sd-loop/</code>, <code>gd5-lora/</code>, <code>gd6-eval/</code>, <code>app/</code>.</li>
+<li>App Gradio như bài tập 5, thêm log mỗi yêu cầu (thời gian, prompt, seed, thời gian sinh) ra file.</li>
+<li>Deploy: Hugging Face Space có GPU (hoặc Colab <code>share=True</code> cho buổi demo), đẩy LoRA lên Hub kèm model card.</li>
+<li>Quay video 2 phút: giới thiệu, demo tạo 3 ảnh, giải thích một phần bạn tự viết.</li>
+<li>README theo cấu trúc trong bài, có bảng số đo từ GĐ6, sơ đồ kiến trúc, mục "Hạn chế".</li>
+<li>Nhờ một người không biết dự án đọc README trong 2 phút rồi kể lại dự án làm gì. Sửa chỗ họ hiểu sai.</li>
+</ol>
+<p><strong>Xong khi</strong></p>
+<ul>
+<li>Người lạ mở link tạo được ảnh, hoặc xem được video demo khi Space tắt.</li>
+<li>README có số đo thật từ GĐ6 và nêu rõ phần nào bạn tự viết.</li>
+<li>Repo có hướng dẫn chạy lại được từ đầu.</li>
+</ul></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p5.7:p">Tôi đã xong phần thực hành</label></div></section>
+      <div class="donewhen"><b>Xong bài khi</b>Người lạ mở link tạo được ảnh, README có số đo từ GĐ 6.</div>
       <nav class="pn" aria-label="Bài trước, bài sau"><a href="p5-6.html"><span class="dir">← Bài trước · P5.6</span><span class="tt">GĐ 6 · Đánh giá và rectified flow</span></a><a class="nx" href="p3-1.html"><span class="dir">Bài sau · P3.1 →</span><span class="tt">Tokenization và embedding</span></a></nav>
     </div>
     <aside class="aside">
       <div class="abox"><h4>Tiến độ bài này</h4><div class="ring"><svg viewBox="0 0 64 64" aria-hidden="true"><circle class="bg" cx="32" cy="32" r="28"/><circle class="fg" cx="32" cy="32" r="28" stroke-dasharray="176" stroke-dashoffset="176"/></svg><div><b id="ring-n">0/3</b><span id="ring-sub">phần đã xong</span></div></div></div>
+      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Kiến trúc một app tạo ảnh</a></li><li><a href="#lt-2">Gradio</a></li><li><a href="#lt-3">Deploy</a></li><li><a href="#lt-4">An toàn và giấy phép</a></li><li><a href="#lt-5">README cho CV</a></li></ol></div>
       
       <div class="abox"><h4>Cùng giai đoạn</h4><ul><li><a href="p5-1.html">GĐ 1 · Diffusion tạo ảnh thế nào</a></li><li><a href="p5-2.html">GĐ 2 · Diffusion cho ảnh</a></li><li><a href="p5-3.html">GĐ 3 · Điều khiển bằng chữ</a></li><li><a href="p5-4.html">GĐ 4 · Latent diffusion và Stable Diffusion</a></li><li><a href="p5-5.html">GĐ 5 · Fine-tune LoRA</a></li><li><a href="p5-6.html">GĐ 6 · Đánh giá và rectified flow</a></li><li><span class=cur>GĐ 7 · Đóng gói sản phẩm</span></li></ul></div>
     </aside>
@@ -43,16 +186,75 @@
 
 (function () {
   const mid = document.body.dataset.mid; let d = AIE.load();
+  const EXK = "aie-ex-" + mid;
+  let solved = {}; try { solved = JSON.parse(localStorage.getItem(EXK) || "{}") || {}; } catch (e) {}
+  const saveSolved = () => { try { localStorage.setItem(EXK, JSON.stringify(solved)); } catch (e) {} };
+  const tabs = [...document.querySelectorAll(".tab")], panels = [...document.querySelectorAll(".panel")];
   const boxes = [...document.querySelectorAll("input[data-key]")], ring = document.querySelector(".ring .fg"), rt = document.getElementById("ring-n");
-  const skipped = () => !!d[mid + ":skip"];
+  const toc = document.getElementById("toc-box");
+  function show(id, scroll) {
+    tabs.forEach((t) => t.setAttribute("aria-selected", String(t.dataset.tab === id)));
+    panels.forEach((p) => { const on = p.id === id; if (on && p.hidden) { p.classList.remove("enter"); void p.offsetWidth; p.classList.add("enter"); } p.hidden = !on; });
+    if (toc) toc.hidden = id !== "ly-thuyet";
+    if (scroll) document.querySelector(".tabs").scrollIntoView({ block: "start" });
+  }
+  tabs.forEach((t) => t.addEventListener("click", () => { history.replaceState(null, "", "#" + t.dataset.tab); show(t.dataset.tab, true); }));
+  document.querySelectorAll("[data-goto]").forEach((b) => b.addEventListener("click", () => { history.replaceState(null, "", "#" + b.dataset.goto); show(b.dataset.goto, true); }));
+  const start = ["ly-thuyet", "bai-tap", "thuc-hanh"].includes(location.hash.slice(1)) ? location.hash.slice(1) : "ly-thuyet";
+  show(start, false);
+  window.addEventListener("hashchange", () => { const h = location.hash.slice(1); if (["ly-thuyet", "bai-tap", "thuc-hanh"].includes(h)) show(h, true); });
+  document.querySelectorAll(".toc a").forEach((a) => a.addEventListener("click", () => show("ly-thuyet", false)));
+
   function render() {
     let n = 0;
-    boxes.forEach((b) => { const on = skipped() || !!d[b.dataset.key]; b.checked = on; b.disabled = skipped(); b.closest(".pblock").classList.toggle("done", on); if (on) n++; });
+    const skip = !!d[mid + ":skip"];
+    boxes.forEach((b) => { const on = skip || !!d[b.dataset.key]; b.checked = on; if (on) n++; });
+    const kmap = { t: "ly-thuyet", b: "bai-tap", p: "thuc-hanh" };
+    tabs.forEach((t) => { const k = Object.keys(kmap).find((x) => kmap[x] === t.dataset.tab); t.classList.toggle("is-done", skip || !!d[mid + ":" + k]); });
     ring.style.strokeDashoffset = String(176 * (1 - n / 3)); rt.textContent = n + "/3";
-    document.getElementById("ring-sub").textContent = skipped() ? "đã đánh dấu bỏ qua" : n === 3 ? "hoàn thành bài này" : "phần đã xong";
+    document.getElementById("ring-sub").textContent = n === 3 ? "hoàn thành bài này" : "phần đã xong";
   }
-  boxes.forEach((b) => b.addEventListener("change", () => { d = AIE.load(); if (b.checked) d[b.dataset.key] = true; else delete d[b.dataset.key]; AIE.save(d); render(); }));
+  boxes.forEach((b) => b.addEventListener("change", () => {
+    d = AIE.load(); if (b.checked) d[b.dataset.key] = true; else delete d[b.dataset.key]; AIE.save(d);
+    boxes.filter((x) => x.dataset.key === b.dataset.key).forEach((x) => (x.checked = b.checked)); render();
+  }));
   render();
+
+  /* answer boxes */
+  const parse = (s) => parseFloat(String(s).trim().replace(",", ".").replace("−", "-"));
+  const allAns = [...document.querySelectorAll(".ans")];
+  function score() {
+    const ok = allAns.filter((a) => solved[a.id]).length;
+    const el = document.getElementById("ex-score");
+    if (el) { el.querySelector("b").textContent = `${ok} / ${allAns.length}`; el.querySelector(".bar i").style.width = (allAns.length ? ok / allAns.length * 100 : 0) + "%"; }
+    document.querySelectorAll(".excard").forEach((c) => { const as = [...c.querySelectorAll(".ans")]; c.classList.toggle("solved", as.length > 0 && as.every((a) => solved[a.id])); });
+  }
+  allAns.forEach((box) => {
+    const inputs = [...box.querySelectorAll("input")], fb = box.querySelector(".ans-fb");
+    const mark = () => { box.classList.add("ok"); inputs.forEach((i) => { i.classList.add("ok"); if (!i.value) i.value = i.dataset.ans; }); fb.className = "ans-fb ok"; fb.textContent = "Chính xác."; };
+    if (solved[box.id]) mark();
+    const run = () => {
+      let all = true, empty = false;
+      inputs.forEach((i) => {
+        const v = parse(i.value);
+        if (i.value.trim() === "" || Number.isNaN(v)) { empty = true; all = false; i.classList.remove("ok", "bad"); return; }
+        const good = Math.abs(v - parseFloat(i.dataset.ans)) <= parseFloat(i.dataset.tol) + 1e-9;
+        i.classList.toggle("ok", good); i.classList.toggle("bad", !good); if (!good) all = false;
+      });
+      if (all) { solved[box.id] = true; saveSolved(); mark(); box.classList.remove("pop"); void box.offsetWidth; box.classList.add("pop"); score(); }
+      else { fb.className = "ans-fb bad"; fb.textContent = empty ? "Điền đủ các ô bằng số (dấu chấm hoặc phẩy đều được)." : "Ô màu cam chưa đúng. Xem lại bước đó, hoặc mở gợi ý."; }
+    };
+    box.querySelector(".btn-check").addEventListener("click", run);
+    inputs.forEach((i) => i.addEventListener("keydown", (e) => { if (e.key === "Enter") run(); }));
+  });
+  score();
+
+  /* highlight current theory section in the toc */
+  if (toc && "IntersectionObserver" in window) {
+    const links = [...toc.querySelectorAll("a")];
+    const io = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) links.forEach((a) => a.classList.toggle("on", a.getAttribute("href") === "#" + e.target.id)); }), { rootMargin: "-140px 0px -65% 0px" });
+    document.querySelectorAll("#ly-thuyet h2[id]").forEach((h) => io.observe(h));
+  }
 })();
 
 </script>

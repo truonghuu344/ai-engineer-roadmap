@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>P6.2 · Bài 8b · Preference tuning · AI Engineer</title>
-<meta name="description" content="Bài 8b · Preference tuning: RLHF tổng quan, reward model; DPO và các biến thể; khi nào cần">
+<meta name="description" content="Bài 8b · Preference tuning: lý thuyết, bài tập và thực hành. RLHF tổng quan, reward model; DPO và các biến thể; khi nào cần">
 <meta property="og:title" content="P6.2 · Bài 8b · Preference tuning · AI Engineer">
-<meta property="og:description" content="Bài 8b · Preference tuning: RLHF tổng quan, reward model; DPO và các biến thể; khi nào cần">
+<meta property="og:description" content="Bài 8b · Preference tuning: lý thuyết, bài tập và thực hành. RLHF tổng quan, reward model; DPO và các biến thể; khi nào cần">
 <meta name="theme-color" content="#F4F6FB">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23131A33'/%3E%3Cpath d='M9 22 L16 10 L23 19' stroke='%23E5E9FB' stroke-width='2' fill='none'/%3E%3Ccircle cx='9' cy='22' r='3' fill='%23E5E9FB'/%3E%3Ccircle cx='16' cy='10' r='3' fill='%23E5E9FB'/%3E%3Ccircle cx='23' cy='19' r='3' fill='%23FF9361'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -14,23 +14,139 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="../assets/chrome.css">
 <link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/lesson.css">
 </head>
 <body data-mid="p6.2">
 <header class="sh"><div class="sh-in"><a class="sh-brand" href="../index.html"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="var(--ink)"/><circle cx="9" cy="22" r="2.6" fill="var(--accent-soft)"/><circle cx="16" cy="10" r="2.6" fill="var(--accent-soft)"/><circle cx="23" cy="19" r="2.6" fill="#FF9361"/><path d="M9 22 L16 10 L23 19" stroke="var(--accent-soft)" stroke-width="1.8" fill="none"/></svg><span>AI Engineer<small>lộ trình tự học</small></span></a><nav class="sh-nav" id="sh-nav" aria-label="Chính"><a href="../index.html">Trang chủ</a><a href="../bai-hoc.html" aria-current="page">Bài học</a><a href="../lo-trinh.html">Lộ trình</a><a href="../notebooks.html">Notebook</a><a class="sh-cta-m" href="../bai01.html" data-next-lesson>Học tiếp →</a></nav><a class="sh-cta" href="../bai01.html" data-next-lesson>Học tiếp <span class="arr">→</span></a><button class="sh-burger" type="button" aria-expanded="false" aria-controls="sh-nav">Menu</button></div></header>
 
 <main class="container">
   <div class="crumbs"><a href="../bai-hoc.html">Bài học</a><span>/</span><a href="../bai-hoc.html#p6">P6 · Fine-tuning và tối ưu LLM</a><span>/</span><span>P6.2</span></div>
-  <section class="lhero"><div class="code">P6.2</div><h1>Bài 8b · Preference tuning</h1><div class="lmeta"><span class="m">Giai đoạn P6 · Fine-tuning và tối ưu LLM</span><span class="m">Tuần 26–30</span><span class="chip planned">Đề cương</span></div></section>
-  <div class="lgrid">
-    <div>
-      <div class="goal"><b>Mục tiêu giai đoạn:</b> Biết khi nào nên fine-tune, làm được với GPU nhỏ, và chạy model nhanh, rẻ.</div>
-      <div class="soon">Nội dung đầy đủ (trang lý thuyết tương tác và notebook tự chấm) đang được soạn và sẽ có khi bạn học tới bài này. Đề cương dưới đây là phạm vi chính xác của bài.</div>
-      <section class="pblock reveal"><div class="pblock-head"><span class="num">1</span><h2>Lý thuyết<span style="display:block;font:400 13.5px var(--f-body);color:var(--muted);margin-top:4px">Những gì cần hiểu</span></h2><label class="tick" for="cb-t"><input type="checkbox" id="cb-t" data-key="p6.2:t">Xong</label></div><ol><li>RLHF tổng quan, reward model</li><li>DPO và các biến thể; khi nào cần</li></ol></section><section class="pblock reveal"><div class="pblock-head"><span class="num">2</span><h2>Bài tập<span style="display:block;font:400 13.5px var(--f-body);color:var(--muted);margin-top:4px">Tính tay và tự kiểm tra</span></h2><label class="tick" for="cb-b"><input type="checkbox" id="cb-b" data-key="p6.2:b">Xong</label></div><ol><li>Đọc loss DPO, giải thích từng thành phần bằng lời</li></ol></section><section class="pblock reveal"><div class="pblock-head"><span class="num">3</span><h2>Thực hành<span style="display:block;font:400 13.5px var(--f-body);color:var(--muted);margin-top:4px">Code và dự án</span></h2><label class="tick" for="cb-p"><input type="checkbox" id="cb-p" data-key="p6.2:p">Xong</label></div><ol><li>DPO trên model ở 6.1 với 500 cặp chosen/rejected</li></ol></section>
-      <div class="donewhen reveal"><b>Xong khi</b>Tỉ lệ thắng của model sau DPO so với trước, đo bằng LLM-as-judge có kiểm tra tay.</div>
+  <section class="lhero"><div class="code">P6.2</div><h1>Bài 8b · Preference tuning</h1><div class="lmeta"><span class="m">Giai đoạn P6 · Fine-tuning và tối ưu LLM</span><span class="m">Tuần 26–30</span><span class="chip ready"><span class="dot"></span>Có nội dung đầy đủ</span></div>
+    <div class="intro"><p>SFT dạy model bắt chước câu trả lời mẫu. Nhưng với nhiều tác vụ, viết ra câu trả lời "hoàn hảo" thì khó, còn <strong>so sánh</strong> hai câu trả lời xem cái nào tốt hơn thì dễ. <strong>Preference tuning</strong> học từ những so sánh đó. Đây là bước biến một model biết làm theo hướng dẫn thành một trợ lý hữu ích, trung thực và an toàn hơn. Bài này giải thích RLHF ở mức ý tưởng và đi sâu vào <strong>DPO</strong>, cách làm phổ biến và đơn giản nhất hiện nay.</p></div></section>
+  
+  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">5 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
+  <div class="lgrid" style="margin-top:22px">
+    <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">Dữ liệu ưu tiên</h2>
+<p>Mỗi mẫu gồm một prompt và hai câu trả lời: <strong>chosen</strong> (được ưa hơn) và <strong>rejected</strong>. Nguồn:</p>
+<ul>
+<li>Người gán nhãn so sánh hai câu trả lời của model.</li>
+<li>Phản hồi thật của người dùng (thích/không thích, chọn phiên bản).</li>
+<li>Model mạnh làm giám khảo (AI feedback), có kiểm tra lại bằng người.</li>
+</ul>
+<p>So sánh giữa hai câu trả lời <strong>của chính model</strong> đang được tune hiệu quả hơn so sánh với câu trả lời từ nguồn khác.</p>
+<h2 id="lt-2">RLHF ở mức ý tưởng</h2>
+<div class="hl"><pre><span></span><code>1. SFT: model biết làm theo hướng dẫn
+2. Train reward model: đọc (prompt, câu trả lời) → điểm, sao cho chosen &gt; rejected
+3. Tối ưu model bằng học tăng cường (PPO): sinh câu trả lời, nhận điểm thưởng,
+   cập nhật để tăng điểm, kèm phạt KL để không đi quá xa model SFT ban đầu
+</code></pre></div>
+
+<p>RLHF mạnh nhưng phức tạp: bốn model cùng lúc (policy, reference, reward, value), dễ mất ổn định, và model có thể "hack" reward model (câu trả lời dài dòng được điểm cao dù không tốt hơn).</p>
+<h2 id="lt-3">DPO: bỏ reward model</h2>
+<p><strong>Direct Preference Optimization</strong> chứng minh có thể tối ưu thẳng trên dữ liệu ưu tiên bằng một loss phân loại, không cần reward model hay RL:</p>
+<div class="hl"><pre><span></span><code>L = −log σ( β · [ (log π(y_w|x) − log π_ref(y_w|x)) − (log π(y_l|x) − log π_ref(y_l|x)) ] )
+</code></pre></div>
+
+<ul>
+<li>y_w là chosen, y_l là rejected; π là model đang train, π_ref là bản SFT đóng băng.</li>
+<li>Ngoặc vuông là <strong>lề</strong>: model hiện tại tăng xác suất của chosen so với bản gốc <strong>nhiều hơn</strong> của rejected bao nhiêu.</li>
+<li>β (thường 0.1) điều khiển mức được phép đi xa khỏi π_ref: β nhỏ cho phép thay đổi nhiều hơn.</li>
+<li>Lúc bắt đầu π = π_ref, lề bằng 0, loss = −log σ(0) = ln 2 ≈ 0.693.</li>
+</ul>
+<p>Chỉ cần hai model (một đang train, một đóng băng làm tham chiếu), train như SFT, ổn định hơn PPO nhiều. Các biến thể như IPO, KTO (chỉ cần nhãn thích/không thích từng câu), ORPO (gộp SFT và preference vào một bước) đều xuất phát từ ý tưởng này.</p>
+<h2 id="lt-4">Khi nào cần preference tuning</h2>
+<ul>
+<li>Đã SFT, model làm đúng định dạng nhưng chất lượng câu trả lời chưa ổn: dài dòng, giọng không phù hợp, đôi khi từ chối thừa.</li>
+<li>Có cách thu thập so sánh rẻ (người dùng chọn giữa hai bản nháp).</li>
+<li>Không cần cho tác vụ có đáp án đúng/sai rõ ràng (trích xuất, phân loại): SFT và eval chính xác là đủ.</li>
+</ul>
+<h2 id="lt-5">Đo kết quả</h2>
+<ul>
+<li><strong>Tỉ lệ thắng (win rate):</strong> cho model sau DPO và trước DPO trả lời cùng prompt, giám khảo (LLM hoặc người) chọn bên tốt hơn, đổi vị trí ngẫu nhiên. Tính hòa là nửa thắng.</li>
+<li>Kiểm tra <strong>độ dài</strong>: DPO hay làm câu trả lời dài hơn, mà giám khảo LLM thích câu dài. So win rate có kiểm soát độ dài, hoặc đọc tay.</li>
+<li>Kiểm tra <strong>khả năng chung</strong> không bị suy giảm.</li>
+</ul>
+<div class="keep">
+<p><strong>Ghi nhớ:</strong> SFT dạy "trả lời thế này", preference tuning dạy "trong hai cách trả lời, cách này tốt hơn". Dữ liệu ưu tiên tốt quan trọng hơn thuật toán.</p>
+</div></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p6.2:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 2</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Loss DPO</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>β = 0.1.</p>
+<div class="ans" id="p6-2-e1-a1"><div class="ans-fields"><label>Loss lúc bắt đầu (π = π_ref)<input inputmode="decimal" data-ans="0.6931" data-tol="0.001" autocomplete="off"></label><label>Lề log-ratio: chosen +2, rejected −1. Loss<input inputmode="decimal" data-ans="0.5544" data-tol="0.001" autocomplete="off"></label><label>Lề ngược: chosen −1, rejected +2. Loss<input inputmode="decimal" data-ans="0.8544" data-tol="0.001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+
+<details class="fold solution">
+<summary>Lời giải</summary>
+<p>Bắt đầu: −log σ(0) = ln 2 ≈ 0.693. Lề (2 − (−1)) = 3, nhân β = 0.3: −log σ(0.3) = ln(1 + e^−0.3) ≈ 0.554. Lề −3: ln(1 + e^0.3) ≈ 0.854. Loss giảm khi model tăng xác suất của chosen nhiều hơn rejected (so với bản gốc).</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 2</span><h3>Tỉ lệ thắng</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>So sánh 100 prompt: model sau DPO thắng 62, thua 30, hòa 8.</p>
+<div class="ans" id="p6-2-e2-a1"><div class="ans-fields"><label>Win rate (hòa tính nửa)<input inputmode="decimal" data-ans="0.66" data-tol="0.001" autocomplete="off"></label><label>Win rate chỉ trên các cặp không hòa<input inputmode="decimal" data-ans="0.6739" data-tol="0.001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+
+<details class="fold solution">
+<summary>Lời giải</summary>
+<p>(62 + 4)/100 = 0.66. Bỏ hòa: 62/92 ≈ 0.674. Ghi rõ dùng cách tính nào; và với 100 prompt, sai số khoảng ±0.09, nên 0.66 là cải thiện thật nhưng con số chính xác còn dao động.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 3</span><h3>Vai trò của β</h3><span class="ex-tag concept">khái niệm</span></div><div class="prose"><p>Điều gì xảy ra khi β rất nhỏ (0.01) và rất lớn (1.0)? Với dữ liệu ưu tiên có nhiều nhiễu (người gán nhãn hay bất đồng), bạn chọn β thế nào?</p>
+<details class="fold solution">
+<summary>Lời giải</summary>
+<p>β nhỏ: lề phải rất lớn mới giảm được loss, model được phép đi xa khỏi bản gốc, dễ overfit vào dữ liệu ưu tiên và mất khả năng chung. β lớn: chỉ cần thay đổi nhỏ là loss đã giảm, model bám sát bản gốc, thay đổi ít. Dữ liệu nhiễu: chọn β lớn hơn (giữ gần bản SFT) và lọc các cặp người gán nhãn bất đồng.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 4</span><h3>Thiết kế dữ liệu ưu tiên</h3><span class="ex-tag concept">thiết kế</span></div><div class="prose"><p>Bạn có chatbot chăm sóc khách hàng đã SFT. Thiết kế cách thu thập 500 cặp chosen/rejected trong 2 tuần với chi phí thấp, và tiêu chí để người gán nhãn chọn.</p>
+<details class="fold solution">
+<summary>Lời giải</summary>
+<p>Lấy 500 câu hỏi thật từ log (đã che thông tin cá nhân). Với mỗi câu, sinh 2 câu trả lời từ model SFT với temperature 0.8 (hai seed). Nhân viên CSKH chọn câu tốt hơn theo tiêu chí theo thứ tự ưu tiên: đúng chính sách, giải quyết được vấn đề, ngắn gọn, lịch sự. Cho phép "ngang nhau" và loại các cặp đó. 10% số cặp được hai người chấm để đo độ đồng thuận; nếu dưới 70% thì làm rõ tiêu chí.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 5</span><h3>Chuẩn bị dataset cho DPO</h3><span class="ex-tag code">code</span></div><div class="prose"><p>Từ file JSONL có <code>prompt</code>, <code>answer_a</code>, <code>answer_b</code>, <code>preferred</code> ("a" hoặc "b"), tạo dataset Hugging Face với ba cột <code>prompt</code>, <code>chosen</code>, <code>rejected</code> dạng hội thoại, bỏ các dòng "hòa".</p>
+<details class="fold code">
+<summary>Code tham khảo</summary>
+<div class="hl"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datasets</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dataset</span>
+
+<span class="n">rows</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="nb">open</span><span class="p">(</span><span class="s2">"prefs.jsonl"</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">"utf-8"</span><span class="p">):</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">r</span><span class="p">[</span><span class="s2">"preferred"</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"a"</span><span class="p">,</span> <span class="s2">"b"</span><span class="p">):</span>
+        <span class="k">continue</span>
+    <span class="n">good</span><span class="p">,</span> <span class="n">bad</span> <span class="o">=</span> <span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="s2">"answer_a"</span><span class="p">],</span> <span class="n">r</span><span class="p">[</span><span class="s2">"answer_b"</span><span class="p">])</span> <span class="k">if</span> <span class="n">r</span><span class="p">[</span><span class="s2">"preferred"</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"a"</span> <span class="k">else</span> <span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="s2">"answer_b"</span><span class="p">],</span> <span class="n">r</span><span class="p">[</span><span class="s2">"answer_a"</span><span class="p">])</span>
+    <span class="n">rows</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+        <span class="s2">"prompt"</span><span class="p">:</span> <span class="p">[{</span><span class="s2">"role"</span><span class="p">:</span> <span class="s2">"user"</span><span class="p">,</span> <span class="s2">"content"</span><span class="p">:</span> <span class="n">r</span><span class="p">[</span><span class="s2">"prompt"</span><span class="p">]}],</span>
+        <span class="s2">"chosen"</span><span class="p">:</span> <span class="p">[{</span><span class="s2">"role"</span><span class="p">:</span> <span class="s2">"assistant"</span><span class="p">,</span> <span class="s2">"content"</span><span class="p">:</span> <span class="n">good</span><span class="p">}],</span>
+        <span class="s2">"rejected"</span><span class="p">:</span> <span class="p">[{</span><span class="s2">"role"</span><span class="p">:</span> <span class="s2">"assistant"</span><span class="p">,</span> <span class="s2">"content"</span><span class="p">:</span> <span class="n">bad</span><span class="p">}],</span>
+    <span class="p">})</span>
+<span class="n">ds</span> <span class="o">=</span> <span class="n">Dataset</span><span class="o">.</span><span class="n">from_list</span><span class="p">(</span><span class="n">rows</span><span class="p">)</span><span class="o">.</span><span class="n">train_test_split</span><span class="p">(</span><span class="n">test_size</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
+</code></pre></div>
+
+</details></div></article><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p6.2:b">Tôi đã xong phần bài tập</label><button class="btn" type="button" data-goto="thuc-hanh">Sang thực hành <span class="arr">→</span></button></div></section><section class="panel" id="thuc-hanh" role="tabpanel" hidden><div class="prose"><h2>DPO trên model của Lab 8</h2>
+<p><strong>Các bước</strong></p>
+<ol>
+<li>Lấy 600 prompt (tác vụ của Lab 8 hoặc câu hỏi chăm sóc khách hàng). Với mỗi prompt, sinh 2 câu trả lời từ model SFT ở Lab 8 với temperature 0.8.</li>
+<li>Gán nhãn chosen/rejected: dùng LLM lớn làm giám khảo với tiêu chí rõ, đổi vị trí ngẫu nhiên; tự kiểm tra tay 50 cặp và đo tỉ lệ đồng ý.</li>
+<li>Train bằng TRL <code>DPOTrainer</code> với LoRA, β = 0.1, lr 5e-6 đến 5e-5, 1–2 epoch.</li>
+<li>Đánh giá: win rate của model sau DPO so với trước trên 100 prompt test, độ dài trung bình câu trả lời, và metric tác vụ của Lab 8 (để chắc không tụt).</li>
+<li>Thử β = 0.05 và 0.3, so sánh.</li>
+</ol>
+<p><strong>Xong khi</strong></p>
+<ul>
+<li>Có win rate sau DPO so với trước, đo bằng LLM-as-judge có kiểm tra tay.</li>
+<li>Có bảng theo β và nhận xét về độ dài câu trả lời.</li>
+</ul>
+<details class="fold code">
+<summary>Code tham khảo</summary>
+<div class="hl"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">peft</span><span class="w"> </span><span class="kn">import</span> <span class="n">LoraConfig</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">transformers</span><span class="w"> </span><span class="kn">import</span> <span class="n">AutoModelForCausalLM</span><span class="p">,</span> <span class="n">AutoTokenizer</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">trl</span><span class="w"> </span><span class="kn">import</span> <span class="n">DPOTrainer</span><span class="p">,</span> <span class="n">DPOConfig</span>
+
+<span class="n">name</span> <span class="o">=</span> <span class="s2">"qwen-extract-sft-merged"</span>            <span class="c1"># model Lab 8 đã gộp LoRA, hoặc model SFT bất kỳ</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">AutoModelForCausalLM</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">torch_dtype</span><span class="o">=</span><span class="s2">"auto"</span><span class="p">)</span>
+<span class="n">tok</span> <span class="o">=</span> <span class="n">AutoTokenizer</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+<span class="n">args</span> <span class="o">=</span> <span class="n">DPOConfig</span><span class="p">(</span><span class="n">output_dir</span><span class="o">=</span><span class="s2">"qwen-dpo"</span><span class="p">,</span> <span class="n">beta</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">learning_rate</span><span class="o">=</span><span class="mf">2e-5</span><span class="p">,</span> <span class="n">num_train_epochs</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                 <span class="n">per_device_train_batch_size</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">gradient_accumulation_steps</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">logging_steps</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+                 <span class="n">eval_strategy</span><span class="o">=</span><span class="s2">"epoch"</span><span class="p">,</span> <span class="n">fp16</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">report_to</span><span class="o">=</span><span class="s2">"none"</span><span class="p">)</span>
+<span class="n">trainer</span> <span class="o">=</span> <span class="n">DPOTrainer</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> <span class="n">ref_model</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="n">args</span><span class="p">,</span> <span class="n">train_dataset</span><span class="o">=</span><span class="n">ds</span><span class="p">[</span><span class="s2">"train"</span><span class="p">],</span> <span class="n">eval_dataset</span><span class="o">=</span><span class="n">ds</span><span class="p">[</span><span class="s2">"test"</span><span class="p">],</span>
+                     <span class="n">processing_class</span><span class="o">=</span><span class="n">tok</span><span class="p">,</span> <span class="n">peft_config</span><span class="o">=</span><span class="n">LoraConfig</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span> <span class="n">lora_alpha</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">target_modules</span><span class="o">=</span><span class="s2">"all-linear"</span><span class="p">,</span> <span class="n">task_type</span><span class="o">=</span><span class="s2">"CAUSAL_LM"</span><span class="p">))</span>
+<span class="n">trainer</span><span class="o">.</span><span class="n">train</span><span class="p">()</span>
+</code></pre></div>
+
+</details></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p6.2:p">Tôi đã xong phần thực hành</label></div></section>
+      <div class="donewhen"><b>Xong bài khi</b>Tỉ lệ thắng của model sau DPO so với trước, đo bằng LLM-as-judge có kiểm tra tay.</div>
       <nav class="pn" aria-label="Bài trước, bài sau"><a href="p6-1.html"><span class="dir">← Bài trước · P6.1</span><span class="tt">Bài 8a · SFT và PEFT</span></a><a class="nx" href="p6-3.html"><span class="dir">Bài sau · P6.3 →</span><span class="tt">Quantization và inference nhanh</span></a></nav>
     </div>
     <aside class="aside">
       <div class="abox"><h4>Tiến độ bài này</h4><div class="ring"><svg viewBox="0 0 64 64" aria-hidden="true"><circle class="bg" cx="32" cy="32" r="28"/><circle class="fg" cx="32" cy="32" r="28" stroke-dasharray="176" stroke-dashoffset="176"/></svg><div><b id="ring-n">0/3</b><span id="ring-sub">phần đã xong</span></div></div></div>
+      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Dữ liệu ưu tiên</a></li><li><a href="#lt-2">RLHF ở mức ý tưởng</a></li><li><a href="#lt-3">DPO: bỏ reward model</a></li><li><a href="#lt-4">Khi nào cần preference tuning</a></li><li><a href="#lt-5">Đo kết quả</a></li></ol></div>
       
       <div class="abox"><h4>Cùng giai đoạn</h4><ul><li><a href="p6-1.html">Bài 8a · SFT và PEFT</a></li><li><span class=cur>Bài 8b · Preference tuning</span></li><li><a href="p6-3.html">Quantization và inference nhanh</a></li></ul></div>
     </aside>
@@ -43,16 +159,75 @@
 
 (function () {
   const mid = document.body.dataset.mid; let d = AIE.load();
+  const EXK = "aie-ex-" + mid;
+  let solved = {}; try { solved = JSON.parse(localStorage.getItem(EXK) || "{}") || {}; } catch (e) {}
+  const saveSolved = () => { try { localStorage.setItem(EXK, JSON.stringify(solved)); } catch (e) {} };
+  const tabs = [...document.querySelectorAll(".tab")], panels = [...document.querySelectorAll(".panel")];
   const boxes = [...document.querySelectorAll("input[data-key]")], ring = document.querySelector(".ring .fg"), rt = document.getElementById("ring-n");
-  const skipped = () => !!d[mid + ":skip"];
+  const toc = document.getElementById("toc-box");
+  function show(id, scroll) {
+    tabs.forEach((t) => t.setAttribute("aria-selected", String(t.dataset.tab === id)));
+    panels.forEach((p) => { const on = p.id === id; if (on && p.hidden) { p.classList.remove("enter"); void p.offsetWidth; p.classList.add("enter"); } p.hidden = !on; });
+    if (toc) toc.hidden = id !== "ly-thuyet";
+    if (scroll) document.querySelector(".tabs").scrollIntoView({ block: "start" });
+  }
+  tabs.forEach((t) => t.addEventListener("click", () => { history.replaceState(null, "", "#" + t.dataset.tab); show(t.dataset.tab, true); }));
+  document.querySelectorAll("[data-goto]").forEach((b) => b.addEventListener("click", () => { history.replaceState(null, "", "#" + b.dataset.goto); show(b.dataset.goto, true); }));
+  const start = ["ly-thuyet", "bai-tap", "thuc-hanh"].includes(location.hash.slice(1)) ? location.hash.slice(1) : "ly-thuyet";
+  show(start, false);
+  window.addEventListener("hashchange", () => { const h = location.hash.slice(1); if (["ly-thuyet", "bai-tap", "thuc-hanh"].includes(h)) show(h, true); });
+  document.querySelectorAll(".toc a").forEach((a) => a.addEventListener("click", () => show("ly-thuyet", false)));
+
   function render() {
     let n = 0;
-    boxes.forEach((b) => { const on = skipped() || !!d[b.dataset.key]; b.checked = on; b.disabled = skipped(); b.closest(".pblock").classList.toggle("done", on); if (on) n++; });
+    const skip = !!d[mid + ":skip"];
+    boxes.forEach((b) => { const on = skip || !!d[b.dataset.key]; b.checked = on; if (on) n++; });
+    const kmap = { t: "ly-thuyet", b: "bai-tap", p: "thuc-hanh" };
+    tabs.forEach((t) => { const k = Object.keys(kmap).find((x) => kmap[x] === t.dataset.tab); t.classList.toggle("is-done", skip || !!d[mid + ":" + k]); });
     ring.style.strokeDashoffset = String(176 * (1 - n / 3)); rt.textContent = n + "/3";
-    document.getElementById("ring-sub").textContent = skipped() ? "đã đánh dấu bỏ qua" : n === 3 ? "hoàn thành bài này" : "phần đã xong";
+    document.getElementById("ring-sub").textContent = n === 3 ? "hoàn thành bài này" : "phần đã xong";
   }
-  boxes.forEach((b) => b.addEventListener("change", () => { d = AIE.load(); if (b.checked) d[b.dataset.key] = true; else delete d[b.dataset.key]; AIE.save(d); render(); }));
+  boxes.forEach((b) => b.addEventListener("change", () => {
+    d = AIE.load(); if (b.checked) d[b.dataset.key] = true; else delete d[b.dataset.key]; AIE.save(d);
+    boxes.filter((x) => x.dataset.key === b.dataset.key).forEach((x) => (x.checked = b.checked)); render();
+  }));
   render();
+
+  /* answer boxes */
+  const parse = (s) => parseFloat(String(s).trim().replace(",", ".").replace("−", "-"));
+  const allAns = [...document.querySelectorAll(".ans")];
+  function score() {
+    const ok = allAns.filter((a) => solved[a.id]).length;
+    const el = document.getElementById("ex-score");
+    if (el) { el.querySelector("b").textContent = `${ok} / ${allAns.length}`; el.querySelector(".bar i").style.width = (allAns.length ? ok / allAns.length * 100 : 0) + "%"; }
+    document.querySelectorAll(".excard").forEach((c) => { const as = [...c.querySelectorAll(".ans")]; c.classList.toggle("solved", as.length > 0 && as.every((a) => solved[a.id])); });
+  }
+  allAns.forEach((box) => {
+    const inputs = [...box.querySelectorAll("input")], fb = box.querySelector(".ans-fb");
+    const mark = () => { box.classList.add("ok"); inputs.forEach((i) => { i.classList.add("ok"); if (!i.value) i.value = i.dataset.ans; }); fb.className = "ans-fb ok"; fb.textContent = "Chính xác."; };
+    if (solved[box.id]) mark();
+    const run = () => {
+      let all = true, empty = false;
+      inputs.forEach((i) => {
+        const v = parse(i.value);
+        if (i.value.trim() === "" || Number.isNaN(v)) { empty = true; all = false; i.classList.remove("ok", "bad"); return; }
+        const good = Math.abs(v - parseFloat(i.dataset.ans)) <= parseFloat(i.dataset.tol) + 1e-9;
+        i.classList.toggle("ok", good); i.classList.toggle("bad", !good); if (!good) all = false;
+      });
+      if (all) { solved[box.id] = true; saveSolved(); mark(); box.classList.remove("pop"); void box.offsetWidth; box.classList.add("pop"); score(); }
+      else { fb.className = "ans-fb bad"; fb.textContent = empty ? "Điền đủ các ô bằng số (dấu chấm hoặc phẩy đều được)." : "Ô màu cam chưa đúng. Xem lại bước đó, hoặc mở gợi ý."; }
+    };
+    box.querySelector(".btn-check").addEventListener("click", run);
+    inputs.forEach((i) => i.addEventListener("keydown", (e) => { if (e.key === "Enter") run(); }));
+  });
+  score();
+
+  /* highlight current theory section in the toc */
+  if (toc && "IntersectionObserver" in window) {
+    const links = [...toc.querySelectorAll("a")];
+    const io = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) links.forEach((a) => a.classList.toggle("on", a.getAttribute("href") === "#" + e.target.id)); }), { rootMargin: "-140px 0px -65% 0px" });
+    document.querySelectorAll("#ly-thuyet h2[id]").forEach((h) => io.observe(h));
+  }
 })();
 
 </script>

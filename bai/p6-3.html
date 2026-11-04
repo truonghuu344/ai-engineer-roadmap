@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>P6.3 · Quantization và inference nhanh · AI Engineer</title>
-<meta name="description" content="Quantization và inference nhanh: FP16, BF16, INT8, INT4; GPTQ, AWQ, GGUF; KV cache, batching, vLLM, FlashAttention, speculative decoding">
+<meta name="description" content="Quantization và inference nhanh: lý thuyết, bài tập và thực hành. FP16, BF16, INT8, INT4; GPTQ, AWQ, GGUF; KV cache, batching, vLLM, FlashAttention, speculative decoding">
 <meta property="og:title" content="P6.3 · Quantization và inference nhanh · AI Engineer">
-<meta property="og:description" content="Quantization và inference nhanh: FP16, BF16, INT8, INT4; GPTQ, AWQ, GGUF; KV cache, batching, vLLM, FlashAttention, speculative decoding">
+<meta property="og:description" content="Quantization và inference nhanh: lý thuyết, bài tập và thực hành. FP16, BF16, INT8, INT4; GPTQ, AWQ, GGUF; KV cache, batching, vLLM, FlashAttention, speculative decoding">
 <meta name="theme-color" content="#F4F6FB">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23131A33'/%3E%3Cpath d='M9 22 L16 10 L23 19' stroke='%23E5E9FB' stroke-width='2' fill='none'/%3E%3Ccircle cx='9' cy='22' r='3' fill='%23E5E9FB'/%3E%3Ccircle cx='16' cy='10' r='3' fill='%23E5E9FB'/%3E%3Ccircle cx='23' cy='19' r='3' fill='%23FF9361'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -14,23 +14,166 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="../assets/chrome.css">
 <link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/lesson.css">
 </head>
 <body data-mid="p6.3">
 <header class="sh"><div class="sh-in"><a class="sh-brand" href="../index.html"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="var(--ink)"/><circle cx="9" cy="22" r="2.6" fill="var(--accent-soft)"/><circle cx="16" cy="10" r="2.6" fill="var(--accent-soft)"/><circle cx="23" cy="19" r="2.6" fill="#FF9361"/><path d="M9 22 L16 10 L23 19" stroke="var(--accent-soft)" stroke-width="1.8" fill="none"/></svg><span>AI Engineer<small>lộ trình tự học</small></span></a><nav class="sh-nav" id="sh-nav" aria-label="Chính"><a href="../index.html">Trang chủ</a><a href="../bai-hoc.html" aria-current="page">Bài học</a><a href="../lo-trinh.html">Lộ trình</a><a href="../notebooks.html">Notebook</a><a class="sh-cta-m" href="../bai01.html" data-next-lesson>Học tiếp →</a></nav><a class="sh-cta" href="../bai01.html" data-next-lesson>Học tiếp <span class="arr">→</span></a><button class="sh-burger" type="button" aria-expanded="false" aria-controls="sh-nav">Menu</button></div></header>
 
 <main class="container">
   <div class="crumbs"><a href="../bai-hoc.html">Bài học</a><span>/</span><a href="../bai-hoc.html#p6">P6 · Fine-tuning và tối ưu LLM</a><span>/</span><span>P6.3</span></div>
-  <section class="lhero"><div class="code">P6.3</div><h1>Quantization và inference nhanh</h1><div class="lmeta"><span class="m">Giai đoạn P6 · Fine-tuning và tối ưu LLM</span><span class="m">Tuần 26–30</span><span class="chip planned">Đề cương</span></div></section>
-  <div class="lgrid">
-    <div>
-      <div class="goal"><b>Mục tiêu giai đoạn:</b> Biết khi nào nên fine-tune, làm được với GPU nhỏ, và chạy model nhanh, rẻ.</div>
-      <div class="soon">Nội dung đầy đủ (trang lý thuyết tương tác và notebook tự chấm) đang được soạn và sẽ có khi bạn học tới bài này. Đề cương dưới đây là phạm vi chính xác của bài.</div>
-      <section class="pblock reveal"><div class="pblock-head"><span class="num">1</span><h2>Lý thuyết<span style="display:block;font:400 13.5px var(--f-body);color:var(--muted);margin-top:4px">Những gì cần hiểu</span></h2><label class="tick" for="cb-t"><input type="checkbox" id="cb-t" data-key="p6.3:t">Xong</label></div><ol><li>FP16, BF16, INT8, INT4; GPTQ, AWQ, GGUF</li><li>KV cache, batching, vLLM, FlashAttention, speculative decoding</li></ol></section><section class="pblock reveal"><div class="pblock-head"><span class="num">2</span><h2>Bài tập<span style="display:block;font:400 13.5px var(--f-body);color:var(--muted);margin-top:4px">Tính tay và tự kiểm tra</span></h2><label class="tick" for="cb-b"><input type="checkbox" id="cb-b" data-key="p6.3:b">Xong</label></div><ol><li>Tính VRAM cho model 7B ở 4 mức precision, cộng KV cache cho 4K token</li></ol></section><section class="pblock reveal"><div class="pblock-head"><span class="num">3</span><h2>Thực hành<span style="display:block;font:400 13.5px var(--f-body);color:var(--muted);margin-top:4px">Code và dự án</span></h2><label class="tick" for="cb-p"><input type="checkbox" id="cb-p" data-key="p6.3:p">Xong</label></div><ol><li>Lab 9: đo latency, tokens/s, VRAM và chất lượng của model ở 6.1 qua FP16, INT8, INT4</li></ol></section>
-      <div class="donewhen reveal"><b>Xong khi</b>Bảng trade-off tốc độ, bộ nhớ, chất lượng đo trên cùng một GPU.</div>
+  <section class="lhero"><div class="code">P6.3</div><h1>Quantization và inference nhanh</h1><div class="lmeta"><span class="m">Giai đoạn P6 · Fine-tuning và tối ưu LLM</span><span class="m">Tuần 26–30</span><span class="chip ready"><span class="dot"></span>Có nội dung đầy đủ</span></div>
+    <div class="intro"><p>Model tốt mà chạy chậm và đắt thì không đưa vào sản phẩm được. Bài này dạy hai nhóm kỹ thuật: <strong>lượng tử hóa</strong> (quantization) để model nhỏ đi và chạy được trên GPU yếu hơn, và <strong>tối ưu suy luận</strong> (KV cache, batching, vLLM) để phục vụ nhiều người dùng nhanh hơn. Bạn cũng sẽ học cách tự tính bộ nhớ và tốc độ, kỹ năng rất hay được hỏi khi phỏng vấn.</p></div></section>
+  
+  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">4 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
+  <div class="lgrid" style="margin-top:22px">
+    <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">Các định dạng số</h2>
+<table>
+<thead>
+<tr>
+<th>Định dạng</th>
+<th>Byte mỗi tham số</th>
+<th>Ghi chú</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>FP32</td>
+<td>4</td>
+<td>train truyền thống</td>
+</tr>
+<tr>
+<td>FP16 / BF16</td>
+<td>2</td>
+<td>mặc định khi chạy suy luận; BF16 cùng dải giá trị với FP32 nên ít tràn số</td>
+</tr>
+<tr>
+<td>INT8 / FP8</td>
+<td>1</td>
+<td>gần như không mất chất lượng với kỹ thuật tốt</td>
+</tr>
+<tr>
+<td>INT4</td>
+<td>0.5</td>
+<td>mất chút chất lượng, giảm 4 lần bộ nhớ so với FP16</td>
+</tr>
+</tbody>
+</table>
+<p>Bộ nhớ trọng số ≈ số tham số × số byte. Model 7 tỉ tham số: 14 GB ở FP16, khoảng 3,5 GB ở INT4.</p>
+<h2 id="lt-2">Lượng tử hóa hoạt động thế nào</h2>
+<p>Lượng tử hóa đối xứng 8 bit cho một nhóm trọng số:</p>
+<div class="hl"><pre><span></span><code>scale = max|w| / 127
+q = round(w / scale)          số nguyên trong [−127, 127]
+w ≈ q · scale                 khi tính toán
+</code></pre></div>
+
+<p>Một giá trị ngoại lai lớn làm scale lớn và mọi giá trị nhỏ mất độ chính xác. Các phương pháp hiện đại chia trọng số thành <strong>nhóm nhỏ</strong> (ví dụ 128 giá trị) mỗi nhóm một scale, và xử lý riêng các kênh ngoại lai:</p>
+<ul>
+<li><strong>bitsandbytes (NF4, INT8):</strong> lượng tử hóa lúc nạp model, dùng cho QLoRA, tiện nhưng không nhanh nhất.</li>
+<li><strong>GPTQ, AWQ:</strong> lượng tử hóa trước bằng một tập dữ liệu hiệu chỉnh nhỏ, giữ chất lượng tốt ở 4 bit, có kernel nhanh.</li>
+<li><strong>GGUF (llama.cpp):</strong> định dạng chạy trên CPU và máy cá nhân, nhiều mức bit.</li>
+</ul>
+<h2 id="lt-3">Hai giai đoạn của suy luận và KV cache</h2>
+<ul>
+<li><strong>Prefill:</strong> xử lý toàn bộ prompt một lần, song song, bị giới hạn bởi <strong>sức tính</strong> của GPU.</li>
+<li><strong>Decode:</strong> sinh từng token một. Mỗi token mới phải đọc toàn bộ trọng số từ bộ nhớ GPU, nên bị giới hạn bởi <strong>băng thông bộ nhớ</strong>.</li>
+</ul>
+<p><strong>KV cache</strong> lưu key và value của mọi token đã xử lý để không tính lại ở mỗi bước decode. Nó tốn bộ nhớ:</p>
+<div class="hl"><pre><span></span><code>KV cache = 2 (K và V) × số lớp × số đầu KV × head_dim × số token × byte mỗi số
+</code></pre></div>
+
+<p>Các model hiện đại dùng <strong>grouped-query attention</strong> (ít đầu KV hơn đầu Q) để giảm KV cache.</p>
+<p>Ước lượng tốc độ decode tối đa với batch 1: <strong>băng thông bộ nhớ / kích thước trọng số</strong>. GPU 300 GB/s, model 14 GB: tối đa khoảng 21 token/giây. Lượng tử hóa 4 bit giảm kích thước trọng số nên <strong>tăng tốc decode</strong> gần tương ứng.</p>
+<h2 id="lt-4">Phục vụ nhiều người dùng</h2>
+<ul>
+<li><strong>Batching:</strong> mỗi bước decode đọc trọng số một lần nhưng sinh token cho nhiều yêu cầu cùng lúc, nên tổng thông lượng tăng gần tuyến tính theo batch tới khi chạm giới hạn tính toán.</li>
+<li><strong>Continuous batching:</strong> yêu cầu mới vào batch ngay khi có chỗ trống, không chờ cả batch xong.</li>
+<li><strong>PagedAttention (vLLM):</strong> quản lý KV cache theo trang như bộ nhớ ảo, gần như không lãng phí, nên chứa được nhiều yêu cầu đồng thời hơn.</li>
+<li><strong>FlashAttention:</strong> tính attention theo khối trong bộ nhớ nhanh của GPU, không lưu ma trận T×T.</li>
+<li><strong>Speculative decoding:</strong> model nhỏ đoán trước vài token, model lớn kiểm tra cả cụm trong một lần, giữ nguyên chất lượng mà nhanh hơn.</li>
+</ul>
+<div class="keep">
+<p><strong>Ghi nhớ:</strong> decode bị giới hạn bởi băng thông bộ nhớ, không phải sức tính. Muốn nhanh hơn với một người dùng: model nhỏ hơn hoặc lượng tử hóa. Muốn phục vụ nhiều người: batching và vLLM.</p>
+</div></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p6.3:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 4</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Bộ nhớ trọng số</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Model 7 tỉ tham số (1 GB = 10⁹ byte).</p>
+<div class="ans" id="p6-3-e1-a1"><div class="ans-fields"><label>FP16 (GB)<input inputmode="decimal" data-ans="14.0" data-tol="0.001" autocomplete="off"></label><label>INT8 (GB)<input inputmode="decimal" data-ans="7.0" data-tol="0.001" autocomplete="off"></label><label>INT4 (GB)<input inputmode="decimal" data-ans="3.5" data-tol="0.001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+
+<details class="fold solution">
+<summary>Lời giải</summary>
+<p>14, 7 và 3,5 GB. INT4 cho phép chạy model 7B trên GPU 8 GB, còn chỗ cho KV cache.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 2</span><h3>KV cache</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Model 32 lớp, 8 đầu KV, head_dim 128, FP16, một chuỗi 4.096 token.</p>
+<div class="ans" id="p6-3-e2-a1"><div class="ans-fields"><label>KV cache (GB)<input inputmode="decimal" data-ans="0.5369" data-tol="0.001" autocomplete="off"></label><label>16 chuỗi như vậy cùng lúc (GB)<input inputmode="decimal" data-ans="8.59" data-tol="0.01" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+
+<details class="fold solution">
+<summary>Lời giải</summary>
+<p>2 × 32 × 8 × 128 × 4096 × 2 byte ≈ 0,54 GB mỗi chuỗi. 16 chuỗi: khoảng 8,6 GB, còn lớn hơn trọng số INT4 của cả model. Khi phục vụ nhiều người, KV cache thường là thứ chiếm bộ nhớ nhiều nhất.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 3</span><h3>Tốc độ decode</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>GPU có băng thông bộ nhớ 300 GB/s. Batch 1.</p>
+<div class="ans" id="p6-3-e3-a1"><div class="ans-fields"><label>Token/giây tối đa, model FP16 14 GB<input inputmode="decimal" data-ans="21.43" data-tol="0.01" autocomplete="off"></label><label>Model INT4 3.5 GB<input inputmode="decimal" data-ans="85.71" data-tol="0.01" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+
+<details class="fold solution">
+<summary>Lời giải</summary>
+<p>300/14 ≈ 21 token/s; 300/3,5 ≈ 86 token/s. Thực tế thấp hơn giới hạn này (overhead, dequantize), nhưng tỉ lệ cho thấy vì sao lượng tử hóa tăng tốc decode.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 4</span><h3>Lượng tử hóa bằng tay</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Nhóm trọng số w = [0.5, −1.27, 0.02], lượng tử hóa đối xứng 8 bit.</p>
+<div class="ans" id="p6-3-e4-a1"><div class="ans-fields"><label>scale<input inputmode="decimal" data-ans="0.01" data-tol="1e-05" autocomplete="off"></label><label>q của 0.5<input inputmode="decimal" data-ans="50.0" data-tol="0.0" autocomplete="off"></label><label>q của 0.02<input inputmode="decimal" data-ans="2.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+
+<details class="fold solution">
+<summary>Lời giải</summary>
+<p>scale = 1,27/127 = 0,01. q = round(w/0,01) = [50, −127, 2]. Khôi phục: [0.5, −1.27, 0.02], không mất gì ở ví dụ này. Nếu nhóm có thêm một giá trị 12,7, scale thành 0,1 và 0,02 bị làm tròn về 0: đó là vấn đề ngoại lai.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 5</span><h3>Chọn cấu hình</h3><span class="ex-tag concept">khái niệm</span></div><div class="prose"><p>Bạn cần phục vụ model 8B cho 50 người dùng đồng thời, mỗi người hội thoại tới 8K token, trên một GPU 24 GB. Nêu các lựa chọn và đánh đổi.</p>
+<details class="fold solution">
+<summary>Lời giải</summary>
+<p>Trọng số FP16 16 GB thì chỉ còn 8 GB cho KV cache, mà 50 chuỗi 8K token cần nhiều hơn thế nhiều. Lựa chọn: lượng tử hóa trọng số 4 bit (AWQ/GPTQ, khoảng 5 GB) để dành chỗ cho KV cache; lượng tử hóa KV cache về FP8; dùng vLLM với PagedAttention và continuous batching; giới hạn độ dài context hoặc tóm tắt lịch sử; nếu vẫn không đủ, dùng model nhỏ hơn hoặc thêm GPU. Đo chất lượng sau lượng tử hóa trên bộ eval của bạn trước khi chọn.</p>
+</details></div></article><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p6.3:b">Tôi đã xong phần bài tập</label><button class="btn" type="button" data-goto="thuc-hanh">Sang thực hành <span class="arr">→</span></button></div></section><section class="panel" id="thuc-hanh" role="tabpanel" hidden><div class="prose"><h2>Lab 9: đo trade-off lượng tử hóa</h2>
+<p>Dùng model đã fine-tune ở Lab 8 (đã gộp LoRA) hoặc Qwen2.5-1.5B-Instruct, trên Colab T4.</p>
+<p><strong>Các bước</strong></p>
+<ol>
+<li>Nạp model ở ba mức: FP16, INT8 và 4 bit (NF4) bằng bitsandbytes.</li>
+<li>Với mỗi mức, đo trên cùng 50 prompt: VRAM đỉnh (<code>torch.cuda.max_memory_allocated</code>), thời gian tới token đầu, token/giây khi decode (batch 1), và metric tác vụ của Lab 8.</li>
+<li>Chạy cùng model bằng <strong>vLLM</strong> (FP16), đo thông lượng tổng với 1, 8, 32 yêu cầu đồng thời.</li>
+<li>Vẽ hai biểu đồ: chất lượng theo bộ nhớ, và thông lượng theo số yêu cầu đồng thời.</li>
+<li>Viết khuyến nghị: dùng cấu hình nào cho (a) demo một người dùng trên GPU nhỏ, (b) phục vụ nhiều người dùng.</li>
+</ol>
+<p><strong>Xong khi</strong></p>
+<ul>
+<li>Bảng trade-off tốc độ, bộ nhớ, chất lượng đo trên cùng một GPU.</li>
+<li>Biểu đồ thông lượng của vLLM theo số yêu cầu đồng thời.</li>
+</ul>
+<details class="fold code">
+<summary>Code tham khảo</summary>
+<div class="hl"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">time</span><span class="o">,</span><span class="w"> </span><span class="nn">torch</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">transformers</span><span class="w"> </span><span class="kn">import</span> <span class="n">AutoModelForCausalLM</span><span class="p">,</span> <span class="n">AutoTokenizer</span><span class="p">,</span> <span class="n">BitsAndBytesConfig</span>
+
+<span class="n">name</span> <span class="o">=</span> <span class="s2">"Qwen/Qwen2.5-1.5B-Instruct"</span>
+<span class="n">tok</span> <span class="o">=</span> <span class="n">AutoTokenizer</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+<span class="n">configs</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">"fp16"</span><span class="p">:</span> <span class="nb">dict</span><span class="p">(</span><span class="n">torch_dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float16</span><span class="p">),</span>
+    <span class="s2">"int8"</span><span class="p">:</span> <span class="nb">dict</span><span class="p">(</span><span class="n">quantization_config</span><span class="o">=</span><span class="n">BitsAndBytesConfig</span><span class="p">(</span><span class="n">load_in_8bit</span><span class="o">=</span><span class="kc">True</span><span class="p">)),</span>
+    <span class="s2">"nf4"</span><span class="p">:</span> <span class="nb">dict</span><span class="p">(</span><span class="n">quantization_config</span><span class="o">=</span><span class="n">BitsAndBytesConfig</span><span class="p">(</span><span class="n">load_in_4bit</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">bnb_4bit_quant_type</span><span class="o">=</span><span class="s2">"nf4"</span><span class="p">,</span>
+                                                       <span class="n">bnb_4bit_compute_dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float16</span><span class="p">)),</span>
+<span class="p">}</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">bench</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">prompts</span><span class="p">,</span> <span class="n">max_new</span><span class="o">=</span><span class="mi">128</span><span class="p">):</span>
+    <span class="n">tokens</span><span class="p">,</span> <span class="n">t0</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">prompts</span><span class="p">:</span>
+        <span class="n">ids</span> <span class="o">=</span> <span class="n">tok</span><span class="o">.</span><span class="n">apply_chat_template</span><span class="p">([{</span><span class="s2">"role"</span><span class="p">:</span> <span class="s2">"user"</span><span class="p">,</span> <span class="s2">"content"</span><span class="p">:</span> <span class="n">p</span><span class="p">}],</span> <span class="n">add_generation_prompt</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">return_tensors</span><span class="o">=</span><span class="s2">"pt"</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">"cuda"</span><span class="p">)</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="n">ids</span><span class="p">,</span> <span class="n">max_new_tokens</span><span class="o">=</span><span class="n">max_new</span><span class="p">,</span> <span class="n">do_sample</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">tokens</span> <span class="o">+=</span> <span class="n">out</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">ids</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">tokens</span> <span class="o">/</span> <span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">t0</span><span class="p">)</span>
+
+<span class="n">prompts</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"Giải thích overfitting trong 3 câu."</span><span class="p">]</span> <span class="o">*</span> <span class="mi">10</span>
+<span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">kw</span> <span class="ow">in</span> <span class="n">configs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">empty_cache</span><span class="p">();</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">reset_peak_memory_stats</span><span class="p">()</span>
+    <span class="n">m</span> <span class="o">=</span> <span class="n">AutoModelForCausalLM</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">device_map</span><span class="o">=</span><span class="s2">"cuda"</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">)</span>
+    <span class="n">tps</span> <span class="o">=</span> <span class="n">bench</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">prompts</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">tps</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> token/s | VRAM đỉnh </span><span class="si">{</span><span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">max_memory_allocated</span><span class="p">()</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">1e9</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> GB"</span><span class="p">)</span>
+    <span class="k">del</span> <span class="n">m</span>
+</code></pre></div>
+
+</details></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p6.3:p">Tôi đã xong phần thực hành</label></div></section>
+      <div class="donewhen"><b>Xong bài khi</b>Bảng trade-off tốc độ, bộ nhớ, chất lượng đo trên cùng một GPU.</div>
       <nav class="pn" aria-label="Bài trước, bài sau"><a href="p6-2.html"><span class="dir">← Bài trước · P6.2</span><span class="tt">Bài 8b · Preference tuning</span></a><a class="nx" href="p7-1.html"><span class="dir">Bài sau · P7.1 →</span><span class="tt">Bài 9 · ViT và CLIP</span></a></nav>
     </div>
     <aside class="aside">
       <div class="abox"><h4>Tiến độ bài này</h4><div class="ring"><svg viewBox="0 0 64 64" aria-hidden="true"><circle class="bg" cx="32" cy="32" r="28"/><circle class="fg" cx="32" cy="32" r="28" stroke-dasharray="176" stroke-dashoffset="176"/></svg><div><b id="ring-n">0/3</b><span id="ring-sub">phần đã xong</span></div></div></div>
+      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Các định dạng số</a></li><li><a href="#lt-2">Lượng tử hóa hoạt động thế nào</a></li><li><a href="#lt-3">Hai giai đoạn của suy luận và KV cache</a></li><li><a href="#lt-4">Phục vụ nhiều người dùng</a></li></ol></div>
       
       <div class="abox"><h4>Cùng giai đoạn</h4><ul><li><a href="p6-1.html">Bài 8a · SFT và PEFT</a></li><li><a href="p6-2.html">Bài 8b · Preference tuning</a></li><li><span class=cur>Quantization và inference nhanh</span></li></ul></div>
     </aside>
@@ -43,16 +186,75 @@
 
 (function () {
   const mid = document.body.dataset.mid; let d = AIE.load();
+  const EXK = "aie-ex-" + mid;
+  let solved = {}; try { solved = JSON.parse(localStorage.getItem(EXK) || "{}") || {}; } catch (e) {}
+  const saveSolved = () => { try { localStorage.setItem(EXK, JSON.stringify(solved)); } catch (e) {} };
+  const tabs = [...document.querySelectorAll(".tab")], panels = [...document.querySelectorAll(".panel")];
   const boxes = [...document.querySelectorAll("input[data-key]")], ring = document.querySelector(".ring .fg"), rt = document.getElementById("ring-n");
-  const skipped = () => !!d[mid + ":skip"];
+  const toc = document.getElementById("toc-box");
+  function show(id, scroll) {
+    tabs.forEach((t) => t.setAttribute("aria-selected", String(t.dataset.tab === id)));
+    panels.forEach((p) => { const on = p.id === id; if (on && p.hidden) { p.classList.remove("enter"); void p.offsetWidth; p.classList.add("enter"); } p.hidden = !on; });
+    if (toc) toc.hidden = id !== "ly-thuyet";
+    if (scroll) document.querySelector(".tabs").scrollIntoView({ block: "start" });
+  }
+  tabs.forEach((t) => t.addEventListener("click", () => { history.replaceState(null, "", "#" + t.dataset.tab); show(t.dataset.tab, true); }));
+  document.querySelectorAll("[data-goto]").forEach((b) => b.addEventListener("click", () => { history.replaceState(null, "", "#" + b.dataset.goto); show(b.dataset.goto, true); }));
+  const start = ["ly-thuyet", "bai-tap", "thuc-hanh"].includes(location.hash.slice(1)) ? location.hash.slice(1) : "ly-thuyet";
+  show(start, false);
+  window.addEventListener("hashchange", () => { const h = location.hash.slice(1); if (["ly-thuyet", "bai-tap", "thuc-hanh"].includes(h)) show(h, true); });
+  document.querySelectorAll(".toc a").forEach((a) => a.addEventListener("click", () => show("ly-thuyet", false)));
+
   function render() {
     let n = 0;
-    boxes.forEach((b) => { const on = skipped() || !!d[b.dataset.key]; b.checked = on; b.disabled = skipped(); b.closest(".pblock").classList.toggle("done", on); if (on) n++; });
+    const skip = !!d[mid + ":skip"];
+    boxes.forEach((b) => { const on = skip || !!d[b.dataset.key]; b.checked = on; if (on) n++; });
+    const kmap = { t: "ly-thuyet", b: "bai-tap", p: "thuc-hanh" };
+    tabs.forEach((t) => { const k = Object.keys(kmap).find((x) => kmap[x] === t.dataset.tab); t.classList.toggle("is-done", skip || !!d[mid + ":" + k]); });
     ring.style.strokeDashoffset = String(176 * (1 - n / 3)); rt.textContent = n + "/3";
-    document.getElementById("ring-sub").textContent = skipped() ? "đã đánh dấu bỏ qua" : n === 3 ? "hoàn thành bài này" : "phần đã xong";
+    document.getElementById("ring-sub").textContent = n === 3 ? "hoàn thành bài này" : "phần đã xong";
   }
-  boxes.forEach((b) => b.addEventListener("change", () => { d = AIE.load(); if (b.checked) d[b.dataset.key] = true; else delete d[b.dataset.key]; AIE.save(d); render(); }));
+  boxes.forEach((b) => b.addEventListener("change", () => {
+    d = AIE.load(); if (b.checked) d[b.dataset.key] = true; else delete d[b.dataset.key]; AIE.save(d);
+    boxes.filter((x) => x.dataset.key === b.dataset.key).forEach((x) => (x.checked = b.checked)); render();
+  }));
   render();
+
+  /* answer boxes */
+  const parse = (s) => parseFloat(String(s).trim().replace(",", ".").replace("−", "-"));
+  const allAns = [...document.querySelectorAll(".ans")];
+  function score() {
+    const ok = allAns.filter((a) => solved[a.id]).length;
+    const el = document.getElementById("ex-score");
+    if (el) { el.querySelector("b").textContent = `${ok} / ${allAns.length}`; el.querySelector(".bar i").style.width = (allAns.length ? ok / allAns.length * 100 : 0) + "%"; }
+    document.querySelectorAll(".excard").forEach((c) => { const as = [...c.querySelectorAll(".ans")]; c.classList.toggle("solved", as.length > 0 && as.every((a) => solved[a.id])); });
+  }
+  allAns.forEach((box) => {
+    const inputs = [...box.querySelectorAll("input")], fb = box.querySelector(".ans-fb");
+    const mark = () => { box.classList.add("ok"); inputs.forEach((i) => { i.classList.add("ok"); if (!i.value) i.value = i.dataset.ans; }); fb.className = "ans-fb ok"; fb.textContent = "Chính xác."; };
+    if (solved[box.id]) mark();
+    const run = () => {
+      let all = true, empty = false;
+      inputs.forEach((i) => {
+        const v = parse(i.value);
+        if (i.value.trim() === "" || Number.isNaN(v)) { empty = true; all = false; i.classList.remove("ok", "bad"); return; }
+        const good = Math.abs(v - parseFloat(i.dataset.ans)) <= parseFloat(i.dataset.tol) + 1e-9;
+        i.classList.toggle("ok", good); i.classList.toggle("bad", !good); if (!good) all = false;
+      });
+      if (all) { solved[box.id] = true; saveSolved(); mark(); box.classList.remove("pop"); void box.offsetWidth; box.classList.add("pop"); score(); }
+      else { fb.className = "ans-fb bad"; fb.textContent = empty ? "Điền đủ các ô bằng số (dấu chấm hoặc phẩy đều được)." : "Ô màu cam chưa đúng. Xem lại bước đó, hoặc mở gợi ý."; }
+    };
+    box.querySelector(".btn-check").addEventListener("click", run);
+    inputs.forEach((i) => i.addEventListener("keydown", (e) => { if (e.key === "Enter") run(); }));
+  });
+  score();
+
+  /* highlight current theory section in the toc */
+  if (toc && "IntersectionObserver" in window) {
+    const links = [...toc.querySelectorAll("a")];
+    const io = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) links.forEach((a) => a.classList.toggle("on", a.getAttribute("href") === "#" + e.target.id)); }), { rootMargin: "-140px 0px -65% 0px" });
+    document.querySelectorAll("#ly-thuyet h2[id]").forEach((h) => io.observe(h));
+  }
 })();
 
 </script>
