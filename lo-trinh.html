@@ -298,7 +298,7 @@ footer { margin-top: 64px; padding-top: 18px; border-top: 1px solid var(--line);
   }
 
   /* ---------- render ---------- */
-  const openState = { p2: true, p5: true };
+  const openState = {};
   function renderSummary() {
     let d = 0, n = 0;
     PHASES.forEach((ph) => { const s = phaseStats(ph); d += s.d; n += s.n; });
