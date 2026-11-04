@@ -107,3 +107,75 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
   .reveal { transition: opacity .6s ease, transform .6s cubic-bezier(.2, .7, .2, 1); }
   .reveal.pre { opacity: 0; transform: translateY(18px); }
 }
+
+/* ================= effects layer =================
+   Everything here is decoration: pages work the same without it, and
+   prefers-reduced-motion turns the moving parts off. */
+
+/* page-to-page transition (Chromium 126+, ignored elsewhere) */
+@media (prefers-reduced-motion: no-preference) {
+  @view-transition { navigation: auto; }
+  .sh { view-transition-name: site-header; }
+  ::view-transition-old(root) { animation: vt-out .18s ease both; }
+  ::view-transition-new(root) { animation: vt-in .32s cubic-bezier(.2, .7, .2, 1) both; }
+}
+@keyframes vt-out { to { opacity: 0; transform: translateY(-6px); } }
+@keyframes vt-in { from { opacity: 0; transform: translateY(10px); } }
+
+/* reading progress under the header */
+.fx-prog { position: absolute; left: 0; right: 0; bottom: -1px; height: 2.5px; pointer-events: none; }
+.fx-prog i { display: block; height: 100%; transform-origin: left; transform: scaleX(0);
+  background: linear-gradient(90deg, var(--accent), var(--side) 60%, var(--hot)); }
+
+/* back to top, with a ring that fills as you scroll */
+.fx-top { position: fixed; right: max(18px, env(safe-area-inset-right, 0px)); bottom: max(18px, env(safe-area-inset-bottom, 0px)); z-index: 40;
+  width: 46px; height: 46px; border-radius: 50%; border: 0; padding: 0; cursor: pointer; display: grid; place-items: center;
+  background: var(--surface); color: var(--ink); box-shadow: var(--shadow); opacity: 0; transform: translateY(14px) scale(.9); pointer-events: none;
+  transition: opacity .25s, transform .25s cubic-bezier(.2, .7, .2, 1); }
+.fx-top.on { opacity: 1; transform: none; pointer-events: auto; }
+.fx-top:hover { transform: translateY(-3px); }
+.fx-top svg { position: absolute; inset: 0; width: 100%; height: 100%; transform: rotate(-90deg); }
+.fx-top .tr { fill: none; stroke: var(--line); stroke-width: 3; }
+.fx-top .pr { fill: none; stroke: var(--accent); stroke-width: 3; stroke-linecap: round; stroke-dasharray: 132; stroke-dashoffset: 132; }
+.fx-top b { font: 700 17px/1 var(--f-body); position: relative; }
+
+/* cursor spotlight on cards */
+.fx-spot { position: relative; isolation: isolate; }
+.fx-spot::after { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; z-index: -1; opacity: 0;
+  background: radial-gradient(420px circle at var(--mx, 50%) var(--my, 50%), color-mix(in srgb, var(--accent) 10%, transparent), transparent 45%);
+  transition: opacity .3s; }
+.fx-spot:hover::after { opacity: 1; }
+.fx-tilt { transform-style: preserve-3d; will-change: transform; }
+
+/* click ripple */
+.fx-rip { position: relative; overflow: hidden; }
+.fx-rip .rip { position: absolute; border-radius: 50%; pointer-events: none; background: currentColor; opacity: .22; transform: scale(0); animation: rip .6s ease-out forwards; }
+@keyframes rip { to { transform: scale(1); opacity: 0; } }
+
+/* landing hero: light follows the cursor over the graph paper, intro slides in */
+.hero::after { content: ""; position: absolute; inset: 0 calc(-1 * max(16px, env(safe-area-inset-right, 0px))) 0 calc(-1 * max(16px, env(safe-area-inset-left, 0px)));
+  z-index: -1; pointer-events: none; opacity: 0; transition: opacity .4s;
+  background-image: linear-gradient(color-mix(in srgb, var(--accent) 30%, transparent) 1px, transparent 1px), linear-gradient(90deg, color-mix(in srgb, var(--accent) 30%, transparent) 1px, transparent 1px);
+  background-size: 28px 28px; background-position: -1px -1px;
+  -webkit-mask-image: radial-gradient(260px circle at var(--hx, 50%) var(--hy, 40%), #000, transparent 70%); mask-image: radial-gradient(260px circle at var(--hx, 50%) var(--hy, 40%), #000, transparent 70%); }
+.hero.lit::after { opacity: 1; }
+@media (prefers-reduced-motion: no-preference) {
+  .fx-in > * { animation: vt-in .7s cubic-bezier(.2, .7, .2, 1) both; animation-delay: calc(var(--i, 0) * 90ms + 80ms); }
+}
+
+/* confetti canvas */
+.fx-confetti { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 100; }
+
+/* shake for a wrong answer */
+@media (prefers-reduced-motion: no-preference) { .fx-shake { animation: shake .4s cubic-bezier(.36, .07, .19, .97); } }
+@keyframes shake { 20%, 60% { transform: translateX(-5px); } 40%, 80% { transform: translateX(5px); } }
+
+@media (prefers-reduced-motion: reduce) { .fx-top, .fx-top:hover { transition: none; transform: none; } .fx-spot::after { display: none; } .fx-rip .rip { display: none; } .hero::after { display: none; } }
+@media print { .fx-top, .fx-prog, .fx-confetti { display: none; } }
+
+/* roadmap: timeline and market bars grow when they scroll into view */
+@media (prefers-reduced-motion: no-preference) {
+  .g-bar, .bar-row .track i { transform-origin: left; transition: transform .9s cubic-bezier(.2, .7, .2, 1); }
+  .fx-wait .g-bar, .fx-wait .track i { transform: scaleX(0); }
+  .g-row:nth-child(1) .g-bar, .bar-row:nth-child(1) .track i { transition-delay: 55ms; } .g-row:nth-child(2) .g-bar, .bar-row:nth-child(2) .track i { transition-delay: 110ms; } .g-row:nth-child(3) .g-bar, .bar-row:nth-child(3) .track i { transition-delay: 165ms; } .g-row:nth-child(4) .g-bar, .bar-row:nth-child(4) .track i { transition-delay: 220ms; } .g-row:nth-child(5) .g-bar, .bar-row:nth-child(5) .track i { transition-delay: 275ms; } .g-row:nth-child(6) .g-bar, .bar-row:nth-child(6) .track i { transition-delay: 330ms; } .g-row:nth-child(7) .g-bar, .bar-row:nth-child(7) .track i { transition-delay: 385ms; } .g-row:nth-child(8) .g-bar, .bar-row:nth-child(8) .track i { transition-delay: 440ms; } .g-row:nth-child(9) .g-bar, .bar-row:nth-child(9) .track i { transition-delay: 495ms; } .g-row:nth-child(10) .g-bar, .bar-row:nth-child(10) .track i { transition-delay: 550ms; } .g-row:nth-child(11) .g-bar, .bar-row:nth-child(11) .track i { transition-delay: 605ms; } .g-row:nth-child(12) .g-bar, .bar-row:nth-child(12) .track i { transition-delay: 660ms; }
+}

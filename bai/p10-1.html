@@ -149,11 +149,21 @@ Dockerfile, docker-compose.yml
     panels.forEach((p) => { const on = p.id === id; if (on && p.hidden) { p.classList.remove("enter"); void p.offsetWidth; p.classList.add("enter"); } p.hidden = !on; });
     if (toc) toc.hidden = id !== "ly-thuyet";
     if (scroll) document.querySelector(".tabs").scrollIntoView({ block: "start" });
+    movePill();
   }
+  const tabBar = document.querySelector(".tabs"), pill = document.createElement("span");
+  pill.className = "pill"; pill.setAttribute("aria-hidden", "true"); tabBar.prepend(pill); tabBar.classList.add("has-pill");
+  function movePill() {
+    const on = tabs.find((t) => t.getAttribute("aria-selected") === "true"); if (!on) return;
+    pill.style.width = on.offsetWidth + "px"; pill.style.transform = `translateX(${on.offsetLeft}px)`;
+  }
+  window.addEventListener("resize", movePill);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(movePill);
   tabs.forEach((t) => t.addEventListener("click", () => { history.replaceState(null, "", "#" + t.dataset.tab); show(t.dataset.tab, true); }));
   document.querySelectorAll("[data-goto]").forEach((b) => b.addEventListener("click", () => { history.replaceState(null, "", "#" + b.dataset.goto); show(b.dataset.goto, true); }));
   const start = ["ly-thuyet", "bai-tap", "thuc-hanh"].includes(location.hash.slice(1)) ? location.hash.slice(1) : "ly-thuyet";
   show(start, false);
+  requestAnimationFrame(() => tabBar.classList.add("fx-pill"));
   window.addEventListener("hashchange", () => { const h = location.hash.slice(1); if (["ly-thuyet", "bai-tap", "thuc-hanh"].includes(h)) show(h, true); });
   document.querySelectorAll(".toc a").forEach((a) => a.addEventListener("click", () => show("ly-thuyet", false)));
 
@@ -165,7 +175,10 @@ Dockerfile, docker-compose.yml
     tabs.forEach((t) => { const k = Object.keys(kmap).find((x) => kmap[x] === t.dataset.tab); t.classList.toggle("is-done", skip || !!d[mid + ":" + k]); });
     ring.style.strokeDashoffset = String(176 * (1 - n / 3)); rt.textContent = n + "/3";
     document.getElementById("ring-sub").textContent = n === 3 ? "hoàn thành bài này" : "phần đã xong";
+    if (n === 3 && lastN !== null && lastN < 3) { const rg = document.querySelector(".ring"); rg.classList.remove("fx-full"); void rg.offsetWidth; rg.classList.add("fx-full"); AIE.confetti && AIE.confetti(innerWidth / 2, innerHeight * .35, 120); }
+    lastN = n;
   }
+  let lastN = null;
   boxes.forEach((b) => b.addEventListener("change", () => {
     d = AIE.load(); if (b.checked) d[b.dataset.key] = true; else delete d[b.dataset.key]; AIE.save(d);
     boxes.filter((x) => x.dataset.key === b.dataset.key).forEach((x) => (x.checked = b.checked)); render();
@@ -193,13 +206,31 @@ Dockerfile, docker-compose.yml
         const good = Math.abs(v - parseFloat(i.dataset.ans)) <= parseFloat(i.dataset.tol) + 1e-9;
         i.classList.toggle("ok", good); i.classList.toggle("bad", !good); if (!good) all = false;
       });
-      if (all) { solved[box.id] = true; saveSolved(); mark(); box.classList.remove("pop"); void box.offsetWidth; box.classList.add("pop"); score(); }
-      else { fb.className = "ans-fb bad"; fb.textContent = empty ? "Điền đủ các ô bằng số (dấu chấm hoặc phẩy đều được)." : "Ô màu cam chưa đúng. Xem lại bước đó, hoặc mở gợi ý."; }
+      if (all) {
+        const first = !solved[box.id];
+        solved[box.id] = true; saveSolved(); mark(); box.classList.remove("pop"); void box.offsetWidth; box.classList.add("pop"); score();
+        if (first && AIE.confettiAt) {
+          if (allAns.every((a) => solved[a.id])) AIE.confetti(innerWidth / 2, innerHeight * .35, 120);
+          else AIE.confettiAt(box.querySelector(".btn-check"), 28);
+        }
+      }
+      else { inputs.filter((i) => i.classList.contains("bad")).forEach((i) => { i.classList.remove("fx-shake"); void i.offsetWidth; i.classList.add("fx-shake"); });
+        fb.className = "ans-fb bad"; fb.textContent = empty ? "Điền đủ các ô bằng số (dấu chấm hoặc phẩy đều được)." : "Ô màu cam chưa đúng. Xem lại bước đó, hoặc mở gợi ý."; }
     };
     box.querySelector(".btn-check").addEventListener("click", run);
     inputs.forEach((i) => i.addEventListener("keydown", (e) => { if (e.key === "Enter") run(); }));
   });
   score();
+
+  /* copy button on code blocks */
+  document.querySelectorAll(".hl").forEach((h) => {
+    const pre = h.querySelector("pre"); if (!pre || !navigator.clipboard) return;
+    const b = document.createElement("button"); b.type = "button"; b.className = "copy"; b.textContent = "Chép";
+    b.addEventListener("click", () => navigator.clipboard.writeText(pre.innerText.replace(/\n$/, "")).then(() => {
+      b.textContent = "Đã chép ✓"; b.classList.add("done"); setTimeout(() => { b.textContent = "Chép"; b.classList.remove("done"); }, 1600);
+    }).catch(() => {}));
+    h.appendChild(b);
+  });
 
   /* highlight current theory section in the toc */
   if (toc && "IntersectionObserver" in window) {

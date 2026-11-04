@@ -14,6 +14,21 @@
 @media (prefers-reduced-motion: no-preference) { .panel.enter { animation: fadeUp .35s ease both; } }
 @keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } }
 
+/* effects: sliding tab pill, copy button on code */
+.tabs { position: sticky; }
+.tabs .pill { position: absolute; top: 6px; left: 0; height: calc(100% - 12px); width: 0; border-radius: 8px; background: var(--ink); z-index: 0; pointer-events: none; }
+.tabs.fx-pill .pill { transition: transform .35s cubic-bezier(.2, .7, .2, 1), width .35s cubic-bezier(.2, .7, .2, 1); }
+.tabs.has-pill .tab { position: relative; z-index: 1; }
+.tabs.has-pill .tab[aria-selected="true"] { background: transparent; }
+@media (prefers-reduced-motion: reduce) { .tabs.fx-pill .pill { transition: none; } }
+.hl { position: relative; }
+.hl .copy { position: absolute; top: 8px; right: 8px; font: 500 12px/1 var(--f-body); color: var(--muted); background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 6px 9px; cursor: pointer; opacity: 0; transition: opacity .2s, color .2s, border-color .2s; }
+.hl:hover .copy, .hl .copy:focus-visible { opacity: 1; }
+.hl .copy.done { color: var(--ok); border-color: var(--ok); opacity: 1; }
+@media (hover: none) { .hl .copy { opacity: 1; } }
+.ring.fx-full { animation: ringpop .6s cubic-bezier(.2, .7, .2, 1); }
+@keyframes ringpop { 40% { transform: scale(1.08); } }
+
 .prose { font-size: 16.5px; line-height: 1.75; max-width: 72ch; }
 .prose h2 { font-size: clamp(22px, 2.6vw, 28px); margin: 44px 0 0; scroll-margin-top: 150px; padding-top: 18px; border-top: 1px solid var(--line); }
 .prose h2:first-child { margin-top: 18px; border-top: 0; padding-top: 0; }
