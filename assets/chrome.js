@@ -4,7 +4,7 @@
   const ROOT = document.documentElement.dataset.root || "";
   const KEY = "ai-eng-roadmap-cache-v1";
   const PARTS = [["t", "Lý thuyết"], ["b", "Bài tập"], ["p", "Thực hành"]];
-  const ORDER = ["p0", "p1", "p2", "p5", "p3", "p4", "p6", "p7", "p8", "p9", "p10"];
+  const ORDER = ["p0", "p1", "p2", "p3", "p4", "p5", "p6", "p7", "p8", "p9", "p10"];
 
   function load() { try { const d = JSON.parse(localStorage.getItem(KEY) || "null"); return d && typeof d === "object" ? d : {}; } catch (e) { return {}; } }
   function save(d) { try { localStorage.setItem(KEY, JSON.stringify(d)); } catch (e) {} }

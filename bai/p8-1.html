@@ -28,52 +28,52 @@
   <div class="lgrid" style="margin-top:22px">
     <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">API với FastAPI</h2>
 <p>FastAPI dựng API bằng type hint của Python: tự kiểm tra dữ liệu vào, tự sinh tài liệu tại <code>/docs</code>, hỗ trợ <code>async</code>.</p>
-<div class="hl"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">fastapi</span><span class="w"> </span><span class="kn">import</span> <span class="n">FastAPI</span><span class="p">,</span> <span class="n">HTTPException</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">pydantic</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseModel</span><span class="p">,</span> <span class="n">Field</span>
+<div class="hl"><pre><span></span><code><span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">fastapi</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">FastAPI</span><span class="tk-p">,</span> <span class="tk-n">HTTPException</span>
+<span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">pydantic</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">BaseModel</span><span class="tk-p">,</span> <span class="tk-n">Field</span>
 
-<span class="n">app</span> <span class="o">=</span> <span class="n">FastAPI</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="s2">"Review sentiment API"</span><span class="p">)</span>
+<span class="tk-n">app</span> <span class="tk-o">=</span> <span class="tk-n">FastAPI</span><span class="tk-p">(</span><span class="tk-n">title</span><span class="tk-o">=</span><span class="tk-s2">"Review sentiment API"</span><span class="tk-p">)</span>
 
-<span class="k">class</span><span class="w"> </span><span class="nc">Req</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
-    <span class="n">text</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">min_length</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">max_length</span><span class="o">=</span><span class="mi">2000</span><span class="p">)</span>
+<span class="tk-k">class</span><span class="tk-w"> </span><span class="tk-nc">Req</span><span class="tk-p">(</span><span class="tk-n">BaseModel</span><span class="tk-p">):</span>
+    <span class="tk-n">text</span><span class="tk-p">:</span> <span class="tk-nb">str</span> <span class="tk-o">=</span> <span class="tk-n">Field</span><span class="tk-p">(</span><span class="tk-n">min_length</span><span class="tk-o">=</span><span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-n">max_length</span><span class="tk-o">=</span><span class="tk-mi">2000</span><span class="tk-p">)</span>
 
-<span class="k">class</span><span class="w"> </span><span class="nc">Resp</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
-    <span class="n">label</span><span class="p">:</span> <span class="nb">str</span>
-    <span class="n">score</span><span class="p">:</span> <span class="nb">float</span>
+<span class="tk-k">class</span><span class="tk-w"> </span><span class="tk-nc">Resp</span><span class="tk-p">(</span><span class="tk-n">BaseModel</span><span class="tk-p">):</span>
+    <span class="tk-n">label</span><span class="tk-p">:</span> <span class="tk-nb">str</span>
+    <span class="tk-n">score</span><span class="tk-p">:</span> <span class="tk-nb">float</span>
 
-<span class="nd">@app</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"/health"</span><span class="p">)</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">health</span><span class="p">():</span>
-    <span class="k">return</span> <span class="p">{</span><span class="s2">"status"</span><span class="p">:</span> <span class="s2">"ok"</span><span class="p">}</span>
+<span class="tk-nd">@app</span><span class="tk-o">.</span><span class="tk-n">get</span><span class="tk-p">(</span><span class="tk-s2">"/health"</span><span class="tk-p">)</span>
+<span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">health</span><span class="tk-p">():</span>
+    <span class="tk-k">return</span> <span class="tk-p">{</span><span class="tk-s2">"status"</span><span class="tk-p">:</span> <span class="tk-s2">"ok"</span><span class="tk-p">}</span>
 
-<span class="nd">@app</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s2">"/predict"</span><span class="p">,</span> <span class="n">response_model</span><span class="o">=</span><span class="n">Resp</span><span class="p">)</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">predict</span><span class="p">(</span><span class="n">req</span><span class="p">:</span> <span class="n">Req</span><span class="p">):</span>
-    <span class="n">label</span><span class="p">,</span> <span class="n">score</span> <span class="o">=</span> <span class="n">model_predict</span><span class="p">(</span><span class="n">req</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>       <span class="c1"># model nạp một lần khi khởi động</span>
-    <span class="k">return</span> <span class="n">Resp</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">,</span> <span class="n">score</span><span class="o">=</span><span class="n">score</span><span class="p">)</span>
+<span class="tk-nd">@app</span><span class="tk-o">.</span><span class="tk-n">post</span><span class="tk-p">(</span><span class="tk-s2">"/predict"</span><span class="tk-p">,</span> <span class="tk-n">response_model</span><span class="tk-o">=</span><span class="tk-n">Resp</span><span class="tk-p">)</span>
+<span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">predict</span><span class="tk-p">(</span><span class="tk-n">req</span><span class="tk-p">:</span> <span class="tk-n">Req</span><span class="tk-p">):</span>
+    <span class="tk-n">label</span><span class="tk-p">,</span> <span class="tk-n">score</span> <span class="tk-o">=</span> <span class="tk-n">model_predict</span><span class="tk-p">(</span><span class="tk-n">req</span><span class="tk-o">.</span><span class="tk-n">text</span><span class="tk-p">)</span>       <span class="tk-c1"># model nạp một lần khi khởi động</span>
+    <span class="tk-k">return</span> <span class="tk-n">Resp</span><span class="tk-p">(</span><span class="tk-n">label</span><span class="tk-o">=</span><span class="tk-n">label</span><span class="tk-p">,</span> <span class="tk-n">score</span><span class="tk-o">=</span><span class="tk-n">score</span><span class="tk-p">)</span>
 </code></pre></div>
 
 <p>Nguyên tắc: <strong>nạp model một lần</strong> khi khởi động; <strong>kiểm tra đầu vào</strong> (độ dài, định dạng); trả lỗi có mã HTTP rõ ràng (400 dữ liệu sai, 429 quá tải, 503 model chưa sẵn sàng); có endpoint <code>/health</code> để hệ thống giám sát và load balancer biết service còn sống.</p>
 <h2 id="lt-2">Streaming</h2>
 <p>LLM sinh 50 token/giây, câu trả lời 500 token mất 10 giây. Streaming gửi từng mảnh ngay khi có, người dùng thấy chữ sau vài trăm mili giây. Phổ biến nhất là <strong>Server-Sent Events (SSE)</strong>: một kết nối HTTP giữ mở, server đẩy các dòng <code>data: ...</code>.</p>
-<div class="hl"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">fastapi.responses</span><span class="w"> </span><span class="kn">import</span> <span class="n">StreamingResponse</span>
+<div class="hl"><pre><span></span><code><span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">fastapi.responses</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">StreamingResponse</span>
 
-<span class="nd">@app</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s2">"/chat"</span><span class="p">)</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">chat</span><span class="p">(</span><span class="n">req</span><span class="p">:</span> <span class="n">Req</span><span class="p">):</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">gen</span><span class="p">():</span>
-        <span class="k">for</span> <span class="n">piece</span> <span class="ow">in</span> <span class="n">llm_stream</span><span class="p">(</span><span class="n">req</span><span class="o">.</span><span class="n">text</span><span class="p">):</span>
-            <span class="k">yield</span> <span class="sa">f</span><span class="s2">"data: </span><span class="si">{</span><span class="n">piece</span><span class="si">}</span><span class="se">\n\n</span><span class="s2">"</span>
-        <span class="k">yield</span> <span class="s2">"data: [DONE]</span><span class="se">\n\n</span><span class="s2">"</span>
-    <span class="k">return</span> <span class="n">StreamingResponse</span><span class="p">(</span><span class="n">gen</span><span class="p">(),</span> <span class="n">media_type</span><span class="o">=</span><span class="s2">"text/event-stream"</span><span class="p">)</span>
+<span class="tk-nd">@app</span><span class="tk-o">.</span><span class="tk-n">post</span><span class="tk-p">(</span><span class="tk-s2">"/chat"</span><span class="tk-p">)</span>
+<span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">chat</span><span class="tk-p">(</span><span class="tk-n">req</span><span class="tk-p">:</span> <span class="tk-n">Req</span><span class="tk-p">):</span>
+    <span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">gen</span><span class="tk-p">():</span>
+        <span class="tk-k">for</span> <span class="tk-n">piece</span> <span class="tk-ow">in</span> <span class="tk-n">llm_stream</span><span class="tk-p">(</span><span class="tk-n">req</span><span class="tk-o">.</span><span class="tk-n">text</span><span class="tk-p">):</span>
+            <span class="tk-k">yield</span> <span class="tk-sa">f</span><span class="tk-s2">"data: </span><span class="tk-si">{</span><span class="tk-n">piece</span><span class="tk-si">}</span><span class="tk-se">\n\n</span><span class="tk-s2">"</span>
+        <span class="tk-k">yield</span> <span class="tk-s2">"data: [DONE]</span><span class="tk-se">\n\n</span><span class="tk-s2">"</span>
+    <span class="tk-k">return</span> <span class="tk-n">StreamingResponse</span><span class="tk-p">(</span><span class="tk-n">gen</span><span class="tk-p">(),</span> <span class="tk-n">media_type</span><span class="tk-o">=</span><span class="tk-s2">"text/event-stream"</span><span class="tk-p">)</span>
 </code></pre></div>
 
 <h2 id="lt-3">Docker</h2>
 <p>Docker đóng gói code, thư viện, phiên bản Python, thậm chí CUDA vào một <strong>image</strong>. Chạy image ở đâu cũng giống nhau: hết cảnh "máy tôi chạy được mà".</p>
-<div class="hl"><pre><span></span><code><span class="k">FROM</span><span class="w"> </span><span class="s">python:3.11-slim</span>
-<span class="k">WORKDIR</span><span class="w"> </span><span class="s">/app</span>
-<span class="k">COPY</span><span class="w"> </span>requirements.txt<span class="w"> </span>.
-<span class="k">RUN</span><span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>--no-cache-dir<span class="w"> </span>-r<span class="w"> </span>requirements.txt
-<span class="k">COPY</span><span class="w"> </span>.<span class="w"> </span>.
-<span class="k">EXPOSE</span><span class="w"> </span><span class="s">8000</span>
-<span class="k">HEALTHCHECK</span><span class="w"> </span><span class="k">CMD</span><span class="w"> </span>python<span class="w"> </span>-c<span class="w"> </span><span class="s2">"import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"</span>
-<span class="k">CMD</span><span class="w"> </span><span class="p">[</span><span class="s2">"uvicorn"</span><span class="p">,</span><span class="w"> </span><span class="s2">"app:app"</span><span class="p">,</span><span class="w"> </span><span class="s2">"--host"</span><span class="p">,</span><span class="w"> </span><span class="s2">"0.0.0.0"</span><span class="p">,</span><span class="w"> </span><span class="s2">"--port"</span><span class="p">,</span><span class="w"> </span><span class="s2">"8000"</span><span class="p">]</span>
+<div class="hl"><pre><span></span><code><span class="tk-k">FROM</span><span class="tk-w"> </span><span class="tk-s">python:3.11-slim</span>
+<span class="tk-k">WORKDIR</span><span class="tk-w"> </span><span class="tk-s">/app</span>
+<span class="tk-k">COPY</span><span class="tk-w"> </span>requirements.txt<span class="tk-w"> </span>.
+<span class="tk-k">RUN</span><span class="tk-w"> </span>pip<span class="tk-w"> </span>install<span class="tk-w"> </span>--no-cache-dir<span class="tk-w"> </span>-r<span class="tk-w"> </span>requirements.txt
+<span class="tk-k">COPY</span><span class="tk-w"> </span>.<span class="tk-w"> </span>.
+<span class="tk-k">EXPOSE</span><span class="tk-w"> </span><span class="tk-s">8000</span>
+<span class="tk-k">HEALTHCHECK</span><span class="tk-w"> </span><span class="tk-k">CMD</span><span class="tk-w"> </span>python<span class="tk-w"> </span>-c<span class="tk-w"> </span><span class="tk-s2">"import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"</span>
+<span class="tk-k">CMD</span><span class="tk-w"> </span><span class="tk-p">[</span><span class="tk-s2">"uvicorn"</span><span class="tk-p">,</span><span class="tk-w"> </span><span class="tk-s2">"app:app"</span><span class="tk-p">,</span><span class="tk-w"> </span><span class="tk-s2">"--host"</span><span class="tk-p">,</span><span class="tk-w"> </span><span class="tk-s2">"0.0.0.0"</span><span class="tk-p">,</span><span class="tk-w"> </span><span class="tk-s2">"--port"</span><span class="tk-p">,</span><span class="tk-w"> </span><span class="tk-s2">"8000"</span><span class="tk-p">]</span>
 </code></pre></div>
 
 <ul>
@@ -83,8 +83,8 @@
 </ul>
 <h2 id="lt-4">Phục vụ LLM với vLLM</h2>
 <p>vLLM có server tương thích API OpenAI, kèm continuous batching và PagedAttention (P6.3):</p>
-<div class="hl"><pre><span></span><code>vllm<span class="w"> </span>serve<span class="w"> </span>Qwen/Qwen2.5-1.5B-Instruct<span class="w"> </span>--max-model-len<span class="w"> </span><span class="m">4096</span><span class="w"> </span>--gpu-memory-utilization<span class="w"> </span><span class="m">0</span>.85
-<span class="c1"># rồi gọi bằng bất kỳ client OpenAI nào tới http://localhost:8000/v1</span>
+<div class="hl"><pre><span></span><code>vllm<span class="tk-w"> </span>serve<span class="tk-w"> </span>Qwen/Qwen2.5-1.5B-Instruct<span class="tk-w"> </span>--max-model-len<span class="tk-w"> </span><span class="tk-m">4096</span><span class="tk-w"> </span>--gpu-memory-utilization<span class="tk-w"> </span><span class="tk-m">0</span>.85
+<span class="tk-c1"># rồi gọi bằng bất kỳ client OpenAI nào tới http://localhost:8000/v1</span>
 </code></pre></div>
 
 <p>Kiến trúc thường gặp: FastAPI của bạn (xác thực, prompt, RAG, guardrails, log) gọi tới vLLM (chỉ lo sinh token).</p>
@@ -112,12 +112,12 @@
 <summary>Lời giải</summary>
 <p>8 × 3600 = 28.800 yêu cầu/giờ. 1,2/28,8 ≈ 0,042 USD mỗi 1.000 yêu cầu khi GPU chạy đầy. GPU thường không chạy đầy cả ngày, nên chi phí thật cao hơn: cần tự động giảm số GPU khi ít người dùng.</p>
 </details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 4</span><h3>Đọc Dockerfile</h3><span class="ex-tag concept">khái niệm</span></div><div class="prose"><p>Dockerfile dưới build chậm (mỗi lần sửa một dòng code phải cài lại mọi thư viện) và image rất nặng. Chỉ ra ba vấn đề và sửa.</p>
-<div class="hl"><pre><span></span><code><span class="k">FROM</span><span class="w"> </span><span class="s">python:3.11</span>
-<span class="k">COPY</span><span class="w"> </span>.<span class="w"> </span>/app
-<span class="k">WORKDIR</span><span class="w"> </span><span class="s">/app</span>
-<span class="k">RUN</span><span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>requirements.txt
-<span class="k">COPY</span><span class="w"> </span>models/llama-8b<span class="w"> </span>/app/models
-<span class="k">CMD</span><span class="w"> </span>python<span class="w"> </span>app.py
+<div class="hl"><pre><span></span><code><span class="tk-k">FROM</span><span class="tk-w"> </span><span class="tk-s">python:3.11</span>
+<span class="tk-k">COPY</span><span class="tk-w"> </span>.<span class="tk-w"> </span>/app
+<span class="tk-k">WORKDIR</span><span class="tk-w"> </span><span class="tk-s">/app</span>
+<span class="tk-k">RUN</span><span class="tk-w"> </span>pip<span class="tk-w"> </span>install<span class="tk-w"> </span>-r<span class="tk-w"> </span>requirements.txt
+<span class="tk-k">COPY</span><span class="tk-w"> </span>models/llama-8b<span class="tk-w"> </span>/app/models
+<span class="tk-k">CMD</span><span class="tk-w"> </span>python<span class="tk-w"> </span>app.py
 </code></pre></div>
 
 <details class="fold solution">
@@ -130,41 +130,41 @@
 </details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 5</span><h3>API có streaming và kiểm tra đầu vào</h3><span class="ex-tag code">code</span></div><div class="prose"><p>Viết FastAPI service gọi một LLM (qua client OpenAI-compatible tới vLLM): <code>/health</code>, <code>/chat</code> nhận <code>message</code> (tối đa 2.000 ký tự), trả SSE từng mảnh, timeout và trả 503 khi model lỗi.</p>
 <details class="fold code">
 <summary>Code tham khảo</summary>
-<div class="hl"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">fastapi</span><span class="w"> </span><span class="kn">import</span> <span class="n">FastAPI</span><span class="p">,</span> <span class="n">HTTPException</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">fastapi.responses</span><span class="w"> </span><span class="kn">import</span> <span class="n">StreamingResponse</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">pydantic</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseModel</span><span class="p">,</span> <span class="n">Field</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">openai</span><span class="w"> </span><span class="kn">import</span> <span class="n">OpenAI</span><span class="p">,</span> <span class="n">APIError</span>
+<div class="hl"><pre><span></span><code><span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">fastapi</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">FastAPI</span><span class="tk-p">,</span> <span class="tk-n">HTTPException</span>
+<span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">fastapi.responses</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">StreamingResponse</span>
+<span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">pydantic</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">BaseModel</span><span class="tk-p">,</span> <span class="tk-n">Field</span>
+<span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">openai</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">OpenAI</span><span class="tk-p">,</span> <span class="tk-n">APIError</span>
 
-<span class="n">app</span> <span class="o">=</span> <span class="n">FastAPI</span><span class="p">()</span>
-<span class="n">client</span> <span class="o">=</span> <span class="n">OpenAI</span><span class="p">(</span><span class="n">base_url</span><span class="o">=</span><span class="s2">"http://localhost:8000/v1"</span><span class="p">,</span> <span class="n">api_key</span><span class="o">=</span><span class="s2">"local"</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
-<span class="n">MODEL</span> <span class="o">=</span> <span class="s2">"Qwen/Qwen2.5-1.5B-Instruct"</span>
+<span class="tk-n">app</span> <span class="tk-o">=</span> <span class="tk-n">FastAPI</span><span class="tk-p">()</span>
+<span class="tk-n">client</span> <span class="tk-o">=</span> <span class="tk-n">OpenAI</span><span class="tk-p">(</span><span class="tk-n">base_url</span><span class="tk-o">=</span><span class="tk-s2">"http://localhost:8000/v1"</span><span class="tk-p">,</span> <span class="tk-n">api_key</span><span class="tk-o">=</span><span class="tk-s2">"local"</span><span class="tk-p">,</span> <span class="tk-n">timeout</span><span class="tk-o">=</span><span class="tk-mi">30</span><span class="tk-p">)</span>
+<span class="tk-n">MODEL</span> <span class="tk-o">=</span> <span class="tk-s2">"Qwen/Qwen2.5-1.5B-Instruct"</span>
 
-<span class="k">class</span><span class="w"> </span><span class="nc">ChatReq</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
-    <span class="n">message</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">min_length</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">max_length</span><span class="o">=</span><span class="mi">2000</span><span class="p">)</span>
+<span class="tk-k">class</span><span class="tk-w"> </span><span class="tk-nc">ChatReq</span><span class="tk-p">(</span><span class="tk-n">BaseModel</span><span class="tk-p">):</span>
+    <span class="tk-n">message</span><span class="tk-p">:</span> <span class="tk-nb">str</span> <span class="tk-o">=</span> <span class="tk-n">Field</span><span class="tk-p">(</span><span class="tk-n">min_length</span><span class="tk-o">=</span><span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-n">max_length</span><span class="tk-o">=</span><span class="tk-mi">2000</span><span class="tk-p">)</span>
 
-<span class="nd">@app</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"/health"</span><span class="p">)</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">health</span><span class="p">():</span>
-    <span class="k">try</span><span class="p">:</span>
-        <span class="n">client</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">list</span><span class="p">()</span>
-        <span class="k">return</span> <span class="p">{</span><span class="s2">"status"</span><span class="p">:</span> <span class="s2">"ok"</span><span class="p">}</span>
-    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="mi">503</span><span class="p">,</span> <span class="s2">"model chưa sẵn sàng"</span><span class="p">)</span>
+<span class="tk-nd">@app</span><span class="tk-o">.</span><span class="tk-n">get</span><span class="tk-p">(</span><span class="tk-s2">"/health"</span><span class="tk-p">)</span>
+<span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">health</span><span class="tk-p">():</span>
+    <span class="tk-k">try</span><span class="tk-p">:</span>
+        <span class="tk-n">client</span><span class="tk-o">.</span><span class="tk-n">models</span><span class="tk-o">.</span><span class="tk-n">list</span><span class="tk-p">()</span>
+        <span class="tk-k">return</span> <span class="tk-p">{</span><span class="tk-s2">"status"</span><span class="tk-p">:</span> <span class="tk-s2">"ok"</span><span class="tk-p">}</span>
+    <span class="tk-k">except</span> <span class="tk-ne">Exception</span><span class="tk-p">:</span>
+        <span class="tk-k">raise</span> <span class="tk-n">HTTPException</span><span class="tk-p">(</span><span class="tk-mi">503</span><span class="tk-p">,</span> <span class="tk-s2">"model chưa sẵn sàng"</span><span class="tk-p">)</span>
 
-<span class="nd">@app</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s2">"/chat"</span><span class="p">)</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">chat</span><span class="p">(</span><span class="n">req</span><span class="p">:</span> <span class="n">ChatReq</span><span class="p">):</span>
-    <span class="k">try</span><span class="p">:</span>
-        <span class="n">stream</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">chat</span><span class="o">.</span><span class="n">completions</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="n">MODEL</span><span class="p">,</span> <span class="n">stream</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">max_tokens</span><span class="o">=</span><span class="mi">512</span><span class="p">,</span>
-                                                <span class="n">messages</span><span class="o">=</span><span class="p">[{</span><span class="s2">"role"</span><span class="p">:</span> <span class="s2">"user"</span><span class="p">,</span> <span class="s2">"content"</span><span class="p">:</span> <span class="n">req</span><span class="o">.</span><span class="n">message</span><span class="p">}])</span>
-    <span class="k">except</span> <span class="n">APIError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="mi">503</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"lỗi model: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="tk-nd">@app</span><span class="tk-o">.</span><span class="tk-n">post</span><span class="tk-p">(</span><span class="tk-s2">"/chat"</span><span class="tk-p">)</span>
+<span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">chat</span><span class="tk-p">(</span><span class="tk-n">req</span><span class="tk-p">:</span> <span class="tk-n">ChatReq</span><span class="tk-p">):</span>
+    <span class="tk-k">try</span><span class="tk-p">:</span>
+        <span class="tk-n">stream</span> <span class="tk-o">=</span> <span class="tk-n">client</span><span class="tk-o">.</span><span class="tk-n">chat</span><span class="tk-o">.</span><span class="tk-n">completions</span><span class="tk-o">.</span><span class="tk-n">create</span><span class="tk-p">(</span><span class="tk-n">model</span><span class="tk-o">=</span><span class="tk-n">MODEL</span><span class="tk-p">,</span> <span class="tk-n">stream</span><span class="tk-o">=</span><span class="tk-kc">True</span><span class="tk-p">,</span> <span class="tk-n">max_tokens</span><span class="tk-o">=</span><span class="tk-mi">512</span><span class="tk-p">,</span>
+                                                <span class="tk-n">messages</span><span class="tk-o">=</span><span class="tk-p">[{</span><span class="tk-s2">"role"</span><span class="tk-p">:</span> <span class="tk-s2">"user"</span><span class="tk-p">,</span> <span class="tk-s2">"content"</span><span class="tk-p">:</span> <span class="tk-n">req</span><span class="tk-o">.</span><span class="tk-n">message</span><span class="tk-p">}])</span>
+    <span class="tk-k">except</span> <span class="tk-n">APIError</span> <span class="tk-k">as</span> <span class="tk-n">e</span><span class="tk-p">:</span>
+        <span class="tk-k">raise</span> <span class="tk-n">HTTPException</span><span class="tk-p">(</span><span class="tk-mi">503</span><span class="tk-p">,</span> <span class="tk-sa">f</span><span class="tk-s2">"lỗi model: </span><span class="tk-si">{</span><span class="tk-n">e</span><span class="tk-si">}</span><span class="tk-s2">"</span><span class="tk-p">)</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">gen</span><span class="p">():</span>
-        <span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="n">stream</span><span class="p">:</span>
-            <span class="n">delta</span> <span class="o">=</span> <span class="n">chunk</span><span class="o">.</span><span class="n">choices</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">delta</span><span class="o">.</span><span class="n">content</span> <span class="k">if</span> <span class="n">chunk</span><span class="o">.</span><span class="n">choices</span> <span class="k">else</span> <span class="kc">None</span>
-            <span class="k">if</span> <span class="n">delta</span><span class="p">:</span>
-                <span class="k">yield</span> <span class="sa">f</span><span class="s2">"data: </span><span class="si">{</span><span class="n">delta</span><span class="si">}</span><span class="se">\n\n</span><span class="s2">"</span>
-        <span class="k">yield</span> <span class="s2">"data: [DONE]</span><span class="se">\n\n</span><span class="s2">"</span>
-    <span class="k">return</span> <span class="n">StreamingResponse</span><span class="p">(</span><span class="n">gen</span><span class="p">(),</span> <span class="n">media_type</span><span class="o">=</span><span class="s2">"text/event-stream"</span><span class="p">)</span>
+    <span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">gen</span><span class="tk-p">():</span>
+        <span class="tk-k">for</span> <span class="tk-n">chunk</span> <span class="tk-ow">in</span> <span class="tk-n">stream</span><span class="tk-p">:</span>
+            <span class="tk-n">delta</span> <span class="tk-o">=</span> <span class="tk-n">chunk</span><span class="tk-o">.</span><span class="tk-n">choices</span><span class="tk-p">[</span><span class="tk-mi">0</span><span class="tk-p">]</span><span class="tk-o">.</span><span class="tk-n">delta</span><span class="tk-o">.</span><span class="tk-n">content</span> <span class="tk-k">if</span> <span class="tk-n">chunk</span><span class="tk-o">.</span><span class="tk-n">choices</span> <span class="tk-k">else</span> <span class="tk-kc">None</span>
+            <span class="tk-k">if</span> <span class="tk-n">delta</span><span class="tk-p">:</span>
+                <span class="tk-k">yield</span> <span class="tk-sa">f</span><span class="tk-s2">"data: </span><span class="tk-si">{</span><span class="tk-n">delta</span><span class="tk-si">}</span><span class="tk-se">\n\n</span><span class="tk-s2">"</span>
+        <span class="tk-k">yield</span> <span class="tk-s2">"data: [DONE]</span><span class="tk-se">\n\n</span><span class="tk-s2">"</span>
+    <span class="tk-k">return</span> <span class="tk-n">StreamingResponse</span><span class="tk-p">(</span><span class="tk-n">gen</span><span class="tk-p">(),</span> <span class="tk-n">media_type</span><span class="tk-o">=</span><span class="tk-s2">"text/event-stream"</span><span class="tk-p">)</span>
 </code></pre></div>
 
 </details></div></article><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p8.1:b">Tôi đã xong phần bài tập</label><button class="btn" type="button" data-goto="thuc-hanh">Sang thực hành <span class="arr">→</span></button></div></section><section class="panel" id="thuc-hanh" role="tabpanel" hidden><div class="prose"><h2>Lab 11: đóng gói model thành API</h2>
