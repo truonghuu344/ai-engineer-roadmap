@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>P4.2 · Bài 5 · Embedding và RAG · AI Engineer</title>
-<meta name="description" content="Bài 5 · Embedding và RAG: Embedding model, chunking, metadata; Vector search (FAISS, pgvector, Qdrant), BM25, hybrid search; Reranker, query rewriting, trích dẫn nguồn">
+<meta name="description" content="Bài 5 · Embedding và RAG: lý thuyết, bài tập và thực hành. Embedding model, chunking, metadata; Vector search (FAISS, pgvector, Qdrant), BM25, hybrid search">
 <meta property="og:title" content="P4.2 · Bài 5 · Embedding và RAG · AI Engineer">
-<meta property="og:description" content="Bài 5 · Embedding và RAG: Embedding model, chunking, metadata; Vector search (FAISS, pgvector, Qdrant), BM25, hybrid search; Reranker, query rewriting, trích dẫn nguồn">
+<meta property="og:description" content="Bài 5 · Embedding và RAG: lý thuyết, bài tập và thực hành. Embedding model, chunking, metadata; Vector search (FAISS, pgvector, Qdrant), BM25, hybrid search">
 <meta name="theme-color" content="#F4F6FB">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23131A33'/%3E%3Cpath d='M9 22 L16 10 L23 19' stroke='%23E5E9FB' stroke-width='2' fill='none'/%3E%3Ccircle cx='9' cy='22' r='3' fill='%23E5E9FB'/%3E%3Ccircle cx='16' cy='10' r='3' fill='%23E5E9FB'/%3E%3Ccircle cx='23' cy='19' r='3' fill='%23FF9361'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -14,23 +14,149 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="../assets/chrome.css">
 <link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/lesson.css">
 </head>
 <body data-mid="p4.2">
 <header class="sh"><div class="sh-in"><a class="sh-brand" href="../index.html"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="var(--ink)"/><circle cx="9" cy="22" r="2.6" fill="var(--accent-soft)"/><circle cx="16" cy="10" r="2.6" fill="var(--accent-soft)"/><circle cx="23" cy="19" r="2.6" fill="#FF9361"/><path d="M9 22 L16 10 L23 19" stroke="var(--accent-soft)" stroke-width="1.8" fill="none"/></svg><span>AI Engineer<small>lộ trình tự học</small></span></a><nav class="sh-nav" id="sh-nav" aria-label="Chính"><a href="../index.html">Trang chủ</a><a href="../bai-hoc.html" aria-current="page">Bài học</a><a href="../lo-trinh.html">Lộ trình</a><a href="../notebooks.html">Notebook</a><a class="sh-cta-m" href="../bai01.html" data-next-lesson>Học tiếp →</a></nav><a class="sh-cta" href="../bai01.html" data-next-lesson>Học tiếp <span class="arr">→</span></a><button class="sh-burger" type="button" aria-expanded="false" aria-controls="sh-nav">Menu</button></div></header>
 
 <main class="container">
   <div class="crumbs"><a href="../bai-hoc.html">Bài học</a><span>/</span><a href="../bai-hoc.html#p4">P4 · LLM Engineering</a><span>/</span><span>P4.2</span></div>
-  <section class="lhero"><div class="code">P4.2</div><h1>Bài 5 · Embedding và RAG</h1><div class="lmeta"><span class="m">Giai đoạn P4 · LLM Engineering</span><span class="m">Tuần 18–25</span><span class="chip planned">Đề cương</span></div></section>
-  <div class="lgrid">
-    <div>
-      <div class="goal"><b>Mục tiêu giai đoạn:</b> Nhóm kỹ năng được tuyển nhiều nhất: ứng dụng LLM, RAG, agent và multi-agent chạy ổn định, an toàn và đo được chất lượng.</div>
-      <div class="soon">Nội dung đầy đủ (trang lý thuyết tương tác và notebook tự chấm) đang được soạn và sẽ có khi bạn học tới bài này. Đề cương dưới đây là phạm vi chính xác của bài.</div>
-      <section class="pblock reveal"><div class="pblock-head"><span class="num">1</span><h2>Lý thuyết<span style="display:block;font:400 13.5px var(--f-body);color:var(--muted);margin-top:4px">Những gì cần hiểu</span></h2><label class="tick" for="cb-t"><input type="checkbox" id="cb-t" data-key="p4.2:t">Xong</label></div><ol><li>Embedding model, chunking, metadata</li><li>Vector search (FAISS, pgvector, Qdrant), BM25, hybrid search</li><li>Reranker, query rewriting, trích dẫn nguồn</li><li>Khi nào RAG thua fine-tune và ngược lại</li></ol></section><section class="pblock reveal"><div class="pblock-head"><span class="num">2</span><h2>Bài tập<span style="display:block;font:400 13.5px var(--f-body);color:var(--muted);margin-top:4px">Tính tay và tự kiểm tra</span></h2><label class="tick" for="cb-b"><input type="checkbox" id="cb-b" data-key="p4.2:b">Xong</label></div><ol><li>Tính tay cosine similarity và xếp hạng 4 đoạn văn</li></ol></section><section class="pblock reveal"><div class="pblock-head"><span class="num">3</span><h2>Thực hành<span style="display:block;font:400 13.5px var(--f-body);color:var(--muted);margin-top:4px">Code và dự án</span></h2><label class="tick" for="cb-p"><input type="checkbox" id="cb-p" data-key="p4.2:p">Xong</label></div><ol><li>Lab 5: hỏi đáp trên bộ tài liệu thật, có trích dẫn đúng đoạn nguồn</li></ol></section>
-      <div class="donewhen reveal"><b>Xong khi</b>Câu trả lời dẫn đúng nguồn, và hybrid search tốt hơn vector search thuần trên bộ câu hỏi của bạn.</div>
+  <section class="lhero"><div class="code">P4.2</div><h1>Bài 5 · Embedding và RAG</h1><div class="lmeta"><span class="m">Giai đoạn P4 · LLM Engineering</span><span class="m">Tuần 18–25</span><span class="chip ready"><span class="dot"></span>Có nội dung đầy đủ</span></div>
+    <div class="intro"><p>LLM không biết tài liệu nội bộ của công ty bạn, và kiến thức của nó dừng ở thời điểm train. <strong>RAG</strong> (Retrieval-Augmented Generation) giải quyết bằng cách tìm các đoạn tài liệu liên quan rồi đưa vào prompt để LLM trả lời dựa trên chúng, kèm trích dẫn. Đây là kỹ năng được nhắc trong khoảng 40% tin tuyển dụng AI Engineer.</p></div></section>
+  
+  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">5 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
+  <div class="lgrid" style="margin-top:22px">
+    <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">Kiến trúc RAG</h2>
+<div class="hl"><pre><span></span><code>Chuẩn bị (offline):  tài liệu → tách đoạn (chunk) → embedding → lưu vào vector index
+Trả lời (online):    câu hỏi → embedding → tìm top-k đoạn gần nhất → prompt = câu hỏi + các đoạn → LLM → câu trả lời + trích dẫn
+</code></pre></div>
+
+<p>RAG thắng fine-tune khi kiến thức <strong>thay đổi thường xuyên</strong>, cần <strong>trích dẫn nguồn</strong>, hoặc cần <strong>phân quyền</strong> (người dùng chỉ được thấy tài liệu của họ). Fine-tune hợp hơn khi cần đổi <strong>cách</strong> model viết hoặc làm một tác vụ hẹp, không phải thêm kiến thức.</p>
+<h2 id="lt-2">Chunking</h2>
+<p>Đoạn quá dài thì embedding bị "pha loãng" và tốn context; quá ngắn thì mất ngữ cảnh. Điểm khởi đầu hợp lý: <strong>300–800 token</strong>, chồng lấn 10–20% để câu bị cắt ngang vẫn nằm trọn ở một đoạn.</p>
+<ul>
+<li>Tách theo <strong>cấu trúc</strong> khi có thể: tiêu đề, đoạn văn, điều khoản. Tốt hơn tách mù theo số ký tự.</li>
+<li>Gắn <strong>metadata</strong> cho mỗi đoạn: tên tài liệu, mục, trang, ngày. Dùng để trích dẫn và lọc (chỉ tìm trong tài liệu năm 2026).</li>
+</ul>
+<h2 id="lt-3">Embedding và tìm kiếm vector</h2>
+<p>Model embedding biến mỗi đoạn thành một vector, sao cho đoạn cùng nghĩa có vector gần nhau. Với tiếng Việt, chọn model đa ngôn ngữ (ví dụ họ BGE-M3, multilingual E5) và <strong>đo</strong> trên câu hỏi thật của bạn.</p>
+<div class="hl"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">sentence_transformers</span><span class="w"> </span><span class="kn">import</span> <span class="n">SentenceTransformer</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">faiss</span><span class="o">,</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="n">emb</span> <span class="o">=</span> <span class="n">SentenceTransformer</span><span class="p">(</span><span class="s2">"BAAI/bge-m3"</span><span class="p">)</span>
+<span class="n">X</span> <span class="o">=</span> <span class="n">emb</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="n">chunks</span><span class="p">,</span> <span class="n">normalize_embeddings</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>          <span class="c1"># (n, d), đã chuẩn hóa độ dài 1</span>
+<span class="n">index</span> <span class="o">=</span> <span class="n">faiss</span><span class="o">.</span><span class="n">IndexFlatIP</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]);</span> <span class="n">index</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>        <span class="c1"># tích vô hướng = cosine khi đã chuẩn hóa</span>
+<span class="n">q</span> <span class="o">=</span> <span class="n">emb</span><span class="o">.</span><span class="n">encode</span><span class="p">([</span><span class="s2">"Chính sách đổi trả trong bao lâu?"</span><span class="p">],</span> <span class="n">normalize_embeddings</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">scores</span><span class="p">,</span> <span class="n">ids</span> <span class="o">=</span> <span class="n">index</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+</code></pre></div>
+
+<p><code>IndexFlatIP</code> so với mọi vector (chính xác, chậm khi có hàng chục triệu đoạn). Index gần đúng như <strong>HNSW</strong> hay <strong>IVF</strong> nhanh hơn hàng trăm lần, đổi lấy một chút recall. Vector database (Qdrant, pgvector, Milvus) thêm lưu trữ, lọc metadata, cập nhật.</p>
+<h2 id="lt-4">BM25 và hybrid search</h2>
+<p><strong>BM25</strong> là tìm kiếm theo từ khóa cổ điển: điểm cao khi đoạn chứa từ trong câu hỏi, nhất là từ hiếm. Nó bắt tốt <strong>mã sản phẩm, tên riêng, số hiệu</strong> mà embedding hay bỏ lỡ ("lỗi E-204"). Embedding bắt tốt <strong>đồng nghĩa, diễn đạt khác</strong> ("hoàn tiền" và "trả lại tiền"). <strong>Hybrid search</strong> chạy cả hai rồi gộp kết quả, thường tốt hơn từng cái riêng. Cách gộp chi tiết (RRF) và reranker học ở P4.5.</p>
+<h2 id="lt-5">Prompt sinh câu trả lời có trích dẫn</h2>
+<div class="hl"><pre><span></span><code>Trả lời câu hỏi CHỈ dựa trên các đoạn tài liệu dưới đây.
+Sau mỗi ý, ghi nguồn dạng [1], [2] theo số thứ tự đoạn.
+Nếu tài liệu không đủ để trả lời, nói rõ "Tài liệu không có thông tin này".
+
+&lt;doc id="1" source="chinh-sach-doi-tra.pdf, trang 2"&gt;...&lt;/doc&gt;
+&lt;doc id="2" source="faq.md, mục Giao hàng"&gt;...&lt;/doc&gt;
+
+Câu hỏi: ...
+</code></pre></div>
+
+<div class="keep">
+<p><strong>Ghi nhớ:</strong> phần lớn lỗi RAG nằm ở bước <strong>tìm kiếm</strong>, không phải ở LLM. Nếu đoạn đúng không có trong top-k, model giỏi đến đâu cũng không trả lời đúng được. Luôn đo retrieval riêng.</p>
+</div></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p4.2:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 4</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Xếp hạng bằng cosine</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Câu hỏi q = [1, 0]. Ba đoạn đã chuẩn hóa: a = [0.8, 0.6], b = [0.6, 0.8], c = [0, 1].</p>
+<div class="ans" id="p4-2-e1-a1"><div class="ans-fields"><label>cos(q, a)<input inputmode="decimal" data-ans="0.8" data-tol="0.001" autocomplete="off"></label><label>cos(q, b)<input inputmode="decimal" data-ans="0.6" data-tol="0.001" autocomplete="off"></label><label>Thứ hạng của b (1 = gần nhất)<input inputmode="decimal" data-ans="2.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+
+<details class="fold solution">
+<summary>Lời giải</summary>
+<p>Vector đã có độ dài 1 nên cosine bằng tích vô hướng: a = 0.8, b = 0.6, c = 0. Thứ tự a, b, c.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 2</span><h3>Số đoạn khi chunking</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Tài liệu 10.000 token, chunk 500 token, chồng lấn 100 token (mỗi đoạn mới bắt đầu sau đoạn trước 400 token).</p>
+<div class="ans" id="p4-2-e2-a1"><div class="ans-fields"><label>Số đoạn<input inputmode="decimal" data-ans="25.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+
+<details class="fold solution">
+<summary>Lời giải</summary>
+<p>Đoạn thứ i bắt đầu ở 400·(i − 1). Đoạn cuối phải phủ tới token 10.000: cần 400·(n − 1) + 500 ≥ 10.000, nên n − 1 ≥ 23,75, n = 25. Chồng lấn làm tăng 25% số đoạn so với 20 đoạn không chồng.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 3</span><h3>Recall@k</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Câu hỏi có 2 đoạn đúng. Top-5 kết quả tìm được chứa 1 trong 2 đoạn đó.</p>
+<div class="ans" id="p4-2-e3-a1"><div class="ans-fields"><label>Recall@5<input inputmode="decimal" data-ans="0.5" data-tol="0.001" autocomplete="off"></label><label>Precision@5<input inputmode="decimal" data-ans="0.2" data-tol="0.001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+
+<details class="fold solution">
+<summary>Lời giải</summary>
+<p>Recall@5 = 1/2: tìm được một nửa đoạn cần thiết. Precision@5 = 1/5. Với RAG, recall quan trọng hơn: đoạn thừa thì LLM bỏ qua được, đoạn thiếu thì không bù được.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 4</span><h3>Dung lượng index</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>1 triệu đoạn, embedding 1024 chiều, lưu fp32. 1 GB = 10⁹ byte.</p>
+<div class="ans" id="p4-2-e4-a1"><div class="ans-fields"><label>Dung lượng (GB)<input inputmode="decimal" data-ans="4.096" data-tol="0.001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+
+<details class="fold solution">
+<summary>Lời giải</summary>
+<p>10⁶ × 1024 × 4 byte = 4,1 GB, phải nằm trong RAM để tìm nhanh. Các cách giảm: lưu fp16 (một nửa), lượng tử hóa vector (PQ, binary), hoặc model embedding nhỏ hơn.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 5</span><h3>Khi nào RAG thất bại</h3><span class="ex-tag concept">khái niệm</span></div><div class="prose"><p>Với mỗi câu hỏi sau gửi tới hệ RAG trên bộ tài liệu chính sách công ty, dự đoán bước nào dễ hỏng (chunking, retrieval, hay generation) và đề xuất cách sửa:</p>
+<ol>
+<li>"Mã lỗi E-204 nghĩa là gì?"</li>
+<li>"So sánh chính sách nghỉ phép năm 2025 và 2026."</li>
+<li>"Tổng hợp mọi điều khoản liên quan tới bảo mật dữ liệu."</li>
+</ol>
+<details class="fold solution">
+<summary>Lời giải</summary>
+<ol>
+<li>Retrieval: embedding hay bỏ lỡ mã chính xác. Thêm BM25 (hybrid).</li>
+<li>Retrieval và metadata: cần đoạn từ hai tài liệu khác năm. Lọc theo metadata năm, tăng k, hoặc tách câu hỏi thành hai truy vấn (P4.5).</li>
+<li>Câu hỏi tổng hợp cần rất nhiều đoạn, vượt top-k. Cần cách tiếp cận khác: map-reduce trên nhiều đoạn, hoặc GraphRAG / tóm tắt trước theo chủ đề.</li>
+</ol>
+</details></div></article><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p4.2:b">Tôi đã xong phần bài tập</label><button class="btn" type="button" data-goto="thuc-hanh">Sang thực hành <span class="arr">→</span></button></div></section><section class="panel" id="thuc-hanh" role="tabpanel" hidden><div class="prose"><h2>Lab 5: hỏi đáp tài liệu có trích dẫn</h2>
+<p>Xây hệ RAG trên một bộ tài liệu thật, ví dụ quy chế đào tạo của trường, tài liệu sản phẩm, hoặc bộ luật một lĩnh vực (20–100 trang).</p>
+<p><strong>Các bước</strong></p>
+<ol>
+<li>Đọc PDF/Markdown, tách đoạn theo cấu trúc (tiêu đề, điều khoản), 300–600 token, chồng lấn 15%. Lưu metadata (file, trang, mục).</li>
+<li>Embedding bằng một model đa ngôn ngữ, lưu index FAISS và metadata ra đĩa.</li>
+<li>Tìm kiếm vector top-5; thêm BM25 (<code>rank_bm25</code>) và gộp đơn giản (xen kẽ hai danh sách, bỏ trùng).</li>
+<li>Prompt sinh câu trả lời có trích dẫn [1], [2] và câu "không có thông tin" khi thiếu.</li>
+<li>Giao diện tối thiểu bằng Gradio hoặc Streamlit: ô hỏi, câu trả lời, các đoạn nguồn có thể mở ra xem.</li>
+<li>Tự viết 15 câu hỏi kèm đoạn đúng, đo recall@5 cho vector, BM25 và hybrid.</li>
+</ol>
+<p><strong>Xong khi</strong></p>
+<ul>
+<li>Câu trả lời dẫn đúng đoạn nguồn trên các câu hỏi thử.</li>
+<li>Bảng recall@5 cho ba cách tìm kiếm, hybrid tốt nhất hoặc bạn giải thích được vì sao không.</li>
+<li>Có ví dụ hệ thống trả lời "không có thông tin" thay vì bịa.</li>
+</ul>
+<details class="fold code">
+<summary>Code tham khảo</summary>
+<div class="hl"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">faiss</span><span class="o">,</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span><span class="o">,</span><span class="w"> </span><span class="nn">re</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">rank_bm25</span><span class="w"> </span><span class="kn">import</span> <span class="n">BM25Okapi</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sentence_transformers</span><span class="w"> </span><span class="kn">import</span> <span class="n">SentenceTransformer</span>
+
+<span class="n">emb</span> <span class="o">=</span> <span class="n">SentenceTransformer</span><span class="p">(</span><span class="s2">"BAAI/bge-m3"</span><span class="p">)</span>
+<span class="n">X</span> <span class="o">=</span> <span class="n">emb</span><span class="o">.</span><span class="n">encode</span><span class="p">([</span><span class="n">c</span><span class="p">[</span><span class="s2">"text"</span><span class="p">]</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">chunks</span><span class="p">],</span> <span class="n">normalize_embeddings</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">show_progress_bar</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">index</span> <span class="o">=</span> <span class="n">faiss</span><span class="o">.</span><span class="n">IndexFlatIP</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]);</span> <span class="n">index</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">"float32"</span><span class="p">))</span>
+<span class="n">tokenize</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">s</span><span class="p">:</span> <span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="sa">r</span><span class="s2">"\w+"</span><span class="p">,</span> <span class="n">s</span><span class="o">.</span><span class="n">lower</span><span class="p">())</span>
+<span class="n">bm25</span> <span class="o">=</span> <span class="n">BM25Okapi</span><span class="p">([</span><span class="n">tokenize</span><span class="p">(</span><span class="n">c</span><span class="p">[</span><span class="s2">"text"</span><span class="p">])</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">chunks</span><span class="p">])</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">search</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">"hybrid"</span><span class="p">):</span>
+    <span class="n">vec</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">index</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">emb</span><span class="o">.</span><span class="n">encode</span><span class="p">([</span><span class="n">q</span><span class="p">],</span> <span class="n">normalize_embeddings</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">"float32"</span><span class="p">),</span> <span class="n">k</span><span class="p">)[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">kw</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="o">-</span><span class="n">bm25</span><span class="o">.</span><span class="n">get_scores</span><span class="p">(</span><span class="n">tokenize</span><span class="p">(</span><span class="n">q</span><span class="p">)))[:</span><span class="n">k</span><span class="p">])</span>
+    <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">"vector"</span><span class="p">:</span> <span class="k">return</span> <span class="n">vec</span>
+    <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">"bm25"</span><span class="p">:</span> <span class="k">return</span> <span class="n">kw</span>
+    <span class="n">merged</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">pair</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">vec</span><span class="p">,</span> <span class="n">kw</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">pair</span><span class="p">]</span>   <span class="c1"># xen kẽ hai danh sách</span>
+    <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="nb">dict</span><span class="o">.</span><span class="n">fromkeys</span><span class="p">(</span><span class="n">merged</span><span class="p">))[:</span><span class="n">k</span><span class="p">]</span>                <span class="c1"># bỏ trùng, giữ thứ tự</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">answer</span><span class="p">(</span><span class="n">q</span><span class="p">):</span>
+    <span class="n">hits</span> <span class="o">=</span> <span class="n">search</span><span class="p">(</span><span class="n">q</span><span class="p">)</span>
+    <span class="n">docs</span> <span class="o">=</span> <span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="sa">f</span><span class="s1">'&lt;doc id="</span><span class="si">{</span><span class="n">i</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s1">" source="</span><span class="si">{</span><span class="n">chunks</span><span class="p">[</span><span class="n">h</span><span class="p">][</span><span class="s2">"source"</span><span class="p">]</span><span class="si">}</span><span class="s1">"&gt;</span><span class="si">{</span><span class="n">chunks</span><span class="p">[</span><span class="n">h</span><span class="p">][</span><span class="s2">"text"</span><span class="p">]</span><span class="si">}</span><span class="s1">&lt;/doc&gt;'</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">h</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">hits</span><span class="p">))</span>
+    <span class="n">prompt</span> <span class="o">=</span> <span class="p">(</span><span class="sa">f</span><span class="s2">"Trả lời CHỈ dựa trên tài liệu. Ghi nguồn [số] sau mỗi ý. Nếu không đủ thông tin, nói rõ.</span><span class="se">\n\n</span><span class="si">{</span><span class="n">docs</span><span class="si">}</span><span class="se">\n\n</span><span class="s2">Câu hỏi: </span><span class="si">{</span><span class="n">q</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">messages</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="s2">"claude-haiku-5-5"</span><span class="p">,</span> <span class="n">max_tokens</span><span class="o">=</span><span class="mi">700</span><span class="p">,</span> <span class="n">messages</span><span class="o">=</span><span class="p">[{</span><span class="s2">"role"</span><span class="p">:</span> <span class="s2">"user"</span><span class="p">,</span> <span class="s2">"content"</span><span class="p">:</span> <span class="n">prompt</span><span class="p">}])</span>
+    <span class="k">return</span> <span class="n">out</span><span class="o">.</span><span class="n">content</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">text</span><span class="p">,</span> <span class="p">[</span><span class="n">chunks</span><span class="p">[</span><span class="n">h</span><span class="p">]</span> <span class="k">for</span> <span class="n">h</span> <span class="ow">in</span> <span class="n">hits</span><span class="p">]</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">recall_at_k</span><span class="p">(</span><span class="n">qa</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">"hybrid"</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">search</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="s2">"q"</span><span class="p">],</span> <span class="n">k</span><span class="p">,</span> <span class="n">mode</span><span class="p">))</span> <span class="o">&amp;</span> <span class="nb">set</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="s2">"gold_ids"</span><span class="p">]))</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="s2">"gold_ids"</span><span class="p">])</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">qa</span><span class="p">])</span>
+</code></pre></div>
+
+</details></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p4.2:p">Tôi đã xong phần thực hành</label></div></section>
+      <div class="donewhen"><b>Xong bài khi</b>Câu trả lời dẫn đúng nguồn, và hybrid search tốt hơn vector search thuần trên bộ câu hỏi của bạn.</div>
       <nav class="pn" aria-label="Bài trước, bài sau"><a href="p4-1.html"><span class="dir">← Bài trước · P4.1</span><span class="tt">Bài 4 · Làm việc với LLM</span></a><a class="nx" href="p4-3.html"><span class="dir">Bài sau · P4.3 →</span><span class="tt">Bài 6 · Đánh giá hệ thống AI</span></a></nav>
     </div>
     <aside class="aside">
       <div class="abox"><h4>Tiến độ bài này</h4><div class="ring"><svg viewBox="0 0 64 64" aria-hidden="true"><circle class="bg" cx="32" cy="32" r="28"/><circle class="fg" cx="32" cy="32" r="28" stroke-dasharray="176" stroke-dashoffset="176"/></svg><div><b id="ring-n">0/3</b><span id="ring-sub">phần đã xong</span></div></div></div>
+      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Kiến trúc RAG</a></li><li><a href="#lt-2">Chunking</a></li><li><a href="#lt-3">Embedding và tìm kiếm vector</a></li><li><a href="#lt-4">BM25 và hybrid search</a></li><li><a href="#lt-5">Prompt sinh câu trả lời có trích dẫn</a></li></ol></div>
       
       <div class="abox"><h4>Cùng giai đoạn</h4><ul><li><a href="p4-1.html">Bài 4 · Làm việc với LLM</a></li><li><span class=cur>Bài 5 · Embedding và RAG</span></li><li><a href="p4-3.html">Bài 6 · Đánh giá hệ thống AI</a></li><li><a href="p4-4.html">Bài 7 · Agent</a></li><li><a href="p4-5.html">RAG nâng cao</a></li><li><a href="p4-6.html">Multi-agent</a></li><li><a href="p4-7.html">MCP và hệ sinh thái tool</a></li><li><a href="p4-8.html">Guardrails, an toàn và human-in-the-loop</a></li></ul></div>
     </aside>
@@ -43,16 +169,75 @@
 
 (function () {
   const mid = document.body.dataset.mid; let d = AIE.load();
+  const EXK = "aie-ex-" + mid;
+  let solved = {}; try { solved = JSON.parse(localStorage.getItem(EXK) || "{}") || {}; } catch (e) {}
+  const saveSolved = () => { try { localStorage.setItem(EXK, JSON.stringify(solved)); } catch (e) {} };
+  const tabs = [...document.querySelectorAll(".tab")], panels = [...document.querySelectorAll(".panel")];
   const boxes = [...document.querySelectorAll("input[data-key]")], ring = document.querySelector(".ring .fg"), rt = document.getElementById("ring-n");
-  const skipped = () => !!d[mid + ":skip"];
+  const toc = document.getElementById("toc-box");
+  function show(id, scroll) {
+    tabs.forEach((t) => t.setAttribute("aria-selected", String(t.dataset.tab === id)));
+    panels.forEach((p) => { const on = p.id === id; if (on && p.hidden) { p.classList.remove("enter"); void p.offsetWidth; p.classList.add("enter"); } p.hidden = !on; });
+    if (toc) toc.hidden = id !== "ly-thuyet";
+    if (scroll) document.querySelector(".tabs").scrollIntoView({ block: "start" });
+  }
+  tabs.forEach((t) => t.addEventListener("click", () => { history.replaceState(null, "", "#" + t.dataset.tab); show(t.dataset.tab, true); }));
+  document.querySelectorAll("[data-goto]").forEach((b) => b.addEventListener("click", () => { history.replaceState(null, "", "#" + b.dataset.goto); show(b.dataset.goto, true); }));
+  const start = ["ly-thuyet", "bai-tap", "thuc-hanh"].includes(location.hash.slice(1)) ? location.hash.slice(1) : "ly-thuyet";
+  show(start, false);
+  window.addEventListener("hashchange", () => { const h = location.hash.slice(1); if (["ly-thuyet", "bai-tap", "thuc-hanh"].includes(h)) show(h, true); });
+  document.querySelectorAll(".toc a").forEach((a) => a.addEventListener("click", () => show("ly-thuyet", false)));
+
   function render() {
     let n = 0;
-    boxes.forEach((b) => { const on = skipped() || !!d[b.dataset.key]; b.checked = on; b.disabled = skipped(); b.closest(".pblock").classList.toggle("done", on); if (on) n++; });
+    const skip = !!d[mid + ":skip"];
+    boxes.forEach((b) => { const on = skip || !!d[b.dataset.key]; b.checked = on; if (on) n++; });
+    const kmap = { t: "ly-thuyet", b: "bai-tap", p: "thuc-hanh" };
+    tabs.forEach((t) => { const k = Object.keys(kmap).find((x) => kmap[x] === t.dataset.tab); t.classList.toggle("is-done", skip || !!d[mid + ":" + k]); });
     ring.style.strokeDashoffset = String(176 * (1 - n / 3)); rt.textContent = n + "/3";
-    document.getElementById("ring-sub").textContent = skipped() ? "đã đánh dấu bỏ qua" : n === 3 ? "hoàn thành bài này" : "phần đã xong";
+    document.getElementById("ring-sub").textContent = n === 3 ? "hoàn thành bài này" : "phần đã xong";
   }
-  boxes.forEach((b) => b.addEventListener("change", () => { d = AIE.load(); if (b.checked) d[b.dataset.key] = true; else delete d[b.dataset.key]; AIE.save(d); render(); }));
+  boxes.forEach((b) => b.addEventListener("change", () => {
+    d = AIE.load(); if (b.checked) d[b.dataset.key] = true; else delete d[b.dataset.key]; AIE.save(d);
+    boxes.filter((x) => x.dataset.key === b.dataset.key).forEach((x) => (x.checked = b.checked)); render();
+  }));
   render();
+
+  /* answer boxes */
+  const parse = (s) => parseFloat(String(s).trim().replace(",", ".").replace("−", "-"));
+  const allAns = [...document.querySelectorAll(".ans")];
+  function score() {
+    const ok = allAns.filter((a) => solved[a.id]).length;
+    const el = document.getElementById("ex-score");
+    if (el) { el.querySelector("b").textContent = `${ok} / ${allAns.length}`; el.querySelector(".bar i").style.width = (allAns.length ? ok / allAns.length * 100 : 0) + "%"; }
+    document.querySelectorAll(".excard").forEach((c) => { const as = [...c.querySelectorAll(".ans")]; c.classList.toggle("solved", as.length > 0 && as.every((a) => solved[a.id])); });
+  }
+  allAns.forEach((box) => {
+    const inputs = [...box.querySelectorAll("input")], fb = box.querySelector(".ans-fb");
+    const mark = () => { box.classList.add("ok"); inputs.forEach((i) => { i.classList.add("ok"); if (!i.value) i.value = i.dataset.ans; }); fb.className = "ans-fb ok"; fb.textContent = "Chính xác."; };
+    if (solved[box.id]) mark();
+    const run = () => {
+      let all = true, empty = false;
+      inputs.forEach((i) => {
+        const v = parse(i.value);
+        if (i.value.trim() === "" || Number.isNaN(v)) { empty = true; all = false; i.classList.remove("ok", "bad"); return; }
+        const good = Math.abs(v - parseFloat(i.dataset.ans)) <= parseFloat(i.dataset.tol) + 1e-9;
+        i.classList.toggle("ok", good); i.classList.toggle("bad", !good); if (!good) all = false;
+      });
+      if (all) { solved[box.id] = true; saveSolved(); mark(); box.classList.remove("pop"); void box.offsetWidth; box.classList.add("pop"); score(); }
+      else { fb.className = "ans-fb bad"; fb.textContent = empty ? "Điền đủ các ô bằng số (dấu chấm hoặc phẩy đều được)." : "Ô màu cam chưa đúng. Xem lại bước đó, hoặc mở gợi ý."; }
+    };
+    box.querySelector(".btn-check").addEventListener("click", run);
+    inputs.forEach((i) => i.addEventListener("keydown", (e) => { if (e.key === "Enter") run(); }));
+  });
+  score();
+
+  /* highlight current theory section in the toc */
+  if (toc && "IntersectionObserver" in window) {
+    const links = [...toc.querySelectorAll("a")];
+    const io = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) links.forEach((a) => a.classList.toggle("on", a.getAttribute("href") === "#" + e.target.id)); }), { rootMargin: "-140px 0px -65% 0px" });
+    document.querySelectorAll("#ly-thuyet h2[id]").forEach((h) => io.observe(h));
+  }
 })();
 
 </script>

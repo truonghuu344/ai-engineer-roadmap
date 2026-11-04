@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>P4.5 · RAG nâng cao · AI Engineer</title>
-<meta name="description" content="RAG nâng cao: Hybrid search (BM25 + vector) và reciprocal rank fusion; Reranker cross-encoder, query rewriting, HyDE, multi-query; Chunking nâng cao: theo cấu trúc, parent–child, contextual retrieval">
+<meta name="description" content="RAG nâng cao: lý thuyết, bài tập và thực hành. Hybrid search (BM25 + vector) và reciprocal rank fusion; Reranker cross-encoder, query rewriting, HyDE, multi-query">
 <meta property="og:title" content="P4.5 · RAG nâng cao · AI Engineer">
-<meta property="og:description" content="RAG nâng cao: Hybrid search (BM25 + vector) và reciprocal rank fusion; Reranker cross-encoder, query rewriting, HyDE, multi-query; Chunking nâng cao: theo cấu trúc, parent–child, contextual retrieval">
+<meta property="og:description" content="RAG nâng cao: lý thuyết, bài tập và thực hành. Hybrid search (BM25 + vector) và reciprocal rank fusion; Reranker cross-encoder, query rewriting, HyDE, multi-query">
 <meta name="theme-color" content="#F4F6FB">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23131A33'/%3E%3Cpath d='M9 22 L16 10 L23 19' stroke='%23E5E9FB' stroke-width='2' fill='none'/%3E%3Ccircle cx='9' cy='22' r='3' fill='%23E5E9FB'/%3E%3Ccircle cx='16' cy='10' r='3' fill='%23E5E9FB'/%3E%3Ccircle cx='23' cy='19' r='3' fill='%23FF9361'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -14,23 +14,213 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="../assets/chrome.css">
 <link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/lesson.css">
 </head>
 <body data-mid="p4.5">
 <header class="sh"><div class="sh-in"><a class="sh-brand" href="../index.html"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="var(--ink)"/><circle cx="9" cy="22" r="2.6" fill="var(--accent-soft)"/><circle cx="16" cy="10" r="2.6" fill="var(--accent-soft)"/><circle cx="23" cy="19" r="2.6" fill="#FF9361"/><path d="M9 22 L16 10 L23 19" stroke="var(--accent-soft)" stroke-width="1.8" fill="none"/></svg><span>AI Engineer<small>lộ trình tự học</small></span></a><nav class="sh-nav" id="sh-nav" aria-label="Chính"><a href="../index.html">Trang chủ</a><a href="../bai-hoc.html" aria-current="page">Bài học</a><a href="../lo-trinh.html">Lộ trình</a><a href="../notebooks.html">Notebook</a><a class="sh-cta-m" href="../bai01.html" data-next-lesson>Học tiếp →</a></nav><a class="sh-cta" href="../bai01.html" data-next-lesson>Học tiếp <span class="arr">→</span></a><button class="sh-burger" type="button" aria-expanded="false" aria-controls="sh-nav">Menu</button></div></header>
 
 <main class="container">
   <div class="crumbs"><a href="../bai-hoc.html">Bài học</a><span>/</span><a href="../bai-hoc.html#p4">P4 · LLM Engineering</a><span>/</span><span>P4.5</span></div>
-  <section class="lhero"><div class="code">P4.5</div><h1>RAG nâng cao</h1><div class="lmeta"><span class="m">Giai đoạn P4 · LLM Engineering</span><span class="m">Tuần 18–25</span><span class="chip planned">Đề cương</span></div></section>
-  <div class="lgrid">
-    <div>
-      <div class="goal"><b>Mục tiêu giai đoạn:</b> Nhóm kỹ năng được tuyển nhiều nhất: ứng dụng LLM, RAG, agent và multi-agent chạy ổn định, an toàn và đo được chất lượng.</div>
-      <div class="soon">Nội dung đầy đủ (trang lý thuyết tương tác và notebook tự chấm) đang được soạn và sẽ có khi bạn học tới bài này. Đề cương dưới đây là phạm vi chính xác của bài.</div>
-      <section class="pblock reveal"><div class="pblock-head"><span class="num">1</span><h2>Lý thuyết<span style="display:block;font:400 13.5px var(--f-body);color:var(--muted);margin-top:4px">Những gì cần hiểu</span></h2><label class="tick" for="cb-t"><input type="checkbox" id="cb-t" data-key="p4.5:t">Xong</label></div><ol><li>Hybrid search (BM25 + vector) và reciprocal rank fusion</li><li>Reranker cross-encoder, query rewriting, HyDE, multi-query</li><li>Chunking nâng cao: theo cấu trúc, parent–child, contextual retrieval</li><li>GraphRAG và agentic RAG: khi nào đáng dùng</li></ol></section><section class="pblock reveal"><div class="pblock-head"><span class="num">2</span><h2>Bài tập<span style="display:block;font:400 13.5px var(--f-body);color:var(--muted);margin-top:4px">Tính tay và tự kiểm tra</span></h2><label class="tick" for="cb-b"><input type="checkbox" id="cb-b" data-key="p4.5:b">Xong</label></div><ol><li>Tính tay điểm RRF cho hai danh sách xếp hạng</li><li>Chọn kỹ thuật RAG phù hợp cho 4 tình huống</li></ol></section><section class="pblock reveal"><div class="pblock-head"><span class="num">3</span><h2>Thực hành<span style="display:block;font:400 13.5px var(--f-body);color:var(--muted);margin-top:4px">Code và dự án</span></h2><label class="tick" for="cb-p"><input type="checkbox" id="cb-p" data-key="p4.5:p">Xong</label></div><ol><li>Nâng cấp hệ thống Lab 5: hybrid + reranker + query rewriting, đo bằng bộ eval Lab 6</li></ol></section>
-      <div class="donewhen reveal"><b>Xong khi</b>Recall@5 và độ chính xác câu trả lời tăng so với RAG cơ bản, có bảng ablation cho từng kỹ thuật.</div>
+  <section class="lhero"><div class="code">P4.5</div><h1>RAG nâng cao</h1><div class="lmeta"><span class="m">Giai đoạn P4 · LLM Engineering</span><span class="m">Tuần 18–25</span><span class="chip ready"><span class="dot"></span>Có nội dung đầy đủ</span></div>
+    <div class="intro"><p>RAG cơ bản ở P4.2 thường đạt khoảng 60–70% câu trả lời tốt. Đi từ đó lên 85–90% là nhờ các kỹ thuật trong bài này: gộp nhiều cách tìm kiếm, xếp hạng lại bằng model mạnh hơn, viết lại câu hỏi, chunking thông minh, và biết khi nào cần GraphRAG hay để agent tự quyết định tìm kiếm. Quy tắc xuyên suốt: <strong>thêm từng kỹ thuật một và đo bằng bộ eval</strong> của Lab 6.</p></div></section>
+  
+  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">5 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
+  <div class="lgrid" style="margin-top:22px">
+    <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">Hybrid search với Reciprocal Rank Fusion</h2>
+<p>BM25 và vector cho điểm ở hai thang khác nhau, không cộng thẳng được. <strong>RRF</strong> chỉ dùng <strong>thứ hạng</strong>:</p>
+<div class="hl"><pre><span></span><code>RRF(d) = Σ_{mỗi danh sách r}  1 / (k + rank_r(d))      k thường = 60
+</code></pre></div>
+
+<p>Đoạn xuất hiện ở hạng cao trong nhiều danh sách sẽ thắng. RRF không cần chuẩn hóa điểm, gần như không có tham số, và rất khó làm tệ hơn từng danh sách riêng.</p>
+<div class="hl"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">rrf</span><span class="p">(</span><span class="n">lists</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">60</span><span class="p">):</span>
+    <span class="n">score</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">lst</span> <span class="ow">in</span> <span class="n">lists</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">rank</span><span class="p">,</span> <span class="n">doc</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">lst</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+            <span class="n">score</span><span class="p">[</span><span class="n">doc</span><span class="p">]</span> <span class="o">=</span> <span class="n">score</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">doc</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="n">k</span> <span class="o">+</span> <span class="n">rank</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">score</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">score</span><span class="o">.</span><span class="n">get</span><span class="p">,</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</code></pre></div>
+
+<h2 id="lt-2">Reranker cross-encoder</h2>
+<p>Embedding (bi-encoder) mã hóa câu hỏi và đoạn <strong>riêng rẽ</strong>, nhanh nhưng thô. <strong>Cross-encoder</strong> đọc câu hỏi và đoạn <strong>cùng lúc</strong> qua một Transformer, cho điểm liên quan chính xác hơn nhiều, nhưng chậm vì phải chạy một lần cho mỗi cặp.</p>
+<p>Quy trình hai tầng: tìm rộng (top 50 bằng hybrid) → rerank bằng cross-encoder → giữ top 5 đưa vào LLM.</p>
+<div class="hl"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">sentence_transformers</span><span class="w"> </span><span class="kn">import</span> <span class="n">CrossEncoder</span>
+<span class="n">reranker</span> <span class="o">=</span> <span class="n">CrossEncoder</span><span class="p">(</span><span class="s2">"BAAI/bge-reranker-v2-m3"</span><span class="p">)</span>
+<span class="n">scores</span> <span class="o">=</span> <span class="n">reranker</span><span class="o">.</span><span class="n">predict</span><span class="p">([(</span><span class="n">question</span><span class="p">,</span> <span class="n">chunks</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s2">"text"</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">candidates</span><span class="p">])</span>
+<span class="n">top5</span> <span class="o">=</span> <span class="p">[</span><span class="n">candidates</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">scores</span><span class="o">.</span><span class="n">argsort</span><span class="p">()[::</span><span class="o">-</span><span class="mi">1</span><span class="p">][:</span><span class="mi">5</span><span class="p">]]</span>
+</code></pre></div>
+
+<h2 id="lt-3">Biến đổi câu hỏi</h2>
+<p>Câu hỏi của người dùng thường ngắn, mơ hồ, hoặc phụ thuộc hội thoại trước ("thế còn năm ngoái?").</p>
+<table>
+<thead>
+<tr>
+<th>Kỹ thuật</th>
+<th>Làm gì</th>
+<th>Khi nào dùng</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Query rewriting</td>
+<td>LLM viết lại thành câu hỏi đầy đủ, độc lập</td>
+<td>hội thoại nhiều lượt</td>
+</tr>
+<tr>
+<td>Multi-query</td>
+<td>LLM sinh 3–5 cách hỏi khác, tìm cho từng cách rồi RRF</td>
+<td>câu hỏi mơ hồ, nhiều khía cạnh</td>
+</tr>
+<tr>
+<td>Decomposition</td>
+<td>tách câu so sánh/phức hợp thành câu con</td>
+<td>"So sánh A và B"</td>
+</tr>
+<tr>
+<td>HyDE</td>
+<td>LLM viết một câu trả lời giả định, dùng nó để tìm</td>
+<td>câu hỏi rất khác văn phong tài liệu</td>
+</tr>
+</tbody>
+</table>
+<p>Mỗi kỹ thuật thêm một cuộc gọi LLM: tốn thời gian và tiền. Đo xem có đáng không.</p>
+<h2 id="lt-4">Chunking nâng cao</h2>
+<ul>
+<li><strong>Theo cấu trúc:</strong> tách theo tiêu đề, điều khoản, hàm (với code). Giữ đường dẫn tiêu đề ("Chương 3 &gt; Điều 12 &gt; Khoản 2") trong nội dung đoạn.</li>
+<li><strong>Parent–child:</strong> tìm trên đoạn nhỏ (chính xác), nhưng đưa vào LLM đoạn cha lớn hơn (đủ ngữ cảnh).</li>
+<li><strong>Contextual retrieval:</strong> trước khi embedding, dùng LLM viết 1–2 câu mô tả đoạn nằm ở đâu trong tài liệu ("Đoạn này thuộc báo cáo quý 2/2026 của công ty X, nói về doanh thu miền Nam") và ghép vào đầu đoạn. Giải quyết vấn đề đoạn mất ngữ cảnh khi bị cắt ra.</li>
+</ul>
+<h2 id="lt-5">GraphRAG và agentic RAG</h2>
+<p><strong>GraphRAG:</strong> dùng LLM trích xuất thực thể và quan hệ từ tài liệu thành đồ thị tri thức, gom cụm và tóm tắt theo cụm. Mạnh với câu hỏi <strong>tổng hợp toàn cục</strong> ("các chủ đề chính trong 500 báo cáo là gì?") và câu hỏi <strong>nhiều bước nhảy</strong> (A liên quan B, B liên quan C). Đắt khi xây dựng, nên chỉ dùng khi RAG thường thất bại ở loại câu hỏi đó.</p>
+<p><strong>Agentic RAG:</strong> cho agent (P4.4) công cụ tìm kiếm thay vì tìm một lần cố định. Agent tự quyết định tìm gì, tìm lại khi kết quả chưa đủ, tìm trong nhiều nguồn. Linh hoạt nhất, nhưng chậm, đắt, và khó đoán hơn.</p>
+<div class="keep">
+<p><strong>Ghi nhớ:</strong> thứ tự nên thử: hybrid + RRF → reranker → chunking tốt hơn → query rewriting → contextual retrieval → agentic/GraphRAG. Dừng khi bộ eval nói đã đủ tốt.</p>
+</div></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p4.5:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 2</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Tính RRF</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>k = 60. Danh sách vector: [X, Y, Z]. Danh sách BM25: [Y, W, X].</p>
+<div class="ans" id="p4-5-e1-a1"><div class="ans-fields"><label>RRF(X)<input inputmode="decimal" data-ans="0.032266" data-tol="1e-05" autocomplete="off"></label><label>RRF(Y)<input inputmode="decimal" data-ans="0.032522" data-tol="1e-05" autocomplete="off"></label><label>RRF(Z)<input inputmode="decimal" data-ans="0.015873" data-tol="1e-05" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+
+<details class="fold solution">
+<summary>Lời giải</summary>
+<p>X: hạng 1 và 3 → 1/61 + 1/63 ≈ 0.03227. Y: hạng 2 và 1 → 1/62 + 1/61 ≈ 0.03252. Z chỉ có ở một danh sách → 1/63 ≈ 0.01587, W tương tự 1/62. Thứ tự cuối: Y, X, W, Z. Y thắng X dù X đứng đầu danh sách vector, vì Y ổn định ở cả hai.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 2</span><h3>Độ trễ của reranker</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Rerank 50 ứng viên, chạy theo batch 10 cặp, mỗi batch 40 ms trên GPU.</p>
+<div class="ans" id="p4-5-e2-a1"><div class="ans-fields"><label>Độ trễ rerank (ms)<input inputmode="decimal" data-ans="200.0" data-tol="0.0" autocomplete="off"></label><label>Nếu rerank 200 ứng viên (ms)<input inputmode="decimal" data-ans="800.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+
+<details class="fold solution">
+<summary>Lời giải</summary>
+<p>5 batch × 40 ms = 200 ms. 200 ứng viên tốn 800 ms, thường là quá chậm cho chat. Cân bằng: tìm rộng vừa đủ (30–100) để không bỏ sót, rồi rerank.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 3</span><h3>Chọn kỹ thuật</h3><span class="ex-tag concept">khái niệm</span></div><div class="prose"><p>Chọn kỹ thuật phù hợp nhất cho mỗi tình huống và giải thích:</p>
+<ol>
+<li>Chatbot hỗ trợ, khách hỏi "còn màu trắng không?" sau khi đã hỏi về một mẫu bàn.</li>
+<li>Tài liệu pháp lý, đoạn tìm được thường đúng điều khoản nhưng thiếu phần định nghĩa ở đầu văn bản.</li>
+<li>"Tóm tắt các vấn đề khách hàng phàn nàn nhiều nhất trong 3.000 phiếu hỗ trợ."</li>
+<li>Người dùng hỏi mã lỗi và tên linh kiện chính xác.</li>
+</ol>
+<details class="fold solution">
+<summary>Lời giải</summary>
+<ol>
+<li>Query rewriting theo lịch sử hội thoại: "Bàn trang điểm mẫu X còn màu trắng không?".</li>
+<li>Contextual retrieval hoặc parent–child để đoạn mang theo ngữ cảnh của văn bản.</li>
+<li>GraphRAG hoặc map-reduce tóm tắt theo cụm: câu hỏi toàn cục, top-k không đủ.</li>
+<li>Hybrid search có BM25: từ khóa chính xác.</li>
+</ol>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 4</span><h3>Bảng ablation</h3><span class="ex-tag concept">khái niệm</span></div><div class="prose"><p>Một nhóm báo cáo: "Hệ RAG mới đạt 88%, so với 64% của bản cũ." Bản mới thêm cùng lúc hybrid, reranker, query rewriting, chunking mới và đổi LLM. Vì sao báo cáo này chưa đủ để ra quyết định? Thiết kế bảng ablation cần có.</p>
+<details class="fold solution">
+<summary>Lời giải</summary>
+<p>Không biết thay đổi nào tạo ra cải thiện, thay đổi nào vô ích nhưng tốn tiền và độ trễ, hoặc thậm chí làm tệ đi bị che bởi thay đổi khác. Bảng ablation: mỗi dòng thêm một kỹ thuật vào cấu hình trước (baseline → +hybrid → +reranker → +chunking → +rewriting → +LLM mới), các cột recall@5, điểm judge, độ trễ p95, chi phí mỗi câu. Thêm dòng "bản mới bỏ đi từng kỹ thuật" để kiểm tra chéo.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 5</span><h3>Pipeline hai tầng</h3><span class="ex-tag code">code</span></div><div class="prose"><p>Viết <code>retrieve(question, k_final=5, k_wide=50)</code>: tìm vector và BM25 mỗi bên 50 kết quả, gộp bằng RRF, rerank 50 ứng viên đầu bằng cross-encoder, trả về top 5. Dùng <code>index</code>, <code>bm25</code>, <code>emb</code>, <code>tokenize</code>, <code>chunks</code> từ Lab 5.</p>
+<details class="fold code">
+<summary>Code tham khảo</summary>
+<div class="hl"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sentence_transformers</span><span class="w"> </span><span class="kn">import</span> <span class="n">CrossEncoder</span>
+<span class="n">reranker</span> <span class="o">=</span> <span class="n">CrossEncoder</span><span class="p">(</span><span class="s2">"BAAI/bge-reranker-v2-m3"</span><span class="p">)</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">rrf</span><span class="p">(</span><span class="n">lists</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">60</span><span class="p">):</span>
+    <span class="n">score</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">lst</span> <span class="ow">in</span> <span class="n">lists</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">rank</span><span class="p">,</span> <span class="n">d</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">lst</span><span class="p">,</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="n">score</span><span class="p">[</span><span class="n">d</span><span class="p">]</span> <span class="o">=</span> <span class="n">score</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="n">k</span> <span class="o">+</span> <span class="n">rank</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">score</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">score</span><span class="o">.</span><span class="n">get</span><span class="p">,</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">retrieve</span><span class="p">(</span><span class="n">question</span><span class="p">,</span> <span class="n">k_final</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">k_wide</span><span class="o">=</span><span class="mi">50</span><span class="p">):</span>
+    <span class="n">qv</span> <span class="o">=</span> <span class="n">emb</span><span class="o">.</span><span class="n">encode</span><span class="p">([</span><span class="n">question</span><span class="p">],</span> <span class="n">normalize_embeddings</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">"float32"</span><span class="p">)</span>
+    <span class="n">vec</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">index</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">qv</span><span class="p">,</span> <span class="n">k_wide</span><span class="p">)[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">kw</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="o">-</span><span class="n">bm25</span><span class="o">.</span><span class="n">get_scores</span><span class="p">(</span><span class="n">tokenize</span><span class="p">(</span><span class="n">question</span><span class="p">)))[:</span><span class="n">k_wide</span><span class="p">])</span>
+    <span class="n">cand</span> <span class="o">=</span> <span class="n">rrf</span><span class="p">([</span><span class="n">vec</span><span class="p">,</span> <span class="n">kw</span><span class="p">])[:</span><span class="n">k_wide</span><span class="p">]</span>
+    <span class="n">scores</span> <span class="o">=</span> <span class="n">reranker</span><span class="o">.</span><span class="n">predict</span><span class="p">([(</span><span class="n">question</span><span class="p">,</span> <span class="n">chunks</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s2">"text"</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">cand</span><span class="p">])</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">cand</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="o">-</span><span class="n">scores</span><span class="p">)[:</span><span class="n">k_final</span><span class="p">]]</span>
+</code></pre></div>
+
+</details></div></article><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p4.5:b">Tôi đã xong phần bài tập</label><button class="btn" type="button" data-goto="thuc-hanh">Sang thực hành <span class="arr">→</span></button></div></section><section class="panel" id="thuc-hanh" role="tabpanel" hidden><div class="prose"><h2>Nâng cấp hệ RAG của Lab 5</h2>
+<p><strong>Các bước</strong></p>
+<ol>
+<li>Lấy cấu hình tốt nhất của Lab 6 làm baseline. Chạy lại bộ eval 50 câu, ghi số liệu.</li>
+<li>Thêm lần lượt, mỗi lần chạy lại eval:
+   - Hybrid + RRF (thay cho xen kẽ đơn giản)
+   - Reranker cross-encoder (tìm rộng 50, giữ 5)
+   - Chunking theo cấu trúc với đường dẫn tiêu đề
+   - Query rewriting cho câu hỏi phụ thuộc hội thoại (thêm 5 câu hỏi nối tiếp vào bộ eval)
+   - Contextual retrieval cho 20% tài liệu khó nhất (tùy chọn)</li>
+<li>Mỗi bước ghi: recall@5, điểm judge, độ trễ p95, chi phí mỗi câu.</li>
+<li>Chọn cấu hình cuối cân bằng chất lượng, độ trễ và chi phí.</li>
+</ol>
+<p><strong>Mẫu bảng ablation</strong></p>
+<table>
+<thead>
+<tr>
+<th>Cấu hình</th>
+<th>Recall@5</th>
+<th>Judge</th>
+<th>p95 (s)</th>
+<th>Chi phí/câu</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Baseline Lab 6</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>+ hybrid RRF</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>+ reranker</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>+ chunking cấu trúc</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>+ query rewriting</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Xong khi</strong></p>
+<ul>
+<li>Recall@5 và điểm judge của cấu hình cuối cao hơn baseline.</li>
+<li>Có bảng ablation đủ các dòng, kèm nhận xét kỹ thuật nào đáng giá nhất.</li>
+</ul></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p4.5:p">Tôi đã xong phần thực hành</label></div></section>
+      <div class="donewhen"><b>Xong bài khi</b>Recall@5 và độ chính xác câu trả lời tăng so với RAG cơ bản, có bảng ablation cho từng kỹ thuật.</div>
       <nav class="pn" aria-label="Bài trước, bài sau"><a href="p4-4.html"><span class="dir">← Bài trước · P4.4</span><span class="tt">Bài 7 · Agent</span></a><a class="nx" href="p4-6.html"><span class="dir">Bài sau · P4.6 →</span><span class="tt">Multi-agent</span></a></nav>
     </div>
     <aside class="aside">
       <div class="abox"><h4>Tiến độ bài này</h4><div class="ring"><svg viewBox="0 0 64 64" aria-hidden="true"><circle class="bg" cx="32" cy="32" r="28"/><circle class="fg" cx="32" cy="32" r="28" stroke-dasharray="176" stroke-dashoffset="176"/></svg><div><b id="ring-n">0/3</b><span id="ring-sub">phần đã xong</span></div></div></div>
+      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Hybrid search với Reciprocal Rank Fusion</a></li><li><a href="#lt-2">Reranker cross-encoder</a></li><li><a href="#lt-3">Biến đổi câu hỏi</a></li><li><a href="#lt-4">Chunking nâng cao</a></li><li><a href="#lt-5">GraphRAG và agentic RAG</a></li></ol></div>
       
       <div class="abox"><h4>Cùng giai đoạn</h4><ul><li><a href="p4-1.html">Bài 4 · Làm việc với LLM</a></li><li><a href="p4-2.html">Bài 5 · Embedding và RAG</a></li><li><a href="p4-3.html">Bài 6 · Đánh giá hệ thống AI</a></li><li><a href="p4-4.html">Bài 7 · Agent</a></li><li><span class=cur>RAG nâng cao</span></li><li><a href="p4-6.html">Multi-agent</a></li><li><a href="p4-7.html">MCP và hệ sinh thái tool</a></li><li><a href="p4-8.html">Guardrails, an toàn và human-in-the-loop</a></li></ul></div>
     </aside>
@@ -43,16 +233,75 @@
 
 (function () {
   const mid = document.body.dataset.mid; let d = AIE.load();
+  const EXK = "aie-ex-" + mid;
+  let solved = {}; try { solved = JSON.parse(localStorage.getItem(EXK) || "{}") || {}; } catch (e) {}
+  const saveSolved = () => { try { localStorage.setItem(EXK, JSON.stringify(solved)); } catch (e) {} };
+  const tabs = [...document.querySelectorAll(".tab")], panels = [...document.querySelectorAll(".panel")];
   const boxes = [...document.querySelectorAll("input[data-key]")], ring = document.querySelector(".ring .fg"), rt = document.getElementById("ring-n");
-  const skipped = () => !!d[mid + ":skip"];
+  const toc = document.getElementById("toc-box");
+  function show(id, scroll) {
+    tabs.forEach((t) => t.setAttribute("aria-selected", String(t.dataset.tab === id)));
+    panels.forEach((p) => { const on = p.id === id; if (on && p.hidden) { p.classList.remove("enter"); void p.offsetWidth; p.classList.add("enter"); } p.hidden = !on; });
+    if (toc) toc.hidden = id !== "ly-thuyet";
+    if (scroll) document.querySelector(".tabs").scrollIntoView({ block: "start" });
+  }
+  tabs.forEach((t) => t.addEventListener("click", () => { history.replaceState(null, "", "#" + t.dataset.tab); show(t.dataset.tab, true); }));
+  document.querySelectorAll("[data-goto]").forEach((b) => b.addEventListener("click", () => { history.replaceState(null, "", "#" + b.dataset.goto); show(b.dataset.goto, true); }));
+  const start = ["ly-thuyet", "bai-tap", "thuc-hanh"].includes(location.hash.slice(1)) ? location.hash.slice(1) : "ly-thuyet";
+  show(start, false);
+  window.addEventListener("hashchange", () => { const h = location.hash.slice(1); if (["ly-thuyet", "bai-tap", "thuc-hanh"].includes(h)) show(h, true); });
+  document.querySelectorAll(".toc a").forEach((a) => a.addEventListener("click", () => show("ly-thuyet", false)));
+
   function render() {
     let n = 0;
-    boxes.forEach((b) => { const on = skipped() || !!d[b.dataset.key]; b.checked = on; b.disabled = skipped(); b.closest(".pblock").classList.toggle("done", on); if (on) n++; });
+    const skip = !!d[mid + ":skip"];
+    boxes.forEach((b) => { const on = skip || !!d[b.dataset.key]; b.checked = on; if (on) n++; });
+    const kmap = { t: "ly-thuyet", b: "bai-tap", p: "thuc-hanh" };
+    tabs.forEach((t) => { const k = Object.keys(kmap).find((x) => kmap[x] === t.dataset.tab); t.classList.toggle("is-done", skip || !!d[mid + ":" + k]); });
     ring.style.strokeDashoffset = String(176 * (1 - n / 3)); rt.textContent = n + "/3";
-    document.getElementById("ring-sub").textContent = skipped() ? "đã đánh dấu bỏ qua" : n === 3 ? "hoàn thành bài này" : "phần đã xong";
+    document.getElementById("ring-sub").textContent = n === 3 ? "hoàn thành bài này" : "phần đã xong";
   }
-  boxes.forEach((b) => b.addEventListener("change", () => { d = AIE.load(); if (b.checked) d[b.dataset.key] = true; else delete d[b.dataset.key]; AIE.save(d); render(); }));
+  boxes.forEach((b) => b.addEventListener("change", () => {
+    d = AIE.load(); if (b.checked) d[b.dataset.key] = true; else delete d[b.dataset.key]; AIE.save(d);
+    boxes.filter((x) => x.dataset.key === b.dataset.key).forEach((x) => (x.checked = b.checked)); render();
+  }));
   render();
+
+  /* answer boxes */
+  const parse = (s) => parseFloat(String(s).trim().replace(",", ".").replace("−", "-"));
+  const allAns = [...document.querySelectorAll(".ans")];
+  function score() {
+    const ok = allAns.filter((a) => solved[a.id]).length;
+    const el = document.getElementById("ex-score");
+    if (el) { el.querySelector("b").textContent = `${ok} / ${allAns.length}`; el.querySelector(".bar i").style.width = (allAns.length ? ok / allAns.length * 100 : 0) + "%"; }
+    document.querySelectorAll(".excard").forEach((c) => { const as = [...c.querySelectorAll(".ans")]; c.classList.toggle("solved", as.length > 0 && as.every((a) => solved[a.id])); });
+  }
+  allAns.forEach((box) => {
+    const inputs = [...box.querySelectorAll("input")], fb = box.querySelector(".ans-fb");
+    const mark = () => { box.classList.add("ok"); inputs.forEach((i) => { i.classList.add("ok"); if (!i.value) i.value = i.dataset.ans; }); fb.className = "ans-fb ok"; fb.textContent = "Chính xác."; };
+    if (solved[box.id]) mark();
+    const run = () => {
+      let all = true, empty = false;
+      inputs.forEach((i) => {
+        const v = parse(i.value);
+        if (i.value.trim() === "" || Number.isNaN(v)) { empty = true; all = false; i.classList.remove("ok", "bad"); return; }
+        const good = Math.abs(v - parseFloat(i.dataset.ans)) <= parseFloat(i.dataset.tol) + 1e-9;
+        i.classList.toggle("ok", good); i.classList.toggle("bad", !good); if (!good) all = false;
+      });
+      if (all) { solved[box.id] = true; saveSolved(); mark(); box.classList.remove("pop"); void box.offsetWidth; box.classList.add("pop"); score(); }
+      else { fb.className = "ans-fb bad"; fb.textContent = empty ? "Điền đủ các ô bằng số (dấu chấm hoặc phẩy đều được)." : "Ô màu cam chưa đúng. Xem lại bước đó, hoặc mở gợi ý."; }
+    };
+    box.querySelector(".btn-check").addEventListener("click", run);
+    inputs.forEach((i) => i.addEventListener("keydown", (e) => { if (e.key === "Enter") run(); }));
+  });
+  score();
+
+  /* highlight current theory section in the toc */
+  if (toc && "IntersectionObserver" in window) {
+    const links = [...toc.querySelectorAll("a")];
+    const io = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) links.forEach((a) => a.classList.toggle("on", a.getAttribute("href") === "#" + e.target.id)); }), { rootMargin: "-140px 0px -65% 0px" });
+    document.querySelectorAll("#ly-thuyet h2[id]").forEach((h) => io.observe(h));
+  }
 })();
 
 </script>

@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>P3.1 · Tokenization và embedding · AI Engineer</title>
-<meta name="description" content="Tokenization và embedding: Token, BPE, vocab, token id; vì sao tiếng Việt tốn token hơn tiếng Anh; Word embedding, cosine similarity; Giới hạn của RNN/LSTM: vanishing gradient, khó song song">
+<meta name="description" content="Tokenization và embedding: lý thuyết, bài tập và thực hành. Token, BPE, vocab, token id; vì sao tiếng Việt tốn token hơn tiếng Anh; Word embedding, cosine similarity">
 <meta property="og:title" content="P3.1 · Tokenization và embedding · AI Engineer">
-<meta property="og:description" content="Tokenization và embedding: Token, BPE, vocab, token id; vì sao tiếng Việt tốn token hơn tiếng Anh; Word embedding, cosine similarity; Giới hạn của RNN/LSTM: vanishing gradient, khó song song">
+<meta property="og:description" content="Tokenization và embedding: lý thuyết, bài tập và thực hành. Token, BPE, vocab, token id; vì sao tiếng Việt tốn token hơn tiếng Anh; Word embedding, cosine similarity">
 <meta name="theme-color" content="#F4F6FB">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23131A33'/%3E%3Cpath d='M9 22 L16 10 L23 19' stroke='%23E5E9FB' stroke-width='2' fill='none'/%3E%3Ccircle cx='9' cy='22' r='3' fill='%23E5E9FB'/%3E%3Ccircle cx='16' cy='10' r='3' fill='%23E5E9FB'/%3E%3Ccircle cx='23' cy='19' r='3' fill='%23FF9361'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -14,23 +14,197 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="../assets/chrome.css">
 <link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/lesson.css">
 </head>
 <body data-mid="p3.1">
 <header class="sh"><div class="sh-in"><a class="sh-brand" href="../index.html"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="var(--ink)"/><circle cx="9" cy="22" r="2.6" fill="var(--accent-soft)"/><circle cx="16" cy="10" r="2.6" fill="var(--accent-soft)"/><circle cx="23" cy="19" r="2.6" fill="#FF9361"/><path d="M9 22 L16 10 L23 19" stroke="var(--accent-soft)" stroke-width="1.8" fill="none"/></svg><span>AI Engineer<small>lộ trình tự học</small></span></a><nav class="sh-nav" id="sh-nav" aria-label="Chính"><a href="../index.html">Trang chủ</a><a href="../bai-hoc.html" aria-current="page">Bài học</a><a href="../lo-trinh.html">Lộ trình</a><a href="../notebooks.html">Notebook</a><a class="sh-cta-m" href="../bai01.html" data-next-lesson>Học tiếp →</a></nav><a class="sh-cta" href="../bai01.html" data-next-lesson>Học tiếp <span class="arr">→</span></a><button class="sh-burger" type="button" aria-expanded="false" aria-controls="sh-nav">Menu</button></div></header>
 
 <main class="container">
   <div class="crumbs"><a href="../bai-hoc.html">Bài học</a><span>/</span><a href="../bai-hoc.html#p3">P3 · Transformer và NLP</a><span>/</span><span>P3.1</span></div>
-  <section class="lhero"><div class="code">P3.1</div><h1>Tokenization và embedding</h1><div class="lmeta"><span class="m">Giai đoạn P3 · Transformer và NLP</span><span class="m">Tuần 13–17</span><span class="chip planned">Đề cương</span></div></section>
-  <div class="lgrid">
-    <div>
-      <div class="goal"><b>Mục tiêu giai đoạn:</b> Hiểu kiến trúc nằm dưới mọi LLM, tự cài được attention và một GPT nhỏ.</div>
-      <div class="soon">Nội dung đầy đủ (trang lý thuyết tương tác và notebook tự chấm) đang được soạn và sẽ có khi bạn học tới bài này. Đề cương dưới đây là phạm vi chính xác của bài.</div>
-      <section class="pblock reveal"><div class="pblock-head"><span class="num">1</span><h2>Lý thuyết<span style="display:block;font:400 13.5px var(--f-body);color:var(--muted);margin-top:4px">Những gì cần hiểu</span></h2><label class="tick" for="cb-t"><input type="checkbox" id="cb-t" data-key="p3.1:t">Xong</label></div><ol><li>Token, BPE, vocab, token id; vì sao tiếng Việt tốn token hơn tiếng Anh</li><li>Word embedding, cosine similarity</li><li>Giới hạn của RNN/LSTM: vanishing gradient, khó song song</li></ol></section><section class="pblock reveal"><div class="pblock-head"><span class="num">2</span><h2>Bài tập<span style="display:block;font:400 13.5px var(--f-body);color:var(--muted);margin-top:4px">Tính tay và tự kiểm tra</span></h2><label class="tick" for="cb-b"><input type="checkbox" id="cb-b" data-key="p3.1:b">Xong</label></div><ol><li>Chạy tay 3 vòng BPE trên một câu ngắn</li></ol></section><section class="pblock reveal"><div class="pblock-head"><span class="num">3</span><h2>Thực hành<span style="display:block;font:400 13.5px var(--f-body);color:var(--muted);margin-top:4px">Code và dự án</span></h2><label class="tick" for="cb-p"><input type="checkbox" id="cb-p" data-key="p3.1:p">Xong</label></div><ol><li>Tự viết BPE tokenizer mini, so với tokenizer của Hugging Face trên văn bản tiếng Việt</li></ol></section>
-      <div class="donewhen reveal"><b>Xong khi</b>Tokenizer của bạn encode rồi decode ra đúng văn bản gốc trên 1.000 câu.</div>
+  <section class="lhero"><div class="code">P3.1</div><h1>Tokenization và embedding</h1><div class="lmeta"><span class="m">Giai đoạn P3 · Transformer và NLP</span><span class="m">Tuần 13–17</span><span class="chip ready"><span class="dot"></span>Có nội dung đầy đủ</span></div>
+    <div class="intro"><p>Trước khi model đọc được văn bản, văn bản phải thành số. Bài này đi qua hai bước đầu tiên của mọi LLM: <strong>tokenization</strong> (cắt văn bản thành các mảnh có id) và <strong>embedding</strong> (biến mỗi id thành một vector có nghĩa). Bạn sẽ hiểu vì sao tiếng Việt thường tốn nhiều token hơn tiếng Anh, và vì sao các mô hình cũ như RNN nhường chỗ cho Transformer.</p></div></section>
+  
+  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">5 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
+  <div class="lgrid" style="margin-top:22px">
+    <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">Token là gì</h2>
+<p>Model không đọc chữ cái hay từ, mà đọc <strong>token</strong>: các mảnh văn bản lấy từ một bộ từ vựng cố định (thường 32.000 đến 200.000 mảnh). Mỗi token có một id số nguyên.</p>
+<div class="hl"><pre><span></span><code>"Tôi học AI"  →  ["T", "ôi", " học", " AI"]  →  [51, 9821, 4410, 15592]
+</code></pre></div>
+
+<p>Cắt theo <strong>ký tự</strong> thì chuỗi quá dài; cắt theo <strong>từ</strong> thì bộ từ vựng khổng lồ và gặp từ mới là bó tay. <strong>Subword</strong> đứng giữa: từ phổ biến là một token, từ hiếm được ghép từ nhiều mảnh nhỏ.</p>
+<h2 id="lt-2">Byte Pair Encoding (BPE)</h2>
+<p>BPE học bộ từ vựng từ dữ liệu bằng cách gộp dần cặp mảnh hay đi cùng nhau nhất:</p>
+<div class="hl"><pre><span></span><code>1. Bắt đầu: mỗi ký tự (hoặc byte) là một token
+2. Đếm mọi cặp token liền kề trong toàn bộ dữ liệu
+3. Gộp cặp phổ biến nhất thành token mới, thêm vào từ vựng
+4. Lặp lại tới khi đủ kích thước từ vựng
+</code></pre></div>
+
+<p>GPT dùng <strong>byte-level BPE</strong>: bắt đầu từ 256 byte, nên mọi văn bản (cả emoji, tiếng Việt có dấu) đều mã hóa được, không bao giờ gặp token "không biết".</p>
+<h2 id="lt-3">Vì sao tiếng Việt tốn token hơn</h2>
+<p>Bộ từ vựng được học chủ yếu từ dữ liệu tiếng Anh, nên từ tiếng Anh thường gọn trong một token. Chữ tiếng Việt có dấu được mã hóa UTF-8 thành 2–3 byte, và các tổ hợp như "ường", "ộ" ít xuất hiện trong dữ liệu học, nên bị cắt nhỏ hơn. Hệ quả thực tế:</p>
+<ul>
+<li>Cùng một nội dung, tiếng Việt thường tốn nhiều token hơn: <strong>chi phí API cao hơn</strong>, <strong>context window chứa được ít chữ hơn</strong>.</li>
+<li>Luôn đo số token thực tế bằng tokenizer của đúng model bạn dùng, đừng ước lượng theo số từ.</li>
+</ul>
+<h2 id="lt-4">Embedding</h2>
+<p>Mỗi token id được tra trong một bảng <strong>embedding</strong> shape (kích thước từ vựng, d) để lấy một vector d chiều. Bảng này là tham số, được học cùng model.</p>
+<div class="hl"><pre><span></span><code><span class="n">emb</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Embedding</span><span class="p">(</span><span class="n">num_embeddings</span><span class="o">=</span><span class="mi">50_000</span><span class="p">,</span> <span class="n">embedding_dim</span><span class="o">=</span><span class="mi">768</span><span class="p">)</span>
+<span class="n">ids</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([[</span><span class="mi">51</span><span class="p">,</span> <span class="mi">9821</span><span class="p">,</span> <span class="mi">4410</span><span class="p">]])</span>      <span class="c1"># (batch, seq)</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">emb</span><span class="p">(</span><span class="n">ids</span><span class="p">)</span>                                <span class="c1"># (1, 3, 768)</span>
+</code></pre></div>
+
+<p>Sau khi train, các token có nghĩa gần nhau có vector gần nhau theo <strong>cosine similarity</strong>. Embedding cấp câu (dùng cho tìm kiếm ngữ nghĩa và RAG ở P4) được tạo bằng cách đưa cả câu qua một model rồi gộp các vector token lại.</p>
+<div class="keep">
+<p><strong>Ghi nhớ:</strong> tokenizer và embedding là một cặp. Đổi tokenizer thì toàn bộ bảng embedding và model phải train lại.</p>
+</div>
+<h2 id="lt-5">Giới hạn của RNN và LSTM</h2>
+<p>Trước Transformer, văn bản được xử lý bằng <strong>RNN</strong>: đọc từng token theo thứ tự, cập nhật một trạng thái ẩn h.</p>
+<div class="hl"><pre><span></span><code>hₜ = tanh(W·hₜ₋₁ + U·xₜ)
+</code></pre></div>
+
+<p>Hai vấn đề lớn:</p>
+<ol>
+<li><strong>Vanishing gradient:</strong> thông tin từ token đầu phải đi qua hàng trăm phép nhân mới tới token cuối, gradient tắt dần. LSTM giảm bớt bằng các cổng, nhưng không giải quyết hẳn với chuỗi dài.</li>
+<li><strong>Không song song được:</strong> muốn tính hₜ phải có hₜ₋₁, nên không tận dụng được GPU.</li>
+</ol>
+<p>Attention (Bài 3) giải quyết cả hai: mỗi token nhìn thẳng vào mọi token khác trong một bước, và mọi vị trí tính cùng lúc.</p></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p3.1:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 3</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Đếm cặp trong BPE</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Dữ liệu (từ và số lần xuất hiện), đã tách thành ký tự:</p>
+<table>
+<thead>
+<tr>
+<th>Từ</th>
+<th>Số lần</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>l o w</td>
+<td>5</td>
+</tr>
+<tr>
+<td>l o w e r</td>
+<td>2</td>
+</tr>
+<tr>
+<td>n e w e s t</td>
+<td>6</td>
+</tr>
+<tr>
+<td>w i d e s t</td>
+<td>3</td>
+</tr>
+</tbody>
+</table>
+<div class="ans" id="p3-1-e1-a1"><div class="ans-fields"><label>Số lần cặp (e, s)<input inputmode="decimal" data-ans="9.0" data-tol="0.0" autocomplete="off"></label><label>Số lần cặp (l, o)<input inputmode="decimal" data-ans="7.0" data-tol="0.0" autocomplete="off"></label><label>Số lần cặp (w, e)<input inputmode="decimal" data-ans="8.0" data-tol="0.0" autocomplete="off"></label><label>Sau khi gộp &quot;es&quot;: số lần cặp (es, t)<input inputmode="decimal" data-ans="9.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+
+<details class="fold solution">
+<summary>Lời giải</summary>
+<p>(e, s) xuất hiện trong "newest" (6) và "widest" (3): 9. (l, o) trong "low" và "lower": 7. (w, e) trong "lower" và "newest": 8. Gộp "es" (hoặc "st", cũng 9) trước. Sau đó cặp (es, t) có 9 lần, nên bước sau sẽ tạo token "est".</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 2</span><h3>Kích thước bảng embedding</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Từ vựng 50.000 token, d = 768.</p>
+<div class="ans" id="p3-1-e2-a1"><div class="ans-fields"><label>Số tham số của bảng<input inputmode="decimal" data-ans="38400000.0" data-tol="0.0" autocomplete="off"></label><label>Dung lượng ở fp32 (MB, 1 MB = 10⁶ byte)<input inputmode="decimal" data-ans="153.6" data-tol="0.1" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+
+<details class="fold solution">
+<summary>Lời giải</summary>
+<p>50.000 × 768 = 38,4 triệu tham số, mỗi số 4 byte: 153,6 MB. Với model nhỏ, bảng embedding có thể chiếm phần lớn số tham số.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 3</span><h3>Cosine giữa hai embedding</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>a = [1, 0, 1], b = [1, 1, 0].</p>
+<div class="ans" id="p3-1-e3-a1"><div class="ans-fields"><label>cos(a, b)<input inputmode="decimal" data-ans="0.5" data-tol="0.001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+
+<details class="fold solution">
+<summary>Lời giải</summary>
+<p>a·b = 1. ‖a‖ = ‖b‖ = √2. cos = 1/2 = 0.5.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 4</span><h3>Vì sao không cắt theo từ</h3><span class="ex-tag concept">khái niệm</span></div><div class="prose"><p>Một đồng nghiệp đề xuất dùng bộ từ vựng gồm mọi từ tiếng Việt và tiếng Anh xuất hiện trong dữ liệu (khoảng 3 triệu từ). Nêu ba vấn đề của cách này so với BPE.</p>
+<details class="fold solution">
+<summary>Lời giải</summary>
+<ol>
+<li>Bảng embedding và lớp output khổng lồ (3 triệu × d), tốn bộ nhớ và chậm.</li>
+<li>Từ mới, lỗi chính tả, tên riêng, mã code không có trong từ vựng: model gặp token "không biết".</li>
+<li>Từ hiếm chỉ xuất hiện vài lần nên embedding của chúng học rất kém, trong khi BPE chia sẻ các mảnh chung ("học", "học sinh", "học viên").</li>
+</ol>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 5</span><h3>So token tiếng Việt và tiếng Anh</h3><span class="ex-tag code">code</span></div><div class="prose"><p>Dùng <code>tiktoken</code> (hoặc tokenizer của một model mã nguồn mở trên Hugging Face) đếm số token của cùng một đoạn văn bằng tiếng Việt và tiếng Anh, tính tỉ lệ, và in ra các token của câu tiếng Việt để xem nó bị cắt thế nào.</p>
+<details class="fold code">
+<summary>Code tham khảo</summary>
+<div class="hl"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">tiktoken</span>
+<span class="n">enc</span> <span class="o">=</span> <span class="n">tiktoken</span><span class="o">.</span><span class="n">get_encoding</span><span class="p">(</span><span class="s2">"o200k_base"</span><span class="p">)</span>
+<span class="n">vi</span> <span class="o">=</span> <span class="s2">"Học máy giúp máy tính tự học từ dữ liệu mà không cần được lập trình cụ thể cho từng nhiệm vụ."</span>
+<span class="n">en</span> <span class="o">=</span> <span class="s2">"Machine learning lets computers learn from data without being explicitly programmed for each task."</span>
+<span class="n">nv</span><span class="p">,</span> <span class="n">ne</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">enc</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="n">vi</span><span class="p">)),</span> <span class="nb">len</span><span class="p">(</span><span class="n">enc</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="n">en</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"tiếng Việt </span><span class="si">{</span><span class="n">nv</span><span class="si">}</span><span class="s2"> token | tiếng Anh </span><span class="si">{</span><span class="n">ne</span><span class="si">}</span><span class="s2"> token | tỉ lệ </span><span class="si">{</span><span class="n">nv</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">ne</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">([</span><span class="n">enc</span><span class="o">.</span><span class="n">decode</span><span class="p">([</span><span class="n">t</span><span class="p">])</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">enc</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="n">vi</span><span class="p">)])</span>
+</code></pre></div>
+
+</details></div></article><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p3.1:b">Tôi đã xong phần bài tập</label><button class="btn" type="button" data-goto="thuc-hanh">Sang thực hành <span class="arr">→</span></button></div></section><section class="panel" id="thuc-hanh" role="tabpanel" hidden><div class="prose"><h2>Tự viết BPE tokenizer</h2>
+<p>Viết một BPE tokenizer cấp ký tự, train trên văn bản tiếng Việt, và so với tokenizer thật.</p>
+<p><strong>Các bước</strong></p>
+<ol>
+<li>Lấy khoảng 1 MB văn bản tiếng Việt (truyện, tin tức, hoặc Wikipedia tiếng Việt).</li>
+<li>Viết <code>train_bpe(text, vocab_size)</code>: tách văn bản thành từ (theo khoảng trắng), mỗi từ là dãy ký tự cộng ký hiệu kết thúc <code>&lt;/w&gt;</code>, lặp gộp cặp phổ biến nhất. Lưu danh sách phép gộp theo thứ tự.</li>
+<li>Viết <code>encode(text)</code> áp dụng các phép gộp theo đúng thứ tự đã học, và <code>decode(tokens)</code>.</li>
+<li>Kiểm tra: <code>decode(encode(s)) == s</code> trên 1.000 câu.</li>
+<li>Đo <strong>số token trung bình mỗi từ</strong> với vocab 1.000, 5.000, 10.000 và vẽ biểu đồ.</li>
+<li>So với tokenizer <code>o200k_base</code> và tokenizer của PhoBERT trên cùng 100 câu.</li>
+</ol>
+<p><strong>Xong khi</strong></p>
+<ul>
+<li>Encode rồi decode khớp 100% trên 1.000 câu.</li>
+<li>Có biểu đồ token mỗi từ theo kích thước từ vựng và một đoạn nhận xét.</li>
+</ul>
+<details class="fold code">
+<summary>Code tham khảo</summary>
+<div class="hl"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">Counter</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">train_bpe</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">vocab_size</span><span class="p">):</span>
+    <span class="n">words</span> <span class="o">=</span> <span class="n">Counter</span><span class="p">(</span><span class="n">text</span><span class="o">.</span><span class="n">split</span><span class="p">())</span>
+    <span class="n">vocab</span> <span class="o">=</span> <span class="p">{</span><span class="nb">tuple</span><span class="p">(</span><span class="n">w</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="s2">"&lt;/w&gt;"</span><span class="p">,):</span> <span class="n">c</span> <span class="k">for</span> <span class="n">w</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">words</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+    <span class="n">merges</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">symbols</span> <span class="o">=</span> <span class="p">{</span><span class="n">s</span> <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">vocab</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">w</span><span class="p">}</span>
+    <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="n">symbols</span><span class="p">)</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">merges</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">vocab_size</span><span class="p">:</span>
+        <span class="n">pairs</span> <span class="o">=</span> <span class="n">Counter</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">w</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">vocab</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">w</span><span class="p">[</span><span class="mi">1</span><span class="p">:]):</span>
+                <span class="n">pairs</span><span class="p">[</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">]</span> <span class="o">+=</span> <span class="n">c</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">pairs</span><span class="p">:</span>
+            <span class="k">break</span>
+        <span class="n">best</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">pairs</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">pairs</span><span class="o">.</span><span class="n">get</span><span class="p">)</span>
+        <span class="n">merges</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">best</span><span class="p">)</span>
+        <span class="n">new_vocab</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">w</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">vocab</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">out</span><span class="p">,</span> <span class="n">i</span> <span class="o">=</span> <span class="p">[],</span> <span class="mi">0</span>
+            <span class="k">while</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">w</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">w</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span> <span class="ow">and</span> <span class="p">(</span><span class="n">w</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">w</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span> <span class="o">==</span> <span class="n">best</span><span class="p">:</span>
+                    <span class="n">out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">w</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="n">w</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]);</span> <span class="n">i</span> <span class="o">+=</span> <span class="mi">2</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">w</span><span class="p">[</span><span class="n">i</span><span class="p">]);</span> <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">new_vocab</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">out</span><span class="p">)]</span> <span class="o">=</span> <span class="n">c</span>
+        <span class="n">vocab</span> <span class="o">=</span> <span class="n">new_vocab</span>
+    <span class="k">return</span> <span class="n">merges</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">encode_word</span><span class="p">(</span><span class="n">word</span><span class="p">,</span> <span class="n">merges</span><span class="p">):</span>
+    <span class="n">w</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">word</span><span class="p">)</span> <span class="o">+</span> <span class="p">[</span><span class="s2">"&lt;/w&gt;"</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">merges</span><span class="p">:</span>
+        <span class="n">i</span><span class="p">,</span> <span class="n">out</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="p">[]</span>
+        <span class="k">while</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">w</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">w</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">w</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="n">a</span> <span class="ow">and</span> <span class="n">w</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">b</span><span class="p">:</span>
+                <span class="n">out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">a</span> <span class="o">+</span> <span class="n">b</span><span class="p">);</span> <span class="n">i</span> <span class="o">+=</span> <span class="mi">2</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">w</span><span class="p">[</span><span class="n">i</span><span class="p">]);</span> <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">w</span> <span class="o">=</span> <span class="n">out</span>
+    <span class="k">return</span> <span class="n">w</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">encode</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">merges</span><span class="p">):</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">t</span> <span class="k">for</span> <span class="n">word</span> <span class="ow">in</span> <span class="n">text</span><span class="o">.</span><span class="n">split</span><span class="p">()</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">encode_word</span><span class="p">(</span><span class="n">word</span><span class="p">,</span> <span class="n">merges</span><span class="p">)]</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">decode</span><span class="p">(</span><span class="n">tokens</span><span class="p">):</span>
+    <span class="k">return</span> <span class="s2">""</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">tokens</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"&lt;/w&gt;"</span><span class="p">,</span> <span class="s2">" "</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+</code></pre></div>
+
+</details></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p3.1:p">Tôi đã xong phần thực hành</label></div></section>
+      <div class="donewhen"><b>Xong bài khi</b>Tokenizer của bạn encode rồi decode ra đúng văn bản gốc trên 1.000 câu.</div>
       <nav class="pn" aria-label="Bài trước, bài sau"><a href="p5-7.html"><span class="dir">← Bài trước · P5.7</span><span class="tt">GĐ 7 · Đóng gói sản phẩm</span></a><a class="nx" href="p3-2.html"><span class="dir">Bài sau · P3.2 →</span><span class="tt">Bài 3 · Attention và Transformer</span></a></nav>
     </div>
     <aside class="aside">
       <div class="abox"><h4>Tiến độ bài này</h4><div class="ring"><svg viewBox="0 0 64 64" aria-hidden="true"><circle class="bg" cx="32" cy="32" r="28"/><circle class="fg" cx="32" cy="32" r="28" stroke-dasharray="176" stroke-dashoffset="176"/></svg><div><b id="ring-n">0/3</b><span id="ring-sub">phần đã xong</span></div></div></div>
+      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Token là gì</a></li><li><a href="#lt-2">Byte Pair Encoding (BPE)</a></li><li><a href="#lt-3">Vì sao tiếng Việt tốn token hơn</a></li><li><a href="#lt-4">Embedding</a></li><li><a href="#lt-5">Giới hạn của RNN và LSTM</a></li></ol></div>
       
       <div class="abox"><h4>Cùng giai đoạn</h4><ul><li><span class=cur>Tokenization và embedding</span></li><li><a href="p3-2.html">Bài 3 · Attention và Transformer</a></li><li><a href="p3-3.html">Language model và sinh văn bản</a></li><li><a href="p3-4.html">Hệ sinh thái Hugging Face</a></li></ul></div>
     </aside>
@@ -43,16 +217,75 @@
 
 (function () {
   const mid = document.body.dataset.mid; let d = AIE.load();
+  const EXK = "aie-ex-" + mid;
+  let solved = {}; try { solved = JSON.parse(localStorage.getItem(EXK) || "{}") || {}; } catch (e) {}
+  const saveSolved = () => { try { localStorage.setItem(EXK, JSON.stringify(solved)); } catch (e) {} };
+  const tabs = [...document.querySelectorAll(".tab")], panels = [...document.querySelectorAll(".panel")];
   const boxes = [...document.querySelectorAll("input[data-key]")], ring = document.querySelector(".ring .fg"), rt = document.getElementById("ring-n");
-  const skipped = () => !!d[mid + ":skip"];
+  const toc = document.getElementById("toc-box");
+  function show(id, scroll) {
+    tabs.forEach((t) => t.setAttribute("aria-selected", String(t.dataset.tab === id)));
+    panels.forEach((p) => { const on = p.id === id; if (on && p.hidden) { p.classList.remove("enter"); void p.offsetWidth; p.classList.add("enter"); } p.hidden = !on; });
+    if (toc) toc.hidden = id !== "ly-thuyet";
+    if (scroll) document.querySelector(".tabs").scrollIntoView({ block: "start" });
+  }
+  tabs.forEach((t) => t.addEventListener("click", () => { history.replaceState(null, "", "#" + t.dataset.tab); show(t.dataset.tab, true); }));
+  document.querySelectorAll("[data-goto]").forEach((b) => b.addEventListener("click", () => { history.replaceState(null, "", "#" + b.dataset.goto); show(b.dataset.goto, true); }));
+  const start = ["ly-thuyet", "bai-tap", "thuc-hanh"].includes(location.hash.slice(1)) ? location.hash.slice(1) : "ly-thuyet";
+  show(start, false);
+  window.addEventListener("hashchange", () => { const h = location.hash.slice(1); if (["ly-thuyet", "bai-tap", "thuc-hanh"].includes(h)) show(h, true); });
+  document.querySelectorAll(".toc a").forEach((a) => a.addEventListener("click", () => show("ly-thuyet", false)));
+
   function render() {
     let n = 0;
-    boxes.forEach((b) => { const on = skipped() || !!d[b.dataset.key]; b.checked = on; b.disabled = skipped(); b.closest(".pblock").classList.toggle("done", on); if (on) n++; });
+    const skip = !!d[mid + ":skip"];
+    boxes.forEach((b) => { const on = skip || !!d[b.dataset.key]; b.checked = on; if (on) n++; });
+    const kmap = { t: "ly-thuyet", b: "bai-tap", p: "thuc-hanh" };
+    tabs.forEach((t) => { const k = Object.keys(kmap).find((x) => kmap[x] === t.dataset.tab); t.classList.toggle("is-done", skip || !!d[mid + ":" + k]); });
     ring.style.strokeDashoffset = String(176 * (1 - n / 3)); rt.textContent = n + "/3";
-    document.getElementById("ring-sub").textContent = skipped() ? "đã đánh dấu bỏ qua" : n === 3 ? "hoàn thành bài này" : "phần đã xong";
+    document.getElementById("ring-sub").textContent = n === 3 ? "hoàn thành bài này" : "phần đã xong";
   }
-  boxes.forEach((b) => b.addEventListener("change", () => { d = AIE.load(); if (b.checked) d[b.dataset.key] = true; else delete d[b.dataset.key]; AIE.save(d); render(); }));
+  boxes.forEach((b) => b.addEventListener("change", () => {
+    d = AIE.load(); if (b.checked) d[b.dataset.key] = true; else delete d[b.dataset.key]; AIE.save(d);
+    boxes.filter((x) => x.dataset.key === b.dataset.key).forEach((x) => (x.checked = b.checked)); render();
+  }));
   render();
+
+  /* answer boxes */
+  const parse = (s) => parseFloat(String(s).trim().replace(",", ".").replace("−", "-"));
+  const allAns = [...document.querySelectorAll(".ans")];
+  function score() {
+    const ok = allAns.filter((a) => solved[a.id]).length;
+    const el = document.getElementById("ex-score");
+    if (el) { el.querySelector("b").textContent = `${ok} / ${allAns.length}`; el.querySelector(".bar i").style.width = (allAns.length ? ok / allAns.length * 100 : 0) + "%"; }
+    document.querySelectorAll(".excard").forEach((c) => { const as = [...c.querySelectorAll(".ans")]; c.classList.toggle("solved", as.length > 0 && as.every((a) => solved[a.id])); });
+  }
+  allAns.forEach((box) => {
+    const inputs = [...box.querySelectorAll("input")], fb = box.querySelector(".ans-fb");
+    const mark = () => { box.classList.add("ok"); inputs.forEach((i) => { i.classList.add("ok"); if (!i.value) i.value = i.dataset.ans; }); fb.className = "ans-fb ok"; fb.textContent = "Chính xác."; };
+    if (solved[box.id]) mark();
+    const run = () => {
+      let all = true, empty = false;
+      inputs.forEach((i) => {
+        const v = parse(i.value);
+        if (i.value.trim() === "" || Number.isNaN(v)) { empty = true; all = false; i.classList.remove("ok", "bad"); return; }
+        const good = Math.abs(v - parseFloat(i.dataset.ans)) <= parseFloat(i.dataset.tol) + 1e-9;
+        i.classList.toggle("ok", good); i.classList.toggle("bad", !good); if (!good) all = false;
+      });
+      if (all) { solved[box.id] = true; saveSolved(); mark(); box.classList.remove("pop"); void box.offsetWidth; box.classList.add("pop"); score(); }
+      else { fb.className = "ans-fb bad"; fb.textContent = empty ? "Điền đủ các ô bằng số (dấu chấm hoặc phẩy đều được)." : "Ô màu cam chưa đúng. Xem lại bước đó, hoặc mở gợi ý."; }
+    };
+    box.querySelector(".btn-check").addEventListener("click", run);
+    inputs.forEach((i) => i.addEventListener("keydown", (e) => { if (e.key === "Enter") run(); }));
+  });
+  score();
+
+  /* highlight current theory section in the toc */
+  if (toc && "IntersectionObserver" in window) {
+    const links = [...toc.querySelectorAll("a")];
+    const io = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) links.forEach((a) => a.classList.toggle("on", a.getAttribute("href") === "#" + e.target.id)); }), { rootMargin: "-140px 0px -65% 0px" });
+    document.querySelectorAll("#ly-thuyet h2[id]").forEach((h) => io.observe(h));
+  }
 })();
 
 </script>

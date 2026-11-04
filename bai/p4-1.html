@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>P4.1 · Bài 4 · Làm việc với LLM · AI Engineer</title>
-<meta name="description" content="Bài 4 · Làm việc với LLM: Định dạng chat, system prompt, token và chi phí; Prompting: few-shot, chia bước, đóng vai, ràng buộc định dạng; Structured output (JSON schema, Pydantic), tool calling, streaming">
+<meta name="description" content="Bài 4 · Làm việc với LLM: lý thuyết, bài tập và thực hành. Định dạng chat, system prompt, token và chi phí; Prompting: few-shot, chia bước, đóng vai, ràng buộc định dạng">
 <meta property="og:title" content="P4.1 · Bài 4 · Làm việc với LLM · AI Engineer">
-<meta property="og:description" content="Bài 4 · Làm việc với LLM: Định dạng chat, system prompt, token và chi phí; Prompting: few-shot, chia bước, đóng vai, ràng buộc định dạng; Structured output (JSON schema, Pydantic), tool calling, streaming">
+<meta property="og:description" content="Bài 4 · Làm việc với LLM: lý thuyết, bài tập và thực hành. Định dạng chat, system prompt, token và chi phí; Prompting: few-shot, chia bước, đóng vai, ràng buộc định dạng">
 <meta name="theme-color" content="#F4F6FB">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23131A33'/%3E%3Cpath d='M9 22 L16 10 L23 19' stroke='%23E5E9FB' stroke-width='2' fill='none'/%3E%3Ccircle cx='9' cy='22' r='3' fill='%23E5E9FB'/%3E%3Ccircle cx='16' cy='10' r='3' fill='%23E5E9FB'/%3E%3Ccircle cx='23' cy='19' r='3' fill='%23FF9361'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -14,23 +14,203 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="../assets/chrome.css">
 <link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/lesson.css">
 </head>
 <body data-mid="p4.1">
 <header class="sh"><div class="sh-in"><a class="sh-brand" href="../index.html"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="var(--ink)"/><circle cx="9" cy="22" r="2.6" fill="var(--accent-soft)"/><circle cx="16" cy="10" r="2.6" fill="var(--accent-soft)"/><circle cx="23" cy="19" r="2.6" fill="#FF9361"/><path d="M9 22 L16 10 L23 19" stroke="var(--accent-soft)" stroke-width="1.8" fill="none"/></svg><span>AI Engineer<small>lộ trình tự học</small></span></a><nav class="sh-nav" id="sh-nav" aria-label="Chính"><a href="../index.html">Trang chủ</a><a href="../bai-hoc.html" aria-current="page">Bài học</a><a href="../lo-trinh.html">Lộ trình</a><a href="../notebooks.html">Notebook</a><a class="sh-cta-m" href="../bai01.html" data-next-lesson>Học tiếp →</a></nav><a class="sh-cta" href="../bai01.html" data-next-lesson>Học tiếp <span class="arr">→</span></a><button class="sh-burger" type="button" aria-expanded="false" aria-controls="sh-nav">Menu</button></div></header>
 
 <main class="container">
   <div class="crumbs"><a href="../bai-hoc.html">Bài học</a><span>/</span><a href="../bai-hoc.html#p4">P4 · LLM Engineering</a><span>/</span><span>P4.1</span></div>
-  <section class="lhero"><div class="code">P4.1</div><h1>Bài 4 · Làm việc với LLM</h1><div class="lmeta"><span class="m">Giai đoạn P4 · LLM Engineering</span><span class="m">Tuần 18–25</span><span class="chip planned">Đề cương</span></div></section>
-  <div class="lgrid">
-    <div>
-      <div class="goal"><b>Mục tiêu giai đoạn:</b> Nhóm kỹ năng được tuyển nhiều nhất: ứng dụng LLM, RAG, agent và multi-agent chạy ổn định, an toàn và đo được chất lượng.</div>
-      <div class="soon">Nội dung đầy đủ (trang lý thuyết tương tác và notebook tự chấm) đang được soạn và sẽ có khi bạn học tới bài này. Đề cương dưới đây là phạm vi chính xác của bài.</div>
-      <section class="pblock reveal"><div class="pblock-head"><span class="num">1</span><h2>Lý thuyết<span style="display:block;font:400 13.5px var(--f-body);color:var(--muted);margin-top:4px">Những gì cần hiểu</span></h2><label class="tick" for="cb-t"><input type="checkbox" id="cb-t" data-key="p4.1:t">Xong</label></div><ol><li>Định dạng chat, system prompt, token và chi phí</li><li>Prompting: few-shot, chia bước, đóng vai, ràng buộc định dạng</li><li>Structured output (JSON schema, Pydantic), tool calling, streaming</li><li>Retry, rate limit, timeout, fallback giữa các model</li></ol></section><section class="pblock reveal"><div class="pblock-head"><span class="num">2</span><h2>Bài tập<span style="display:block;font:400 13.5px var(--f-body);color:var(--muted);margin-top:4px">Tính tay và tự kiểm tra</span></h2><label class="tick" for="cb-b"><input type="checkbox" id="cb-b" data-key="p4.1:b">Xong</label></div><ol><li>Viết 3 phiên bản prompt cho cùng một việc, chấm trên 20 ví dụ</li></ol></section><section class="pblock reveal"><div class="pblock-head"><span class="num">3</span><h2>Thực hành<span style="display:block;font:400 13.5px var(--f-body);color:var(--muted);margin-top:4px">Code và dự án</span></h2><label class="tick" for="cb-p"><input type="checkbox" id="cb-p" data-key="p4.1:p">Xong</label></div><ol><li>Lab 4: trích xuất hóa đơn/email thành JSON, tự retry khi lỗi, thêm 2 tool</li></ol></section>
-      <div class="donewhen reveal"><b>Xong khi</b>Tỉ lệ JSON hợp lệ và đúng ≥ 95% trên 20 mẫu bạn tự tạo.</div>
+  <section class="lhero"><div class="code">P4.1</div><h1>Bài 4 · Làm việc với LLM</h1><div class="lmeta"><span class="m">Giai đoạn P4 · LLM Engineering</span><span class="m">Tuần 18–25</span><span class="chip ready"><span class="dot"></span>Có nội dung đầy đủ</span></div>
+    <div class="intro"><p>Phần lớn công việc AI Engineer hiện nay là xây ứng dụng trên LLM có sẵn qua API. Gọi API thì dễ; làm cho nó <strong>đúng, ổn định, rẻ và đo được</strong> mới là nghề. Bài này dạy cấu trúc một cuộc gọi, cách viết prompt, ép LLM trả JSON đúng schema, cho LLM gọi hàm (tool calling), streaming và xử lý lỗi. Ví dụ dùng Anthropic Python SDK; các nhà cung cấp khác có API rất giống.</p></div></section>
+  
+  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">5 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
+  <div class="lgrid" style="margin-top:22px">
+    <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">Cấu trúc một cuộc gọi</h2>
+<div class="hl"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">anthropic</span>
+<span class="n">client</span> <span class="o">=</span> <span class="n">anthropic</span><span class="o">.</span><span class="n">Anthropic</span><span class="p">()</span>                       <span class="c1"># đọc ANTHROPIC_API_KEY từ biến môi trường</span>
+<span class="n">resp</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">messages</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
+    <span class="n">model</span><span class="o">=</span><span class="s2">"claude-haiku-5-5"</span><span class="p">,</span>
+    <span class="n">max_tokens</span><span class="o">=</span><span class="mi">1024</span><span class="p">,</span>
+    <span class="n">system</span><span class="o">=</span><span class="s2">"Bạn là trợ lý chăm sóc khách hàng của một shop nội thất. Trả lời ngắn gọn, lịch sự."</span><span class="p">,</span>
+    <span class="n">messages</span><span class="o">=</span><span class="p">[{</span><span class="s2">"role"</span><span class="p">:</span> <span class="s2">"user"</span><span class="p">,</span> <span class="s2">"content"</span><span class="p">:</span> <span class="s2">"Bàn trang điểm có kèm gương không?"</span><span class="p">}],</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">resp</span><span class="o">.</span><span class="n">content</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">resp</span><span class="o">.</span><span class="n">usage</span><span class="o">.</span><span class="n">input_tokens</span><span class="p">,</span> <span class="n">resp</span><span class="o">.</span><span class="n">usage</span><span class="o">.</span><span class="n">output_tokens</span><span class="p">)</span>
+</code></pre></div>
+
+<ul>
+<li><strong>system:</strong> vai trò, quy tắc, bối cảnh cố định.</li>
+<li><strong>messages:</strong> lịch sử hội thoại xen kẽ <code>user</code> / <code>assistant</code>. API <strong>không nhớ gì</strong> giữa các lần gọi; muốn hội thoại nhiều lượt thì bạn tự gửi lại toàn bộ lịch sử.</li>
+<li><strong>Token và chi phí:</strong> tính tiền theo token vào và token ra, token ra thường đắt hơn nhiều. Lịch sử càng dài, mỗi lượt càng tốn.</li>
+</ul>
+<h2 id="lt-2">Viết prompt tốt</h2>
+<table>
+<thead>
+<tr>
+<th>Nguyên tắc</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Rõ ràng, cụ thể</td>
+<td>"Tóm tắt trong 3 gạch đầu dòng, mỗi dòng dưới 20 từ" thay vì "tóm tắt ngắn"</td>
+</tr>
+<tr>
+<td>Cho bối cảnh và lý do</td>
+<td>"Khách đọc trên điện thoại nên cần ngắn"</td>
+</tr>
+<tr>
+<td>Ví dụ mẫu (few-shot)</td>
+<td>2–5 cặp đầu vào/đầu ra đúng định dạng mong muốn</td>
+</tr>
+<tr>
+<td>Tách dữ liệu khỏi hướng dẫn</td>
+<td>bọc tài liệu trong thẻ <code>&lt;document&gt;…&lt;/document&gt;</code></td>
+</tr>
+<tr>
+<td>Cho phép nghĩ trước</td>
+<td>"Phân tích từng bước trong thẻ <code>&lt;thinking&gt;</code>, rồi trả lời trong <code>&lt;answer&gt;</code>"</td>
+</tr>
+<tr>
+<td>Nói cách xử lý ca khó</td>
+<td>"Nếu không tìm thấy trong tài liệu, trả lời: không có thông tin"</td>
+</tr>
+</tbody>
+</table>
+<p>Prompt là code: lưu trong file, đánh phiên bản, và <strong>đo trên một bộ ví dụ</strong> trước khi đổi. Cảm giác "prompt mới hay hơn" sau khi thử 2 câu không có giá trị.</p>
+<h2 id="lt-3">Structured output</h2>
+<p>Ứng dụng cần dữ liệu có cấu trúc, không phải đoạn văn. Định nghĩa schema bằng Pydantic, yêu cầu LLM trả JSON, rồi <strong>validate</strong> và <strong>thử lại</strong> khi sai.</p>
+<div class="hl"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pydantic</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseModel</span><span class="p">,</span> <span class="n">ValidationError</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Invoice</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+    <span class="n">vendor</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">date</span><span class="p">:</span> <span class="nb">str</span>          <span class="c1"># YYYY-MM-DD</span>
+    <span class="n">total_vnd</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">items</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">extract</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">retries</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
+    <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"Trích xuất hóa đơn thành JSON đúng schema sau, chỉ trả JSON:</span><span class="se">\n</span><span class="si">{</span><span class="n">Invoice</span><span class="o">.</span><span class="n">model_json_schema</span><span class="p">()</span><span class="si">}</span><span class="se">\n</span><span class="s2">&lt;document&gt;</span><span class="si">{</span><span class="n">text</span><span class="si">}</span><span class="s2">&lt;/document&gt;"</span>
+    <span class="n">history</span> <span class="o">=</span> <span class="p">[{</span><span class="s2">"role"</span><span class="p">:</span> <span class="s2">"user"</span><span class="p">,</span> <span class="s2">"content"</span><span class="p">:</span> <span class="n">msg</span><span class="p">}]</span>
+    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">retries</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">messages</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="s2">"claude-haiku-5-5"</span><span class="p">,</span> <span class="n">max_tokens</span><span class="o">=</span><span class="mi">800</span><span class="p">,</span> <span class="n">messages</span><span class="o">=</span><span class="n">history</span><span class="p">)</span><span class="o">.</span><span class="n">content</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">text</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">Invoice</span><span class="o">.</span><span class="n">model_validate_json</span><span class="p">(</span><span class="n">out</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s2">"`"</span><span class="p">)</span><span class="o">.</span><span class="n">removeprefix</span><span class="p">(</span><span class="s2">"json"</span><span class="p">))</span>   <span class="c1"># bỏ khung code nếu có</span>
+        <span class="k">except</span> <span class="n">ValidationError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">history</span> <span class="o">+=</span> <span class="p">[{</span><span class="s2">"role"</span><span class="p">:</span> <span class="s2">"assistant"</span><span class="p">,</span> <span class="s2">"content"</span><span class="p">:</span> <span class="n">out</span><span class="p">},</span> <span class="p">{</span><span class="s2">"role"</span><span class="p">:</span> <span class="s2">"user"</span><span class="p">,</span> <span class="s2">"content"</span><span class="p">:</span> <span class="sa">f</span><span class="s2">"JSON chưa hợp lệ: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">. Sửa và chỉ trả JSON."</span><span class="p">}]</span>
+    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"không trích xuất được"</span><span class="p">)</span>
+</code></pre></div>
+
+<p>Đưa lỗi validate ngược lại cho model là cách sửa lỗi hiệu quả nhất. Nhiều API còn có chế độ structured output ràng buộc định dạng ngay khi sinh.</p>
+<h2 id="lt-4">Tool calling</h2>
+<p>Cho model danh sách hàm kèm JSON schema. Model không tự chạy hàm; nó trả về <strong>yêu cầu gọi hàm</strong>, code của bạn chạy hàm và gửi kết quả lại.</p>
+<div class="hl"><pre><span></span><code><span class="n">tools</span> <span class="o">=</span> <span class="p">[{</span>
+    <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"get_order_status"</span><span class="p">,</span>
+    <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"Tra trạng thái đơn hàng theo mã đơn. Dùng khi khách hỏi đơn của họ đang ở đâu."</span><span class="p">,</span>
+    <span class="s2">"input_schema"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"type"</span><span class="p">:</span> <span class="s2">"object"</span><span class="p">,</span> <span class="s2">"properties"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"order_id"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"type"</span><span class="p">:</span> <span class="s2">"string"</span><span class="p">}},</span> <span class="s2">"required"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"order_id"</span><span class="p">]},</span>
+<span class="p">}]</span>
+<span class="n">messages</span> <span class="o">=</span> <span class="p">[{</span><span class="s2">"role"</span><span class="p">:</span> <span class="s2">"user"</span><span class="p">,</span> <span class="s2">"content"</span><span class="p">:</span> <span class="s2">"Đơn DH1024 của tôi tới đâu rồi?"</span><span class="p">}]</span>
+<span class="n">resp</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">messages</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="s2">"claude-haiku-5-5"</span><span class="p">,</span> <span class="n">max_tokens</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span> <span class="n">tools</span><span class="o">=</span><span class="n">tools</span><span class="p">,</span> <span class="n">messages</span><span class="o">=</span><span class="n">messages</span><span class="p">)</span>
+<span class="k">if</span> <span class="n">resp</span><span class="o">.</span><span class="n">stop_reason</span> <span class="o">==</span> <span class="s2">"tool_use"</span><span class="p">:</span>
+    <span class="n">call</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">b</span> <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">resp</span><span class="o">.</span><span class="n">content</span> <span class="k">if</span> <span class="n">b</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">"tool_use"</span><span class="p">)</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">get_order_status</span><span class="p">(</span><span class="o">**</span><span class="n">call</span><span class="o">.</span><span class="n">input</span><span class="p">)</span>                    <span class="c1"># hàm Python của bạn</span>
+    <span class="n">messages</span> <span class="o">+=</span> <span class="p">[{</span><span class="s2">"role"</span><span class="p">:</span> <span class="s2">"assistant"</span><span class="p">,</span> <span class="s2">"content"</span><span class="p">:</span> <span class="n">resp</span><span class="o">.</span><span class="n">content</span><span class="p">},</span>
+                 <span class="p">{</span><span class="s2">"role"</span><span class="p">:</span> <span class="s2">"user"</span><span class="p">,</span> <span class="s2">"content"</span><span class="p">:</span> <span class="p">[{</span><span class="s2">"type"</span><span class="p">:</span> <span class="s2">"tool_result"</span><span class="p">,</span> <span class="s2">"tool_use_id"</span><span class="p">:</span> <span class="n">call</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="s2">"content"</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">result</span><span class="p">)}]}]</span>
+    <span class="n">resp</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">messages</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="s2">"claude-haiku-5-5"</span><span class="p">,</span> <span class="n">max_tokens</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span> <span class="n">tools</span><span class="o">=</span><span class="n">tools</span><span class="p">,</span> <span class="n">messages</span><span class="o">=</span><span class="n">messages</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">resp</span><span class="o">.</span><span class="n">content</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+</code></pre></div>
+
+<p>Mô tả tool là một phần của prompt: viết rõ <strong>khi nào dùng</strong>, ý nghĩa từng tham số. Đây là nền móng cho agent (P4.4) và MCP (P4.7).</p>
+<h2 id="lt-5">Streaming, lỗi và giới hạn</h2>
+<ul>
+<li><strong>Streaming</strong> trả từng mảnh văn bản ngay khi sinh, người dùng thấy chữ chạy thay vì chờ vài giây: <code>with client.messages.stream(...) as s: for t in s.text_stream: print(t, end="")</code>.</li>
+<li><strong>Lỗi tạm thời</strong> (quá tải, rate limit 429, timeout): thử lại với <strong>exponential backoff</strong> (chờ 1, 2, 4, 8… giây, cộng chút ngẫu nhiên). SDK chính thức thường đã tự retry vài lần.</li>
+<li><strong>Timeout</strong> cho mỗi cuộc gọi, và <strong>fallback</strong> sang model khác khi model chính lỗi kéo dài.</li>
+<li><strong>Ghi log</strong> mọi cuộc gọi: prompt, đầu ra, token, độ trễ, lỗi. Thiếu log thì không debug và không đánh giá được.</li>
+</ul>
+<div class="keep">
+<p><strong>Ghi nhớ:</strong> chọn model nhỏ nhất làm đủ tốt việc của bạn, đo trên bộ ví dụ thật. Model nhỏ hơn thường rẻ hơn hàng chục lần và nhanh hơn.</p>
+</div></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p4.1:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 3</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Ước tính chi phí</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Giả sử giá ví dụ: 1 USD cho 1 triệu token vào, 5 USD cho 1 triệu token ra. Mỗi yêu cầu có 2.000 token vào và 500 token ra.</p>
+<div class="ans" id="p4-1-e1-a1"><div class="ans-fields"><label>Chi phí một yêu cầu (USD)<input inputmode="decimal" data-ans="0.0045" data-tol="1e-05" autocomplete="off"></label><label>Chi phí 10.000 yêu cầu mỗi ngày (USD)<input inputmode="decimal" data-ans="45.0" data-tol="0.01" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+
+<details class="fold solution">
+<summary>Lời giải</summary>
+<p>2000 × 1/10⁶ = 0.002 USD, cộng 500 × 5/10⁶ = 0.0025 USD, tổng 0.0045 USD. 10.000 yêu cầu: 45 USD/ngày, khoảng 1.350 USD/tháng. Cắt bớt 1.000 token context mỗi yêu cầu tiết kiệm 10 USD/ngày.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 2</span><h3>Lịch sử hội thoại phình to</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>System prompt 6.000 token. Mỗi lượt hỏi-đáp thêm 400 token vào lịch sử.</p>
+<div class="ans" id="p4-1-e2-a1"><div class="ans-fields"><label>Token vào ở lượt thứ 20<input inputmode="decimal" data-ans="14000.0" data-tol="0.0" autocomplete="off"></label><label>Tổng token vào sau 20 lượt<input inputmode="decimal" data-ans="204000.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+
+<details class="fold solution">
+<summary>Lời giải</summary>
+<p>Lượt i gửi 6000 + 400·i token. Lượt 20: 14.000. Tổng 20 lượt: 20·6000 + 400·(1 + … + 20) = 120.000 + 84.000 = 204.000. Chi phí tăng theo bình phương số lượt, nên hội thoại dài cần tóm tắt lịch sử hoặc dùng prompt caching.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 3</span><h3>Exponential backoff</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Thử lại tối đa 5 lần, lần đầu chờ 1 giây, mỗi lần sau gấp đôi (bỏ qua phần ngẫu nhiên).</p>
+<div class="ans" id="p4-1-e3-a1"><div class="ans-fields"><label>Thời gian chờ lần thứ 5 (giây)<input inputmode="decimal" data-ans="16.0" data-tol="0.0" autocomplete="off"></label><label>Tổng thời gian chờ (giây)<input inputmode="decimal" data-ans="31.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+
+<details class="fold solution">
+<summary>Lời giải</summary>
+<p>1, 2, 4, 8, 16: tổng 31 giây. Nếu người dùng đang chờ, 31 giây là quá lâu: kết hợp với timeout tổng và fallback sang model khác.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 4</span><h3>Sửa một prompt</h3><span class="ex-tag concept">khái niệm</span></div><div class="prose"><p>Prompt sau cho kết quả thất thường. Chỉ ra ít nhất 4 vấn đề và viết lại.</p>
+<div class="hl"><pre><span></span><code>Đọc review này và cho biết nó thế nào: {review}
+</code></pre></div>
+
+<details class="fold solution">
+<summary>Lời giải</summary>
+<p>Vấn đề: không nói "thế nào" là gì (cảm xúc? chủ đề?), không có định dạng đầu ra, không có nhãn cố định, không xử lý review lẫn lộn hoặc không liên quan, dữ liệu không tách khỏi hướng dẫn.</p>
+<div class="hl"><pre><span></span><code>Phân loại cảm xúc của đánh giá sản phẩm dưới đây.
+Nhãn: tích_cực, tiêu_cực, trung_lập, lẫn_lộn (vừa khen vừa chê).
+Chỉ trả JSON: {"label": "...", "reason": "&lt;một câu&gt;"}
+
+Ví dụ:
+&lt;review&gt;Bàn đẹp nhưng giao chậm 1 tuần&lt;/review&gt;
+{"label": "lẫn_lộn", "reason": "Khen sản phẩm, chê giao hàng."}
+
+&lt;review&gt;{review}&lt;/review&gt;
+</code></pre></div>
+
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 5</span><h3>Tỉ lệ thành công của trích xuất</h3><span class="ex-tag code">code</span></div><div class="prose"><p>Viết vòng đánh giá: chạy hàm <code>extract</code> ở phần lý thuyết trên một danh sách 20 văn bản hóa đơn kèm đáp án, đo tỉ lệ JSON hợp lệ, tỉ lệ đúng từng trường, số lần phải thử lại trung bình.</p>
+<details class="fold code">
+<summary>Code tham khảo</summary>
+<div class="hl"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">json</span><span class="o">,</span><span class="w"> </span><span class="nn">time</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">evaluate</span><span class="p">(</span><span class="n">samples</span><span class="p">):</span>
+    <span class="n">ok_json</span> <span class="o">=</span> <span class="n">field_ok</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">fields</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"vendor"</span><span class="p">,</span> <span class="s2">"date"</span><span class="p">,</span> <span class="s2">"total_vnd"</span><span class="p">]</span>
+    <span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">samples</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">inv</span> <span class="o">=</span> <span class="n">extract</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="s2">"text"</span><span class="p">])</span>
+            <span class="n">ok_json</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">field_ok</span> <span class="o">+=</span> <span class="nb">sum</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">inv</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span> <span class="o">==</span> <span class="n">s</span><span class="p">[</span><span class="s2">"gold"</span><span class="p">][</span><span class="n">f</span><span class="p">]</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">fields</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="k">pass</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">samples</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"JSON hợp lệ </span><span class="si">{</span><span class="n">ok_json</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">n</span><span class="si">:</span><span class="s2">.0%</span><span class="si">}</span><span class="s2"> | đúng từng trường </span><span class="si">{</span><span class="n">field_ok</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="p">(</span><span class="n">n</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="nb">len</span><span class="p">(</span><span class="n">fields</span><span class="p">))</span><span class="si">:</span><span class="s2">.0%</span><span class="si">}</span><span class="s2"> | </span><span class="si">{</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">t0</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">n</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">s mỗi mẫu"</span><span class="p">)</span>
+
+<span class="n">samples</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="s2">"invoices_eval.json"</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">"utf-8"</span><span class="p">))</span>   <span class="c1"># [{"text": ..., "gold": {...}}, ...]</span>
+<span class="n">evaluate</span><span class="p">(</span><span class="n">samples</span><span class="p">)</span>
+</code></pre></div>
+
+</details></div></article><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p4.1:b">Tôi đã xong phần bài tập</label><button class="btn" type="button" data-goto="thuc-hanh">Sang thực hành <span class="arr">→</span></button></div></section><section class="panel" id="thuc-hanh" role="tabpanel" hidden><div class="prose"><h2>Lab 4: trích xuất có cấu trúc và tool calling</h2>
+<p>Xây một trợ lý cho shop online: đọc email khách hàng, trích xuất yêu cầu, và trả lời bằng cách gọi tool.</p>
+<p><strong>Các bước</strong></p>
+<ol>
+<li>Tự tạo 20 email mẫu (đặt hàng, hỏi tình trạng đơn, đổi trả, khiếu nại) kèm đáp án JSON: <code>{"intent", "order_id", "product", "urgency"}</code>.</li>
+<li>Viết <code>extract(email)</code> với Pydantic, có thử lại khi JSON sai. Đo tỉ lệ đúng trên 20 mẫu.</li>
+<li>Viết 3 phiên bản prompt (zero-shot, few-shot, few-shot + suy nghĩ trước), so sánh trên cùng 20 mẫu.</li>
+<li>Thêm 2 tool: <code>get_order_status(order_id)</code> và <code>create_return_request(order_id, reason)</code> (dùng dữ liệu giả trong một dict). Vòng lặp tool calling xử lý tới khi model trả lời xong.</li>
+<li>Thêm streaming cho câu trả lời cuối, timeout 30 giây, log mỗi cuộc gọi ra file JSONL (thời gian, token, độ trễ).</li>
+</ol>
+<p><strong>Xong khi</strong></p>
+<ul>
+<li>Tỉ lệ JSON hợp lệ và đúng ≥ 95% trên 20 mẫu.</li>
+<li>Bảng so sánh 3 phiên bản prompt.</li>
+<li>Log JSONL cho thấy tổng token và chi phí ước tính của cả bộ chạy.</li>
+</ul></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p4.1:p">Tôi đã xong phần thực hành</label></div></section>
+      <div class="donewhen"><b>Xong bài khi</b>Tỉ lệ JSON hợp lệ và đúng ≥ 95% trên 20 mẫu bạn tự tạo.</div>
       <nav class="pn" aria-label="Bài trước, bài sau"><a href="p3-4.html"><span class="dir">← Bài trước · P3.4</span><span class="tt">Hệ sinh thái Hugging Face</span></a><a class="nx" href="p4-2.html"><span class="dir">Bài sau · P4.2 →</span><span class="tt">Bài 5 · Embedding và RAG</span></a></nav>
     </div>
     <aside class="aside">
       <div class="abox"><h4>Tiến độ bài này</h4><div class="ring"><svg viewBox="0 0 64 64" aria-hidden="true"><circle class="bg" cx="32" cy="32" r="28"/><circle class="fg" cx="32" cy="32" r="28" stroke-dasharray="176" stroke-dashoffset="176"/></svg><div><b id="ring-n">0/3</b><span id="ring-sub">phần đã xong</span></div></div></div>
+      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Cấu trúc một cuộc gọi</a></li><li><a href="#lt-2">Viết prompt tốt</a></li><li><a href="#lt-3">Structured output</a></li><li><a href="#lt-4">Tool calling</a></li><li><a href="#lt-5">Streaming, lỗi và giới hạn</a></li></ol></div>
       
       <div class="abox"><h4>Cùng giai đoạn</h4><ul><li><span class=cur>Bài 4 · Làm việc với LLM</span></li><li><a href="p4-2.html">Bài 5 · Embedding và RAG</a></li><li><a href="p4-3.html">Bài 6 · Đánh giá hệ thống AI</a></li><li><a href="p4-4.html">Bài 7 · Agent</a></li><li><a href="p4-5.html">RAG nâng cao</a></li><li><a href="p4-6.html">Multi-agent</a></li><li><a href="p4-7.html">MCP và hệ sinh thái tool</a></li><li><a href="p4-8.html">Guardrails, an toàn và human-in-the-loop</a></li></ul></div>
     </aside>
@@ -43,16 +223,75 @@
 
 (function () {
   const mid = document.body.dataset.mid; let d = AIE.load();
+  const EXK = "aie-ex-" + mid;
+  let solved = {}; try { solved = JSON.parse(localStorage.getItem(EXK) || "{}") || {}; } catch (e) {}
+  const saveSolved = () => { try { localStorage.setItem(EXK, JSON.stringify(solved)); } catch (e) {} };
+  const tabs = [...document.querySelectorAll(".tab")], panels = [...document.querySelectorAll(".panel")];
   const boxes = [...document.querySelectorAll("input[data-key]")], ring = document.querySelector(".ring .fg"), rt = document.getElementById("ring-n");
-  const skipped = () => !!d[mid + ":skip"];
+  const toc = document.getElementById("toc-box");
+  function show(id, scroll) {
+    tabs.forEach((t) => t.setAttribute("aria-selected", String(t.dataset.tab === id)));
+    panels.forEach((p) => { const on = p.id === id; if (on && p.hidden) { p.classList.remove("enter"); void p.offsetWidth; p.classList.add("enter"); } p.hidden = !on; });
+    if (toc) toc.hidden = id !== "ly-thuyet";
+    if (scroll) document.querySelector(".tabs").scrollIntoView({ block: "start" });
+  }
+  tabs.forEach((t) => t.addEventListener("click", () => { history.replaceState(null, "", "#" + t.dataset.tab); show(t.dataset.tab, true); }));
+  document.querySelectorAll("[data-goto]").forEach((b) => b.addEventListener("click", () => { history.replaceState(null, "", "#" + b.dataset.goto); show(b.dataset.goto, true); }));
+  const start = ["ly-thuyet", "bai-tap", "thuc-hanh"].includes(location.hash.slice(1)) ? location.hash.slice(1) : "ly-thuyet";
+  show(start, false);
+  window.addEventListener("hashchange", () => { const h = location.hash.slice(1); if (["ly-thuyet", "bai-tap", "thuc-hanh"].includes(h)) show(h, true); });
+  document.querySelectorAll(".toc a").forEach((a) => a.addEventListener("click", () => show("ly-thuyet", false)));
+
   function render() {
     let n = 0;
-    boxes.forEach((b) => { const on = skipped() || !!d[b.dataset.key]; b.checked = on; b.disabled = skipped(); b.closest(".pblock").classList.toggle("done", on); if (on) n++; });
+    const skip = !!d[mid + ":skip"];
+    boxes.forEach((b) => { const on = skip || !!d[b.dataset.key]; b.checked = on; if (on) n++; });
+    const kmap = { t: "ly-thuyet", b: "bai-tap", p: "thuc-hanh" };
+    tabs.forEach((t) => { const k = Object.keys(kmap).find((x) => kmap[x] === t.dataset.tab); t.classList.toggle("is-done", skip || !!d[mid + ":" + k]); });
     ring.style.strokeDashoffset = String(176 * (1 - n / 3)); rt.textContent = n + "/3";
-    document.getElementById("ring-sub").textContent = skipped() ? "đã đánh dấu bỏ qua" : n === 3 ? "hoàn thành bài này" : "phần đã xong";
+    document.getElementById("ring-sub").textContent = n === 3 ? "hoàn thành bài này" : "phần đã xong";
   }
-  boxes.forEach((b) => b.addEventListener("change", () => { d = AIE.load(); if (b.checked) d[b.dataset.key] = true; else delete d[b.dataset.key]; AIE.save(d); render(); }));
+  boxes.forEach((b) => b.addEventListener("change", () => {
+    d = AIE.load(); if (b.checked) d[b.dataset.key] = true; else delete d[b.dataset.key]; AIE.save(d);
+    boxes.filter((x) => x.dataset.key === b.dataset.key).forEach((x) => (x.checked = b.checked)); render();
+  }));
   render();
+
+  /* answer boxes */
+  const parse = (s) => parseFloat(String(s).trim().replace(",", ".").replace("−", "-"));
+  const allAns = [...document.querySelectorAll(".ans")];
+  function score() {
+    const ok = allAns.filter((a) => solved[a.id]).length;
+    const el = document.getElementById("ex-score");
+    if (el) { el.querySelector("b").textContent = `${ok} / ${allAns.length}`; el.querySelector(".bar i").style.width = (allAns.length ? ok / allAns.length * 100 : 0) + "%"; }
+    document.querySelectorAll(".excard").forEach((c) => { const as = [...c.querySelectorAll(".ans")]; c.classList.toggle("solved", as.length > 0 && as.every((a) => solved[a.id])); });
+  }
+  allAns.forEach((box) => {
+    const inputs = [...box.querySelectorAll("input")], fb = box.querySelector(".ans-fb");
+    const mark = () => { box.classList.add("ok"); inputs.forEach((i) => { i.classList.add("ok"); if (!i.value) i.value = i.dataset.ans; }); fb.className = "ans-fb ok"; fb.textContent = "Chính xác."; };
+    if (solved[box.id]) mark();
+    const run = () => {
+      let all = true, empty = false;
+      inputs.forEach((i) => {
+        const v = parse(i.value);
+        if (i.value.trim() === "" || Number.isNaN(v)) { empty = true; all = false; i.classList.remove("ok", "bad"); return; }
+        const good = Math.abs(v - parseFloat(i.dataset.ans)) <= parseFloat(i.dataset.tol) + 1e-9;
+        i.classList.toggle("ok", good); i.classList.toggle("bad", !good); if (!good) all = false;
+      });
+      if (all) { solved[box.id] = true; saveSolved(); mark(); box.classList.remove("pop"); void box.offsetWidth; box.classList.add("pop"); score(); }
+      else { fb.className = "ans-fb bad"; fb.textContent = empty ? "Điền đủ các ô bằng số (dấu chấm hoặc phẩy đều được)." : "Ô màu cam chưa đúng. Xem lại bước đó, hoặc mở gợi ý."; }
+    };
+    box.querySelector(".btn-check").addEventListener("click", run);
+    inputs.forEach((i) => i.addEventListener("keydown", (e) => { if (e.key === "Enter") run(); }));
+  });
+  score();
+
+  /* highlight current theory section in the toc */
+  if (toc && "IntersectionObserver" in window) {
+    const links = [...toc.querySelectorAll("a")];
+    const io = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) links.forEach((a) => a.classList.toggle("on", a.getAttribute("href") === "#" + e.target.id)); }), { rootMargin: "-140px 0px -65% 0px" });
+    document.querySelectorAll("#ly-thuyet h2[id]").forEach((h) => io.observe(h));
+  }
 })();
 
 </script>

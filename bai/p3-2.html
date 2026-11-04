@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>P3.2 · Bài 3 · Attention và Transformer · AI Engineer</title>
-<meta name="description" content="Bài 3 · Attention và Transformer: Query, key, value; scaled dot-product attention; Multi-head attention, causal mask; Positional encoding: sinusoid, RoPE">
+<meta name="description" content="Bài 3 · Attention và Transformer: lý thuyết, bài tập và thực hành. Query, key, value; scaled dot-product attention; Multi-head attention, causal mask">
 <meta property="og:title" content="P3.2 · Bài 3 · Attention và Transformer · AI Engineer">
-<meta property="og:description" content="Bài 3 · Attention và Transformer: Query, key, value; scaled dot-product attention; Multi-head attention, causal mask; Positional encoding: sinusoid, RoPE">
+<meta property="og:description" content="Bài 3 · Attention và Transformer: lý thuyết, bài tập và thực hành. Query, key, value; scaled dot-product attention; Multi-head attention, causal mask">
 <meta name="theme-color" content="#F4F6FB">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23131A33'/%3E%3Cpath d='M9 22 L16 10 L23 19' stroke='%23E5E9FB' stroke-width='2' fill='none'/%3E%3Ccircle cx='9' cy='22' r='3' fill='%23E5E9FB'/%3E%3Ccircle cx='16' cy='10' r='3' fill='%23E5E9FB'/%3E%3Ccircle cx='23' cy='19' r='3' fill='%23FF9361'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -14,23 +14,162 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="../assets/chrome.css">
 <link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/lesson.css">
 </head>
 <body data-mid="p3.2">
 <header class="sh"><div class="sh-in"><a class="sh-brand" href="../index.html"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="var(--ink)"/><circle cx="9" cy="22" r="2.6" fill="var(--accent-soft)"/><circle cx="16" cy="10" r="2.6" fill="var(--accent-soft)"/><circle cx="23" cy="19" r="2.6" fill="#FF9361"/><path d="M9 22 L16 10 L23 19" stroke="var(--accent-soft)" stroke-width="1.8" fill="none"/></svg><span>AI Engineer<small>lộ trình tự học</small></span></a><nav class="sh-nav" id="sh-nav" aria-label="Chính"><a href="../index.html">Trang chủ</a><a href="../bai-hoc.html" aria-current="page">Bài học</a><a href="../lo-trinh.html">Lộ trình</a><a href="../notebooks.html">Notebook</a><a class="sh-cta-m" href="../bai01.html" data-next-lesson>Học tiếp →</a></nav><a class="sh-cta" href="../bai01.html" data-next-lesson>Học tiếp <span class="arr">→</span></a><button class="sh-burger" type="button" aria-expanded="false" aria-controls="sh-nav">Menu</button></div></header>
 
 <main class="container">
   <div class="crumbs"><a href="../bai-hoc.html">Bài học</a><span>/</span><a href="../bai-hoc.html#p3">P3 · Transformer và NLP</a><span>/</span><span>P3.2</span></div>
-  <section class="lhero"><div class="code">P3.2</div><h1>Bài 3 · Attention và Transformer</h1><div class="lmeta"><span class="m">Giai đoạn P3 · Transformer và NLP</span><span class="m">Tuần 13–17</span><span class="chip planned">Đề cương</span></div></section>
-  <div class="lgrid">
-    <div>
-      <div class="goal"><b>Mục tiêu giai đoạn:</b> Hiểu kiến trúc nằm dưới mọi LLM, tự cài được attention và một GPT nhỏ.</div>
-      <div class="soon">Nội dung đầy đủ (trang lý thuyết tương tác và notebook tự chấm) đang được soạn và sẽ có khi bạn học tới bài này. Đề cương dưới đây là phạm vi chính xác của bài.</div>
-      <section class="pblock reveal"><div class="pblock-head"><span class="num">1</span><h2>Lý thuyết<span style="display:block;font:400 13.5px var(--f-body);color:var(--muted);margin-top:4px">Những gì cần hiểu</span></h2><label class="tick" for="cb-t"><input type="checkbox" id="cb-t" data-key="p3.2:t">Xong</label></div><ol><li>Query, key, value; scaled dot-product attention</li><li>Multi-head attention, causal mask</li><li>Positional encoding: sinusoid, RoPE</li><li>LayerNorm, residual, feed-forward; encoder và decoder</li></ol></section><section class="pblock reveal"><div class="pblock-head"><span class="num">2</span><h2>Bài tập<span style="display:block;font:400 13.5px var(--f-body);color:var(--muted);margin-top:4px">Tính tay và tự kiểm tra</span></h2><label class="tick" for="cb-b"><input type="checkbox" id="cb-b" data-key="p3.2:b">Xong</label></div><ol><li>Tính tay attention cho 3 token, 2 chiều</li><li>Đếm tham số của một block Transformer</li></ol></section><section class="pblock reveal"><div class="pblock-head"><span class="num">3</span><h2>Thực hành<span style="display:block;font:400 13.5px var(--f-body);color:var(--muted);margin-top:4px">Code và dự án</span></h2><label class="tick" for="cb-p"><input type="checkbox" id="cb-p" data-key="p3.2:p">Xong</label></div><ol><li>Lab 2: tự cài self-attention và multi-head attention, khớp nn.MultiheadAttention</li></ol></section>
-      <div class="donewhen reveal"><b>Xong khi</b>Sai số so với PyTorch &lt; 1e-5, có hỗ trợ causal mask.</div>
+  <section class="lhero"><div class="code">P3.2</div><h1>Bài 3 · Attention và Transformer</h1><div class="lmeta"><span class="m">Giai đoạn P3 · Transformer và NLP</span><span class="m">Tuần 13–17</span><span class="chip ready"><span class="dot"></span>Có nội dung đầy đủ</span></div>
+    <div class="intro"><p>Attention là ý tưởng quan trọng nhất của AI hiện đại: mọi LLM, model sinh ảnh như FLUX, và hầu hết model thị giác đều xây trên nó. Bài này dựng Transformer từ từng mảnh nhỏ: query, key, value, rồi multi-head, mask, vị trí, và cả block hoàn chỉnh. Sau bài này bạn tự cài được attention bằng vài dòng PyTorch.</p></div></section>
+  
+  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">6 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
+  <div class="lgrid" style="margin-top:22px">
+    <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">Ý tưởng: mỗi token hỏi, mọi token trả lời</h2>
+<p>Trong câu "Con mèo ngồi trên tấm thảm vì <strong>nó</strong> mềm", để hiểu "nó" ta cần nhìn lại "thảm". Attention cho mỗi token một cách để <strong>tra cứu</strong> thông tin từ mọi token khác:</p>
+<ul>
+<li><strong>Query (q):</strong> token hiện tại đang tìm gì</li>
+<li><strong>Key (k):</strong> mỗi token mô tả mình có gì</li>
+<li><strong>Value (v):</strong> nội dung mỗi token đưa ra nếu được chọn</li>
+</ul>
+<p>Ba vector này là ba phép chiếu tuyến tính khác nhau của cùng embedding: Q = X·W_Q, K = X·W_K, V = X·W_V.</p>
+<h2 id="lt-2">Scaled dot-product attention</h2>
+<div class="hl"><pre><span></span><code>Attention(Q, K, V) = softmax( Q·Kᵀ / √d_k ) · V
+</code></pre></div>
+
+<ol>
+<li><code>Q·Kᵀ</code> cho ma trận điểm (seq × seq): token i "hợp" với token j bao nhiêu.</li>
+<li>Chia √d_k: khi d_k lớn, tích vô hướng có phương sai lớn, softmax bị bão hòa (gần one-hot) và gradient rất nhỏ. Chia √d_k giữ phương sai khoảng 1.</li>
+<li>Softmax theo hàng: mỗi token có một phân phối trọng số trên mọi token.</li>
+<li>Nhân với V: đầu ra của mỗi token là <strong>trung bình có trọng số</strong> các value.</li>
+</ol>
+<div class="hl"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">attention</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="n">scores</span> <span class="o">=</span> <span class="n">q</span> <span class="o">@</span> <span class="n">k</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="n">q</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">**</span> <span class="mf">0.5</span>     <span class="c1"># (B, T, T)</span>
+    <span class="k">if</span> <span class="n">mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">scores</span> <span class="o">=</span> <span class="n">scores</span><span class="o">.</span><span class="n">masked_fill</span><span class="p">(</span><span class="n">mask</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="s2">"-inf"</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">softmax</span><span class="p">(</span><span class="n">scores</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span> <span class="o">@</span> <span class="n">v</span>                  <span class="c1"># (B, T, d)</span>
+</code></pre></div>
+
+<h2 id="lt-3">Causal mask</h2>
+<p>Model sinh văn bản (GPT) chỉ được nhìn quá khứ: token thứ i không được thấy token i+1 trở đi, nếu không thì lúc train nó "nhìn trộm" đáp án. Ta đặt điểm của các vị trí tương lai thành −∞ trước softmax, nên trọng số của chúng bằng 0.</p>
+<div class="hl"><pre><span></span><code>mask = torch.tril(torch.ones(T, T))     # tam giác dưới: 1 = được nhìn
+</code></pre></div>
+
+<h2 id="lt-4">Multi-head attention</h2>
+<p>Một đầu attention chỉ học được một kiểu quan hệ. <strong>Multi-head</strong> chia d_model thành h đầu, mỗi đầu d_k = d_model / h chiều, chạy attention song song, rồi nối kết quả và chiếu qua W_O. Có đầu học quan hệ ngữ pháp, có đầu học đồng tham chiếu ("nó" → "thảm"), có đầu nhìn token liền kề.</p>
+<div class="hl"><pre><span></span><code>head_i = Attention(X·W_Qⁱ, X·W_Kⁱ, X·W_Vⁱ)
+MultiHead(X) = Concat(head_1, …, head_h)·W_O
+</code></pre></div>
+
+<p>Số tham số attention: 4 ma trận d_model × d_model (Q, K, V, O) cộng bias, không phụ thuộc số đầu.</p>
+<h2 id="lt-5">Vị trí: positional encoding và RoPE</h2>
+<p>Attention không biết thứ tự: hoán vị các token thì đầu ra hoán vị theo, ý nghĩa câu thì mất. Phải đưa thông tin vị trí vào:</p>
+<ul>
+<li><strong>Sinusoidal</strong> (Transformer gốc): cộng vào embedding một vector sin/cos theo vị trí. Giống time embedding trong dự án Diffusion.</li>
+<li><strong>Learned</strong>: một bảng embedding cho mỗi vị trí (GPT-2).</li>
+<li><strong>RoPE</strong> (Llama, Qwen và hầu hết LLM hiện nay): xoay q và k một góc tỉ lệ với vị trí, nên tích q·k chỉ phụ thuộc <strong>khoảng cách</strong> giữa hai token. Dễ kéo dài context hơn.</li>
+</ul>
+<h2 id="lt-6">Block Transformer hoàn chỉnh</h2>
+<div class="hl"><pre><span></span><code>x = x + MultiHeadAttention(LayerNorm(x))      # trộn thông tin giữa các token
+x = x + FeedForward(LayerNorm(x))             # xử lý từng token độc lập
+FeedForward(x) = W₂ · GELU(W₁·x)              # W₁: d → 4d, W₂: 4d → d
+</code></pre></div>
+
+<ul>
+<li><strong>Residual</strong> (x + …) giúp gradient đi qua hàng chục block, như ResNet.</li>
+<li><strong>LayerNorm</strong> chuẩn hóa theo chiều đặc trưng của từng token (khác BatchNorm chuẩn hóa theo batch). Kiểu "pre-norm" ở trên ổn định hơn khi train sâu.</li>
+<li><strong>Encoder</strong> (BERT) dùng attention hai chiều, hợp cho hiểu văn bản. <strong>Decoder</strong> (GPT) dùng causal mask, hợp cho sinh văn bản.</li>
+</ul>
+<div class="keep">
+<p><strong>Ghi nhớ:</strong> attention trộn thông tin <strong>giữa</strong> các token, feed-forward biến đổi <strong>từng</strong> token. Chi phí attention tăng theo bình phương độ dài chuỗi: chuỗi dài gấp đôi thì ma trận điểm lớn gấp bốn.</p>
+</div></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p3.2:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 4</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Attention cho 3 token</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>d_k = 2. Q = K = [[1, 0], [0, 1], [1, 1]], V = [[1, 2], [3, 4], [5, 6]]. Tính đầu ra cho <strong>token đầu tiên</strong> (q = [1, 0]), không mask.</p>
+<div class="ans" id="p3-2-e1-a1"><div class="ans-fields"><label>Điểm sau khi chia √2 với token 1<input inputmode="decimal" data-ans="0.7071" data-tol="0.001" autocomplete="off"></label><label>Trọng số softmax của token 1<input inputmode="decimal" data-ans="0.4011" data-tol="0.001" autocomplete="off"></label><label>Trọng số của token 2<input inputmode="decimal" data-ans="0.1978" data-tol="0.001" autocomplete="off"></label><label>Đầu ra chiều 1<input inputmode="decimal" data-ans="3.0" data-tol="0.001" autocomplete="off"></label><label>Đầu ra chiều 2<input inputmode="decimal" data-ans="4.0" data-tol="0.001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+
+<details class="fold hint">
+<summary>Gợi ý</summary>
+<p>q·k với ba key là [1, 0, 1]. Chia √2 ≈ 1.414. Softmax rồi lấy trung bình có trọng số các hàng của V.</p>
+</details>
+<details class="fold solution">
+<summary>Lời giải</summary>
+<p>Điểm [0.707, 0, 0.707]. e^0.707 ≈ 2.028, tổng 2.028 + 1 + 2.028 = 5.056. Trọng số [0.401, 0.198, 0.401]. Đầu ra = 0.401·[1, 2] + 0.198·[3, 4] + 0.401·[5, 6] = [3, 4]. Token 1 và 3 có trọng số bằng nhau nên trung bình của chúng (3, 4) trùng với value của token 2.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 2</span><h3>Causal mask</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Cùng dữ liệu, nhưng có causal mask. Đầu ra của token đầu tiên là gì?</p>
+<div class="ans" id="p3-2-e2-a1"><div class="ans-fields"><label>Chiều 1<input inputmode="decimal" data-ans="1.0" data-tol="0.0" autocomplete="off"></label><label>Chiều 2<input inputmode="decimal" data-ans="2.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+
+<details class="fold solution">
+<summary>Lời giải</summary>
+<p>Token đầu chỉ được nhìn chính nó, trọng số bằng 1, nên đầu ra là v₁ = [1, 2].</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 3</span><h3>Đếm tham số một block</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>d_model = 512, feed-forward 2048, có bias, 2 LayerNorm (mỗi cái có γ và β).</p>
+<div class="ans" id="p3-2-e3-a1"><div class="ans-fields"><label>Tham số attention (Q, K, V, O)<input inputmode="decimal" data-ans="1050624.0" data-tol="0.0" autocomplete="off"></label><label>Tham số feed-forward<input inputmode="decimal" data-ans="2099712.0" data-tol="0.0" autocomplete="off"></label><label>Tham số 2 LayerNorm<input inputmode="decimal" data-ans="2048.0" data-tol="0.0" autocomplete="off"></label><label>Tổng một block<input inputmode="decimal" data-ans="3152384.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+
+<details class="fold solution">
+<summary>Lời giải</summary>
+<p>Attention: 4·512² + 4·512 = 1.050.624. FFN: 512·2048 + 2048 + 2048·512 + 512 = 2.099.712. LayerNorm: 2·(512 + 512) = 2048. Tổng 3.152.384. Feed-forward chiếm khoảng 2/3 tham số của mỗi block.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 4</span><h3>Bộ nhớ của ma trận attention</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Chuỗi 4096 token, 32 đầu, mỗi phần tử fp16 (2 byte). 1 GB = 10⁹ byte.</p>
+<div class="ans" id="p3-2-e4-a1"><div class="ans-fields"><label>Số phần tử ma trận điểm của một đầu<input inputmode="decimal" data-ans="16777216.0" data-tol="0.0" autocomplete="off"></label><label>Bộ nhớ cho 32 đầu, một lớp (GB)<input inputmode="decimal" data-ans="1.0737" data-tol="0.001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+
+<details class="fold solution">
+<summary>Lời giải</summary>
+<p>4096² ≈ 16,8 triệu phần tử mỗi đầu. Nhân 32 đầu và 2 byte: khoảng 1,07 GB cho <strong>một</strong> lớp, một mẫu. Đây là lý do FlashAttention ra đời: tính attention theo từng khối mà không lưu cả ma trận.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 5</span><h3>Vì sao chia √d_k</h3><span class="ex-tag concept">khái niệm</span></div><div class="prose"><p>Giả sử các thành phần của q và k độc lập, trung bình 0, phương sai 1. Phương sai của q·k khi d_k = 64 là bao nhiêu? Điều gì xảy ra với softmax nếu không chia √d_k?</p>
+<details class="fold solution">
+<summary>Lời giải</summary>
+<p>q·k là tổng 64 tích độc lập, mỗi tích có phương sai 1, nên phương sai là 64 (độ lệch chuẩn 8). Điểm cỡ ±8 đến ±16 làm softmax gần như one-hot: một token nhận gần hết trọng số, gradient của các token khác gần 0, train rất chậm. Chia √64 = 8 đưa phương sai về 1.</p>
+</details></div></article><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p3.2:b">Tôi đã xong phần bài tập</label><button class="btn" type="button" data-goto="thuc-hanh">Sang thực hành <span class="arr">→</span></button></div></section><section class="panel" id="thuc-hanh" role="tabpanel" hidden><div class="prose"><h2>Lab 2: tự cài self-attention và multi-head attention</h2>
+<p><strong>Các bước</strong></p>
+<ol>
+<li>Viết <code>scaled_dot_product_attention(q, k, v, mask)</code> như phần lý thuyết.</li>
+<li>Viết lớp <code>MultiHeadAttention(d_model, n_heads)</code> với một <code>nn.Linear(d_model, 3*d_model)</code> cho Q, K, V và một <code>nn.Linear(d_model, d_model)</code> cho đầu ra. Tách đầu bằng <code>view</code> và <code>transpose</code> thành (B, h, T, d_k).</li>
+<li>Hỗ trợ tham số <code>causal=True</code> dùng mask tam giác dưới.</li>
+<li><strong>Kiểm tra khớp PyTorch:</strong> chép trọng số sang <code>nn.MultiheadAttention(d_model, n_heads, batch_first=True)</code> (<code>in_proj_weight</code>, <code>in_proj_bias</code>, <code>out_proj</code>) và so đầu ra trên tensor ngẫu nhiên (2, 10, 64), có và không có causal mask.</li>
+<li>Vẽ heatmap trọng số attention của từng đầu cho một câu ngắn sau khi qua model đã train ở Lab 3 (làm sau).</li>
+</ol>
+<p><strong>Xong khi</strong></p>
+<ul>
+<li>Sai số tuyệt đối lớn nhất so với <code>nn.MultiheadAttention</code> &lt; 1e-5, cả có và không có causal mask.</li>
+<li>Với causal mask, thay đổi token cuối không làm đổi đầu ra của các token trước (viết test cho điều này).</li>
+</ul>
+<details class="fold code">
+<summary>Code tham khảo</summary>
+<div class="hl"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span><span class="o">,</span><span class="w"> </span><span class="nn">torch.nn</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">nn</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">MultiHeadAttention</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">d_model</span><span class="p">,</span> <span class="n">n_heads</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="k">assert</span> <span class="n">d_model</span> <span class="o">%</span> <span class="n">n_heads</span> <span class="o">==</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">h</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dk</span> <span class="o">=</span> <span class="n">n_heads</span><span class="p">,</span> <span class="n">d_model</span> <span class="o">//</span> <span class="n">n_heads</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">qkv</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">d_model</span><span class="p">,</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">d_model</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">out</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">d_model</span><span class="p">,</span> <span class="n">d_model</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">causal</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="n">B</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">D</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span>
+        <span class="n">q</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">qkv</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">D</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">q</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="o">=</span> <span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">h</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dk</span><span class="p">)</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)]</span>   <span class="c1"># (B, h, T, dk)</span>
+        <span class="n">scores</span> <span class="o">=</span> <span class="n">q</span> <span class="o">@</span> <span class="n">k</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">dk</span> <span class="o">**</span> <span class="mf">0.5</span>
+        <span class="k">if</span> <span class="n">causal</span><span class="p">:</span>
+            <span class="n">mask</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tril</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">bool</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">x</span><span class="o">.</span><span class="n">device</span><span class="p">))</span>
+            <span class="n">scores</span> <span class="o">=</span> <span class="n">scores</span><span class="o">.</span><span class="n">masked_fill</span><span class="p">(</span><span class="o">~</span><span class="n">mask</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="s2">"-inf"</span><span class="p">))</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">softmax</span><span class="p">(</span><span class="n">scores</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span> <span class="o">@</span> <span class="n">v</span>                                              <span class="c1"># (B, h, T, dk)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">out</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">D</span><span class="p">))</span>
+
+<span class="n">torch</span><span class="o">.</span><span class="n">manual_seed</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">ours</span><span class="p">,</span> <span class="n">ref</span> <span class="o">=</span> <span class="n">MultiHeadAttention</span><span class="p">(</span><span class="mi">64</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span> <span class="n">nn</span><span class="o">.</span><span class="n">MultiheadAttention</span><span class="p">(</span><span class="mi">64</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="n">batch_first</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+    <span class="n">ref</span><span class="o">.</span><span class="n">in_proj_weight</span><span class="o">.</span><span class="n">copy_</span><span class="p">(</span><span class="n">ours</span><span class="o">.</span><span class="n">qkv</span><span class="o">.</span><span class="n">weight</span><span class="p">);</span> <span class="n">ref</span><span class="o">.</span><span class="n">in_proj_bias</span><span class="o">.</span><span class="n">copy_</span><span class="p">(</span><span class="n">ours</span><span class="o">.</span><span class="n">qkv</span><span class="o">.</span><span class="n">bias</span><span class="p">)</span>
+    <span class="n">ref</span><span class="o">.</span><span class="n">out_proj</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">copy_</span><span class="p">(</span><span class="n">ours</span><span class="o">.</span><span class="n">out</span><span class="o">.</span><span class="n">weight</span><span class="p">);</span> <span class="n">ref</span><span class="o">.</span><span class="n">out_proj</span><span class="o">.</span><span class="n">bias</span><span class="o">.</span><span class="n">copy_</span><span class="p">(</span><span class="n">ours</span><span class="o">.</span><span class="n">out</span><span class="o">.</span><span class="n">bias</span><span class="p">)</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">64</span><span class="p">)</span>
+<span class="n">causal</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">triu</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">bool</span><span class="p">),</span> <span class="n">diagonal</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>   <span class="c1"># True = bị che (quy ước của PyTorch)</span>
+<span class="nb">print</span><span class="p">((</span><span class="n">ours</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">-</span> <span class="n">ref</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">need_weights</span><span class="o">=</span><span class="kc">False</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
+<span class="nb">print</span><span class="p">((</span><span class="n">ours</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">causal</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">-</span> <span class="n">ref</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">attn_mask</span><span class="o">=</span><span class="n">causal</span><span class="p">,</span> <span class="n">need_weights</span><span class="o">=</span><span class="kc">False</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
+</code></pre></div>
+
+</details></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p3.2:p">Tôi đã xong phần thực hành</label></div></section>
+      <div class="donewhen"><b>Xong bài khi</b>Sai số so với PyTorch &lt; 1e-5, có hỗ trợ causal mask.</div>
       <nav class="pn" aria-label="Bài trước, bài sau"><a href="p3-1.html"><span class="dir">← Bài trước · P3.1</span><span class="tt">Tokenization và embedding</span></a><a class="nx" href="p3-3.html"><span class="dir">Bài sau · P3.3 →</span><span class="tt">Language model và sinh văn bản</span></a></nav>
     </div>
     <aside class="aside">
       <div class="abox"><h4>Tiến độ bài này</h4><div class="ring"><svg viewBox="0 0 64 64" aria-hidden="true"><circle class="bg" cx="32" cy="32" r="28"/><circle class="fg" cx="32" cy="32" r="28" stroke-dasharray="176" stroke-dashoffset="176"/></svg><div><b id="ring-n">0/3</b><span id="ring-sub">phần đã xong</span></div></div></div>
+      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Ý tưởng: mỗi token hỏi, mọi token trả lời</a></li><li><a href="#lt-2">Scaled dot-product attention</a></li><li><a href="#lt-3">Causal mask</a></li><li><a href="#lt-4">Multi-head attention</a></li><li><a href="#lt-5">Vị trí: positional encoding và RoPE</a></li><li><a href="#lt-6">Block Transformer hoàn chỉnh</a></li></ol></div>
       
       <div class="abox"><h4>Cùng giai đoạn</h4><ul><li><a href="p3-1.html">Tokenization và embedding</a></li><li><span class=cur>Bài 3 · Attention và Transformer</span></li><li><a href="p3-3.html">Language model và sinh văn bản</a></li><li><a href="p3-4.html">Hệ sinh thái Hugging Face</a></li></ul></div>
     </aside>
@@ -43,16 +182,75 @@
 
 (function () {
   const mid = document.body.dataset.mid; let d = AIE.load();
+  const EXK = "aie-ex-" + mid;
+  let solved = {}; try { solved = JSON.parse(localStorage.getItem(EXK) || "{}") || {}; } catch (e) {}
+  const saveSolved = () => { try { localStorage.setItem(EXK, JSON.stringify(solved)); } catch (e) {} };
+  const tabs = [...document.querySelectorAll(".tab")], panels = [...document.querySelectorAll(".panel")];
   const boxes = [...document.querySelectorAll("input[data-key]")], ring = document.querySelector(".ring .fg"), rt = document.getElementById("ring-n");
-  const skipped = () => !!d[mid + ":skip"];
+  const toc = document.getElementById("toc-box");
+  function show(id, scroll) {
+    tabs.forEach((t) => t.setAttribute("aria-selected", String(t.dataset.tab === id)));
+    panels.forEach((p) => { const on = p.id === id; if (on && p.hidden) { p.classList.remove("enter"); void p.offsetWidth; p.classList.add("enter"); } p.hidden = !on; });
+    if (toc) toc.hidden = id !== "ly-thuyet";
+    if (scroll) document.querySelector(".tabs").scrollIntoView({ block: "start" });
+  }
+  tabs.forEach((t) => t.addEventListener("click", () => { history.replaceState(null, "", "#" + t.dataset.tab); show(t.dataset.tab, true); }));
+  document.querySelectorAll("[data-goto]").forEach((b) => b.addEventListener("click", () => { history.replaceState(null, "", "#" + b.dataset.goto); show(b.dataset.goto, true); }));
+  const start = ["ly-thuyet", "bai-tap", "thuc-hanh"].includes(location.hash.slice(1)) ? location.hash.slice(1) : "ly-thuyet";
+  show(start, false);
+  window.addEventListener("hashchange", () => { const h = location.hash.slice(1); if (["ly-thuyet", "bai-tap", "thuc-hanh"].includes(h)) show(h, true); });
+  document.querySelectorAll(".toc a").forEach((a) => a.addEventListener("click", () => show("ly-thuyet", false)));
+
   function render() {
     let n = 0;
-    boxes.forEach((b) => { const on = skipped() || !!d[b.dataset.key]; b.checked = on; b.disabled = skipped(); b.closest(".pblock").classList.toggle("done", on); if (on) n++; });
+    const skip = !!d[mid + ":skip"];
+    boxes.forEach((b) => { const on = skip || !!d[b.dataset.key]; b.checked = on; if (on) n++; });
+    const kmap = { t: "ly-thuyet", b: "bai-tap", p: "thuc-hanh" };
+    tabs.forEach((t) => { const k = Object.keys(kmap).find((x) => kmap[x] === t.dataset.tab); t.classList.toggle("is-done", skip || !!d[mid + ":" + k]); });
     ring.style.strokeDashoffset = String(176 * (1 - n / 3)); rt.textContent = n + "/3";
-    document.getElementById("ring-sub").textContent = skipped() ? "đã đánh dấu bỏ qua" : n === 3 ? "hoàn thành bài này" : "phần đã xong";
+    document.getElementById("ring-sub").textContent = n === 3 ? "hoàn thành bài này" : "phần đã xong";
   }
-  boxes.forEach((b) => b.addEventListener("change", () => { d = AIE.load(); if (b.checked) d[b.dataset.key] = true; else delete d[b.dataset.key]; AIE.save(d); render(); }));
+  boxes.forEach((b) => b.addEventListener("change", () => {
+    d = AIE.load(); if (b.checked) d[b.dataset.key] = true; else delete d[b.dataset.key]; AIE.save(d);
+    boxes.filter((x) => x.dataset.key === b.dataset.key).forEach((x) => (x.checked = b.checked)); render();
+  }));
   render();
+
+  /* answer boxes */
+  const parse = (s) => parseFloat(String(s).trim().replace(",", ".").replace("−", "-"));
+  const allAns = [...document.querySelectorAll(".ans")];
+  function score() {
+    const ok = allAns.filter((a) => solved[a.id]).length;
+    const el = document.getElementById("ex-score");
+    if (el) { el.querySelector("b").textContent = `${ok} / ${allAns.length}`; el.querySelector(".bar i").style.width = (allAns.length ? ok / allAns.length * 100 : 0) + "%"; }
+    document.querySelectorAll(".excard").forEach((c) => { const as = [...c.querySelectorAll(".ans")]; c.classList.toggle("solved", as.length > 0 && as.every((a) => solved[a.id])); });
+  }
+  allAns.forEach((box) => {
+    const inputs = [...box.querySelectorAll("input")], fb = box.querySelector(".ans-fb");
+    const mark = () => { box.classList.add("ok"); inputs.forEach((i) => { i.classList.add("ok"); if (!i.value) i.value = i.dataset.ans; }); fb.className = "ans-fb ok"; fb.textContent = "Chính xác."; };
+    if (solved[box.id]) mark();
+    const run = () => {
+      let all = true, empty = false;
+      inputs.forEach((i) => {
+        const v = parse(i.value);
+        if (i.value.trim() === "" || Number.isNaN(v)) { empty = true; all = false; i.classList.remove("ok", "bad"); return; }
+        const good = Math.abs(v - parseFloat(i.dataset.ans)) <= parseFloat(i.dataset.tol) + 1e-9;
+        i.classList.toggle("ok", good); i.classList.toggle("bad", !good); if (!good) all = false;
+      });
+      if (all) { solved[box.id] = true; saveSolved(); mark(); box.classList.remove("pop"); void box.offsetWidth; box.classList.add("pop"); score(); }
+      else { fb.className = "ans-fb bad"; fb.textContent = empty ? "Điền đủ các ô bằng số (dấu chấm hoặc phẩy đều được)." : "Ô màu cam chưa đúng. Xem lại bước đó, hoặc mở gợi ý."; }
+    };
+    box.querySelector(".btn-check").addEventListener("click", run);
+    inputs.forEach((i) => i.addEventListener("keydown", (e) => { if (e.key === "Enter") run(); }));
+  });
+  score();
+
+  /* highlight current theory section in the toc */
+  if (toc && "IntersectionObserver" in window) {
+    const links = [...toc.querySelectorAll("a")];
+    const io = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) links.forEach((a) => a.classList.toggle("on", a.getAttribute("href") === "#" + e.target.id)); }), { rootMargin: "-140px 0px -65% 0px" });
+    document.querySelectorAll("#ly-thuyet h2[id]").forEach((h) => io.observe(h));
+  }
 })();
 
 </script>

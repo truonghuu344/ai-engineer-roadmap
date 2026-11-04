@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>P3.4 · Hệ sinh thái Hugging Face · AI Engineer</title>
-<meta name="description" content="Hệ sinh thái Hugging Face: transformers, datasets, tokenizers, Trainer; Hub: tải, đẩy model và dataset, model card; Fine-tune encoder (PhoBERT) cho phân loại">
+<meta name="description" content="Hệ sinh thái Hugging Face: lý thuyết, bài tập và thực hành. transformers, datasets, tokenizers, Trainer; Hub: tải, đẩy model và dataset, model card">
 <meta property="og:title" content="P3.4 · Hệ sinh thái Hugging Face · AI Engineer">
-<meta property="og:description" content="Hệ sinh thái Hugging Face: transformers, datasets, tokenizers, Trainer; Hub: tải, đẩy model và dataset, model card; Fine-tune encoder (PhoBERT) cho phân loại">
+<meta property="og:description" content="Hệ sinh thái Hugging Face: lý thuyết, bài tập và thực hành. transformers, datasets, tokenizers, Trainer; Hub: tải, đẩy model và dataset, model card">
 <meta name="theme-color" content="#F4F6FB">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23131A33'/%3E%3Cpath d='M9 22 L16 10 L23 19' stroke='%23E5E9FB' stroke-width='2' fill='none'/%3E%3Ccircle cx='9' cy='22' r='3' fill='%23E5E9FB'/%3E%3Ccircle cx='16' cy='10' r='3' fill='%23E5E9FB'/%3E%3Ccircle cx='23' cy='19' r='3' fill='%23FF9361'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -14,23 +14,177 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="../assets/chrome.css">
 <link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/lesson.css">
 </head>
 <body data-mid="p3.4">
 <header class="sh"><div class="sh-in"><a class="sh-brand" href="../index.html"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="var(--ink)"/><circle cx="9" cy="22" r="2.6" fill="var(--accent-soft)"/><circle cx="16" cy="10" r="2.6" fill="var(--accent-soft)"/><circle cx="23" cy="19" r="2.6" fill="#FF9361"/><path d="M9 22 L16 10 L23 19" stroke="var(--accent-soft)" stroke-width="1.8" fill="none"/></svg><span>AI Engineer<small>lộ trình tự học</small></span></a><nav class="sh-nav" id="sh-nav" aria-label="Chính"><a href="../index.html">Trang chủ</a><a href="../bai-hoc.html" aria-current="page">Bài học</a><a href="../lo-trinh.html">Lộ trình</a><a href="../notebooks.html">Notebook</a><a class="sh-cta-m" href="../bai01.html" data-next-lesson>Học tiếp →</a></nav><a class="sh-cta" href="../bai01.html" data-next-lesson>Học tiếp <span class="arr">→</span></a><button class="sh-burger" type="button" aria-expanded="false" aria-controls="sh-nav">Menu</button></div></header>
 
 <main class="container">
   <div class="crumbs"><a href="../bai-hoc.html">Bài học</a><span>/</span><a href="../bai-hoc.html#p3">P3 · Transformer và NLP</a><span>/</span><span>P3.4</span></div>
-  <section class="lhero"><div class="code">P3.4</div><h1>Hệ sinh thái Hugging Face</h1><div class="lmeta"><span class="m">Giai đoạn P3 · Transformer và NLP</span><span class="m">Tuần 13–17</span><span class="chip planned">Đề cương</span></div></section>
-  <div class="lgrid">
-    <div>
-      <div class="goal"><b>Mục tiêu giai đoạn:</b> Hiểu kiến trúc nằm dưới mọi LLM, tự cài được attention và một GPT nhỏ.</div>
-      <div class="soon">Nội dung đầy đủ (trang lý thuyết tương tác và notebook tự chấm) đang được soạn và sẽ có khi bạn học tới bài này. Đề cương dưới đây là phạm vi chính xác của bài.</div>
-      <section class="pblock reveal"><div class="pblock-head"><span class="num">1</span><h2>Lý thuyết<span style="display:block;font:400 13.5px var(--f-body);color:var(--muted);margin-top:4px">Những gì cần hiểu</span></h2><label class="tick" for="cb-t"><input type="checkbox" id="cb-t" data-key="p3.4:t">Xong</label></div><ol><li>transformers, datasets, tokenizers, Trainer</li><li>Hub: tải, đẩy model và dataset, model card</li><li>Fine-tune encoder (PhoBERT) cho phân loại</li></ol></section><section class="pblock reveal"><div class="pblock-head"><span class="num">2</span><h2>Bài tập<span style="display:block;font:400 13.5px var(--f-body);color:var(--muted);margin-top:4px">Tính tay và tự kiểm tra</span></h2><label class="tick" for="cb-b"><input type="checkbox" id="cb-b" data-key="p3.4:b">Xong</label></div><ol><li>Đọc một model card và trả lời 5 câu hỏi về dữ liệu, giấy phép, giới hạn</li></ol></section><section class="pblock reveal"><div class="pblock-head"><span class="num">3</span><h2>Thực hành<span style="display:block;font:400 13.5px var(--f-body);color:var(--muted);margin-top:4px">Code và dự án</span></h2><label class="tick" for="cb-p"><input type="checkbox" id="cb-p" data-key="p3.4:p">Xong</label></div><ol><li>Fine-tune PhoBERT phân loại cảm xúc review tiếng Việt, đẩy model lên Hub</li></ol></section>
-      <div class="donewhen reveal"><b>Xong khi</b>Model công khai trên Hub với model card và F1 trên tập test.</div>
+  <section class="lhero"><div class="code">P3.4</div><h1>Hệ sinh thái Hugging Face</h1><div class="lmeta"><span class="m">Giai đoạn P3 · Transformer và NLP</span><span class="m">Tuần 13–17</span><span class="chip ready"><span class="dot"></span>Có nội dung đầy đủ</span></div>
+    <div class="intro"><p>Hugging Face là "GitHub của AI": hàng trăm nghìn model và dataset, cùng bộ thư viện để tải, fine-tune và chia sẻ chúng chỉ trong vài chục dòng code. Bài này dạy bốn thư viện cốt lõi (<code>transformers</code>, <code>tokenizers</code>, <code>datasets</code>, <code>Trainer</code>) và cách đẩy model của bạn lên Hub. Phần thực hành fine-tune <strong>PhoBERT</strong> phân loại cảm xúc tiếng Việt.</p></div></section>
+  
+  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">5 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
+  <div class="lgrid" style="margin-top:22px">
+    <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">Auto classes: tải model trong 3 dòng</h2>
+<div class="hl"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">transformers</span><span class="w"> </span><span class="kn">import</span> <span class="n">AutoTokenizer</span><span class="p">,</span> <span class="n">AutoModelForSequenceClassification</span>
+<span class="n">tok</span> <span class="o">=</span> <span class="n">AutoTokenizer</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="s2">"vinai/phobert-base-v2"</span><span class="p">)</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">AutoModelForSequenceClassification</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="s2">"vinai/phobert-base-v2"</span><span class="p">,</span> <span class="n">num_labels</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+</code></pre></div>
+
+<p><code>Auto*</code> đọc file <code>config.json</code> của repo để biết kiến trúc. Hậu tố cho biết <strong>head</strong> gắn trên thân model: <code>ForSequenceClassification</code> (phân loại câu), <code>ForTokenClassification</code> (NER), <code>ForCausalLM</code> (sinh văn bản), <code>AutoModel</code> (chỉ thân, lấy embedding). Head mới được khởi tạo ngẫu nhiên, nên bạn sẽ thấy cảnh báo "some weights were newly initialized": đó là bình thường, bạn sắp fine-tune nó.</p>
+<h2 id="lt-2">Tokenizer: padding, truncation, attention mask</h2>
+<div class="hl"><pre><span></span><code><span class="n">batch</span> <span class="o">=</span> <span class="n">tok</span><span class="p">([</span><span class="s2">"câu ngắn"</span><span class="p">,</span> <span class="s2">"một câu dài hơn nhiều"</span><span class="p">],</span> <span class="n">padding</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">truncation</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">max_length</span><span class="o">=</span><span class="mi">256</span><span class="p">,</span> <span class="n">return_tensors</span><span class="o">=</span><span class="s2">"pt"</span><span class="p">)</span>
+<span class="n">batch</span><span class="p">[</span><span class="s2">"input_ids"</span><span class="p">]</span>        <span class="c1"># (2, T): id token, câu ngắn được đệm bằng pad_token_id</span>
+<span class="n">batch</span><span class="p">[</span><span class="s2">"attention_mask"</span><span class="p">]</span>   <span class="c1"># (2, T): 1 = token thật, 0 = đệm, để attention bỏ qua phần đệm</span>
+</code></pre></div>
+
+<p><strong>PhoBERT</strong> có hai điểm riêng cần nhớ: đầu vào phải được <strong>tách từ</strong> trước (ví dụ "học sinh" thành "học_sinh", dùng <code>pyvi</code> hoặc <code>underthesea</code>), và độ dài tối đa là <strong>256</strong> token.</p>
+<h2 id="lt-3">datasets: xử lý dữ liệu nhanh</h2>
+<div class="hl"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">datasets</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_dataset</span>
+<span class="n">ds</span> <span class="o">=</span> <span class="n">load_dataset</span><span class="p">(</span><span class="s2">"uitnlp/vietnamese_students_feedback"</span><span class="p">)</span>          <span class="c1"># train / validation / test</span>
+<span class="n">ds</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">b</span><span class="p">:</span> <span class="n">tok</span><span class="p">(</span><span class="n">b</span><span class="p">[</span><span class="s2">"sentence"</span><span class="p">],</span> <span class="n">truncation</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">max_length</span><span class="o">=</span><span class="mi">256</span><span class="p">),</span> <span class="n">batched</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">ds</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">rename_column</span><span class="p">(</span><span class="s2">"sentiment"</span><span class="p">,</span> <span class="s2">"labels"</span><span class="p">)</span>
+</code></pre></div>
+
+<p><code>map(batched=True)</code> xử lý nhiều dòng một lần và lưu cache trên đĩa (Apache Arrow), nên dataset vài GB vẫn chạy được trên laptop.</p>
+<h2 id="lt-4">Trainer</h2>
+<p><code>Trainer</code> gói sẵn vòng lặp train bạn tự viết ở Lab 1: mixed precision, gradient accumulation, đánh giá định kỳ, lưu checkpoint, log.</p>
+<div class="hl"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">transformers</span><span class="w"> </span><span class="kn">import</span> <span class="n">TrainingArguments</span><span class="p">,</span> <span class="n">Trainer</span><span class="p">,</span> <span class="n">DataCollatorWithPadding</span>
+<span class="n">args</span> <span class="o">=</span> <span class="n">TrainingArguments</span><span class="p">(</span><span class="s2">"phobert-sentiment"</span><span class="p">,</span> <span class="n">learning_rate</span><span class="o">=</span><span class="mf">2e-5</span><span class="p">,</span> <span class="n">per_device_train_batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span>
+                         <span class="n">num_train_epochs</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">warmup_ratio</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">weight_decay</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span> <span class="n">fp16</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                         <span class="n">eval_strategy</span><span class="o">=</span><span class="s2">"epoch"</span><span class="p">,</span> <span class="n">save_strategy</span><span class="o">=</span><span class="s2">"epoch"</span><span class="p">,</span> <span class="n">load_best_model_at_end</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                         <span class="n">metric_for_best_model</span><span class="o">=</span><span class="s2">"f1_macro"</span><span class="p">)</span>
+<span class="n">trainer</span> <span class="o">=</span> <span class="n">Trainer</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="n">args</span><span class="p">,</span> <span class="n">train_dataset</span><span class="o">=</span><span class="n">ds</span><span class="p">[</span><span class="s2">"train"</span><span class="p">],</span> <span class="n">eval_dataset</span><span class="o">=</span><span class="n">ds</span><span class="p">[</span><span class="s2">"validation"</span><span class="p">],</span>
+                  <span class="n">data_collator</span><span class="o">=</span><span class="n">DataCollatorWithPadding</span><span class="p">(</span><span class="n">tok</span><span class="p">),</span> <span class="n">compute_metrics</span><span class="o">=</span><span class="n">compute_metrics</span><span class="p">)</span>
+<span class="n">trainer</span><span class="o">.</span><span class="n">train</span><span class="p">()</span>
+</code></pre></div>
+
+<p>Learning rate fine-tune encoder thường nhỏ: <strong>2e-5 đến 5e-5</strong>. <code>DataCollatorWithPadding</code> đệm theo câu dài nhất <strong>trong từng batch</strong> thay vì cả dataset, nhanh hơn nhiều.</p>
+<h2 id="lt-5">Hub và model card</h2>
+<div class="hl"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">huggingface_hub</span><span class="w"> </span><span class="kn">import</span> <span class="n">login</span><span class="p">;</span> <span class="n">login</span><span class="p">()</span>          <span class="c1"># token có quyền write</span>
+<span class="n">trainer</span><span class="o">.</span><span class="n">push_to_hub</span><span class="p">()</span>                                <span class="c1"># đẩy model, tokenizer, config, model card</span>
+</code></pre></div>
+
+<p><strong>Model card</strong> (README.md của repo model) là tài liệu bắt buộc: model dùng cho việc gì, train trên dữ liệu nào, kết quả đo được, giới hạn và thiên lệch đã biết, giấy phép. Đọc model card <strong>trước</strong> khi dùng model của người khác, đặc biệt mục giấy phép (có model cấm dùng thương mại).</p>
+<div class="keep">
+<p><strong>Ghi nhớ:</strong> model bạn đẩy lên Hub kèm model card tốt là một mục portfolio hoàn chỉnh: nhà tuyển dụng tải về chạy thử được ngay.</p>
+</div></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p3.4:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 3</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Số bước train</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>20.000 câu train, batch 32, 3 epoch, <code>warmup_ratio=0.1</code>.</p>
+<div class="ans" id="p3-4-e1-a1"><div class="ans-fields"><label>Số bước mỗi epoch<input inputmode="decimal" data-ans="625.0" data-tol="0.0" autocomplete="off"></label><label>Tổng số bước<input inputmode="decimal" data-ans="1875.0" data-tol="0.0" autocomplete="off"></label><label>Số bước warmup (làm tròn lên)<input inputmode="decimal" data-ans="188.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+
+<details class="fold solution">
+<summary>Lời giải</summary>
+<p>20000/32 = 625 bước mỗi epoch, nhân 3 = 1875. Warmup 10% là 187,5, Trainer làm tròn lên 188 bước.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 2</span><h3>Macro F1 và weighted F1</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Kết quả trên test ba lớp:</p>
+<table>
+<thead>
+<tr>
+<th>Lớp</th>
+<th>F1</th>
+<th>Số câu</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>negative</td>
+<td>0.92</td>
+<td>1400</td>
+</tr>
+<tr>
+<td>neutral</td>
+<td>0.45</td>
+<td>160</td>
+</tr>
+<tr>
+<td>positive</td>
+<td>0.88</td>
+<td>1600</td>
+</tr>
+</tbody>
+</table>
+<div class="ans" id="p3-4-e2-a1"><div class="ans-fields"><label>Macro F1<input inputmode="decimal" data-ans="0.75" data-tol="0.001" autocomplete="off"></label><label>Weighted F1<input inputmode="decimal" data-ans="0.8759" data-tol="0.001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+
+<details class="fold solution">
+<summary>Lời giải</summary>
+<p>Macro: trung bình đều ba lớp = 0.75. Weighted: theo số câu = 2768/3160 ≈ 0.876. Weighted F1 che giấu việc model rất kém ở lớp neutral (ít câu). Với dữ liệu mất cân bằng, báo cáo macro F1 kèm F1 từng lớp.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 3</span><h3>Attention mask</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Hai câu có 5 và 9 token (đã tính token đặc biệt). Tokenize với <code>padding=True</code>.</p>
+<div class="ans" id="p3-4-e3-a1"><div class="ans-fields"><label>Độ dài T của batch<input inputmode="decimal" data-ans="9.0" data-tol="0.0" autocomplete="off"></label><label>Số số 0 trong attention_mask<input inputmode="decimal" data-ans="4.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+
+<details class="fold solution">
+<summary>Lời giải</summary>
+<p>Đệm tới câu dài nhất là 9. Câu đầu có 4 token đệm, nên attention_mask của nó có 4 số 0.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 4</span><h3>Đọc model card</h3><span class="ex-tag concept">khái niệm</span></div><div class="prose"><p>Mở model card của một model phân loại cảm xúc tiếng Việt trên Hugging Face. Trả lời: model train trên dữ liệu gì, kết quả đo trên tập nào, giấy phép là gì, có cho dùng thương mại không, giới hạn nào được nêu? Nếu model card thiếu thông tin, bạn sẽ làm gì trước khi dùng nó trong sản phẩm?</p>
+<details class="fold solution">
+<summary>Lời giải</summary>
+<p>Cần tìm đủ: tên dataset và miền dữ liệu (đánh giá sinh viên khác đánh giá sản phẩm), metric và tập đo, giấy phép (MIT, Apache-2.0 cho phép thương mại; CC-BY-NC thì không), giới hạn (văn bản không dấu, teencode). Nếu thiếu: tự đánh giá trên vài trăm mẫu của miền bạn, kiểm tra giấy phép của cả model nền và dataset, ghi rõ rủi ro trước khi đưa vào sản phẩm.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 5</span><h3>compute_metrics</h3><span class="ex-tag code">code</span></div><div class="prose"><p>Viết hàm <code>compute_metrics(eval_pred)</code> cho Trainer, trả về accuracy và macro F1.</p>
+<details class="fold code">
+<summary>Code tham khảo</summary>
+<div class="hl"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.metrics</span><span class="w"> </span><span class="kn">import</span> <span class="n">accuracy_score</span><span class="p">,</span> <span class="n">f1_score</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">compute_metrics</span><span class="p">(</span><span class="n">eval_pred</span><span class="p">):</span>
+    <span class="n">logits</span><span class="p">,</span> <span class="n">labels</span> <span class="o">=</span> <span class="n">eval_pred</span>
+    <span class="n">preds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">logits</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">{</span><span class="s2">"accuracy"</span><span class="p">:</span> <span class="n">accuracy_score</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">preds</span><span class="p">),</span> <span class="s2">"f1_macro"</span><span class="p">:</span> <span class="n">f1_score</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">preds</span><span class="p">,</span> <span class="n">average</span><span class="o">=</span><span class="s2">"macro"</span><span class="p">)}</span>
+</code></pre></div>
+
+</details></div></article><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p3.4:b">Tôi đã xong phần bài tập</label><button class="btn" type="button" data-goto="thuc-hanh">Sang thực hành <span class="arr">→</span></button></div></section><section class="panel" id="thuc-hanh" role="tabpanel" hidden><div class="prose"><h2>Fine-tune PhoBERT phân loại cảm xúc</h2>
+<p>Dùng dataset <strong>UIT-VSFC</strong> (<code>uitnlp/vietnamese_students_feedback</code>, khoảng 16.000 câu đánh giá của sinh viên, nhãn negative / neutral / positive).</p>
+<p><strong>Các bước</strong></p>
+<ol>
+<li>Tải dataset, xem phân bố nhãn. Lớp nào ít nhất?</li>
+<li>Tách từ bằng <code>pyvi</code> (<code>ViTokenizer.tokenize</code>) cho cột <code>sentence</code>.</li>
+<li>Tokenize với tokenizer của <code>vinai/phobert-base-v2</code>, <code>max_length=256</code>.</li>
+<li>Baseline: TF-IDF + LogisticRegression, báo cáo macro F1.</li>
+<li>Fine-tune PhoBERT bằng <code>Trainer</code> 3 epoch trên Colab GPU, chọn checkpoint tốt nhất theo macro F1 trên validation.</li>
+<li>Đánh giá trên test: macro F1, F1 từng lớp, confusion matrix. In 10 câu bị đoán sai.</li>
+<li>Viết model card và <code>push_to_hub</code>.</li>
+</ol>
+<p><strong>Xong khi</strong></p>
+<ul>
+<li>Model công khai trên Hub với model card có bảng kết quả.</li>
+<li>PhoBERT vượt baseline TF-IDF, và bạn giải thích được vì sao lớp neutral khó nhất.</li>
+</ul>
+<details class="fold code">
+<summary>Code tham khảo</summary>
+<div class="hl"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">datasets</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_dataset</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyvi</span><span class="w"> </span><span class="kn">import</span> <span class="n">ViTokenizer</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">transformers</span><span class="w"> </span><span class="kn">import</span> <span class="n">AutoTokenizer</span><span class="p">,</span> <span class="n">AutoModelForSequenceClassification</span><span class="p">,</span> <span class="n">TrainingArguments</span><span class="p">,</span> <span class="n">Trainer</span><span class="p">,</span> <span class="n">DataCollatorWithPadding</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.metrics</span><span class="w"> </span><span class="kn">import</span> <span class="n">f1_score</span><span class="p">,</span> <span class="n">accuracy_score</span><span class="p">,</span> <span class="n">classification_report</span>
+
+<span class="n">ds</span> <span class="o">=</span> <span class="n">load_dataset</span><span class="p">(</span><span class="s2">"uitnlp/vietnamese_students_feedback"</span><span class="p">)</span>
+<span class="n">ds</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">b</span><span class="p">:</span> <span class="p">{</span><span class="s2">"sentence"</span><span class="p">:</span> <span class="p">[</span><span class="n">ViTokenizer</span><span class="o">.</span><span class="n">tokenize</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">b</span><span class="p">[</span><span class="s2">"sentence"</span><span class="p">]]},</span> <span class="n">batched</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">name</span> <span class="o">=</span> <span class="s2">"vinai/phobert-base-v2"</span>
+<span class="n">tok</span> <span class="o">=</span> <span class="n">AutoTokenizer</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+<span class="n">ds</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">b</span><span class="p">:</span> <span class="n">tok</span><span class="p">(</span><span class="n">b</span><span class="p">[</span><span class="s2">"sentence"</span><span class="p">],</span> <span class="n">truncation</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">max_length</span><span class="o">=</span><span class="mi">256</span><span class="p">),</span> <span class="n">batched</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">rename_column</span><span class="p">(</span><span class="s2">"sentiment"</span><span class="p">,</span> <span class="s2">"labels"</span><span class="p">)</span>
+<span class="n">ds</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">remove_columns</span><span class="p">([</span><span class="s2">"sentence"</span><span class="p">,</span> <span class="s2">"topic"</span><span class="p">])</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">AutoModelForSequenceClassification</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">num_labels</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+            <span class="n">id2label</span><span class="o">=</span><span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="s2">"negative"</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span> <span class="s2">"neutral"</span><span class="p">,</span> <span class="mi">2</span><span class="p">:</span> <span class="s2">"positive"</span><span class="p">},</span> <span class="n">label2id</span><span class="o">=</span><span class="p">{</span><span class="s2">"negative"</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">"neutral"</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">"positive"</span><span class="p">:</span> <span class="mi">2</span><span class="p">})</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">compute_metrics</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+    <span class="n">preds</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">predictions</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">{</span><span class="s2">"accuracy"</span><span class="p">:</span> <span class="n">accuracy_score</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">label_ids</span><span class="p">,</span> <span class="n">preds</span><span class="p">),</span> <span class="s2">"f1_macro"</span><span class="p">:</span> <span class="n">f1_score</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">label_ids</span><span class="p">,</span> <span class="n">preds</span><span class="p">,</span> <span class="n">average</span><span class="o">=</span><span class="s2">"macro"</span><span class="p">)}</span>
+
+<span class="n">args</span> <span class="o">=</span> <span class="n">TrainingArguments</span><span class="p">(</span><span class="s2">"phobert-vsfc-sentiment"</span><span class="p">,</span> <span class="n">learning_rate</span><span class="o">=</span><span class="mf">2e-5</span><span class="p">,</span> <span class="n">per_device_train_batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">per_device_eval_batch_size</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span>
+                         <span class="n">num_train_epochs</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">warmup_ratio</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">weight_decay</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span> <span class="n">fp16</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">eval_strategy</span><span class="o">=</span><span class="s2">"epoch"</span><span class="p">,</span>
+                         <span class="n">save_strategy</span><span class="o">=</span><span class="s2">"epoch"</span><span class="p">,</span> <span class="n">load_best_model_at_end</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">metric_for_best_model</span><span class="o">=</span><span class="s2">"f1_macro"</span><span class="p">,</span> <span class="n">report_to</span><span class="o">=</span><span class="s2">"none"</span><span class="p">)</span>
+<span class="n">trainer</span> <span class="o">=</span> <span class="n">Trainer</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="n">args</span><span class="p">,</span> <span class="n">train_dataset</span><span class="o">=</span><span class="n">ds</span><span class="p">[</span><span class="s2">"train"</span><span class="p">],</span> <span class="n">eval_dataset</span><span class="o">=</span><span class="n">ds</span><span class="p">[</span><span class="s2">"validation"</span><span class="p">],</span>
+                  <span class="n">data_collator</span><span class="o">=</span><span class="n">DataCollatorWithPadding</span><span class="p">(</span><span class="n">tok</span><span class="p">),</span> <span class="n">compute_metrics</span><span class="o">=</span><span class="n">compute_metrics</span><span class="p">)</span>
+<span class="n">trainer</span><span class="o">.</span><span class="n">train</span><span class="p">()</span>
+<span class="n">pred</span> <span class="o">=</span> <span class="n">trainer</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">ds</span><span class="p">[</span><span class="s2">"test"</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">classification_report</span><span class="p">(</span><span class="n">pred</span><span class="o">.</span><span class="n">label_ids</span><span class="p">,</span> <span class="n">pred</span><span class="o">.</span><span class="n">predictions</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="n">target_names</span><span class="o">=</span><span class="p">[</span><span class="s2">"negative"</span><span class="p">,</span> <span class="s2">"neutral"</span><span class="p">,</span> <span class="s2">"positive"</span><span class="p">]))</span>
+<span class="c1"># trainer.push_to_hub()</span>
+</code></pre></div>
+
+</details></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p3.4:p">Tôi đã xong phần thực hành</label></div></section>
+      <div class="donewhen"><b>Xong bài khi</b>Model công khai trên Hub với model card và F1 trên tập test.</div>
       <nav class="pn" aria-label="Bài trước, bài sau"><a href="p3-3.html"><span class="dir">← Bài trước · P3.3</span><span class="tt">Language model và sinh văn bản</span></a><a class="nx" href="p4-1.html"><span class="dir">Bài sau · P4.1 →</span><span class="tt">Bài 4 · Làm việc với LLM</span></a></nav>
     </div>
     <aside class="aside">
       <div class="abox"><h4>Tiến độ bài này</h4><div class="ring"><svg viewBox="0 0 64 64" aria-hidden="true"><circle class="bg" cx="32" cy="32" r="28"/><circle class="fg" cx="32" cy="32" r="28" stroke-dasharray="176" stroke-dashoffset="176"/></svg><div><b id="ring-n">0/3</b><span id="ring-sub">phần đã xong</span></div></div></div>
+      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Auto classes: tải model trong 3 dòng</a></li><li><a href="#lt-2">Tokenizer: padding, truncation, attention mask</a></li><li><a href="#lt-3">datasets: xử lý dữ liệu nhanh</a></li><li><a href="#lt-4">Trainer</a></li><li><a href="#lt-5">Hub và model card</a></li></ol></div>
       
       <div class="abox"><h4>Cùng giai đoạn</h4><ul><li><a href="p3-1.html">Tokenization và embedding</a></li><li><a href="p3-2.html">Bài 3 · Attention và Transformer</a></li><li><a href="p3-3.html">Language model và sinh văn bản</a></li><li><span class=cur>Hệ sinh thái Hugging Face</span></li></ul></div>
     </aside>
@@ -43,16 +197,75 @@
 
 (function () {
   const mid = document.body.dataset.mid; let d = AIE.load();
+  const EXK = "aie-ex-" + mid;
+  let solved = {}; try { solved = JSON.parse(localStorage.getItem(EXK) || "{}") || {}; } catch (e) {}
+  const saveSolved = () => { try { localStorage.setItem(EXK, JSON.stringify(solved)); } catch (e) {} };
+  const tabs = [...document.querySelectorAll(".tab")], panels = [...document.querySelectorAll(".panel")];
   const boxes = [...document.querySelectorAll("input[data-key]")], ring = document.querySelector(".ring .fg"), rt = document.getElementById("ring-n");
-  const skipped = () => !!d[mid + ":skip"];
+  const toc = document.getElementById("toc-box");
+  function show(id, scroll) {
+    tabs.forEach((t) => t.setAttribute("aria-selected", String(t.dataset.tab === id)));
+    panels.forEach((p) => { const on = p.id === id; if (on && p.hidden) { p.classList.remove("enter"); void p.offsetWidth; p.classList.add("enter"); } p.hidden = !on; });
+    if (toc) toc.hidden = id !== "ly-thuyet";
+    if (scroll) document.querySelector(".tabs").scrollIntoView({ block: "start" });
+  }
+  tabs.forEach((t) => t.addEventListener("click", () => { history.replaceState(null, "", "#" + t.dataset.tab); show(t.dataset.tab, true); }));
+  document.querySelectorAll("[data-goto]").forEach((b) => b.addEventListener("click", () => { history.replaceState(null, "", "#" + b.dataset.goto); show(b.dataset.goto, true); }));
+  const start = ["ly-thuyet", "bai-tap", "thuc-hanh"].includes(location.hash.slice(1)) ? location.hash.slice(1) : "ly-thuyet";
+  show(start, false);
+  window.addEventListener("hashchange", () => { const h = location.hash.slice(1); if (["ly-thuyet", "bai-tap", "thuc-hanh"].includes(h)) show(h, true); });
+  document.querySelectorAll(".toc a").forEach((a) => a.addEventListener("click", () => show("ly-thuyet", false)));
+
   function render() {
     let n = 0;
-    boxes.forEach((b) => { const on = skipped() || !!d[b.dataset.key]; b.checked = on; b.disabled = skipped(); b.closest(".pblock").classList.toggle("done", on); if (on) n++; });
+    const skip = !!d[mid + ":skip"];
+    boxes.forEach((b) => { const on = skip || !!d[b.dataset.key]; b.checked = on; if (on) n++; });
+    const kmap = { t: "ly-thuyet", b: "bai-tap", p: "thuc-hanh" };
+    tabs.forEach((t) => { const k = Object.keys(kmap).find((x) => kmap[x] === t.dataset.tab); t.classList.toggle("is-done", skip || !!d[mid + ":" + k]); });
     ring.style.strokeDashoffset = String(176 * (1 - n / 3)); rt.textContent = n + "/3";
-    document.getElementById("ring-sub").textContent = skipped() ? "đã đánh dấu bỏ qua" : n === 3 ? "hoàn thành bài này" : "phần đã xong";
+    document.getElementById("ring-sub").textContent = n === 3 ? "hoàn thành bài này" : "phần đã xong";
   }
-  boxes.forEach((b) => b.addEventListener("change", () => { d = AIE.load(); if (b.checked) d[b.dataset.key] = true; else delete d[b.dataset.key]; AIE.save(d); render(); }));
+  boxes.forEach((b) => b.addEventListener("change", () => {
+    d = AIE.load(); if (b.checked) d[b.dataset.key] = true; else delete d[b.dataset.key]; AIE.save(d);
+    boxes.filter((x) => x.dataset.key === b.dataset.key).forEach((x) => (x.checked = b.checked)); render();
+  }));
   render();
+
+  /* answer boxes */
+  const parse = (s) => parseFloat(String(s).trim().replace(",", ".").replace("−", "-"));
+  const allAns = [...document.querySelectorAll(".ans")];
+  function score() {
+    const ok = allAns.filter((a) => solved[a.id]).length;
+    const el = document.getElementById("ex-score");
+    if (el) { el.querySelector("b").textContent = `${ok} / ${allAns.length}`; el.querySelector(".bar i").style.width = (allAns.length ? ok / allAns.length * 100 : 0) + "%"; }
+    document.querySelectorAll(".excard").forEach((c) => { const as = [...c.querySelectorAll(".ans")]; c.classList.toggle("solved", as.length > 0 && as.every((a) => solved[a.id])); });
+  }
+  allAns.forEach((box) => {
+    const inputs = [...box.querySelectorAll("input")], fb = box.querySelector(".ans-fb");
+    const mark = () => { box.classList.add("ok"); inputs.forEach((i) => { i.classList.add("ok"); if (!i.value) i.value = i.dataset.ans; }); fb.className = "ans-fb ok"; fb.textContent = "Chính xác."; };
+    if (solved[box.id]) mark();
+    const run = () => {
+      let all = true, empty = false;
+      inputs.forEach((i) => {
+        const v = parse(i.value);
+        if (i.value.trim() === "" || Number.isNaN(v)) { empty = true; all = false; i.classList.remove("ok", "bad"); return; }
+        const good = Math.abs(v - parseFloat(i.dataset.ans)) <= parseFloat(i.dataset.tol) + 1e-9;
+        i.classList.toggle("ok", good); i.classList.toggle("bad", !good); if (!good) all = false;
+      });
+      if (all) { solved[box.id] = true; saveSolved(); mark(); box.classList.remove("pop"); void box.offsetWidth; box.classList.add("pop"); score(); }
+      else { fb.className = "ans-fb bad"; fb.textContent = empty ? "Điền đủ các ô bằng số (dấu chấm hoặc phẩy đều được)." : "Ô màu cam chưa đúng. Xem lại bước đó, hoặc mở gợi ý."; }
+    };
+    box.querySelector(".btn-check").addEventListener("click", run);
+    inputs.forEach((i) => i.addEventListener("keydown", (e) => { if (e.key === "Enter") run(); }));
+  });
+  score();
+
+  /* highlight current theory section in the toc */
+  if (toc && "IntersectionObserver" in window) {
+    const links = [...toc.querySelectorAll("a")];
+    const io = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) links.forEach((a) => a.classList.toggle("on", a.getAttribute("href") === "#" + e.target.id)); }), { rootMargin: "-140px 0px -65% 0px" });
+    document.querySelectorAll("#ly-thuyet h2[id]").forEach((h) => io.observe(h));
+  }
 })();
 
 </script>

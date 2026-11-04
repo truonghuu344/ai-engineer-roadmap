@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>P4.6 · Multi-agent · AI Engineer</title>
-<meta name="description" content="Multi-agent: Khi nào cần nhiều agent, khi nào một agent là đủ; Mẫu kiến trúc: supervisor, orchestrator–worker, pipeline, debate; Handoff, chia sẻ state, giao thức agent-to-agent (A2A)">
+<meta name="description" content="Multi-agent: lý thuyết, bài tập và thực hành. Khi nào cần nhiều agent, khi nào một agent là đủ; Mẫu kiến trúc: supervisor, orchestrator–worker, pipeline, debate">
 <meta property="og:title" content="P4.6 · Multi-agent · AI Engineer">
-<meta property="og:description" content="Multi-agent: Khi nào cần nhiều agent, khi nào một agent là đủ; Mẫu kiến trúc: supervisor, orchestrator–worker, pipeline, debate; Handoff, chia sẻ state, giao thức agent-to-agent (A2A)">
+<meta property="og:description" content="Multi-agent: lý thuyết, bài tập và thực hành. Khi nào cần nhiều agent, khi nào một agent là đủ; Mẫu kiến trúc: supervisor, orchestrator–worker, pipeline, debate">
 <meta name="theme-color" content="#F4F6FB">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23131A33'/%3E%3Cpath d='M9 22 L16 10 L23 19' stroke='%23E5E9FB' stroke-width='2' fill='none'/%3E%3Ccircle cx='9' cy='22' r='3' fill='%23E5E9FB'/%3E%3Ccircle cx='16' cy='10' r='3' fill='%23E5E9FB'/%3E%3Ccircle cx='23' cy='19' r='3' fill='%23FF9361'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -14,23 +14,231 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="../assets/chrome.css">
 <link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/lesson.css">
 </head>
 <body data-mid="p4.6">
 <header class="sh"><div class="sh-in"><a class="sh-brand" href="../index.html"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="var(--ink)"/><circle cx="9" cy="22" r="2.6" fill="var(--accent-soft)"/><circle cx="16" cy="10" r="2.6" fill="var(--accent-soft)"/><circle cx="23" cy="19" r="2.6" fill="#FF9361"/><path d="M9 22 L16 10 L23 19" stroke="var(--accent-soft)" stroke-width="1.8" fill="none"/></svg><span>AI Engineer<small>lộ trình tự học</small></span></a><nav class="sh-nav" id="sh-nav" aria-label="Chính"><a href="../index.html">Trang chủ</a><a href="../bai-hoc.html" aria-current="page">Bài học</a><a href="../lo-trinh.html">Lộ trình</a><a href="../notebooks.html">Notebook</a><a class="sh-cta-m" href="../bai01.html" data-next-lesson>Học tiếp →</a></nav><a class="sh-cta" href="../bai01.html" data-next-lesson>Học tiếp <span class="arr">→</span></a><button class="sh-burger" type="button" aria-expanded="false" aria-controls="sh-nav">Menu</button></div></header>
 
 <main class="container">
   <div class="crumbs"><a href="../bai-hoc.html">Bài học</a><span>/</span><a href="../bai-hoc.html#p4">P4 · LLM Engineering</a><span>/</span><span>P4.6</span></div>
-  <section class="lhero"><div class="code">P4.6</div><h1>Multi-agent</h1><div class="lmeta"><span class="m">Giai đoạn P4 · LLM Engineering</span><span class="m">Tuần 18–25</span><span class="chip planned">Đề cương</span></div></section>
-  <div class="lgrid">
-    <div>
-      <div class="goal"><b>Mục tiêu giai đoạn:</b> Nhóm kỹ năng được tuyển nhiều nhất: ứng dụng LLM, RAG, agent và multi-agent chạy ổn định, an toàn và đo được chất lượng.</div>
-      <div class="soon">Nội dung đầy đủ (trang lý thuyết tương tác và notebook tự chấm) đang được soạn và sẽ có khi bạn học tới bài này. Đề cương dưới đây là phạm vi chính xác của bài.</div>
-      <section class="pblock reveal"><div class="pblock-head"><span class="num">1</span><h2>Lý thuyết<span style="display:block;font:400 13.5px var(--f-body);color:var(--muted);margin-top:4px">Những gì cần hiểu</span></h2><label class="tick" for="cb-t"><input type="checkbox" id="cb-t" data-key="p4.6:t">Xong</label></div><ol><li>Khi nào cần nhiều agent, khi nào một agent là đủ</li><li>Mẫu kiến trúc: supervisor, orchestrator–worker, pipeline, debate</li><li>Handoff, chia sẻ state, giao thức agent-to-agent (A2A)</li><li>Multi-agent bằng LangGraph; chi phí, độ trễ và lỗi lan truyền</li></ol></section><section class="pblock reveal"><div class="pblock-head"><span class="num">2</span><h2>Bài tập<span style="display:block;font:400 13.5px var(--f-body);color:var(--muted);margin-top:4px">Tính tay và tự kiểm tra</span></h2><label class="tick" for="cb-b"><input type="checkbox" id="cb-b" data-key="p4.6:b">Xong</label></div><ol><li>Ước tính chi phí token của hệ 1 supervisor + 3 worker</li><li>Thiết kế sơ đồ multi-agent cho bài toán viết báo cáo nghiên cứu</li></ol></section><section class="pblock reveal"><div class="pblock-head"><span class="num">3</span><h2>Thực hành<span style="display:block;font:400 13.5px var(--f-body);color:var(--muted);margin-top:4px">Code và dự án</span></h2><label class="tick" for="cb-p"><input type="checkbox" id="cb-p" data-key="p4.6:p">Xong</label></div><ol><li>Hệ multi-agent nghiên cứu: supervisor chia việc cho agent tìm kiếm, agent phân tích, agent viết; so với một agent đơn</li></ol></section>
-      <div class="donewhen reveal"><b>Xong khi</b>Bảng so sánh chất lượng, chi phí và độ trễ giữa multi-agent và single agent trên 10 câu hỏi.</div>
+  <section class="lhero"><div class="code">P4.6</div><h1>Multi-agent</h1><div class="lmeta"><span class="m">Giai đoạn P4 · LLM Engineering</span><span class="m">Tuần 18–25</span><span class="chip ready"><span class="dot"></span>Có nội dung đầy đủ</span></div>
+    <div class="intro"><p>Khi một agent phải ôm quá nhiều tool, quá nhiều loại việc và một context quá dài, nó bắt đầu chọn nhầm và quên mục tiêu. <strong>Multi-agent</strong> chia việc cho nhiều agent chuyên môn hóa phối hợp với nhau. Nhưng nhiều agent cũng đồng nghĩa nhiều chi phí, nhiều độ trễ và nhiều chỗ để hỏng. Bài này dạy các mẫu kiến trúc, cách chuyển giao và chia sẻ trạng thái, và quan trọng nhất là <strong>khi nào không nên dùng multi-agent</strong>.</p></div></section>
+  
+  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">5 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
+  <div class="lgrid" style="margin-top:22px">
+    <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">Khi nào cần nhiều agent</h2>
+<p>Bắt đầu với <strong>một agent</strong>. Chỉ tách ra khi có lý do đo được:</p>
+<table>
+<thead>
+<tr>
+<th>Dấu hiệu</th>
+<th>Vì sao multi-agent giúp</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Quá nhiều tool (trên 10–15), agent hay chọn nhầm</td>
+<td>mỗi agent chỉ thấy vài tool của mảng mình</td>
+</tr>
+<tr>
+<td>Các việc con cần prompt, model hoặc quyền khác nhau</td>
+<td>agent viết code khác agent duyệt chi tiêu</td>
+</tr>
+<tr>
+<td>Việc con độc lập, chạy song song được</td>
+<td>nghiên cứu 5 đối thủ cùng lúc</td>
+</tr>
+<tr>
+<td>Context quá dài</td>
+<td>mỗi agent con giữ context riêng, chỉ trả về bản tóm tắt</td>
+</tr>
+</tbody>
+</table>
+<p>Nếu không có dấu hiệu nào, multi-agent chỉ làm hệ thống đắt hơn, chậm hơn và khó debug hơn.</p>
+<h2 id="lt-2">Các mẫu kiến trúc</h2>
+<ul>
+<li><strong>Supervisor (orchestrator–worker):</strong> một agent điều phối nhận yêu cầu, chia việc, giao cho các worker, tổng hợp kết quả. Phổ biến nhất, dễ kiểm soát.</li>
+<li><strong>Pipeline:</strong> các agent nối tiếp, đầu ra của agent này là đầu vào agent sau (nghiên cứu → phân tích → viết). Đơn giản nhưng lỗi ở đầu lan tới cuối.</li>
+<li><strong>Song song (fan-out / fan-in):</strong> chạy nhiều worker cùng lúc trên các phần độc lập rồi gộp lại. Giảm độ trễ.</li>
+<li><strong>Phản biện (debate / critic):</strong> một agent tạo, một agent khác chấm và yêu cầu sửa. Tăng chất lượng, tốn gấp đôi.</li>
+<li><strong>Mạng ngang hàng (swarm):</strong> agent tự chuyển giao cho nhau. Linh hoạt nhưng khó đoán, khó debug.</li>
+</ul>
+<h2 id="lt-3">Chuyển giao và trạng thái chung</h2>
+<p>Cách các agent "nói chuyện" quyết định độ tin cậy:</p>
+<ul>
+<li><strong>Trạng thái có cấu trúc:</strong> thay vì chuyền nhau đoạn hội thoại dài, dùng một state dạng dict (<code>task</code>, <code>findings</code>, <code>draft</code>, <code>feedback</code>). Mỗi agent đọc phần cần và ghi phần của mình.</li>
+<li><strong>Handoff rõ ràng:</strong> khi agent A giao cho B, truyền <strong>mục tiêu, bối cảnh tối thiểu, định dạng kết quả mong đợi</strong>. Lỗi phổ biến nhất là worker không biết đủ bối cảnh và làm sai việc.</li>
+<li><strong>Kết quả tóm tắt:</strong> worker trả về bản tóm tắt gọn chứ không trả toàn bộ quá trình, để context của supervisor không phình.</li>
+</ul>
+<p><strong>A2A (Agent2Agent)</strong> là giao thức mở để agent của các hệ thống, các công ty khác nhau làm việc với nhau qua HTTP: mỗi agent công bố một "agent card" mô tả khả năng, nhận và cập nhật <strong>task</strong> theo chuẩn chung. MCP (P4.7) nối agent với <strong>tool và dữ liệu</strong>; A2A nối <strong>agent với agent</strong>.</p>
+<h2 id="lt-4">Multi-agent bằng LangGraph</h2>
+<p>Mỗi agent là một node (hoặc một subgraph), supervisor là node quyết định đi đâu tiếp bằng conditional edge. Chạy song song bằng <code>Send</code> để tạo nhiều nhánh worker cùng lúc.</p>
+<div class="hl"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TypedDict</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">langgraph.graph</span><span class="w"> </span><span class="kn">import</span> <span class="n">StateGraph</span><span class="p">,</span> <span class="n">START</span><span class="p">,</span> <span class="n">END</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">State</span><span class="p">(</span><span class="n">TypedDict</span><span class="p">):</span>
+    <span class="n">task</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">findings</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">analysis</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">report</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="nb">next</span><span class="p">:</span> <span class="nb">str</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">supervisor</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">s</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"findings"</span><span class="p">):</span> <span class="k">return</span> <span class="p">{</span><span class="s2">"next"</span><span class="p">:</span> <span class="s2">"researcher"</span><span class="p">}</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">s</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"analysis"</span><span class="p">):</span> <span class="k">return</span> <span class="p">{</span><span class="s2">"next"</span><span class="p">:</span> <span class="s2">"analyst"</span><span class="p">}</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">s</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"report"</span><span class="p">):</span> <span class="k">return</span> <span class="p">{</span><span class="s2">"next"</span><span class="p">:</span> <span class="s2">"writer"</span><span class="p">}</span>
+    <span class="k">return</span> <span class="p">{</span><span class="s2">"next"</span><span class="p">:</span> <span class="s2">"done"</span><span class="p">}</span>
+
+<span class="n">g</span> <span class="o">=</span> <span class="n">StateGraph</span><span class="p">(</span><span class="n">State</span><span class="p">)</span>
+<span class="n">g</span><span class="o">.</span><span class="n">add_node</span><span class="p">(</span><span class="s2">"supervisor"</span><span class="p">,</span> <span class="n">supervisor</span><span class="p">)</span>
+<span class="n">g</span><span class="o">.</span><span class="n">add_node</span><span class="p">(</span><span class="s2">"researcher"</span><span class="p">,</span> <span class="n">researcher</span><span class="p">)</span>      <span class="c1"># mỗi worker là một agent riêng (có tool riêng)</span>
+<span class="n">g</span><span class="o">.</span><span class="n">add_node</span><span class="p">(</span><span class="s2">"analyst"</span><span class="p">,</span> <span class="n">analyst</span><span class="p">)</span>
+<span class="n">g</span><span class="o">.</span><span class="n">add_node</span><span class="p">(</span><span class="s2">"writer"</span><span class="p">,</span> <span class="n">writer</span><span class="p">)</span>
+<span class="n">g</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">START</span><span class="p">,</span> <span class="s2">"supervisor"</span><span class="p">)</span>
+<span class="n">g</span><span class="o">.</span><span class="n">add_conditional_edges</span><span class="p">(</span><span class="s2">"supervisor"</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">s</span><span class="p">:</span> <span class="n">s</span><span class="p">[</span><span class="s2">"next"</span><span class="p">],</span>
+                        <span class="p">{</span><span class="s2">"researcher"</span><span class="p">:</span> <span class="s2">"researcher"</span><span class="p">,</span> <span class="s2">"analyst"</span><span class="p">:</span> <span class="s2">"analyst"</span><span class="p">,</span> <span class="s2">"writer"</span><span class="p">:</span> <span class="s2">"writer"</span><span class="p">,</span> <span class="s2">"done"</span><span class="p">:</span> <span class="n">END</span><span class="p">})</span>
+<span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">"researcher"</span><span class="p">,</span> <span class="s2">"analyst"</span><span class="p">,</span> <span class="s2">"writer"</span><span class="p">]:</span>
+    <span class="n">g</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="s2">"supervisor"</span><span class="p">)</span>
+<span class="n">app</span> <span class="o">=</span> <span class="n">g</span><span class="o">.</span><span class="n">compile</span><span class="p">()</span>
+</code></pre></div>
+
+<p>Supervisor ở trên là luật cố định; trong hệ thật, supervisor thường là một LLM chọn bước tiếp theo, kèm giới hạn số vòng.</p>
+<h2 id="lt-5">Cái giá của multi-agent</h2>
+<ul>
+<li><strong>Chi phí:</strong> mỗi agent có system prompt, lịch sử và kết quả riêng. Hệ nhiều agent thường tốn gấp vài lần một agent.</li>
+<li><strong>Lỗi lan truyền:</strong> pipeline 3 agent mỗi agent đúng 90% thì cả chuỗi chỉ còn khoảng 73%.</li>
+<li><strong>Khó debug:</strong> cần tracing để thấy agent nào nhận gì, trả gì.</li>
+<li><strong>Phối hợp hỏng:</strong> hai worker làm trùng việc, hoặc chờ nhau mãi.</li>
+</ul>
+<div class="keep">
+<p><strong>Ghi nhớ:</strong> multi-agent là một quyết định kiến trúc có chi phí. Đo trên bộ eval: nếu một agent tốt với prompt tốt đạt gần bằng, hãy giữ một agent.</p>
+</div></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p4.6:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 2</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Chi phí token</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Hệ multi-agent: supervisor chạy 4 lượt, mỗi lượt 3.000 token đầu vào; 3 worker, mỗi worker 5 lượt, mỗi lượt 4.000 token. Một agent đơn làm cùng việc cần 8 lượt, mỗi lượt 5.000 token.</p>
+<div class="ans" id="p4-6-e1-a1"><div class="ans-fields"><label>Tổng token multi-agent<input inputmode="decimal" data-ans="72000.0" data-tol="0.0" autocomplete="off"></label><label>Tổng token agent đơn<input inputmode="decimal" data-ans="40000.0" data-tol="0.0" autocomplete="off"></label><label>Multi-agent tốn gấp bao nhiêu lần<input inputmode="decimal" data-ans="1.8" data-tol="0.001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+
+<details class="fold solution">
+<summary>Lời giải</summary>
+<p>12.000 + 60.000 = 72.000 so với 40.000: gấp 1,8 lần. Multi-agent chỉ đáng nếu chất lượng tăng tương xứng, hoặc nếu nhờ chạy song song mà độ trễ giảm đáng kể.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 2</span><h3>Lỗi lan truyền và độ trễ</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><ol>
+<li>Pipeline 3 agent, mỗi agent đúng 90%, lỗi ở bước nào cũng làm hỏng kết quả cuối.</li>
+<li>Supervisor tốn 2 lượt, mỗi lượt 5 giây. 3 worker, mỗi worker 20 giây.</li>
+</ol>
+<div class="ans" id="p4-6-e2-a1"><div class="ans-fields"><label>Xác suất cả chuỗi đúng<input inputmode="decimal" data-ans="0.729" data-tol="0.001" autocomplete="off"></label><label>Độ trễ khi worker chạy tuần tự (s)<input inputmode="decimal" data-ans="70.0" data-tol="0.0" autocomplete="off"></label><label>Độ trễ khi worker chạy song song (s)<input inputmode="decimal" data-ans="30.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+
+<details class="fold solution">
+<summary>Lời giải</summary>
+<p>0.9³ = 0.729. Tuần tự: 10 + 60 = 70 giây; song song: 10 + 20 = 30 giây. Chạy song song là một trong những lý do chính đáng nhất để dùng nhiều agent.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 3</span><h3>Một hay nhiều agent</h3><span class="ex-tag concept">khái niệm</span></div><div class="prose"><p>Với mỗi hệ thống, chọn một agent hay multi-agent và mẫu kiến trúc nào:</p>
+<ol>
+<li>Chatbot trả lời câu hỏi về chính sách đổi trả (2 tool).</li>
+<li>Hệ viết báo cáo phân tích thị trường: tìm tin tức, đọc báo cáo tài chính, vẽ biểu đồ, viết bài.</li>
+<li>Trợ lý lập trình: viết code, chạy test, review bảo mật trước khi tạo pull request.</li>
+</ol>
+<details class="fold solution">
+<summary>Lời giải</summary>
+<ol>
+<li>Một agent: ít tool, việc đơn giản. Multi-agent chỉ thêm chi phí.</li>
+<li>Supervisor + worker song song (tìm tin, đọc báo cáo) rồi writer. Việc con độc lập, cần tool khác nhau.</li>
+<li>Một agent viết code và chạy test, cộng một agent reviewer (mẫu critic) có prompt và quyền riêng, tập trung vào bảo mật.</li>
+</ol>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 4</span><h3>Thiết kế handoff</h3><span class="ex-tag concept">thiết kế</span></div><div class="prose"><p>Supervisor giao cho worker "researcher" việc tìm thông tin về 3 đối thủ. Viết nội dung handoff (thông điệp supervisor gửi cho worker) và định dạng kết quả worker phải trả về.</p>
+<details class="fold solution">
+<summary>Lời giải</summary>
+<div class="hl"><pre><span></span><code>Mục tiêu: thu thập thông tin để so sánh giá và chính sách của 3 đối thủ.
+Đối thủ: A (a.vn), B (b.vn), C (c.vn).
+Cần cho mỗi đối thủ: giá 3 mẫu bàn trang điểm bán chạy, phí và thời gian giao hàng ở Hà Nội, chính sách đổi trả.
+Không cần: lịch sử công ty, đánh giá chung chung.
+Giới hạn: tối đa 8 lượt tìm kiếm.
+Trả về JSON:
+{"competitors": [{"name": "...", "products": [{"name": "...", "price_vnd": 0, "source_url": "..."}],
+  "shipping": "...", "returns": "...", "missing": ["thông tin không tìm được"]}]}
+</code></pre></div>
+
+<p>Có mục tiêu, phạm vi cần và không cần, giới hạn, và định dạng kết quả có nguồn, có chỗ ghi thông tin thiếu thay vì bịa.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 5</span><h3>Fan-out song song</h3><span class="ex-tag code">code</span></div><div class="prose"><p>Dùng <code>Send</code> trong LangGraph để chạy một worker <code>research_one</code> cho từng đối thủ song song, rồi gộp kết quả vào danh sách <code>findings</code>.</p>
+<details class="fold code">
+<summary>Code tham khảo</summary>
+<div class="hl"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">operator</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Annotated</span><span class="p">,</span> <span class="n">TypedDict</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">langgraph.graph</span><span class="w"> </span><span class="kn">import</span> <span class="n">StateGraph</span><span class="p">,</span> <span class="n">START</span><span class="p">,</span> <span class="n">END</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">langgraph.types</span><span class="w"> </span><span class="kn">import</span> <span class="n">Send</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">State</span><span class="p">(</span><span class="n">TypedDict</span><span class="p">):</span>
+    <span class="n">competitors</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="n">findings</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="nb">list</span><span class="p">,</span> <span class="n">operator</span><span class="o">.</span><span class="n">add</span><span class="p">]</span>     <span class="c1"># các nhánh song song cùng ghi vào, nối danh sách lại</span>
+    <span class="n">report</span><span class="p">:</span> <span class="nb">str</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">fan_out</span><span class="p">(</span><span class="n">state</span><span class="p">):</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">Send</span><span class="p">(</span><span class="s2">"research_one"</span><span class="p">,</span> <span class="p">{</span><span class="s2">"name"</span><span class="p">:</span> <span class="n">c</span><span class="p">})</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">state</span><span class="p">[</span><span class="s2">"competitors"</span><span class="p">]]</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">research_one</span><span class="p">(</span><span class="n">arg</span><span class="p">):</span>
+    <span class="n">summary</span> <span class="o">=</span> <span class="n">research_agent</span><span class="p">(</span><span class="n">arg</span><span class="p">[</span><span class="s2">"name"</span><span class="p">])</span>       <span class="c1"># agent con với tool tìm kiếm, trả bản tóm tắt</span>
+    <span class="k">return</span> <span class="p">{</span><span class="s2">"findings"</span><span class="p">:</span> <span class="p">[{</span><span class="s2">"name"</span><span class="p">:</span> <span class="n">arg</span><span class="p">[</span><span class="s2">"name"</span><span class="p">],</span> <span class="s2">"summary"</span><span class="p">:</span> <span class="n">summary</span><span class="p">}]}</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">write</span><span class="p">(</span><span class="n">state</span><span class="p">):</span>
+    <span class="k">return</span> <span class="p">{</span><span class="s2">"report"</span><span class="p">:</span> <span class="n">writer_agent</span><span class="p">(</span><span class="n">state</span><span class="p">[</span><span class="s2">"findings"</span><span class="p">])}</span>
+
+<span class="n">g</span> <span class="o">=</span> <span class="n">StateGraph</span><span class="p">(</span><span class="n">State</span><span class="p">)</span>
+<span class="n">g</span><span class="o">.</span><span class="n">add_node</span><span class="p">(</span><span class="s2">"research_one"</span><span class="p">,</span> <span class="n">research_one</span><span class="p">)</span>
+<span class="n">g</span><span class="o">.</span><span class="n">add_node</span><span class="p">(</span><span class="s2">"write"</span><span class="p">,</span> <span class="n">write</span><span class="p">)</span>
+<span class="n">g</span><span class="o">.</span><span class="n">add_conditional_edges</span><span class="p">(</span><span class="n">START</span><span class="p">,</span> <span class="n">fan_out</span><span class="p">,</span> <span class="p">[</span><span class="s2">"research_one"</span><span class="p">])</span>
+<span class="n">g</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="s2">"research_one"</span><span class="p">,</span> <span class="s2">"write"</span><span class="p">)</span>
+<span class="n">g</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="s2">"write"</span><span class="p">,</span> <span class="n">END</span><span class="p">)</span>
+<span class="n">app</span> <span class="o">=</span> <span class="n">g</span><span class="o">.</span><span class="n">compile</span><span class="p">()</span>
+</code></pre></div>
+
+</details></div></article><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p4.6:b">Tôi đã xong phần bài tập</label><button class="btn" type="button" data-goto="thuc-hanh">Sang thực hành <span class="arr">→</span></button></div></section><section class="panel" id="thuc-hanh" role="tabpanel" hidden><div class="prose"><h2>Hệ multi-agent viết báo cáo nghiên cứu</h2>
+<p><strong>Các bước</strong></p>
+<ol>
+<li>Bài toán: nhận một câu hỏi nghiên cứu (ví dụ "So sánh 3 framework agent phổ biến cho dự án nhỏ"), trả về báo cáo 1 trang có nguồn.</li>
+<li><strong>Bản 1, agent đơn:</strong> một agent có tool tìm kiếm web và đọc trang.</li>
+<li><strong>Bản 2, multi-agent</strong> bằng LangGraph:
+   - <code>planner</code> (supervisor): tách câu hỏi thành 3–5 câu hỏi con
+   - <code>researcher</code> × N chạy song song bằng <code>Send</code>, mỗi cái trả bản tóm tắt có nguồn
+   - <code>analyst</code>: đối chiếu, phát hiện mâu thuẫn
+   - <code>writer</code>: viết báo cáo; <code>critic</code>: chấm theo tiêu chí, cho phép sửa tối đa 1 vòng</li>
+<li>Giới hạn: tối đa 25 lượt gọi LLM cho cả hệ, log mọi lượt.</li>
+<li>Tạo 10 câu hỏi nghiên cứu, chạy cả hai bản, chấm báo cáo bằng LLM-as-judge (độ đầy đủ, chính xác nguồn, mạch lạc) và tự đọc 3 báo cáo để kiểm tra judge.</li>
+</ol>
+<p><strong>Mẫu bảng kết quả</strong></p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Điểm judge</th>
+<th>Nguồn đúng</th>
+<th>Token TB</th>
+<th>Độ trễ TB</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Agent đơn</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Multi-agent</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Xong khi</strong></p>
+<ul>
+<li>Có bảng so sánh chất lượng, chi phí, độ trễ trên 10 câu hỏi.</li>
+<li>Kết luận rõ: với bài toán này, multi-agent có đáng hay không, dựa trên số liệu.</li>
+<li>Có trace của ít nhất một lần chạy cho thấy từng agent nhận gì, trả gì.</li>
+</ul></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p4.6:p">Tôi đã xong phần thực hành</label></div></section>
+      <div class="donewhen"><b>Xong bài khi</b>Bảng so sánh chất lượng, chi phí và độ trễ giữa multi-agent và single agent trên 10 câu hỏi.</div>
       <nav class="pn" aria-label="Bài trước, bài sau"><a href="p4-5.html"><span class="dir">← Bài trước · P4.5</span><span class="tt">RAG nâng cao</span></a><a class="nx" href="p4-7.html"><span class="dir">Bài sau · P4.7 →</span><span class="tt">MCP và hệ sinh thái tool</span></a></nav>
     </div>
     <aside class="aside">
       <div class="abox"><h4>Tiến độ bài này</h4><div class="ring"><svg viewBox="0 0 64 64" aria-hidden="true"><circle class="bg" cx="32" cy="32" r="28"/><circle class="fg" cx="32" cy="32" r="28" stroke-dasharray="176" stroke-dashoffset="176"/></svg><div><b id="ring-n">0/3</b><span id="ring-sub">phần đã xong</span></div></div></div>
+      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Khi nào cần nhiều agent</a></li><li><a href="#lt-2">Các mẫu kiến trúc</a></li><li><a href="#lt-3">Chuyển giao và trạng thái chung</a></li><li><a href="#lt-4">Multi-agent bằng LangGraph</a></li><li><a href="#lt-5">Cái giá của multi-agent</a></li></ol></div>
       
       <div class="abox"><h4>Cùng giai đoạn</h4><ul><li><a href="p4-1.html">Bài 4 · Làm việc với LLM</a></li><li><a href="p4-2.html">Bài 5 · Embedding và RAG</a></li><li><a href="p4-3.html">Bài 6 · Đánh giá hệ thống AI</a></li><li><a href="p4-4.html">Bài 7 · Agent</a></li><li><a href="p4-5.html">RAG nâng cao</a></li><li><span class=cur>Multi-agent</span></li><li><a href="p4-7.html">MCP và hệ sinh thái tool</a></li><li><a href="p4-8.html">Guardrails, an toàn và human-in-the-loop</a></li></ul></div>
     </aside>
@@ -43,16 +251,75 @@
 
 (function () {
   const mid = document.body.dataset.mid; let d = AIE.load();
+  const EXK = "aie-ex-" + mid;
+  let solved = {}; try { solved = JSON.parse(localStorage.getItem(EXK) || "{}") || {}; } catch (e) {}
+  const saveSolved = () => { try { localStorage.setItem(EXK, JSON.stringify(solved)); } catch (e) {} };
+  const tabs = [...document.querySelectorAll(".tab")], panels = [...document.querySelectorAll(".panel")];
   const boxes = [...document.querySelectorAll("input[data-key]")], ring = document.querySelector(".ring .fg"), rt = document.getElementById("ring-n");
-  const skipped = () => !!d[mid + ":skip"];
+  const toc = document.getElementById("toc-box");
+  function show(id, scroll) {
+    tabs.forEach((t) => t.setAttribute("aria-selected", String(t.dataset.tab === id)));
+    panels.forEach((p) => { const on = p.id === id; if (on && p.hidden) { p.classList.remove("enter"); void p.offsetWidth; p.classList.add("enter"); } p.hidden = !on; });
+    if (toc) toc.hidden = id !== "ly-thuyet";
+    if (scroll) document.querySelector(".tabs").scrollIntoView({ block: "start" });
+  }
+  tabs.forEach((t) => t.addEventListener("click", () => { history.replaceState(null, "", "#" + t.dataset.tab); show(t.dataset.tab, true); }));
+  document.querySelectorAll("[data-goto]").forEach((b) => b.addEventListener("click", () => { history.replaceState(null, "", "#" + b.dataset.goto); show(b.dataset.goto, true); }));
+  const start = ["ly-thuyet", "bai-tap", "thuc-hanh"].includes(location.hash.slice(1)) ? location.hash.slice(1) : "ly-thuyet";
+  show(start, false);
+  window.addEventListener("hashchange", () => { const h = location.hash.slice(1); if (["ly-thuyet", "bai-tap", "thuc-hanh"].includes(h)) show(h, true); });
+  document.querySelectorAll(".toc a").forEach((a) => a.addEventListener("click", () => show("ly-thuyet", false)));
+
   function render() {
     let n = 0;
-    boxes.forEach((b) => { const on = skipped() || !!d[b.dataset.key]; b.checked = on; b.disabled = skipped(); b.closest(".pblock").classList.toggle("done", on); if (on) n++; });
+    const skip = !!d[mid + ":skip"];
+    boxes.forEach((b) => { const on = skip || !!d[b.dataset.key]; b.checked = on; if (on) n++; });
+    const kmap = { t: "ly-thuyet", b: "bai-tap", p: "thuc-hanh" };
+    tabs.forEach((t) => { const k = Object.keys(kmap).find((x) => kmap[x] === t.dataset.tab); t.classList.toggle("is-done", skip || !!d[mid + ":" + k]); });
     ring.style.strokeDashoffset = String(176 * (1 - n / 3)); rt.textContent = n + "/3";
-    document.getElementById("ring-sub").textContent = skipped() ? "đã đánh dấu bỏ qua" : n === 3 ? "hoàn thành bài này" : "phần đã xong";
+    document.getElementById("ring-sub").textContent = n === 3 ? "hoàn thành bài này" : "phần đã xong";
   }
-  boxes.forEach((b) => b.addEventListener("change", () => { d = AIE.load(); if (b.checked) d[b.dataset.key] = true; else delete d[b.dataset.key]; AIE.save(d); render(); }));
+  boxes.forEach((b) => b.addEventListener("change", () => {
+    d = AIE.load(); if (b.checked) d[b.dataset.key] = true; else delete d[b.dataset.key]; AIE.save(d);
+    boxes.filter((x) => x.dataset.key === b.dataset.key).forEach((x) => (x.checked = b.checked)); render();
+  }));
   render();
+
+  /* answer boxes */
+  const parse = (s) => parseFloat(String(s).trim().replace(",", ".").replace("−", "-"));
+  const allAns = [...document.querySelectorAll(".ans")];
+  function score() {
+    const ok = allAns.filter((a) => solved[a.id]).length;
+    const el = document.getElementById("ex-score");
+    if (el) { el.querySelector("b").textContent = `${ok} / ${allAns.length}`; el.querySelector(".bar i").style.width = (allAns.length ? ok / allAns.length * 100 : 0) + "%"; }
+    document.querySelectorAll(".excard").forEach((c) => { const as = [...c.querySelectorAll(".ans")]; c.classList.toggle("solved", as.length > 0 && as.every((a) => solved[a.id])); });
+  }
+  allAns.forEach((box) => {
+    const inputs = [...box.querySelectorAll("input")], fb = box.querySelector(".ans-fb");
+    const mark = () => { box.classList.add("ok"); inputs.forEach((i) => { i.classList.add("ok"); if (!i.value) i.value = i.dataset.ans; }); fb.className = "ans-fb ok"; fb.textContent = "Chính xác."; };
+    if (solved[box.id]) mark();
+    const run = () => {
+      let all = true, empty = false;
+      inputs.forEach((i) => {
+        const v = parse(i.value);
+        if (i.value.trim() === "" || Number.isNaN(v)) { empty = true; all = false; i.classList.remove("ok", "bad"); return; }
+        const good = Math.abs(v - parseFloat(i.dataset.ans)) <= parseFloat(i.dataset.tol) + 1e-9;
+        i.classList.toggle("ok", good); i.classList.toggle("bad", !good); if (!good) all = false;
+      });
+      if (all) { solved[box.id] = true; saveSolved(); mark(); box.classList.remove("pop"); void box.offsetWidth; box.classList.add("pop"); score(); }
+      else { fb.className = "ans-fb bad"; fb.textContent = empty ? "Điền đủ các ô bằng số (dấu chấm hoặc phẩy đều được)." : "Ô màu cam chưa đúng. Xem lại bước đó, hoặc mở gợi ý."; }
+    };
+    box.querySelector(".btn-check").addEventListener("click", run);
+    inputs.forEach((i) => i.addEventListener("keydown", (e) => { if (e.key === "Enter") run(); }));
+  });
+  score();
+
+  /* highlight current theory section in the toc */
+  if (toc && "IntersectionObserver" in window) {
+    const links = [...toc.querySelectorAll("a")];
+    const io = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) links.forEach((a) => a.classList.toggle("on", a.getAttribute("href") === "#" + e.target.id)); }), { rootMargin: "-140px 0px -65% 0px" });
+    document.querySelectorAll("#ly-thuyet h2[id]").forEach((h) => io.observe(h));
+  }
 })();
 
 </script>
