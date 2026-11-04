@@ -1,0 +1,845 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Dự án Diffusion giai đoạn 1: thêm nhiễu, dự đoán nhiễu, train và sampling DDPM.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232C47D1'/%3E%3Cpath d='M8 22 L14 10 L18 18 L24 8' stroke='white' stroke-width='3' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<title>Diffusion tạo ảnh thế nào</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout (shared with the AI Engineer lessons): lab-notebook lesson — sticky progress rail on the left, one reading column; each section ends with a hand-calculation check and a pointer to the notebook part that drills it. */
+:root {
+  --paper: #F4F6FB;
+  --surface: #FFFFFF;
+  --ink: #131A33;
+  --muted: #59627F;
+  --line: #DCE1EE;
+  --grid: #E7EBF5;
+  --accent: #2C47D1;
+  --accent-soft: #E5E9FB;
+  --hot: #D2501B;
+  --hot-soft: #FCE8DE;
+  --ok: #1D8350;
+  --ok-soft: #E1F3E9;
+  --bad: #BF3128;
+  --bad-soft: #FBE4E2;
+  --code-bg: #EEF1F8;
+  --f-display: "Bricolage Grotesque", "Be Vietnam Pro", system-ui, sans-serif;
+  --f-body: "Be Vietnam Pro", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #0E1222; --surface: #161B30; --ink: #E5E8F4; --muted: #98A0BD; --line: #283052; --grid: #1B2140;
+    --accent: #93A6FF; --accent-soft: #1F2752; --hot: #FF9361; --hot-soft: #3A2419;
+    --ok: #52C98F; --ok-soft: #133022; --bad: #FF7B70; --bad-soft: #3A1A18; --code-bg: #1A2038;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #0E1222; --surface: #161B30; --ink: #E5E8F4; --muted: #98A0BD; --line: #283052; --grid: #1B2140;
+  --accent: #93A6FF; --accent-soft: #1F2752; --hot: #FF9361; --hot-soft: #3A2419;
+  --ok: #52C98F; --ok-soft: #133022; --bad: #FF7B70; --bad-soft: #3A1A18; --code-bg: #1A2038;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--f-body);
+  font-size: 16.5px;
+  line-height: 1.7;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.shell {
+  max-width: 1080px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  gap: 56px;
+  padding-block: 40px 96px;
+}
+@media (max-width: 860px) {
+  .shell { grid-template-columns: minmax(0, 1fr); gap: 0; padding-block: 24px 72px; }
+  .rail { display: none; }
+}
+
+/* rail */
+.rail { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 32px); align-self: start; }
+.rail-label { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+.rail ol { list-style: none; margin: 14px 0 20px; padding: 0; display: grid; gap: 2px; }
+.rail a {
+  display: grid; grid-template-columns: 22px 1fr; gap: 8px; align-items: baseline;
+  padding: 6px 8px; border-radius: 6px; color: var(--muted); text-decoration: none; font-size: 14px; line-height: 1.4;
+}
+.rail a:hover, .rail a:focus-visible { background: var(--accent-soft); color: var(--ink); outline: none; }
+.rail .n { font-family: var(--f-mono); font-size: 12px; }
+.rail a.done .n { color: var(--ok); font-weight: 600; }
+.meter { height: 6px; background: var(--line); border-radius: 3px; overflow: hidden; }
+.meter i { display: block; height: 100%; width: 0; background: var(--ok); transition: width .4s; }
+.meter-text { font-size: 13px; color: var(--muted); margin-top: 8px; font-variant-numeric: tabular-nums; }
+
+/* main */
+main { min-width: 0; max-width: 720px; }
+.eyebrow { font-size: 13px; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); font-weight: 600; }
+h1, h2, h3 { font-family: var(--f-display); text-wrap: balance; line-height: 1.15; margin: 0; }
+h1 { font-size: clamp(36px, 6vw, 56px); font-weight: 800; letter-spacing: -.02em; margin-top: 10px; }
+h2 { font-size: clamp(26px, 3.6vw, 34px); font-weight: 800; letter-spacing: -.01em; }
+h3 { font-size: 20px; font-weight: 600; margin-top: 28px; }
+p { margin: 14px 0 0; }
+.lede { font-size: 19px; color: var(--muted); max-width: 60ch; }
+a { color: var(--accent); }
+strong { font-weight: 600; }
+.mobile-progress { display: none; margin-top: 20px; }
+@media (max-width: 860px) { .mobile-progress { display: block; } }
+
+.howto { margin-top: 28px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.howto div { border-top: 2px solid var(--ink); padding-top: 10px; font-size: 14.5px; line-height: 1.5; }
+.howto b { display: block; font-family: var(--f-display); font-size: 17px; margin-bottom: 4px; }
+@media (max-width: 560px) { .howto { grid-template-columns: minmax(0, 1fr); } }
+
+section.lesson { margin-top: 88px; scroll-margin-top: 24px; }
+.sec-head { display: grid; grid-template-columns: auto 1fr; gap: 16px; align-items: baseline; }
+.sec-num { font-family: var(--f-mono); font-size: 15px; color: var(--accent); font-weight: 600; }
+.why { margin-top: 10px; color: var(--muted); font-size: 15px; }
+
+code, .mono { font-family: var(--f-mono); font-size: .88em; }
+:not(pre) > code { background: var(--code-bg); padding: 1px 5px; border-radius: 4px; }
+pre {
+  background: var(--code-bg); border-radius: 8px; padding: 16px 18px; overflow-x: auto;
+  font-family: var(--f-mono); font-size: 13.5px; line-height: 1.6; margin: 18px 0 0;
+}
+pre .c { color: var(--muted); }
+pre .k { color: var(--accent); font-weight: 600; }
+pre .h { color: var(--hot); font-weight: 600; }
+
+.formula {
+  margin: 18px 0 0; padding: 14px 18px; border-left: 3px solid var(--accent);
+  font-family: var(--f-mono); font-size: 15px; background: var(--surface); overflow-x: auto; white-space: nowrap;
+}
+.formula small { display: block; font-family: var(--f-body); color: var(--muted); font-size: 13.5px; white-space: normal; margin-top: 4px; }
+
+table.t { border-collapse: collapse; width: 100%; font-size: 14.5px; }
+.t-wrap { overflow-x: auto; margin-top: 18px; }
+.t th, .t td { text-align: left; padding: 8px 12px 8px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+.t th { font-size: 12.5px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+.t td.num { font-variant-numeric: tabular-nums; font-family: var(--f-mono); font-size: 13.5px; white-space: nowrap; }
+
+/* lab bench: interactive demo container */
+.bench {
+  margin-top: 24px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px;
+  padding: 18px; background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 22px 22px; background-position: -1px -1px;
+}
+.bench-title { font-size: 12.5px; letter-spacing: .08em; text-transform: uppercase; font-weight: 600; color: var(--muted); }
+.bench-inner { background: var(--surface); border-radius: 8px; margin-top: 10px; }
+.controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 12px; }
+button.b {
+  font: 500 14px/1 var(--f-body); color: var(--ink); background: var(--surface); border: 1px solid var(--line);
+  padding: 9px 14px; border-radius: 6px; cursor: pointer;
+}
+button.b:hover { border-color: var(--accent); }
+button.b:focus-visible, input:focus-visible, .opt:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+button.b.primary { background: var(--accent); color: var(--surface); border-color: var(--accent); }
+button.b.on { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+.readout { font-family: var(--f-mono); font-size: 13.5px; font-variant-numeric: tabular-nums; color: var(--muted); }
+.readout b { color: var(--ink); font-weight: 600; }
+
+/* pixel patch */
+.pix-wrap { display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start; }
+.pix { display: grid; grid-template-columns: repeat(6, 52px); gap: 2px; }
+.pix span {
+  height: 44px; display: grid; place-items: center; font-family: var(--f-mono); font-size: 11.5px;
+  border-radius: 3px; font-variant-numeric: tabular-nums;
+}
+@media (max-width: 480px) { .pix { grid-template-columns: repeat(6, 44px); } .pix span { font-size: 10.5px; } }
+.pix-side { flex: 1 1 220px; min-width: 0; font-size: 14.5px; line-height: 1.55; }
+
+/* softmax */
+.sm-grid { display: grid; gap: 10px; margin-top: 4px; }
+.sm-row { display: grid; grid-template-columns: 74px minmax(0, 1fr) 52px minmax(0, 1fr) 56px; gap: 10px; align-items: center; font-size: 14px; }
+.sm-row label { display: flex; gap: 6px; align-items: center; cursor: pointer; }
+.sm-row input[type=range] { width: 100%; accent-color: var(--accent); }
+.sm-row .lv { font-family: var(--f-mono); font-size: 13px; text-align: right; font-variant-numeric: tabular-nums; }
+.bar { height: 16px; background: var(--line); border-radius: 3px; overflow: hidden; }
+.bar i { display: block; height: 100%; background: var(--accent); transition: width .15s; }
+.sm-row.true .bar i { background: var(--hot); }
+.sm-row .pv { font-family: var(--f-mono); font-size: 13px; font-variant-numeric: tabular-nums; }
+.sm-head { display: grid; grid-template-columns: 74px minmax(0, 1fr) 52px minmax(0, 1fr) 56px; gap: 10px; font-size: 12px; color: var(--muted); letter-spacing: .05em; text-transform: uppercase; }
+@media (max-width: 520px) {
+  .sm-row, .sm-head { grid-template-columns: 64px minmax(0, 1fr) 40px; }
+  .sm-row .bar, .sm-row .pv, .sm-head .hide-s { display: none; }
+}
+.lossbox { margin-top: 14px; display: flex; flex-wrap: wrap; gap: 8px 24px; align-items: baseline; }
+.lossbox .big { font-family: var(--f-display); font-size: 34px; font-weight: 800; color: var(--hot); font-variant-numeric: tabular-nums; }
+
+canvas { display: block; width: 100%; touch-action: none; }
+
+/* backprop graph */
+.graph-wrap { overflow-x: auto; }
+.graph svg { display: block; width: 100%; min-width: 560px; height: auto; }
+.node rect { fill: var(--surface); stroke: var(--line); stroke-width: 1.5; }
+.node.cur rect { stroke: var(--accent); stroke-width: 2.5; }
+.node .nm { font: 600 15px var(--f-mono); fill: var(--ink); }
+.node .fv { font: 500 13px var(--f-mono); fill: var(--accent); }
+.node .gv { font: 600 13px var(--f-mono); fill: var(--hot); }
+.edge { stroke: var(--muted); stroke-width: 1.5; fill: none; }
+.edge-l { font: 500 12px var(--f-body); fill: var(--muted); }
+.steptext { margin-top: 12px; min-height: 76px; font-size: 15px; line-height: 1.6; }
+.steptext .eq { font-family: var(--f-mono); font-size: 14px; display: block; margin-top: 4px; color: var(--ink); }
+.dots { display: flex; gap: 5px; }
+.dots i { width: 8px; height: 8px; border-radius: 50%; background: var(--line); }
+.dots i.on { background: var(--accent); }
+
+/* loop diagram */
+.loop svg { display: block; width: 100%; min-width: 600px; height: auto; }
+.loop .box { fill: var(--surface); stroke: var(--ink); stroke-width: 1.5; }
+.loop .box.hot { stroke: var(--hot); }
+.loop .lbl { font: 600 14px var(--f-body); fill: var(--ink); }
+.loop .sub { font: 400 12px var(--f-mono); fill: var(--muted); }
+.loop .arr { stroke: var(--ink); stroke-width: 1.5; fill: none; }
+.loop .arr.back { stroke: var(--hot); stroke-dasharray: 5 4; }
+.loop .tag { font: 600 12px var(--f-body); }
+.loop .tag.f { fill: var(--accent); }
+.loop .tag.b { fill: var(--hot); }
+
+/* tự tính */
+.check {
+  margin-top: 28px; border: 1.5px solid var(--ink); border-radius: 10px; padding: 18px 20px; background: var(--surface);
+}
+.check-top { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; flex-wrap: wrap; }
+.check-tag { font-size: 12.5px; letter-spacing: .08em; text-transform: uppercase; font-weight: 700; }
+.check.solved { border-color: var(--ok); }
+.check.solved .check-tag { color: var(--ok); }
+.check .q { margin-top: 8px; font-size: 15.5px; }
+.fields { display: flex; flex-wrap: wrap; gap: 12px 18px; margin-top: 14px; align-items: end; }
+.fields label { display: grid; gap: 4px; font-size: 13.5px; color: var(--muted); }
+.fields input {
+  font: 500 15px var(--f-mono); width: 120px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 6px;
+  background: var(--paper); color: var(--ink);
+}
+.fields input.ok { border-color: var(--ok); background: var(--ok-soft); }
+.fields input.bad { border-color: var(--bad); background: var(--bad-soft); }
+.fb { margin-top: 10px; font-size: 14.5px; min-height: 1.2em; }
+.fb.ok { color: var(--ok); } .fb.bad { color: var(--bad); }
+details.sol { margin-top: 10px; font-size: 14.5px; }
+details.sol summary { cursor: pointer; color: var(--muted); }
+details.sol div { margin-top: 8px; padding: 10px 14px; background: var(--paper); border-radius: 6px; font-family: var(--f-mono); font-size: 13.5px; line-height: 1.7; overflow-x: auto; }
+
+.nb {
+  margin-top: 16px; display: grid; grid-template-columns: auto 1fr; gap: 14px; align-items: center;
+  padding: 12px 16px; background: var(--accent-soft); border-radius: 8px; font-size: 14.5px; line-height: 1.5;
+}
+.nb .pill { font: 700 12px var(--f-mono); color: var(--surface); background: var(--accent); padding: 4px 8px; border-radius: 4px; white-space: nowrap; }
+
+.note { margin-top: 18px; padding: 12px 16px; background: var(--hot-soft); border-radius: 8px; font-size: 15px; }
+
+/* quiz */
+.quiz { display: grid; gap: 26px; margin-top: 24px; }
+.qitem .qq { font-weight: 600; font-size: 16px; }
+.qitem .qn { font-family: var(--f-mono); color: var(--muted); font-weight: 400; margin-right: 6px; }
+.opts { display: grid; gap: 6px; margin-top: 10px; }
+.opt {
+  text-align: left; font: 400 15px/1.45 var(--f-body); color: var(--ink); background: var(--surface);
+  border: 1px solid var(--line); border-radius: 6px; padding: 10px 14px; cursor: pointer;
+}
+.opt:hover { border-color: var(--accent); }
+.opt.right { border-color: var(--ok); background: var(--ok-soft); }
+.opt.wrong { border-color: var(--bad); background: var(--bad-soft); }
+.opt:disabled { cursor: default; }
+.qexp { margin-top: 8px; font-size: 14.5px; color: var(--muted); }
+.score { margin-top: 28px; font-family: var(--f-display); font-size: 22px; font-weight: 600; }
+
+/* roadmap */
+.road { list-style: none; padding: 0; margin: 22px 0 0; display: grid; gap: 0; }
+.road li { display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--line); align-items: baseline; }
+.road .rn { font-family: var(--f-mono); color: var(--muted); }
+.road .rt { font-weight: 600; }
+.road .rd { display: block; font-size: 14px; color: var(--muted); font-weight: 400; }
+.road .rl { font-family: var(--f-mono); font-size: 12.5px; color: var(--muted); white-space: nowrap; }
+.road li.now .rn, .road li.now .rt { color: var(--accent); }
+.road li.now .rl { color: var(--accent); font-weight: 600; }
+footer { margin-top: 72px; padding-top: 18px; border-top: 1px solid var(--line); font-size: 14px; color: var(--muted); }
+
+.duo { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 10px; }
+@media (max-width: 640px) { .duo { grid-template-columns: minmax(0, 1fr); } }
+.loop .dotp { fill: var(--accent); opacity: .85; }
+ol.algo { margin: 18px 0 0; padding: 14px 18px 14px 44px; background: var(--surface); border: 1.5px solid var(--ink); border-radius: 8px; display: grid; gap: 6px; font-size: 15px; }
+ol.algo li::marker { font-family: var(--f-mono); color: var(--accent); font-weight: 600; }
+button.b:disabled { opacity: .5; cursor: progress; }
+</style>
+<style>
+body { margin: 0; }
+img { max-width: 100%; }
+[hidden] { display: none !important; }
+.sitenav { border-bottom: 1px solid var(--line); background: var(--paper); }
+.sitenav-in { max-width: 1080px; margin: 0 auto; display: flex; flex-wrap: wrap; gap: 4px 6px; align-items: center; padding-block: 10px; }
+.sitenav a { color: var(--muted); text-decoration: none; font: 500 14px/1 var(--f-body); padding: 8px 10px; border-radius: 6px; }
+.sitenav a:hover, .sitenav a:focus-visible { color: var(--ink); background: var(--accent-soft); outline: none; }
+.sitenav a[aria-current="page"] { color: var(--accent); background: var(--accent-soft); font-weight: 600; }
+.sitenav a.brand { font: 800 16px/1 var(--f-display); color: var(--ink); margin-right: 8px; padding-left: 0; }
+.sitenav a.brand:hover { background: none; }
+</style>
+</head>
+<body>
+<nav class="sitenav" aria-label="Điều hướng"><div class="sitenav-in"><a class="brand" href="index.html">AI Engineer</a><a href="index.html">Lộ trình</a><a href="bai01.html">Bài 1</a><a href="diffusion-gd1.html" aria-current="page">Diffusion GĐ1</a><a href="notebooks.html">Notebook</a></div></nav>
+<div class="shell">
+  <nav class="rail" aria-label="Mục lục">
+    <div class="rail-label">GĐ 1 · Mục lục</div>
+    <ol id="toc">
+      <li><a href="#s1" data-sec="s1"><span class="n">01</span><span>Ý tưởng: phá rồi học sửa</span></a></li>
+      <li><a href="#s2" data-sec="s2"><span class="n">02</span><span>Nhiễu Gaussian</span></a></li>
+      <li><a href="#s3" data-sec="s3"><span class="n">03</span><span>Forward: thêm nhiễu</span></a></li>
+      <li><a href="#s4" data-sec="s4"><span class="n">04</span><span>Model dự đoán nhiễu</span></a></li>
+      <li><a href="#s5" data-sec="s5"><span class="n">05</span><span>Train</span></a></li>
+      <li><a href="#s6" data-sec="s6"><span class="n">06</span><span>Sampling: khử nhiễu</span></a></li>
+      <li><a href="#s7" data-sec="s7"><span class="n">07</span><span>Học thuộc hay sáng tạo</span></a></li>
+      <li><a href="#s8" data-sec="s8"><span class="n">08</span><span>Kiểm tra cuối</span></a></li>
+      <li><a href="#s9" data-sec="s9"><span class="n">09</span><span>Lộ trình dự án</span></a></li>
+    </ol>
+    <div class="meter"><i class="meterbar"></i></div>
+    <div class="meter-text meterlabel">0 / 7 phần đã xong</div>
+  </nav>
+
+  <main>
+    <header>
+      <div class="eyebrow">Dự án Diffusion · Giai đoạn 1 / 7</div>
+      <h1>Diffusion tạo ảnh thế nào</h1>
+      <p class="lede">Stable Diffusion, FLUX hay Midjourney đều dựa trên một ý tưởng: học cách gỡ nhiễu khỏi ảnh, rồi bắt đầu từ nhiễu thuần và gỡ dần cho tới khi ra một bức ảnh. Giai đoạn này đi hết thuật toán DDPM, và chỉ cần kiến thức Bài 1.</p>
+      <div class="howto">
+        <div><b>Đọc và thử</b>Các demo chạy đúng công thức DDPM ngay trong trình duyệt.</div>
+        <div><b>Tự tính</b>Mỗi mục có bài tính tay. Giải đúng thì mục đó được đánh dấu xong.</div>
+        <div><b>Code</b>Notebook <a href="notebooks/diffusion_gd1_thuc_hanh.ipynb" download><code>diffusion_gd1_thuc_hanh.ipynb</code></a>: tự viết DDPM, chạy trên CPU khoảng 30 giây.</div>
+      </div>
+      <div class="mobile-progress">
+        <div class="meter"><i class="meterbar"></i></div>
+        <div class="meter-text meterlabel">0 / 7 phần đã xong</div>
+      </div>
+    </header>
+
+    <!-- 1 -->
+    <section class="lesson" id="s1">
+      <div class="sec-head"><span class="sec-num">01</span><h2>Ý tưởng: phá thì dễ, sửa thì phải học</h2></div>
+      <p>Nhỏ một giọt mực vào cốc nước: mực loang dần cho tới khi cả cốc một màu. Quá trình đó gọi là <strong>khuếch tán</strong> (diffusion). Đi xuôi thì dễ, ai cũng làm được. Nếu quay ngược đoạn phim, từ nước đục gom lại thành giọt mực, thì cần biết rất nhiều về hình dạng của giọt mực.</p>
+      <p>Diffusion model làm đúng việc quay ngược đó, với ảnh:</p>
+      <div class="bench loop">
+        <div class="bench-title">Hai chiều của diffusion</div>
+        <div class="bench-inner graph-wrap">
+          <svg viewBox="0 0 680 200" role="img" aria-label="Forward: ảnh x0 thêm nhiễu dần thành xT. Reverse: từ nhiễu xT khử nhiễu dần thành ảnh x0">
+            <defs>
+              <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill: var(--ink)"/></marker>
+              <marker id="ahh" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill: var(--hot)"/></marker>
+            </defs>
+            <g id="strip"></g>
+            <path class="arr" d="M40 40 H640" marker-end="url(#ah)"/>
+            <text class="tag f" x="340" y="28" text-anchor="middle">Forward: thêm nhiễu · cố định, không cần học</text>
+            <path class="arr back" d="M640 168 H40" marker-end="url(#ahh)"/>
+            <text class="tag b" x="340" y="190" text-anchor="middle">Reverse: khử nhiễu · model học cách làm bước này</text>
+          </svg>
+        </div>
+      </div>
+      <p>Train model gồm hai việc. Lấy ảnh thật, thêm nhiễu vào, rồi bắt model đoán xem đã thêm nhiễu gì. Khi model đoán giỏi, ta đưa cho nó <strong>nhiễu thuần</strong> và để nó gỡ từng chút một, mỗi bước bớt nhiễu đi. Sau khoảng 1000 bước, một bức ảnh mới xuất hiện.</p>
+      <p>Ở giai đoạn này ta làm việc với <strong>điểm 2D</strong> thay vì ảnh. Coi mỗi điểm là một "bức ảnh 2 pixel". Thuật toán y hệt, nhưng train trong 30 giây và nhìn được bằng mắt. Ảnh 512×512 màu chỉ khác là mỗi "điểm" có 786.432 chiều.</p>
+      <div class="check" data-check="s1">
+        <div class="check-top"><span class="check-tag">Tự kiểm tra</span></div>
+        <p class="q">Khi đã train xong, để sinh một ảnh mới ta bắt đầu từ đâu? Gõ 1 = một ảnh trong tập train, 2 = nhiễu ngẫu nhiên, 3 = ảnh toàn màu trắng.</p>
+        <div class="fields"><label>Đáp án<input inputmode="numeric" data-ans="2" data-tol="0" id="c1a"></label><button class="b primary" data-act="check">Kiểm tra</button></div>
+        <div class="fb"></div>
+        <details class="sol"><summary>Xem lời giải</summary><div>Nhiễu ngẫu nhiên. Mỗi lần rút một mẫu nhiễu khác nhau thì ra một ảnh khác nhau. Đó cũng là ý nghĩa của "seed": cùng seed, cùng nhiễu ban đầu, cùng ảnh.</div></details>
+      </div>
+    </section>
+
+    <!-- 2 -->
+    <section class="lesson" id="s2">
+      <div class="sec-head"><span class="sec-num">02</span><h2>Nhiễu Gaussian</h2></div>
+      <p class="why">Vì sao cần biết: mọi công thức diffusion đều xoay quanh loại nhiễu này và một tính chất cộng phương sai của nó.</p>
+      <p>Nhiễu Gaussian chuẩn, viết <code>ε ~ N(0, 1)</code>, là các số ngẫu nhiên có trung bình 0 và độ lệch chuẩn 1, phân bố theo hình chuông. Khoảng 68% giá trị rơi trong [−1, 1], 95% trong [−2, 2]. Trong PyTorch: <code>torch.randn(...)</code>.</p>
+      <p>Tính chất quan trọng nhất: trộn hai thứ độc lập với nhau thì <strong>phương sai cộng lại theo bình phương hệ số</strong>:</p>
+      <div class="formula">Var(a·X + b·ε) = a²·Var(X) + b²·Var(ε)<small>Nếu X và ε đều có phương sai 1, chọn a² + b² = 1 thì kết quả cũng có phương sai đúng bằng 1.</small></div>
+      <p>Diffusion dùng đúng mẹo này: trộn tín hiệu với hệ số <code>a</code> và nhiễu với hệ số <code>√(1 − a²)</code>. Tín hiệu yếu dần, nhiễu mạnh dần, nhưng độ lớn tổng thể không đổi.</p>
+
+      <div class="bench">
+        <div class="bench-title">Thử: dữ liệu 1D có 2 đỉnh, trộn dần với nhiễu</div>
+        <div class="bench-inner"><canvas id="hist" height="220" aria-label="Biểu đồ histogram của dữ liệu đã trộn nhiễu"></canvas></div>
+        <div class="controls">
+          <label class="readout" for="mixa">a (hệ số tín hiệu)</label>
+          <input type="range" id="mixa" min="0" max="1" step="0.01" value="1" style="flex:1 1 160px;accent-color:var(--accent)">
+        </div>
+        <div class="readout" id="histread" style="margin-top:8px"></div>
+      </div>
+      <p>Kéo a từ 1 về 0. Hai đỉnh của dữ liệu (ví dụ hai loại ảnh) nhòe dần vào nhau và cuối cùng thành đúng hình chuông chuẩn. Đường cong nét đứt là N(0, 1). Độ lệch chuẩn đo được luôn quanh 1.</p>
+
+      <div class="check" data-check="s2">
+        <div class="check-top"><span class="check-tag">Tự tính</span></div>
+        <p class="q">Trộn <code>x = 0.8·tín_hiệu + b·ε</code>. Tín hiệu và ε đều có phương sai 1. Để x vẫn có phương sai 1 thì b bằng bao nhiêu?</p>
+        <div class="fields"><label>b<input inputmode="decimal" data-ans="0.6" data-tol="0.005" id="c2a"></label><button class="b primary" data-act="check">Kiểm tra</button></div>
+        <div class="fb"></div>
+        <details class="sol"><summary>Xem lời giải</summary><div>0.8² + b² = 1 → b² = 1 − 0.64 = 0.36 → b = 0.6</div></details>
+      </div>
+    </section>
+
+    <!-- 3 -->
+    <section class="lesson" id="s3">
+      <div class="sec-head"><span class="sec-num">03</span><h2>Forward process: thêm nhiễu</h2></div>
+      <p>DDPM thêm nhiễu trong <code>T = 1000</code> bước. Ở bước t, ta làm mờ tín hiệu một chút và thêm một lượng nhiễu nhỏ <code>βₜ</code> (beta), đúng theo mẹo giữ phương sai ở mục 02:</p>
+      <div class="formula">xₜ = √(1 − βₜ) · xₜ₋₁ + √βₜ · ε<small>βₜ tăng tuyến tính từ 0.0001 (bước 1) tới 0.02 (bước 1000). Lịch tăng dần này gọi là noise schedule.</small></div>
+      <p>Thêm nhiễu 500 lần để tới bước 500 thì quá chậm. Đặt <code>αₜ = 1 − βₜ</code> và <code>ᾱₜ = α₁·α₂·…·αₜ</code> (đọc "alpha bar"). Vì tổng nhiều nhiễu Gaussian độc lập vẫn là một nhiễu Gaussian, ta <strong>nhảy thẳng</strong> từ ảnh gốc tới bước bất kỳ:</p>
+      <div class="formula">xₜ = √ᾱₜ · x₀ + √(1 − ᾱₜ) · ε<small>√ᾱₜ là phần tín hiệu gốc còn lại, √(1 − ᾱₜ) là phần nhiễu. Đây là công thức quan trọng nhất của giai đoạn này.</small></div>
+
+      <div class="bench">
+        <div class="bench-title">Thử: kéo t, xem xoắn ốc tan thành nhiễu</div>
+        <div class="bench-inner duo">
+          <canvas id="fwd" height="300" aria-label="Đám điểm xoắn ốc ở bước t"></canvas>
+          <canvas id="sched" height="300" aria-label="Đồ thị hệ số tín hiệu và nhiễu theo t"></canvas>
+        </div>
+        <div class="controls">
+          <label class="readout" for="tsl">t</label>
+          <input type="range" id="tsl" min="0" max="1000" step="1" value="0" style="flex:1 1 160px;accent-color:var(--accent)">
+          <button class="b" id="fwdplay">Phát</button>
+        </div>
+        <div class="readout" id="fwdread" style="margin-top:8px"></div>
+      </div>
+      <p>Để ý hai điều. Tới khoảng t = 300 hình xoắn ốc đã khó nhận ra. Và ở t = 1000, √ᾱ chỉ còn 0.006: gần như không còn chút tín hiệu nào. Vì vậy khi sinh dữ liệu, bắt đầu từ nhiễu thuần N(0, 1) là hợp lý.</p>
+
+      <div class="check" data-check="s3">
+        <div class="check-top"><span class="check-tag">Tự tính</span></div>
+        <p class="q">Giả sử chỉ có 3 bước với β = 0.1 ở mọi bước. Tính <code>ᾱ₃</code>, rồi tính <code>x₃</code> với <code>x₀ = 2</code> và nhiễu rút được <code>ε = −1</code>. (√0.729 ≈ 0.854, √0.271 ≈ 0.521)</p>
+        <div class="fields">
+          <label>ᾱ₃<input inputmode="decimal" data-ans="0.729" data-tol="0.001" id="c3a"></label>
+          <label>x₃<input inputmode="decimal" data-ans="1.187" data-tol="0.006" id="c3b"></label>
+          <button class="b primary" data-act="check">Kiểm tra</button>
+        </div>
+        <div class="fb"></div>
+        <details class="sol"><summary>Xem lời giải</summary><div>α = 1 − 0.1 = 0.9 → ᾱ₃ = 0.9 · 0.9 · 0.9 = 0.729<br>x₃ = √0.729 · 2 + √(1 − 0.729) · (−1) = 0.854 · 2 − 0.521 = 1.187</div></details>
+      </div>
+      <div class="nb"><span class="pill">Phần A, B</span><span>Tạo <code>betas</code>, <code>alpha_bars</code> bằng <code>torch.cumprod</code>, và viết hàm <code>q_sample</code> nhảy thẳng tới bước t cho cả batch.</span></div>
+    </section>
+
+    <!-- 4 -->
+    <section class="lesson" id="s4">
+      <div class="sec-head"><span class="sec-num">04</span><h2>Model học gì: dự đoán nhiễu</h2></div>
+      <p>Đưa cho model hai thứ: điểm đã nhiễu <code>xₜ</code> và bước <code>t</code>. Model đoán xem <strong>nhiễu ε nào đã được thêm vào</strong>. Ký hiệu dự đoán là <code>ε̂ = ε_θ(xₜ, t)</code>, θ là trọng số của model.</p>
+      <p>Đoán được nhiễu cũng có nghĩa là đoán được ảnh gốc, chỉ cần đảo công thức ở mục 03:</p>
+      <div class="formula">x̂₀ = (xₜ − √(1 − ᾱₜ) · ε̂) / √ᾱₜ<small>DDPM chọn đoán ε thay vì đoán x₀ trực tiếp vì cách này train ổn định hơn: ε luôn có cùng độ lớn ở mọi bước t.</small></div>
+      <p>Model cần biết <code>t</code> vì cùng một <code>xₜ</code> nhưng ở t = 50 thì gần như toàn tín hiệu, ở t = 900 thì gần như toàn nhiễu. Số nguyên t được đổi thành một vector sin/cos ở nhiều tần số (<strong>time embedding</strong>), giống positional encoding của Transformer, rồi nối vào đầu vào.</p>
+      <div class="bench">
+        <div class="bench-title">Model trong notebook</div>
+        <div class="bench-inner graph-wrap" style="padding:10px">
+<pre style="margin:0;background:transparent">xₜ (N, 2) ─┐
+           ├─ nối ─▶ (N, 34) ─<span class="k">Linear</span>─<span class="h">ReLU</span>─<span class="k">Linear</span>─<span class="h">ReLU</span>─<span class="k">Linear</span>─<span class="h">ReLU</span>─<span class="k">Linear</span>─▶ ε̂ (N, 2)
+emb(t) (N, 32) ┘
+<span class="c">37.762 tham số. U-Net của Stable Diffusion 1.5 làm cùng việc với ~860 triệu tham số.</span></pre>
+        </div>
+      </div>
+
+      <div class="check" data-check="s4">
+        <div class="check-top"><span class="check-tag">Tự tính</span></div>
+        <p class="q">Dùng số ở mục 03: <code>x₃ = 1.187</code>, <code>ᾱ₃ = 0.729</code>. Model đoán đúng hoàn toàn <code>ε̂ = −1</code>. Khôi phục <code>x̂₀</code>.</p>
+        <div class="fields"><label>x̂₀<input inputmode="decimal" data-ans="2" data-tol="0.01" id="c4a"></label><button class="b primary" data-act="check">Kiểm tra</button></div>
+        <div class="fb"></div>
+        <details class="sol"><summary>Xem lời giải</summary><div>x̂₀ = (1.187 − 0.521 · (−1)) / 0.854 = 1.708 / 0.854 = 2.0<br>Đoán đúng nhiễu thì lấy lại đúng dữ liệu gốc.</div></details>
+      </div>
+      <div class="nb"><span class="pill">Phần C</span><span>Viết time embedding sin/cos và mạng khử nhiễu MLP.</span></div>
+    </section>
+
+    <!-- 5 -->
+    <section class="lesson" id="s5">
+      <div class="sec-head"><span class="sec-num">05</span><h2>Train</h2></div>
+      <p>Thuật toán train của DDPM ngắn đến bất ngờ. Đây là Algorithm 1 trong bài báo gốc (Ho và cộng sự, 2020), viết lại theo code:</p>
+      <ol class="algo">
+        <li>Lấy một batch dữ liệu thật <code>x₀</code></li>
+        <li>Mỗi mẫu chọn ngẫu nhiên một bước <code>t</code> trong 1…T</li>
+        <li>Rút nhiễu <code>ε ~ N(0, I)</code></li>
+        <li>Tính <code>xₜ = √ᾱₜ·x₀ + √(1−ᾱₜ)·ε</code></li>
+        <li>Model đoán <code>ε̂ = model(xₜ, t)</code></li>
+        <li>Loss <code>= mean((ε − ε̂)²)</code>, rồi <code>zero_grad → backward → step</code></li>
+      </ol>
+      <p>Loss là <strong>MSE</strong>, giống hệt hồi quy tuyến tính ở Bài 1 phần D. Không có softmax, không có nhãn. Nhãn chính là nhiễu ta tự tạo ra, nên mọi ảnh không cần chú thích đều dùng làm dữ liệu train được.</p>
+      <h3>Bước nào khó nhất?</h3>
+      <p>Đây là loss của model đã train trong notebook, đo riêng ở từng bước t:</p>
+      <div class="t-wrap"><table class="t">
+        <tr><th>t</th><th>Loss</th><th>Vì sao</th></tr>
+        <tr><td class="num">1</td><td class="num">0.99</td><td>Nhiễu thêm vào nhỏ hơn cả độ dày nét vẽ, không phân biệt được nhiễu với dữ liệu</td></tr>
+        <tr><td class="num">101</td><td class="num">0.61</td><td></td></tr>
+        <tr><td class="num">251</td><td class="num">0.20</td><td></td></tr>
+        <tr><td class="num">501</td><td class="num">0.02</td><td></td></tr>
+        <tr><td class="num">1000</td><td class="num">0.003</td><td>xₜ gần như chính là ε, đoán ε̂ ≈ xₜ là xong</td></tr>
+      </table></div>
+      <p>Ngược với trực giác: model dễ đoán nhiễu nhất khi ảnh toàn nhiễu. Loss tổng thể không về 0 được, và đó là bình thường. Các bài báo sau này dùng nhận xét này để chọn lại noise schedule và cách lấy mẫu t.</p>
+
+      <div class="check" data-check="s5">
+        <div class="check-top"><span class="check-tag">Tự tính</span></div>
+        <p class="q">Một điểm 2D có nhiễu thật <code>ε = [1, −1]</code>, model đoán <code>ε̂ = [0.5, −0.5]</code>. Loss MSE bằng bao nhiêu?</p>
+        <div class="fields"><label>Loss<input inputmode="decimal" data-ans="0.25" data-tol="0.001" id="c5a"></label><button class="b primary" data-act="check">Kiểm tra</button></div>
+        <div class="fb"></div>
+        <details class="sol"><summary>Xem lời giải</summary><div>((1 − 0.5)² + (−1 + 0.5)²) / 2 = (0.25 + 0.25) / 2 = 0.25</div></details>
+      </div>
+      <div class="nb"><span class="pill">Phần D</span><span>Viết vòng lặp train 6000 bước. Loss phải giảm từ khoảng 1 xuống dưới 0.2.</span></div>
+    </section>
+
+    <!-- 6 -->
+    <section class="lesson" id="s6">
+      <div class="sec-head"><span class="sec-num">06</span><h2>Sampling: khử nhiễu từng bước</h2></div>
+      <p>Có model đoán nhiễu rồi, sinh dữ liệu mới như sau (Algorithm 2). Bắt đầu từ <code>x_T ~ N(0, I)</code>, đi ngược t = T, T−1, …, 1:</p>
+      <div class="formula">xₜ₋₁ = ( xₜ − βₜ/√(1 − ᾱₜ) · ε̂ ) / √αₜ + σₜ · z<small>Phần trong ngoặc gỡ đi một chút nhiễu theo dự đoán của model. σₜ = √βₜ, z ~ N(0, I) là nhiễu mới. Bước cuối cùng không cộng z.</small></div>
+      <p>Lạ ở chỗ: đang khử nhiễu mà mỗi bước lại <strong>cộng thêm</strong> một chút nhiễu mới. Demo dưới cho thấy vì sao.</p>
+
+      <div class="bench">
+        <div class="bench-title">Thử: sinh 400 điểm từ nhiễu</div>
+        <div class="bench-inner"><canvas id="rev" height="320" aria-label="Quá trình sampling từ nhiễu thành xoắn ốc"></canvas></div>
+        <div class="controls">
+          <button class="b primary" id="revgo">Sinh</button>
+          <button class="b on" id="revnoise" aria-pressed="true">Cộng σₜ·z: bật</button>
+          <label class="readout" for="revscrub">xem lại</label>
+          <input type="range" id="revscrub" min="0" max="100" step="1" value="100" style="flex:1 1 120px;accent-color:var(--accent)">
+        </div>
+        <div class="readout" id="revread" style="margin-top:8px"></div>
+      </div>
+      <p>Demo dùng một <em>bộ khử nhiễu lý tưởng</em> tính đúng công thức trên 60 điểm train (dấu ×), thay cho mạng nơ-ron, vì trình duyệt không chạy được model PyTorch. Thử tắt <b>Cộng σₜ·z</b> rồi bấm <b>Sinh</b>: cả 400 điểm sụp về một hai chỗ. Nhiễu mới ở mỗi bước giữ cho các mẫu tản ra và đi về <em>nhiều</em> nơi khác nhau, tức là giữ sự đa dạng của ảnh sinh ra.</p>
+      <p>1000 bước là chậm. Các sampler sau này như DDIM, DPM-Solver hay rectified flow của FLUX rút xuống còn 4–50 bước. Ta sẽ học ở GĐ2 và GĐ6.</p>
+
+      <div class="check" data-check="s6">
+        <div class="check-top"><span class="check-tag">Tự tính</span></div>
+        <p class="q">Một bước sampling không cộng z: <code>xₜ = 1.0</code>, <code>βₜ = 0.02</code> (nên αₜ = 0.98), <code>ᾱₜ = 0.5</code>, model đoán <code>ε̂ = 0.5</code>. Tính <code>xₜ₋₁</code>. (√0.5 ≈ 0.7071, √0.98 ≈ 0.98995)</p>
+        <div class="fields"><label>xₜ₋₁<input inputmode="decimal" data-ans="0.9959" data-tol="0.002" id="c6a"></label><button class="b primary" data-act="check">Kiểm tra</button></div>
+        <div class="fb"></div>
+        <details class="sol"><summary>Xem lời giải</summary><div>βₜ / √(1 − ᾱₜ) = 0.02 / 0.7071 = 0.02828<br>xₜ − 0.02828 · 0.5 = 1 − 0.01414 = 0.98586<br>xₜ₋₁ = 0.98586 / 0.98995 ≈ 0.996</div></details>
+      </div>
+      <div class="nb"><span class="pill">Phần E, F1</span><span>Viết vòng lặp sampling, sinh 2000 điểm từ model của bạn, rồi thử bỏ σₜ·z.</span></div>
+    </section>
+
+    <!-- 7 -->
+    <section class="lesson" id="s7">
+      <div class="sec-head"><span class="sec-num">07</span><h2>Học thuộc hay sáng tạo</h2></div>
+      <p>Bấm <b>Sinh</b> vài lần ở demo trên với nhiễu bật, rồi nhìn kỹ: mọi điểm sinh ra đều nằm <strong>đúng trên</strong> một dấu × (điểm train). Bộ khử nhiễu lý tưởng là đáp án tối ưu của bài toán train ở mục 05. Nhưng với tập train hữu hạn, đáp án tối ưu đó chỉ <strong>chép lại dữ liệu train</strong>.</p>
+      <p>Vậy vì sao Stable Diffusion tạo được ảnh chưa từng có? Vì mạng nơ-ron <strong>không</strong> đạt được tối ưu đó. Nó có giới hạn về số tham số, về số bước train, và nó học các quy luật trơn tru thay vì nhớ từng ảnh. Chính sự "không hoàn hảo" có cấu trúc đó làm model tổng quát hóa được. Khi dữ liệu ít hoặc một ảnh lặp lại quá nhiều lần trong tập train, model thật vẫn có thể học thuộc và chép lại ảnh gốc. Đây là một vấn đề nghiên cứu nóng, đồng thời là rủi ro bản quyền khi bạn fine-tune LoRA ở GĐ5.</p>
+      <h3>Từ điểm 2D tới Stable Diffusion</h3>
+      <div class="t-wrap"><table class="t">
+        <tr><th></th><th>GĐ 1 (notebook)</th><th>Stable Diffusion 1.5</th><th>Học ở</th></tr>
+        <tr><td>Dữ liệu</td><td>điểm 2D</td><td>ảnh 512×512, nén thành latent 64×64×4</td><td>GĐ 4</td></tr>
+        <tr><td>Mạng</td><td>MLP, 37 nghìn tham số</td><td>U-Net, ~860 triệu tham số</td><td>GĐ 2</td></tr>
+        <tr><td>Điều khiển</td><td>không có</td><td>câu mô tả, qua CLIP text encoder và cross-attention</td><td>GĐ 3</td></tr>
+        <tr><td>Số bước sinh</td><td>1000</td><td>20–50 với sampler nhanh</td><td>GĐ 2</td></tr>
+        <tr><td>Thuật toán</td><td colspan="2">giống nhau: thêm nhiễu, đoán nhiễu bằng MSE, khử nhiễu từng bước</td><td>GĐ 1</td></tr>
+      </table></div>
+      <p>FLUX.1 mà dự án cũ của bạn gọi qua API dùng một biến thể gọi là <em>rectified flow</em>, với Transformer thay cho U-Net. Ý tưởng cốt lõi vẫn như trên. Ta sẽ so sánh ở GĐ6.</p>
+      <div class="check" data-check="s7">
+        <div class="check-top"><span class="check-tag">Tự kiểm tra</span></div>
+        <p class="q">Bộ khử nhiễu lý tưởng trên 60 điểm train sinh ra 400 điểm. Gõ 1 nếu các điểm này là điểm mới, 2 nếu chúng chỉ là các điểm train bị chép lại.</p>
+        <div class="fields"><label>Đáp án<input inputmode="numeric" data-ans="2" data-tol="0" id="c7a"></label><button class="b primary" data-act="check">Kiểm tra</button></div>
+        <div class="fb"></div>
+        <details class="sol"><summary>Xem lời giải</summary><div>Chép lại điểm train. Khoảng cách trung bình tới điểm train gần nhất chỉ cỡ 0.001. Phần F2 của notebook đo đúng con số này.</div></details>
+      </div>
+      <div class="nb"><span class="pill">Phần F2</span><span>Chạy bộ khử nhiễu lý tưởng trong notebook, đo khoảng cách tới điểm train, và trả lời câu hỏi nộp bài.</span></div>
+    </section>
+
+    <!-- 8 -->
+    <section class="lesson" id="s8">
+      <div class="sec-head"><span class="sec-num">08</span><h2>Kiểm tra cuối</h2></div>
+      <p>9 câu, chọn một đáp án. Đúng từ 7 câu trở lên là nắm chắc GĐ 1.</p>
+      <div class="quiz" id="quiz"></div>
+      <div class="score" id="score"></div>
+      <div class="controls"><button class="b" id="quizreset">Làm lại bài kiểm tra</button></div>
+    </section>
+
+    <!-- 9 -->
+    <section class="lesson" id="s9">
+      <div class="sec-head"><span class="sec-num">09</span><h2>Lộ trình dự án</h2></div>
+      <p>Mỗi giai đoạn có một trang lý thuyết như thế này và một notebook có ô tự chấm. Kết thúc là một app tạo ảnh chạy model và LoRA của chính bạn.</p>
+      <ol class="road">
+        <li class="now"><span class="rn">01</span><span class="rt">Diffusion tạo ảnh thế nào<span class="rd">forward, dự đoán nhiễu, DDPM trên điểm 2D</span></span><span class="rl">đang học</span></li>
+        <li><span class="rn">02</span><span class="rt">Diffusion cho ảnh<span class="rd">U-Net, DDPM và DDIM, sinh ảnh Fashion-MNIST</span></span><span class="rl">cần Bài 2</span></li>
+        <li><span class="rn">03</span><span class="rt">Điều khiển bằng chữ<span class="rd">conditioning, classifier-free guidance, CLIP, cross-attention</span></span><span class="rl">cần Bài 3</span></li>
+        <li><span class="rn">04</span><span class="rt">Latent diffusion<span class="rd">VAE, mổ xẻ Stable Diffusion, tự viết vòng lặp sampling</span></span><span class="rl">diffusers</span></li>
+        <li><span class="rn">05</span><span class="rt">Fine-tune LoRA<span class="rd">low-rank, DreamBooth, style LoRA trên Colab T4</span></span><span class="rl">GPU</span></li>
+        <li><span class="rn">06</span><span class="rt">Đánh giá và nâng cao<span class="rd">CLIP score, FID, rectified flow (FLUX)</span></span><span class="rl">GPU</span></li>
+        <li><span class="rn">07</span><span class="rt">Đóng gói<span class="rd">app Gradio/Streamlit, deploy HuggingFace Spaces, README cho CV</span></span><span class="rl">sản phẩm</span></li>
+      </ol>
+      <footer>Làm xong notebook, gửi Claude điểm bài kiểm tra và câu trả lời 4 câu hỏi nộp bài ở cuối notebook để được chấm. Tiến độ trên trang này chỉ lưu trong trình duyệt bạn đang dùng.</footer>
+    </section>
+  </main>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  const KEY = "diffusion-gd1-v1";
+  let store = { solved: {}, quiz: {} };
+  try { const s = JSON.parse(localStorage.getItem(KEY) || "null"); if (s && s.solved && s.quiz) store = s; } catch (e) {}
+  const save = () => { try { localStorage.setItem(KEY, JSON.stringify(store)); } catch (e) {} };
+  const css = (n) => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+  const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const redrawers = [];
+  const redrawAll = () => redrawers.forEach((f) => f());
+  window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", redrawAll);
+  new MutationObserver(redrawAll).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+
+  /* ---------- rng + DDPM schedule ---------- */
+  function mulberry32(a) { return function () { a |= 0; a = (a + 0x6D2B79F5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+  function gaussFactory(seed) { const r = mulberry32(seed); return () => { const u = r() || 1e-12, v = r(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); }; }
+  const T = 1000;
+  const beta = new Float64Array(T), alpha = new Float64Array(T), abar = new Float64Array(T);
+  for (let i = 0; i < T; i++) { beta[i] = 1e-4 + (0.02 - 1e-4) * i / (T - 1); alpha[i] = 1 - beta[i]; abar[i] = (i ? abar[i - 1] : 1) * alpha[i]; }
+  function spiral(n, seed) {
+    const r = mulberry32(seed), g = gaussFactory(seed + 1), pts = [];
+    for (let i = 0; i < n; i++) { const th = Math.sqrt(r()) * 3 * Math.PI; pts.push([th * Math.cos(th) / (3 * Math.PI) + 0.02 * g(), th * Math.sin(th) / (3 * Math.PI) + 0.02 * g()]); }
+    return pts;
+  }
+  function sizeCanvas(cv, h) {
+    const r = cv.getBoundingClientRect(), dpr = window.devicePixelRatio || 1, w = Math.max(200, r.width);
+    cv.width = w * dpr; cv.height = h * dpr; cv.style.height = h + "px";
+    const ctx = cv.getContext("2d"); ctx.setTransform(dpr, 0, 0, dpr, 0, 0); return { ctx, w, h };
+  }
+  function scatterFrame(ctx, w, h, R) {
+    const s = Math.min(w, h) / (2 * R), cx = w / 2, cy = h / 2;
+    ctx.fillStyle = css("--surface"); ctx.fillRect(0, 0, w, h);
+    ctx.strokeStyle = css("--line"); ctx.lineWidth = 1;
+    for (let v = -Math.floor(R); v <= R; v++) {
+      ctx.beginPath(); ctx.moveTo(cx + v * s, 0); ctx.lineTo(cx + v * s, h); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(0, cy - v * s); ctx.lineTo(w, cy - v * s); ctx.stroke();
+    }
+    return (p) => [cx + p[0] * s, cy - p[1] * s];
+  }
+
+  /* ---------- progress ---------- */
+  const SECS = ["s1", "s2", "s3", "s4", "s5", "s6", "s7"];
+  document.querySelectorAll("#toc a").forEach((a) => (a.dataset.num = a.querySelector(".n").textContent));
+  function updateProgress() {
+    let done = 0;
+    SECS.forEach((s) => {
+      const ok = !!store.solved[s]; if (ok) done++;
+      const a = document.querySelector(`#toc a[data-sec="${s}"]`);
+      if (a) { a.classList.toggle("done", ok); a.querySelector(".n").textContent = ok ? "✓" : a.dataset.num; }
+    });
+    const qa = document.querySelector('#toc a[data-sec="s8"]');
+    if (qa) { const ok = Object.keys(store.quiz).length === QUIZ.length; qa.classList.toggle("done", ok); qa.querySelector(".n").textContent = ok ? "✓" : qa.dataset.num; }
+    document.querySelectorAll(".meterbar").forEach((m) => (m.style.width = (done / SECS.length) * 100 + "%"));
+    document.querySelectorAll(".meterlabel").forEach((m) => (m.textContent = `${done} / ${SECS.length} phần đã xong`));
+  }
+
+  /* ---------- tự tính ---------- */
+  const parseNum = (s) => parseFloat(String(s).trim().replace(",", ".").replace("−", "-"));
+  document.querySelectorAll(".check").forEach((box) => {
+    const id = box.dataset.check, inputs = [...box.querySelectorAll("input[data-ans]")], fb = box.querySelector(".fb");
+    const markSolved = () => {
+      box.classList.add("solved"); box.querySelector(".check-tag").textContent = "Đã xong ✓";
+      inputs.forEach((i) => { i.classList.add("ok"); if (!i.value) i.value = i.dataset.ans; });
+    };
+    if (store.solved[id]) markSolved();
+    const run = () => {
+      let allOk = true, empty = false;
+      inputs.forEach((i) => {
+        const v = parseNum(i.value);
+        if (i.value.trim() === "" || Number.isNaN(v)) { empty = true; allOk = false; i.classList.remove("ok", "bad"); return; }
+        const ok = Math.abs(v - parseFloat(i.dataset.ans)) <= parseFloat(i.dataset.tol) + 1e-9;
+        i.classList.toggle("ok", ok); i.classList.toggle("bad", !ok); if (!ok) allOk = false;
+      });
+      if (allOk) { fb.className = "fb ok"; fb.textContent = "Chính xác. Mục này đã được đánh dấu xong."; store.solved[id] = true; save(); markSolved(); updateProgress(); }
+      else { fb.className = "fb bad"; fb.textContent = empty ? "Điền đủ các ô bằng số (dùng dấu chấm hoặc phẩy cho phần thập phân)." : "Ô màu đỏ chưa đúng. Tính lại bước đó, hoặc mở lời giải nếu bí."; }
+    };
+    box.querySelector('[data-act="check"]').addEventListener("click", run);
+    inputs.forEach((i) => i.addEventListener("keydown", (e) => { if (e.key === "Enter") run(); }));
+  });
+
+  /* ---------- 01: strip of noised spirals ---------- */
+  (function strip() {
+    const g = document.getElementById("strip"), pts = spiral(160, 21), gs = gaussFactory(5), eps = pts.map(() => [gs(), gs()]);
+    const ts = [0, 60, 150, 300, 600, 999], ns = "http://www.w3.org/2000/svg";
+    ts.forEach((t, k) => {
+      const cx = 70 + k * 108, cy = 104, sc = 17, a = Math.sqrt(t ? abar[t] : 1), b = Math.sqrt(t ? 1 - abar[t] : 0);
+      const frame = document.createElementNS(ns, "rect");
+      frame.setAttribute("x", cx - 46); frame.setAttribute("y", cy - 46); frame.setAttribute("width", 92); frame.setAttribute("height", 92); frame.setAttribute("rx", 6); frame.setAttribute("class", "box");
+      g.appendChild(frame);
+      pts.forEach((p, i) => {
+        const x = a * p[0] + b * eps[i][0], y = a * p[1] + b * eps[i][1];
+        if (Math.abs(x) > 2.6 || Math.abs(y) > 2.6) return;
+        const c = document.createElementNS(ns, "circle");
+        c.setAttribute("cx", (cx + x * sc).toFixed(1)); c.setAttribute("cy", (cy - y * sc).toFixed(1)); c.setAttribute("r", 1.4); c.setAttribute("class", "dotp");
+        g.appendChild(c);
+      });
+      const lbl = document.createElementNS(ns, "text");
+      lbl.setAttribute("x", cx); lbl.setAttribute("y", 66); lbl.setAttribute("text-anchor", "middle"); lbl.setAttribute("class", "sub");
+      lbl.textContent = t === 0 ? "x₀" : t === 999 ? "x₁₀₀₀" : "t = " + (t + 1);
+      g.appendChild(lbl);
+    });
+  })();
+
+  /* ---------- 02: histogram ---------- */
+  (function hist() {
+    const cv = document.getElementById("hist"), mix = document.getElementById("mixa"), read = document.getElementById("histread");
+    const g = gaussFactory(9), N = 5000, x0 = [], e = [];
+    for (let i = 0; i < N; i++) { x0.push((i % 2 ? 1 : -1) + 0.12 * g()); e.push(g()); }
+    let W = 600, H = 220, ctx;
+    function draw() {
+      ({ ctx, w: W, h: H } = sizeCanvas(cv, 220));
+      const a = parseFloat(mix.value), b = Math.sqrt(Math.max(0, 1 - a * a));
+      const lo = -4, hi = 4, bins = 64, cnt = new Array(bins).fill(0);
+      let s = 0, s2 = 0;
+      for (let i = 0; i < N; i++) { const v = a * x0[i] + b * e[i]; s += v; s2 += v * v; const k = Math.floor((v - lo) / (hi - lo) * bins); if (k >= 0 && k < bins) cnt[k]++; }
+      const mean = s / N, sd = Math.sqrt(s2 / N - mean * mean);
+      const pad = { l: 10, r: 10, t: 10, b: 24 }, bw = (W - pad.l - pad.r) / bins, dens = cnt.map((c) => c / N / ((hi - lo) / bins));
+      const ymax = 1.6, Y = (d) => H - pad.b - (d / ymax) * (H - pad.t - pad.b), X = (v) => pad.l + (v - lo) / (hi - lo) * (W - pad.l - pad.r);
+      ctx.fillStyle = css("--surface"); ctx.fillRect(0, 0, W, H);
+      ctx.fillStyle = css("--accent"); ctx.globalAlpha = 0.75;
+      dens.forEach((d, k) => { const y = Y(Math.min(d, ymax)); ctx.fillRect(pad.l + k * bw + 0.5, y, bw - 1, H - pad.b - y); });
+      ctx.globalAlpha = 1; ctx.strokeStyle = css("--hot"); ctx.lineWidth = 2; ctx.setLineDash([5, 4]); ctx.beginPath();
+      for (let i = 0; i <= 200; i++) { const v = lo + (hi - lo) * i / 200, d = Math.exp(-v * v / 2) / Math.sqrt(2 * Math.PI); i ? ctx.lineTo(X(v), Y(d)) : ctx.moveTo(X(v), Y(d)); }
+      ctx.stroke(); ctx.setLineDash([]);
+      ctx.strokeStyle = css("--line"); ctx.beginPath(); ctx.moveTo(pad.l, H - pad.b); ctx.lineTo(W - pad.r, H - pad.b); ctx.stroke();
+      ctx.fillStyle = css("--muted"); ctx.font = "11px " + css("--f-mono"); ctx.textAlign = "center";
+      for (let v = -3; v <= 3; v++) ctx.fillText(String(v), X(v), H - 8);
+      read.innerHTML = `x = <b>${a.toFixed(2)}</b>·dữ_liệu + <b>${b.toFixed(2)}</b>·ε · a² + b² = ${(a * a + b * b).toFixed(2)} · độ lệch chuẩn đo được = <b>${sd.toFixed(2)}</b>`;
+    }
+    mix.addEventListener("input", draw);
+    new ResizeObserver(draw).observe(cv); redrawers.push(draw);
+  })();
+
+  /* ---------- 03: forward slider ---------- */
+  (function fwd() {
+    const cv = document.getElementById("fwd"), cs = document.getElementById("sched"), sl = document.getElementById("tsl"), read = document.getElementById("fwdread"), play = document.getElementById("fwdplay");
+    const pts = spiral(700, 3), g = gaussFactory(4), eps = pts.map(() => [g(), g()]);
+    let timer = null;
+    function draw() {
+      const t = parseInt(sl.value, 10), a = t ? Math.sqrt(abar[t - 1]) : 1, b = t ? Math.sqrt(1 - abar[t - 1]) : 0;
+      let { ctx, w, h } = sizeCanvas(cv, 300);
+      const P = scatterFrame(ctx, w, h, 2.8);
+      ctx.fillStyle = css("--accent"); ctx.globalAlpha = 0.8;
+      pts.forEach((p, i) => { const [x, y] = P([a * p[0] + b * eps[i][0], a * p[1] + b * eps[i][1]]); ctx.fillRect(x - 1.2, y - 1.2, 2.4, 2.4); });
+      ctx.globalAlpha = 1;
+      ({ ctx, w, h } = sizeCanvas(cs, 300));
+      const pad = { l: 34, r: 12, t: 16, b: 28 }, X = (tt) => pad.l + tt / 1000 * (w - pad.l - pad.r), Y = (v) => pad.t + (1 - v) * (h - pad.t - pad.b);
+      ctx.fillStyle = css("--surface"); ctx.fillRect(0, 0, w, h);
+      ctx.strokeStyle = css("--line"); ctx.lineWidth = 1; ctx.fillStyle = css("--muted"); ctx.font = "11px " + css("--f-mono");
+      [0, 0.5, 1].forEach((v) => { ctx.beginPath(); ctx.moveTo(pad.l, Y(v)); ctx.lineTo(w - pad.r, Y(v)); ctx.stroke(); ctx.textAlign = "right"; ctx.fillText(v.toFixed(1), pad.l - 6, Y(v) + 4); });
+      [0, 500, 1000].forEach((tt) => { ctx.textAlign = "center"; ctx.fillText(String(tt), X(tt), h - 10); });
+      const curve = (fn, col) => { ctx.strokeStyle = col; ctx.lineWidth = 2; ctx.beginPath(); for (let i = 0; i <= 1000; i += 5) { const v = i ? fn(abar[i - 1]) : fn(1); i ? ctx.lineTo(X(i), Y(v)) : ctx.moveTo(X(i), Y(v)); } ctx.stroke(); };
+      curve((ab) => Math.sqrt(ab), css("--accent")); curve((ab) => Math.sqrt(1 - ab), css("--hot"));
+      ctx.strokeStyle = css("--ink"); ctx.setLineDash([3, 3]); ctx.beginPath(); ctx.moveTo(X(t), pad.t); ctx.lineTo(X(t), h - pad.b); ctx.stroke(); ctx.setLineDash([]);
+      ctx.textAlign = "left"; ctx.font = "600 12px " + css("--f-body");
+      ctx.fillStyle = css("--accent"); ctx.fillText("√ᾱ  tín hiệu", pad.l + 8, Y(0.93));
+      ctx.fillStyle = css("--hot"); ctx.fillText("√(1−ᾱ)  nhiễu", pad.l + 8, Y(0.1));
+      read.innerHTML = `t = <b>${t}</b> · ᾱ = <b>${(t ? abar[t - 1] : 1).toFixed(4)}</b> · tín hiệu √ᾱ = <b>${a.toFixed(3)}</b> · nhiễu √(1−ᾱ) = <b>${b.toFixed(3)}</b>`;
+    }
+    sl.addEventListener("input", () => { if (timer) { clearInterval(timer); timer = null; play.textContent = "Phát"; } draw(); });
+    play.addEventListener("click", () => {
+      if (timer) { clearInterval(timer); timer = null; play.textContent = "Phát"; return; }
+      if (reduced) { sl.value = 1000; draw(); return; }
+      if (parseInt(sl.value, 10) >= 1000) sl.value = 0;
+      play.textContent = "Dừng";
+      timer = setInterval(() => { sl.value = Math.min(1000, parseInt(sl.value, 10) + 8); draw(); if (parseInt(sl.value, 10) >= 1000) { clearInterval(timer); timer = null; play.textContent = "Phát"; } }, 30);
+    });
+    new ResizeObserver(draw).observe(cv); redrawers.push(draw);
+  })();
+
+  /* ---------- 06: reverse sampling with ideal denoiser ---------- */
+  (function rev() {
+    const cv = document.getElementById("rev"), go = document.getElementById("revgo"), nz = document.getElementById("revnoise"), scrub = document.getElementById("revscrub"), read = document.getElementById("revread");
+    const train = spiral(60, 11), M = 400;
+    let withNoise = true, frames = [], frameT = [], cur = 0, anim = null, seed = 100;
+    function run() {
+      const g = gaussFactory(seed++);
+      let x = Array.from({ length: M }, () => [g(), g()]);
+      frames = [x.map((p) => p.slice())]; frameT = [1000];
+      const w = new Float64Array(train.length);
+      for (let t = T - 1; t >= 0; t--) {
+        const ab = abar[t], sa = Math.sqrt(ab), s1 = Math.sqrt(1 - ab), coef = beta[t] / s1, inv = 1 / Math.sqrt(alpha[t]), sig = Math.sqrt(beta[t]);
+        for (let i = 0; i < M; i++) {
+          const p = x[i]; let mx = -Infinity;
+          for (let j = 0; j < train.length; j++) { const dx = p[0] - sa * train[j][0], dy = p[1] - sa * train[j][1]; w[j] = -(dx * dx + dy * dy) / (2 * (1 - ab)); if (w[j] > mx) mx = w[j]; }
+          let sw = 0, ex = 0, ey = 0;
+          for (let j = 0; j < train.length; j++) { const v = Math.exp(w[j] - mx); sw += v; ex += v * train[j][0]; ey += v * train[j][1]; }
+          ex /= sw; ey /= sw;
+          const e0 = (p[0] - sa * ex) / s1, e1 = (p[1] - sa * ey) / s1;
+          let nx = (p[0] - coef * e0) * inv, ny = (p[1] - coef * e1) * inv;
+          if (withNoise && t > 0) { nx += sig * g(); ny += sig * g(); }
+          p[0] = nx; p[1] = ny;
+        }
+        if (t % 10 === 0) { frames.push(x.map((p) => p.slice())); frameT.push(t); }
+      }
+      scrub.max = frames.length - 1;
+    }
+    function draw() {
+      const { ctx, w, h } = sizeCanvas(cv, 320);
+      const P = scatterFrame(ctx, w, h, 1.8);
+      ctx.strokeStyle = css("--ink"); ctx.lineWidth = 1.2;
+      train.forEach((q) => { const [x, y] = P(q); ctx.beginPath(); ctx.moveTo(x - 3, y - 3); ctx.lineTo(x + 3, y + 3); ctx.moveTo(x + 3, y - 3); ctx.lineTo(x - 3, y + 3); ctx.stroke(); });
+      if (!frames.length) return;
+      ctx.fillStyle = css("--hot"); ctx.globalAlpha = 0.55;
+      frames[cur].forEach((p) => { const [x, y] = P(p); ctx.beginPath(); ctx.arc(x, y, 2.4, 0, 7); ctx.fill(); });
+      ctx.globalAlpha = 1;
+      const last = frames[frames.length - 1];
+      const near = last.map((p) => Math.min(...train.map((q) => Math.hypot(p[0] - q[0], p[1] - q[1]))));
+      const meanNear = near.reduce((s, v) => s + v, 0) / near.length;
+      const hit = new Set(last.map((p) => { let bi = 0, bd = Infinity; train.forEach((q, j) => { const d = Math.hypot(p[0] - q[0], p[1] - q[1]); if (d < bd) { bd = d; bi = j; } }); return bi; })).size;
+      const tt = frameT[cur];
+      read.innerHTML = (tt === 1000 ? "nhiễu thuần x₁₀₀₀" : tt === 0 ? "xong, t = 0" : `t = <b>${tt}</b>`) +
+        (cur === frames.length - 1 ? ` · khoảng cách trung bình tới điểm train gần nhất = <b>${meanNear.toFixed(4)}</b> · số điểm train khác nhau được chạm tới: <b>${hit} / ${train.length}</b>` : "");
+    }
+    function start() {
+      if (anim) { cancelAnimationFrame(anim); anim = null; }
+      go.disabled = true; read.textContent = "đang tính 1000 bước…";
+      setTimeout(() => {
+        run(); go.disabled = false;
+        if (reduced) { cur = frames.length - 1; scrub.value = cur; draw(); return; }
+        cur = 0; let last = 0;
+        const step = (ts) => { if (ts - last > 28) { last = ts; cur = Math.min(frames.length - 1, cur + 1); scrub.value = cur; draw(); } if (cur < frames.length - 1) anim = requestAnimationFrame(step); else anim = null; };
+        anim = requestAnimationFrame(step);
+      }, 20);
+    }
+    go.addEventListener("click", start);
+    nz.addEventListener("click", () => { withNoise = !withNoise; nz.classList.toggle("on", withNoise); nz.setAttribute("aria-pressed", withNoise); nz.textContent = "Cộng σₜ·z: " + (withNoise ? "bật" : "tắt"); });
+    scrub.addEventListener("input", () => { if (anim) { cancelAnimationFrame(anim); anim = null; } cur = Math.min(parseInt(scrub.value, 10), frames.length - 1); draw(); });
+    run(); cur = frames.length - 1; scrub.value = cur;
+    new ResizeObserver(draw).observe(cv); redrawers.push(draw);
+  })();
+
+  /* ---------- quiz ---------- */
+  const QUIZ = [
+    { q: "Forward process làm gì?", o: ["Thêm nhiễu dần vào dữ liệu cho tới khi thành nhiễu thuần", "Khử nhiễu để tạo ảnh", "Nén ảnh thành vector", "Phân loại ảnh"], a: 0, e: "Forward process cố định, không có tham số để học. Nó chỉ dùng để tạo dữ liệu train cho model." },
+    { q: "Model trong DDPM được train để dự đoán gì?", o: ["Nhãn của ảnh", "Nhiễu ε đã được thêm vào", "Bước t", "Câu mô tả ảnh"], a: 1, e: "Đoán được ε thì suy ra được x₀: x̂₀ = (xₜ − √(1−ᾱₜ)·ε̂) / √ᾱₜ." },
+    { q: "Loss của DDPM là gì?", o: ["Cross-entropy", "MSE giữa nhiễu thật và nhiễu đoán", "Accuracy", "Khoảng cách giữa hai ảnh train"], a: 1, e: "Chỉ là hồi quy MSE, giống hồi quy tuyến tính ở Bài 1." },
+    { q: "Vì sao có thể nhảy thẳng từ x₀ tới xₜ mà không cần thêm nhiễu t lần?", o: ["Vì T đủ lớn", "Vì tổng các nhiễu Gaussian độc lập vẫn là một nhiễu Gaussian", "Vì model đã học bước đó", "Vì βₜ là hằng số"], a: 1, e: "Phương sai cộng lại, nên t lần thêm nhiễu gộp được thành một lần với hệ số √(1−ᾱₜ)." },
+    { q: "ᾱₜ rất gần 0 nghĩa là gì?", o: ["xₜ gần như là ảnh gốc", "xₜ gần như toàn nhiễu", "Model đã train xong", "Learning rate quá nhỏ"], a: 1, e: "√ᾱₜ là phần tín hiệu còn lại. Ở t = 1000, √ᾱ ≈ 0.006." },
+    { q: "Model đoán nhiễu khó nhất ở bước nào?", o: ["t nhỏ, khi chỉ thêm rất ít nhiễu", "t lớn, khi gần như toàn nhiễu", "Mọi bước khó như nhau", "Bước giữa t = 500"], a: 0, e: "Ở t lớn, xₜ ≈ ε nên đoán dễ. Ở t nhỏ, nhiễu bé hơn chi tiết của dữ liệu nên không tách ra được." },
+    { q: "Sampling bắt đầu từ đâu?", o: ["Một ảnh train", "Nhiễu Gaussian ngẫu nhiên", "Ảnh đen", "Trung bình các ảnh train"], a: 1, e: "x_T ~ N(0, I). Mỗi mẫu nhiễu khác nhau cho một ảnh khác nhau." },
+    { q: "Bỏ phần cộng σₜ·z khi sampling DDPM thì sao?", o: ["Ảnh nét hơn và đa dạng hơn", "Các mẫu sụp về vài điểm, mất đa dạng", "Không ảnh hưởng gì", "Sampling nhanh gấp đôi"], a: 1, e: "Demo ở mục 06 và Phần F1 của notebook cho thấy cả nghìn mẫu dồn về một hai chỗ." },
+    { q: "Một bộ khử nhiễu tối ưu tuyệt đối trên tập train hữu hạn sẽ sinh ra gì?", o: ["Ảnh mới hoàn toàn", "Chép lại các mẫu train", "Nhiễu", "Ảnh trung bình của tập train"], a: 1, e: "Mạng nơ-ron tạo được ảnh mới chính vì nó không đạt tới tối ưu đó mà học quy luật trơn tru hơn." },
+  ];
+  const quizEl = document.getElementById("quiz");
+  function renderQuiz() {
+    quizEl.innerHTML = "";
+    QUIZ.forEach((item, qi) => {
+      const div = document.createElement("div"); div.className = "qitem";
+      div.innerHTML = `<div class="qq"><span class="qn">${qi + 1}.</span>${item.q}</div><div class="opts"></div><div class="qexp" hidden></div>`;
+      const opts = div.querySelector(".opts"), exp = div.querySelector(".qexp");
+      item.o.forEach((txt, oi) => {
+        const b = document.createElement("button"); b.className = "opt"; b.type = "button"; b.textContent = txt;
+        b.addEventListener("click", () => { store.quiz[qi] = oi; save(); renderQuiz(); updateProgress(); });
+        opts.appendChild(b);
+      });
+      if (qi in store.quiz) {
+        const chosen = store.quiz[qi];
+        [...opts.children].forEach((b, oi) => { b.disabled = true; if (oi === item.a) b.classList.add("right"); else if (oi === chosen) b.classList.add("wrong"); });
+        exp.hidden = false; exp.textContent = (chosen === item.a ? "Đúng. " : "Chưa đúng. ") + item.e;
+      }
+      quizEl.appendChild(div);
+    });
+    const answered = Object.keys(store.quiz).length, right = Object.entries(store.quiz).filter(([qi, oi]) => QUIZ[qi].a === oi).length;
+    document.getElementById("score").textContent = answered === QUIZ.length
+      ? `Kết quả: ${right} / ${QUIZ.length}. ` + (right >= 7 ? "Nắm chắc GĐ 1. Làm notebook rồi gửi Claude chấm." : "Đọc lại các mục có câu sai rồi làm lại.")
+      : `Đã trả lời ${answered} / ${QUIZ.length} câu.`;
+  }
+  document.getElementById("quizreset").addEventListener("click", () => { store.quiz = {}; save(); renderQuiz(); updateProgress(); });
+  renderQuiz();
+  updateProgress();
+})();
+</script>
+</body>
+</html>

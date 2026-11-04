@@ -1,0 +1,738 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Lộ trình AI Engineer 11 giai đoạn, 42 bài: lý thuyết, bài tập, thực hành và checklist tiến độ.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232C47D1'/%3E%3Cpath d='M8 22 L14 10 L18 18 L24 8' stroke='white' stroke-width='3' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<title>Lộ trình AI Engineer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout (shared with the AI Engineer lessons): one wide column; summary strip → market data → timeline → phase ledger. Each module splits into three tracked parts: lý thuyết, bài tập, thực hành. */
+:root {
+  --paper: #F4F6FB;
+  --surface: #FFFFFF;
+  --ink: #131A33;
+  --muted: #59627F;
+  --line: #DCE1EE;
+  --accent: #2C47D1;
+  --accent-soft: #E5E9FB;
+  --hot: #D2501B;
+  --hot-soft: #FCE8DE;
+  --ok: #1D8350;
+  --ok-soft: #E1F3E9;
+  --side: #7A4BC2;
+  --side-soft: #EFE7FA;
+  --f-display: "Bricolage Grotesque", "Be Vietnam Pro", system-ui, sans-serif;
+  --f-body: "Be Vietnam Pro", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #0E1222; --surface: #161B30; --ink: #E5E8F4; --muted: #98A0BD; --line: #283052;
+    --accent: #93A6FF; --accent-soft: #1F2752; --hot: #FF9361; --hot-soft: #3A2419;
+    --ok: #52C98F; --ok-soft: #133022; --side: #C3A2F5; --side-soft: #2A1F45;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #0E1222; --surface: #161B30; --ink: #E5E8F4; --muted: #98A0BD; --line: #283052;
+  --accent: #93A6FF; --accent-soft: #1F2752; --hot: #FF9361; --hot-soft: #3A2419;
+  --ok: #52C98F; --ok-soft: #133022; --side: #C3A2F5; --side-soft: #2A1F45;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--paper); color: var(--ink); font-family: var(--f-body); font-size: 16px; line-height: 1.65;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.wrap { max-width: 1040px; margin: 0 auto; padding-block: 40px 96px; }
+h1, h2, h3 { font-family: var(--f-display); text-wrap: balance; line-height: 1.15; margin: 0; }
+h1 { font-size: clamp(36px, 6vw, 58px); font-weight: 800; letter-spacing: -.02em; margin-top: 10px; }
+h2 { font-size: clamp(24px, 3.4vw, 32px); font-weight: 800; letter-spacing: -.01em; }
+p { margin: 12px 0 0; }
+a { color: var(--accent); }
+.eyebrow { font-size: 13px; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); font-weight: 600; }
+.lede { font-size: 18.5px; color: var(--muted); max-width: 66ch; }
+.mono { font-family: var(--f-mono); font-size: .88em; }
+section.block { margin-top: 64px; }
+.sub { color: var(--muted); font-size: 15px; max-width: 70ch; }
+
+/* summary strip */
+.summary { margin-top: 28px; display: grid; grid-template-columns: 1.1fr 1fr 1.4fr 1fr; gap: 0; border: 1.5px solid var(--ink); border-radius: 10px; background: var(--surface); }
+.summary > div { padding: 16px 18px; min-width: 0; border-left: 1px solid var(--line); }
+.summary > div:first-child { border-left: 0; }
+.s-label { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+.s-big { font-family: var(--f-display); font-size: 34px; font-weight: 800; line-height: 1.1; margin-top: 6px; font-variant-numeric: tabular-nums; }
+.s-text { margin-top: 6px; font-weight: 600; line-height: 1.4; }
+.s-small { font-size: 13.5px; color: var(--muted); margin-top: 4px; line-height: 1.45; }
+.meter { height: 6px; background: var(--line); border-radius: 3px; overflow: hidden; margin-top: 10px; }
+.meter i { display: block; height: 100%; width: 0; background: var(--ok); transition: width .4s; }
+@media (max-width: 820px) { .summary { grid-template-columns: 1fr 1fr; } .summary > div:nth-child(3) { border-left: 0; } .summary > div:nth-child(n+3) { border-top: 1px solid var(--line); } }
+@media (max-width: 460px) { .summary { grid-template-columns: minmax(0, 1fr); } .summary > div { border-left: 0; border-top: 1px solid var(--line); } .summary > div:first-child { border-top: 0; } }
+.sync { margin-top: 10px; font-size: 13px; color: var(--muted); }
+
+/* method */
+.method { margin-top: 20px; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; counter-reset: st; }
+.method div { border-top: 2px solid var(--ink); padding-top: 10px; font-size: 14px; line-height: 1.5; counter-increment: st; }
+.method b { display: block; font-family: var(--f-display); font-size: 17px; margin-bottom: 4px; }
+.method b::before { content: counter(st) " · "; font-family: var(--f-mono); font-size: 13px; color: var(--accent); }
+@media (max-width: 760px) { .method { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
+@media (max-width: 420px) { .method { grid-template-columns: minmax(0, 1fr); } }
+
+/* market bars */
+.market { margin-top: 22px; display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 28px; }
+@media (max-width: 760px) { .market { grid-template-columns: minmax(0, 1fr); } }
+.bars { display: grid; gap: 7px; }
+.bar-row { display: grid; grid-template-columns: 112px minmax(0, 1fr) 40px 52px; gap: 10px; align-items: center; font-size: 14px; }
+.bar-row .track { height: 14px; background: var(--line); border-radius: 2px; overflow: hidden; }
+.bar-row .track i { display: block; height: 100%; background: var(--accent); }
+.bar-row .pct { font-family: var(--f-mono); font-size: 13px; text-align: right; font-variant-numeric: tabular-nums; }
+.bar-row .ph { font-family: var(--f-mono); font-size: 12px; color: var(--muted); }
+.axis { display: grid; grid-template-columns: 112px minmax(0, 1fr) 40px 52px; gap: 10px; font-family: var(--f-mono); font-size: 11px; color: var(--muted); }
+.axis span:nth-child(2) { display: flex; justify-content: space-between; }
+.facts { display: grid; gap: 14px; align-content: start; }
+.fact { border-left: 3px solid var(--hot); padding: 2px 0 2px 14px; font-size: 14.5px; line-height: 1.5; }
+.fact b { font-family: var(--f-display); font-size: 24px; display: block; font-variant-numeric: tabular-nums; }
+.src { margin-top: 14px; font-size: 13px; color: var(--muted); }
+
+/* timeline */
+.gantt-wrap { margin-top: 20px; overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; }
+.gantt { min-width: 640px; display: grid; gap: 6px; }
+.g-row { display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 12px; align-items: center; font-size: 13.5px; }
+.g-row .g-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.g-row .g-name b { font-family: var(--f-mono); font-size: 12px; color: var(--muted); margin-right: 6px; font-weight: 600; }
+.g-track { position: relative; height: 20px; background-image: linear-gradient(90deg, var(--line) 1px, transparent 1px); background-size: calc(100% / 43 * 4) 100%; }
+.g-bar { position: absolute; top: 3px; height: 14px; border-radius: 3px; background: var(--accent); overflow: hidden; }
+.g-bar.side { background: var(--side); opacity: .85; }
+.g-bar i { position: absolute; inset: 0 auto 0 0; background: var(--ok); }
+.g-now { position: absolute; top: -4px; bottom: -4px; width: 2px; background: var(--hot); }
+.g-scale { display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 12px; font-family: var(--f-mono); font-size: 11px; color: var(--muted); }
+.g-scale div { position: relative; height: 16px; }
+.g-scale span { position: absolute; transform: translateX(-50%); }
+.legend { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 13px; color: var(--muted); }
+.legend i { display: inline-block; width: 12px; height: 12px; border-radius: 2px; vertical-align: -1px; margin-right: 6px; }
+
+/* filters */
+.filters { margin-top: 18px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+button.b {
+  font: 500 14px/1 var(--f-body); color: var(--ink); background: var(--surface); border: 1px solid var(--line);
+  padding: 9px 14px; border-radius: 6px; cursor: pointer;
+}
+button.b:hover { border-color: var(--accent); }
+button.b.on { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+button.b:focus-visible, summary:focus-visible, input:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* phases */
+.phases { margin-top: 18px; display: grid; gap: 14px; }
+details.phase { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; }
+details.phase[open] { border-color: var(--ink); }
+details.phase > summary {
+  list-style: none; cursor: pointer; padding: 16px 18px; display: grid;
+  grid-template-columns: 56px minmax(0, 1fr) auto; gap: 14px; align-items: center;
+}
+details.phase > summary::-webkit-details-marker { display: none; }
+.p-code { font-family: var(--f-mono); font-weight: 600; font-size: 15px; color: var(--accent); }
+.phase.side .p-code { color: var(--side); }
+.p-name { font-family: var(--f-display); font-size: 21px; font-weight: 600; line-height: 1.25; }
+.p-meta { font-size: 13.5px; color: var(--muted); margin-top: 2px; }
+.p-right { text-align: right; min-width: 92px; }
+.p-pct { font-family: var(--f-mono); font-size: 14px; font-variant-numeric: tabular-nums; }
+.p-right .meter { width: 92px; margin-top: 6px; }
+.chev { display: inline-block; transition: transform .2s; color: var(--muted); margin-left: 6px; }
+details[open] > summary .chev { transform: rotate(90deg); }
+@media (max-width: 560px) {
+  details.phase > summary { grid-template-columns: 40px minmax(0, 1fr); }
+  .p-right { grid-column: 2; text-align: left; display: flex; gap: 10px; align-items: center; }
+  .p-right .meter { margin-top: 0; }
+}
+.p-body { padding: 0 18px 18px; display: grid; gap: 14px; }
+.p-goal { font-size: 15px; padding-top: 2px; }
+.p-skip { font-size: 14px; color: var(--muted); background: var(--paper); border-radius: 6px; padding: 10px 14px; }
+
+.module { border-top: 1px solid var(--line); padding-top: 16px; display: grid; gap: 12px; }
+.m-head { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: baseline; }
+.m-id { font-family: var(--f-mono); font-size: 13px; color: var(--muted); }
+.m-title { font-weight: 700; font-size: 17px; }
+.chip { font-size: 12px; font-weight: 600; padding: 3px 8px; border-radius: 4px; letter-spacing: .02em; white-space: nowrap; }
+.chip.ready { background: var(--ok-soft); color: var(--ok); }
+.chip.now { background: var(--hot-soft); color: var(--hot); }
+.chip.planned { background: var(--paper); color: var(--muted); border: 1px solid var(--line); }
+.chip.needs { background: var(--side-soft); color: var(--side); }
+.chip.skipped { background: var(--paper); color: var(--muted); text-decoration: line-through; }
+.m-links { display: flex; flex-wrap: wrap; gap: 8px 16px; font-size: 14px; align-items: center; }
+.m-links .file { font-family: var(--f-mono); font-size: 12.5px; }
+.parts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+@media (max-width: 760px) { .parts { grid-template-columns: minmax(0, 1fr); } }
+.part { border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; min-width: 0; background: var(--surface); }
+.part.done { border-color: var(--ok); background: var(--ok-soft); }
+.part label { display: flex; gap: 8px; align-items: center; font-weight: 600; font-size: 13px; letter-spacing: .06em; text-transform: uppercase; cursor: pointer; }
+.part label input { width: 17px; height: 17px; accent-color: var(--ok); margin: 0; }
+.part ul { margin: 8px 0 0; padding-left: 18px; font-size: 14px; line-height: 1.5; display: grid; gap: 4px; }
+.m-done { font-size: 14px; }
+.m-done b { font-weight: 600; }
+.m-actions { display: flex; gap: 8px; }
+.module.is-skipped .parts, .module.is-skipped .m-done { opacity: .45; }
+.next-flag { font-size: 12px; font-weight: 700; color: var(--surface); background: var(--hot); padding: 3px 8px; border-radius: 4px; }
+footer { margin-top: 64px; padding-top: 18px; border-top: 1px solid var(--line); font-size: 14px; color: var(--muted); }
+@media (prefers-reduced-motion: reduce) { .meter i, .chev { transition: none; } }
+</style>
+<style>
+body { margin: 0; }
+img { max-width: 100%; }
+[hidden] { display: none !important; }
+.sitenav { border-bottom: 1px solid var(--line); background: var(--paper); }
+.sitenav-in { max-width: 1080px; margin: 0 auto; display: flex; flex-wrap: wrap; gap: 4px 6px; align-items: center; padding-block: 10px; }
+.sitenav a { color: var(--muted); text-decoration: none; font: 500 14px/1 var(--f-body); padding: 8px 10px; border-radius: 6px; }
+.sitenav a:hover, .sitenav a:focus-visible { color: var(--ink); background: var(--accent-soft); outline: none; }
+.sitenav a[aria-current="page"] { color: var(--accent); background: var(--accent-soft); font-weight: 600; }
+.sitenav a.brand { font: 800 16px/1 var(--f-display); color: var(--ink); margin-right: 8px; padding-left: 0; }
+.sitenav a.brand:hover { background: none; }
+</style>
+</head>
+<body>
+<nav class="sitenav" aria-label="Điều hướng"><div class="sitenav-in"><a class="brand" href="index.html">AI Engineer</a><a href="index.html" aria-current="page">Lộ trình</a><a href="bai01.html">Bài 1</a><a href="diffusion-gd1.html">Diffusion GĐ1</a><a href="notebooks.html">Notebook</a></div></nav>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Lộ trình của Trường · từ cơ bản đến nâng cao</div>
+    <h1>Lộ trình AI Engineer</h1>
+    <p class="lede">11 giai đoạn, 42 bài. Bài nào cũng có ba phần: lý thuyết, bài tập và thực hành, kèm tiêu chí rõ ràng để biết khi nào là xong. Tích vào từng phần khi làm xong; tiến độ được lưu ngay trên trình duyệt của bạn.</p>
+    <div class="summary">
+      <div><div class="s-label">Tiến độ</div><div class="s-big" id="sumPct">0%</div><div class="meter"><i id="sumBar"></i></div><div class="s-small" id="sumParts">0 / 0 phần</div></div>
+      <div><div class="s-label">Đang ở</div><div class="s-text" id="sumNow">P2 · Deep Learning nền tảng</div><div class="s-small">song song: dự án Diffusion</div></div>
+      <div><div class="s-label">Việc tiếp theo</div><div class="s-text" id="sumNext">Đang tải…</div><div class="s-small" id="sumNextPart"></div></div>
+      <div><div class="s-label">Thời lượng</div><div class="s-big">43<span style="font-size:18px"> tuần</span></div><div class="s-small">khoảng 20 giờ mỗi tuần</div></div>
+    </div>
+    <div class="sync" id="sync">Tiến độ được lưu trên trình duyệt này.</div>
+  </header>
+
+  <section class="block">
+    <h2>Cách học mỗi bài</h2>
+    <div class="method">
+      <div><b>Lý thuyết</b>Trang tương tác Claude soạn: giải thích, demo kéo-thả, công thức.</div>
+      <div><b>Bài tập</b>Tính tay và câu hỏi tự kiểm tra ngay trong trang, có chấm tự động.</div>
+      <div><b>Thực hành</b>Notebook có TODO và ô ✅ tự chấm, so kết quả với PyTorch.</div>
+      <div><b>Lab hoặc dự án</b>Bài toán lớn hơn, đưa lên GitHub với README.</div>
+      <div><b>Nộp bài</b>Gửi kết quả và câu trả lời cho Claude chấm, rồi nhận bài sau.</div>
+    </div>
+    <p class="sub">Tài liệu được soạn dần: bài có nhãn "Claude soạn khi tới" sẽ được làm khi bạn sắp học tới, để bám sát chỗ bạn đang mạnh hay yếu.</p>
+  </section>
+
+  <section class="block">
+    <h2>Nhà tuyển dụng cần gì</h2>
+    <p class="sub">Tỉ lệ tin tuyển dụng AI Engineer nhắc tới từng kỹ năng, phân tích 3.449 tin đang mở (tháng 5/2026). Cột phải là giai đoạn trong lộ trình dạy kỹ năng đó.</p>
+    <div class="market">
+      <div>
+        <div class="bars" id="bars"></div>
+        <div class="axis" style="margin-top:6px"><span></span><span><span>0%</span><span>25%</span><span>50%</span><span>75%</span></span><span></span><span></span></div>
+      </div>
+      <div class="facts">
+        <div class="fact"><b>6%</b>tin tuyển dụng dành cho entry-level. Phần lớn nhà tuyển dụng muốn ứng viên đã ship ít nhất một dự án LLM hoặc ML.</div>
+        <div class="fact"><b>27%</b>tin có gắn nhãn remote (một tin có thể gắn nhiều nhãn). Ở một mẫu khác gồm 903 tin tại Mỹ, chỉ 5,9% là remote hoàn toàn.</div>
+        <div class="fact"><b>Điều này nghĩa là</b>Dự án đã ship, có số đo và chạy ổn định (API, CI/CD, giám sát) quan trọng hơn chứng chỉ. Vì vậy P4, P8 và P10 được dồn nhiều thời gian.</div>
+      </div>
+    </div>
+    <div class="src">Nguồn: <a href="https://dev.to/gnana_6392e836fd500a957dc/ai-engineer-skills-companies-want-in-2026-3449-posting-analysis-5f9l" target="_blank" rel="noopener">AI Engineer Skills Companies Want in 2026 (DEV Community)</a> · <a href="https://365datascience.com/career-advice/career-guides/ai-engineer-job-outlook-2025/" target="_blank" rel="noopener">AI Engineer Job Outlook (365 Data Science)</a>. Số liệu chủ yếu từ tin tuyển dụng ở Mỹ và Ấn Độ.</div>
+  </section>
+
+  <section class="block">
+    <h2>Dòng thời gian</h2>
+    <p class="sub">Tuần tính từ lúc bắt đầu P0. Bạn đang ở khoảng tuần 8 vì đã có nền Python và ML cổ điển; P0, P1 có thể làm nhanh để lấp chỗ hổng. Hai dải tím chạy song song với dải chính.</p>
+    <div class="gantt-wrap"><div class="gantt" id="gantt"></div></div>
+    <div class="legend"><span><i style="background:var(--accent)"></i>giai đoạn chính</span><span><i style="background:var(--side)"></i>chạy song song</span><span><i style="background:var(--ok)"></i>phần đã xong</span><span><i style="background:var(--hot);width:3px"></i>vị trí hiện tại</span></div>
+  </section>
+
+  <section class="block" id="ledger">
+    <h2>Chi tiết từng giai đoạn</h2>
+    <div class="filters" role="group" aria-label="Lọc bài">
+      <button class="b on" data-filter="all" id="f-all">Tất cả</button>
+      <button class="b" data-filter="todo" id="f-todo">Chưa xong</button>
+      <button class="b" data-filter="ready" id="f-ready">Đã có tài liệu</button>
+      <button class="b" id="expandAll">Mở hết</button>
+      <button class="b" id="collapseAll">Thu gọn</button>
+    </div>
+    <div class="phases" id="phases"></div>
+  </section>
+
+  <footer>Website soạn cùng Claude. Muốn thêm bài hay sửa lộ trình, nhờ Claude cập nhật rồi thay bộ file mới; tiến độ trên trình duyệt vẫn giữ nguyên.</footer>
+</div>
+
+<script>
+/* Curriculum data for the AI Engineer roadmap page.
+   Each module: t = lý thuyết, b = bài tập, p = thực hành, done = tiêu chí hoàn thành.
+   status: "ready" (tài liệu đã có), "now" (đang học), "planned" (Claude soạn khi tới). */
+const PHASES = [
+  {
+    id: "p0", name: "Nền móng", weeks: [1, 3], track: "main",
+    goal: "Đủ Python, toán và công cụ để không bị kẹt ở các giai đoạn sau.",
+    skip: "Bỏ qua được nếu bạn viết được softmax bằng numpy không dùng vòng for và tự tính được đạo hàm của (wx + b − y)² theo w.",
+    modules: [
+      { id: "p0.1", title: "Python cho ML: numpy, pandas, matplotlib", status: "planned",
+        t: ["List/dict comprehension, hàm, class, module, môi trường ảo (venv, pip)", "numpy: array, shape, dtype, indexing, slicing, broadcasting, vector hóa thay vòng for", "pandas: DataFrame, đọc CSV/Excel, lọc, groupby, merge, xử lý giá trị thiếu", "matplotlib: line, bar, scatter, histogram, subplot"],
+        b: ["30 bài numpy không dùng vòng for: chuẩn hóa, one-hot, khoảng cách từng cặp, top-k", "10 bài pandas trên bảng đơn hàng: doanh thu theo tháng, sản phẩm bán chạy, tỉ lệ hoàn"],
+        p: ["Notebook phân tích dữ liệu bán hàng thật (ví dụ shop Shopee của bạn): 5 biểu đồ + 5 kết luận"],
+        done: "Hàm vector hóa của bạn nhanh hơn bản vòng for ít nhất 50 lần, và notebook phân tích chạy lại được từ đầu." },
+      { id: "p0.2", title: "Toán cho AI: đại số tuyến tính, giải tích, xác suất", status: "planned",
+        t: ["Vector, dot product, ma trận, nhân ma trận, chuyển vị, norm, suy luận shape", "Đạo hàm, đạo hàm riêng, gradient, quy tắc dây chuyền", "Biến ngẫu nhiên, kỳ vọng, phương sai, độ lệch chuẩn, phân phối Gaussian", "Xác suất có điều kiện, Bayes, log và exp, ý tưởng maximum likelihood"],
+        b: ["Tính tay: nhân ma trận 2×3 · 3×2, gradient của MSE, mean/std của một dãy số", "Kiểm chứng đạo hàm bằng gradient số (finite difference) trong numpy"],
+        p: ["Notebook 'toán bằng code': mỗi khái niệm một ô code kiểm chứng công thức"],
+        done: "Gradient giải tích và gradient số của bạn khớp nhau đến 1e-6." },
+      { id: "p0.3", title: "Công cụ: Git, GitHub, terminal, Colab", status: "planned",
+        t: ["Git: commit, branch, merge, pull request, .gitignore", "Terminal Linux: cd, ls, grep, pipe, quyền file, SSH", "Colab/Jupyter: GPU runtime, lưu vào Drive; VS Code + Python extension"],
+        b: ["Tạo branch, sửa, mở pull request, tự review và merge"],
+        p: ["Repo ai-engineer-labs trên GitHub: README, cấu trúc thư mục cho các lab"],
+        done: "Repo công khai, có ít nhất 5 commit có ý nghĩa và một pull request đã merge." },
+    ],
+  },
+  {
+    id: "p1", name: "Machine Learning cổ điển", weeks: [4, 7], track: "main",
+    goal: "Hiểu vòng đời một bài toán ML: dữ liệu → model → đánh giá → cải thiện. Nhiều câu hỏi phỏng vấn nằm ở đây.",
+    skip: "Bỏ qua được nếu bạn giải thích được precision và recall khác nhau thế nào, và đã từng train XGBoost vượt baseline.",
+    modules: [
+      { id: "p1.1", title: "Hồi quy tuyến tính và logistic", status: "planned",
+        t: ["Hồi quy tuyến tính, MSE, nghiệm đóng và gradient descent", "Hồi quy logistic, sigmoid, binary cross-entropy, ranh giới quyết định", "Regularization L1, L2 và ý nghĩa của nó"],
+        b: ["Tính tay một bước gradient descent cho logistic", "Viết hồi quy logistic từ đầu bằng numpy, so với scikit-learn"],
+        p: ["Dự đoán giá nhà (California Housing) và phân loại ung thư vú (Breast Cancer) với scikit-learn"],
+        done: "Bản numpy của bạn cho kết quả chênh không quá 1% so với scikit-learn." },
+      { id: "p1.2", title: "Đánh giá model đúng cách", status: "planned",
+        t: ["Train/val/test, cross-validation, data leakage", "Overfitting, underfitting, bias–variance", "Metric: accuracy, precision, recall, F1, ROC-AUC, PR-AUC, MAE, RMSE; confusion matrix", "Chọn metric theo bài toán và dữ liệu mất cân bằng"],
+        b: ["Tính tay mọi metric từ một confusion matrix", "Tìm lỗi leakage trong 5 đoạn code cho sẵn"],
+        p: ["Báo cáo đánh giá đầy đủ cho model ở 1.1: biểu đồ ROC, PR, learning curve"],
+        done: "Báo cáo trả lời được: model sai ở đâu, vì sao, và nên cải thiện gì tiếp." },
+      { id: "p1.3", title: "Cây quyết định và ensemble", status: "planned",
+        t: ["Decision tree: Gini, entropy, độ sâu", "Random forest, bagging; gradient boosting, XGBoost, LightGBM", "Feature importance, tuning siêu tham số (grid, random, Optuna)"],
+        b: ["Tính tay Gini của một lần tách", "Dự đoán trước: tăng max_depth thì train/val score đổi thế nào, rồi chạy kiểm chứng"],
+        p: ["Một cuộc thi Kaggle dạng bảng: nộp submission vượt baseline"],
+        done: "Có điểm Kaggle công khai, và notebook ghi lại 5 thí nghiệm với kết quả từng cái." },
+      { id: "p1.4", title: "Học không giám sát và feature engineering", status: "planned",
+        t: ["k-means, chọn k; PCA và giảm chiều", "Scaling, mã hóa biến phân loại, xử lý thiếu, tạo feature", "scikit-learn Pipeline và ColumnTransformer"],
+        b: ["Chạy tay 2 vòng k-means trên 6 điểm", "Giải thích PCA giữ lại bao nhiêu phương sai"],
+        p: ["Phân cụm khách hàng theo RFM (recency, frequency, monetary) từ dữ liệu bán hàng"],
+        done: "Pipeline một lệnh chạy từ CSV thô tới dự đoán, không rò dữ liệu." },
+    ],
+  },
+  {
+    id: "p2", name: "Deep Learning nền tảng", weeks: [8, 12], track: "main",
+    goal: "Hiểu mạng nơ-ron học thế nào và tự viết được training loop PyTorch.",
+    modules: [
+      { id: "p2.1", title: "Bài 1 · Mạng nơ-ron học thế nào", status: "now",
+        link: "bai01.html", files: "bai01_thuc_hanh.ipynb",
+        t: ["Tensor và shape [N, C, H, W], chuẩn hóa dữ liệu", "Neuron, lớp Linear, ReLU, vì sao cần phi tuyến", "Softmax, cross-entropy", "Gradient descent, learning rate", "Backpropagation, quy tắc dây chuyền, zero_grad"],
+        b: ["7 bài tính tay trong trang lý thuyết", "Bài kiểm tra cuối bài 8 câu (đạt ≥ 7)"],
+        p: ["Notebook bai01: tự viết softmax, gradient descent, backprop thủ công cho mạng 2 lớp, so với autograd"],
+        done: "Mọi ô ✅ trong notebook qua, và trả lời đúng 3 câu hỏi nộp bài." },
+      { id: "p2.2", title: "Bài 2 · Train mạng thật", status: "planned", files: "lab01_training_loop.ipynb (Lab 1 đã có)",
+        t: ["Mini-batch, epoch, SGD, momentum, Adam, AdamW, weight decay", "Learning rate schedule (cosine, warmup), khởi tạo trọng số", "CNN: convolution, padding, stride, pooling, số tham số", "BatchNorm, Dropout, data augmentation, overfitting"],
+        b: ["Tính kích thước output và số tham số của từng lớp conv", "Tính tay BatchNorm trên một batch 4 số"],
+        p: ["Lab 1: training loop CIFAR-10 từ đầu, checkpoint, train tiếp được"],
+        done: "Test accuracy CIFAR-10 ≥ 70% và train tiếp từ checkpoint không bị nhảy loss." },
+      { id: "p2.3", title: "CNN hiện đại và transfer learning", status: "planned",
+        t: ["ResNet và kết nối tắt (residual)", "Dùng model pretrained: linear probe so với fine-tune toàn bộ", "Mixed precision, GPU, DataLoader nhanh", "Debug training: overfit 1 batch, LR range test, đọc learning curve"],
+        b: ["Vì sao residual giúp gradient đi qua mạng sâu: tính tay trên chuỗi 3 lớp"],
+        p: ["Fine-tune ResNet-18 phân loại ảnh của riêng bạn (ví dụ ảnh sản phẩm nội thất), có confusion matrix"],
+        done: "Accuracy ≥ 90% trên tập test bạn tự gom, và README giải thích các lỗi còn lại." },
+    ],
+  },
+  {
+    id: "p3", name: "Transformer và NLP", weeks: [13, 17], track: "main",
+    goal: "Hiểu kiến trúc nằm dưới mọi LLM, tự cài được attention và một GPT nhỏ.",
+    modules: [
+      { id: "p3.1", title: "Tokenization và embedding", status: "planned",
+        t: ["Token, BPE, vocab, token id; vì sao tiếng Việt tốn token hơn tiếng Anh", "Word embedding, cosine similarity", "Giới hạn của RNN/LSTM: vanishing gradient, khó song song"],
+        b: ["Chạy tay 3 vòng BPE trên một câu ngắn"],
+        p: ["Tự viết BPE tokenizer mini, so với tokenizer của Hugging Face trên văn bản tiếng Việt"],
+        done: "Tokenizer của bạn encode rồi decode ra đúng văn bản gốc trên 1.000 câu." },
+      { id: "p3.2", title: "Bài 3 · Attention và Transformer", status: "planned",
+        t: ["Query, key, value; scaled dot-product attention", "Multi-head attention, causal mask", "Positional encoding: sinusoid, RoPE", "LayerNorm, residual, feed-forward; encoder và decoder"],
+        b: ["Tính tay attention cho 3 token, 2 chiều", "Đếm tham số của một block Transformer"],
+        p: ["Lab 2: tự cài self-attention và multi-head attention, khớp nn.MultiheadAttention"],
+        done: "Sai số so với PyTorch < 1e-5, có hỗ trợ causal mask." },
+      { id: "p3.3", title: "Language model và sinh văn bản", status: "planned",
+        t: ["Next-token prediction, perplexity", "Sampling: greedy, temperature, top-k, top-p", "BERT, GPT, T5 khác nhau ở đâu; scaling law ở mức trực giác"],
+        b: ["Tính tay softmax có temperature và top-k trên 5 logits"],
+        p: ["Lab 3: mini-GPT 1–5 triệu tham số sinh thơ hoặc truyện tiếng Việt"],
+        done: "Perplexity trên tập val giảm đều, văn bản sinh ra phần lớn đúng chính tả." },
+      { id: "p3.4", title: "Hệ sinh thái Hugging Face", status: "planned",
+        t: ["transformers, datasets, tokenizers, Trainer", "Hub: tải, đẩy model và dataset, model card", "Fine-tune encoder (PhoBERT) cho phân loại"],
+        b: ["Đọc một model card và trả lời 5 câu hỏi về dữ liệu, giấy phép, giới hạn"],
+        p: ["Fine-tune PhoBERT phân loại cảm xúc review tiếng Việt, đẩy model lên Hub"],
+        done: "Model công khai trên Hub với model card và F1 trên tập test." },
+    ],
+  },
+  {
+    id: "p4", name: "LLM Engineering", weeks: [18, 23], track: "main",
+    goal: "Nhóm kỹ năng được tuyển nhiều nhất: xây ứng dụng LLM chạy ổn định, đo được chất lượng.",
+    modules: [
+      { id: "p4.1", title: "Bài 4 · Làm việc với LLM", status: "planned",
+        t: ["Định dạng chat, system prompt, token và chi phí", "Prompting: few-shot, chia bước, đóng vai, ràng buộc định dạng", "Structured output (JSON schema, Pydantic), tool calling, streaming", "Retry, rate limit, timeout, fallback giữa các model"],
+        b: ["Viết 3 phiên bản prompt cho cùng một việc, chấm trên 20 ví dụ"],
+        p: ["Lab 4: trích xuất hóa đơn/email thành JSON, tự retry khi lỗi, thêm 2 tool"],
+        done: "Tỉ lệ JSON hợp lệ và đúng ≥ 95% trên 20 mẫu bạn tự tạo." },
+      { id: "p4.2", title: "Bài 5 · Embedding và RAG", status: "planned",
+        t: ["Embedding model, chunking, metadata", "Vector search (FAISS, pgvector, Qdrant), BM25, hybrid search", "Reranker, query rewriting, trích dẫn nguồn", "Khi nào RAG thua fine-tune và ngược lại"],
+        b: ["Tính tay cosine similarity và xếp hạng 4 đoạn văn"],
+        p: ["Lab 5: hỏi đáp trên bộ tài liệu thật, có trích dẫn đúng đoạn nguồn"],
+        done: "Câu trả lời dẫn đúng nguồn, và hybrid search tốt hơn vector search thuần trên bộ câu hỏi của bạn." },
+      { id: "p4.3", title: "Bài 6 · Đánh giá hệ thống AI", status: "planned",
+        t: ["Bộ eval vàng, recall@k, MRR, faithfulness", "LLM-as-judge và các thiên lệch của nó", "Phân tích lỗi, regression test trong CI", "Tracing và observability"],
+        b: ["Gán nhãn tay 20 câu trả lời rồi so với LLM-as-judge: hai bên đồng ý bao nhiêu %"],
+        p: ["Lab 6: 50 câu hỏi kèm đáp án cho hệ thống ở Lab 5, bảng so sánh các cấu hình"],
+        done: "Có bảng kết quả và kết luận cấu hình tốt nhất kèm lý do." },
+      { id: "p4.4", title: "Bài 7 · Agent", status: "planned",
+        t: ["Vòng lặp agent, ReAct, chọn tool, giới hạn số bước", "Bộ nhớ ngắn hạn và dài hạn, lập kế hoạch", "LangGraph: state, node, edge, checkpoint, human-in-the-loop", "An toàn: prompt injection, quyền của tool, kiểm soát chi phí"],
+        b: ["Vẽ tay state graph cho một agent đặt lịch hẹn"],
+        p: ["Lab 7: agent tự viết (không framework) giải 5 task nhiều bước; viết lại bằng LangGraph"],
+        done: "Cả hai phiên bản giải được 5 task, log từng bước, chặn được 1 prompt injection bạn tự thử." },
+    ],
+  },
+  {
+    id: "p5", name: "Dự án Diffusion: tạo ảnh từ con số 0", weeks: [10, 30], track: "side",
+    goal: "Làm lại đồ án tạo ảnh theo hướng hiểu sâu: tự viết diffusion, mổ xẻ Stable Diffusion, fine-tune LoRA, đóng gói thành sản phẩm.",
+    modules: [
+      { id: "p5.1", title: "GĐ 1 · Diffusion tạo ảnh thế nào", status: "ready",
+        link: "diffusion-gd1.html", files: "diffusion_gd1_thuc_hanh.ipynb",
+        t: ["Nhiễu Gaussian, cộng phương sai", "Forward process, lịch nhiễu, ᾱ, nhảy thẳng tới bước t", "Model dự đoán nhiễu, loss MSE", "Sampling DDPM, vai trò của σₜ·z, học thuộc và tổng quát hóa"],
+        b: ["7 bài tính tay trong trang lý thuyết", "Bài kiểm tra 9 câu (đạt ≥ 7)"],
+        p: ["Notebook GĐ1: tự viết DDPM trên điểm 2D, chạy trên CPU"],
+        done: "Điểm sinh ra nằm trên xoắn ốc (precision < 0.06) và trả lời 4 câu hỏi nộp bài." },
+      { id: "p5.2", title: "GĐ 2 · Diffusion cho ảnh", status: "planned", needs: "Bài 2",
+        t: ["U-Net, skip connection, timestep embedding vào conv", "DDIM: sinh nhanh với ít bước", "Noise schedule cosine"],
+        b: ["Tính số bước và chất lượng khi đổi DDPM 1000 bước sang DDIM 50 bước"],
+        p: ["Train DDPM sinh ảnh Fashion-MNIST trên Colab GPU"],
+        done: "Ảnh sinh ra nhận ra được là quần áo, và DDIM 50 bước cho chất lượng gần DDPM." },
+      { id: "p5.3", title: "GĐ 3 · Điều khiển bằng chữ", status: "planned", needs: "Bài 3",
+        t: ["Conditioning theo lớp, classifier-free guidance", "CLIP text encoder, cross-attention"],
+        b: ["Tính tay một bước guidance với w = 3"],
+        p: ["Sinh Fashion-MNIST theo lớp, rồi theo câu mô tả ngắn"],
+        done: "Đổi guidance scale cho thấy rõ đánh đổi giữa đa dạng và bám đề." },
+      { id: "p5.4", title: "GĐ 4 · Latent diffusion và Stable Diffusion", status: "planned",
+        t: ["VAE, không gian latent 64×64×4", "Mổ xẻ pipeline: tokenizer → text encoder → U-Net → scheduler → VAE decode"],
+        b: ["Tính bộ nhớ tiết kiệm được khi khử nhiễu trong latent thay vì pixel"],
+        p: ["Tự viết vòng lặp sampling Stable Diffusion thay cho pipeline() của diffusers"],
+        done: "Cùng seed và prompt, ảnh của bạn trùng ảnh của pipeline()." },
+      { id: "p5.5", title: "GĐ 5 · Fine-tune LoRA", status: "planned",
+        t: ["LoRA: phân rã hạng thấp, rank, alpha", "DreamBooth, style LoRA, chuẩn bị dữ liệu và caption", "Overfitting, học thuộc ảnh train, bản quyền"],
+        b: ["Tính số tham số LoRA rank 8 cho một lớp 768×768"],
+        p: ["Train LoRA phong cách riêng với khoảng 20 ảnh trên Colab T4"],
+        done: "LoRA tạo được phong cách mới trên prompt chưa từng thấy, không chép lại ảnh train." },
+      { id: "p5.6", title: "GĐ 6 · Đánh giá và rectified flow", status: "planned",
+        t: ["CLIP score, FID, đánh giá bằng người", "Rectified flow, flow matching, DiT: cách FLUX hoạt động"],
+        b: ["Tính tay một bước Euler của flow matching"],
+        p: ["So sánh model gốc và model + LoRA bằng CLIP score, FID và khảo sát 10 người"],
+        done: "Bảng kết quả có số đo thật, không ước lượng." },
+      { id: "p5.7", title: "GĐ 7 · Đóng gói sản phẩm", status: "planned",
+        t: ["Gradio hoặc Streamlit, hàng đợi, giới hạn tài nguyên", "Deploy HuggingFace Spaces, viết README cho CV"],
+        b: ["Viết README 1 trang: vấn đề, cách làm, kết quả, hạn chế"],
+        p: ["App tạo ảnh chạy model và LoRA của bạn, có demo công khai"],
+        done: "Người lạ mở link tạo được ảnh, README có số đo từ GĐ 6." },
+    ],
+  },
+  {
+    id: "p6", name: "Fine-tuning và tối ưu LLM", weeks: [24, 28], track: "main",
+    goal: "Biết khi nào nên fine-tune, làm được với GPU nhỏ, và chạy model nhanh, rẻ.",
+    modules: [
+      { id: "p6.1", title: "Bài 8a · SFT và PEFT", status: "planned",
+        t: ["Full fine-tune so với LoRA/QLoRA: rank, alpha, target modules", "Chat template, chuẩn bị dữ liệu, chia train/val/test", "TRL SFTTrainer; overfitting và catastrophic forgetting"],
+        b: ["Tính số tham số LoRA và VRAM cần cho Qwen 1.5B ở QLoRA"],
+        p: ["Lab 8: fine-tune Qwen 0.5–1.5B bằng LoRA cho một task tiếng Việt, so với zero-shot và few-shot"],
+        done: "Có số liệu cho thấy fine-tune hơn hoặc không hơn prompting, kèm phân tích lỗi." },
+      { id: "p6.2", title: "Bài 8b · Preference tuning", status: "planned",
+        t: ["RLHF tổng quan, reward model", "DPO và các biến thể; khi nào cần"],
+        b: ["Đọc loss DPO, giải thích từng thành phần bằng lời"],
+        p: ["DPO trên model ở 6.1 với 500 cặp chosen/rejected"],
+        done: "Tỉ lệ thắng của model sau DPO so với trước, đo bằng LLM-as-judge có kiểm tra tay." },
+      { id: "p6.3", title: "Quantization và inference nhanh", status: "planned",
+        t: ["FP16, BF16, INT8, INT4; GPTQ, AWQ, GGUF", "KV cache, batching, vLLM, FlashAttention, speculative decoding"],
+        b: ["Tính VRAM cho model 7B ở 4 mức precision, cộng KV cache cho 4K token"],
+        p: ["Lab 9: đo latency, tokens/s, VRAM và chất lượng của model ở 6.1 qua FP16, INT8, INT4"],
+        done: "Bảng trade-off tốc độ, bộ nhớ, chất lượng đo trên cùng một GPU." },
+    ],
+  },
+  {
+    id: "p7", name: "Thị giác và đa phương thức", weeks: [29, 32], track: "main",
+    goal: "Làm việc với ảnh, video và model kết hợp ảnh với ngôn ngữ.",
+    modules: [
+      { id: "p7.1", title: "Bài 9 · ViT và CLIP", status: "planned",
+        t: ["Patch embedding, Vision Transformer", "Học tương phản (contrastive), zero-shot classification"],
+        b: ["Tính số patch và độ dài chuỗi cho ảnh 224×224, patch 16"],
+        p: ["Lab 10: CLIP zero-shot, linear probe và fine-tune trên ảnh sản phẩm, có confusion matrix"],
+        done: "So sánh 3 cách trong một bảng, giải thích vì sao cách tốt nhất thắng." },
+      { id: "p7.2", title: "Vision-language model", status: "planned",
+        t: ["Kiến trúc LLaVA: vision encoder + projector + LLM", "VLM mã nguồn mở hiện nay, hiểu tài liệu và OCR"],
+        b: ["Vẽ luồng dữ liệu từ ảnh tới token đầu vào của LLM"],
+        p: ["Fine-tune một VLM nhỏ bằng LoRA cho hỏi đáp trên ảnh sản phẩm"],
+        done: "Độ chính xác trên 100 câu hỏi tự tạo tăng rõ so với trước fine-tune." },
+      { id: "p7.3", title: "Video và embodied AI (nâng cao)", status: "planned",
+        t: ["Model video, dữ liệu egocentric (EPIC-KITCHENS, Ego4D)", "Action recognition và anticipation", "Vision-Language-Action: từ VLM tới điều khiển robot"],
+        b: ["Đọc và tóm tắt 1 paper VLA, trình bày lại trong 5 phút"],
+        p: ["Dự án next-action anticipation trên EPIC-KITCHENS-100"],
+        done: "Kết quả trên tập val so với baseline của paper gốc." },
+    ],
+  },
+  {
+    id: "p8", name: "Production và MLOps", weeks: [33, 37], track: "main",
+    goal: "Đưa model ra khỏi notebook: API, Docker, cloud, giám sát. Đây là thứ phân biệt người làm được việc thật.",
+    modules: [
+      { id: "p8.1", title: "Bài 10a · Serving", status: "planned",
+        t: ["FastAPI, async, streaming (SSE), validate input", "Docker, image GPU, docker compose", "vLLM, batching, autoscaling; cloud GPU (AWS, GCP, RunPod, Modal)"],
+        b: ["Ước tính chi phí mỗi 1.000 request cho model ở 6.1"],
+        p: ["Lab 11: API cho model ở 6.1, Dockerfile, health check, load test bằng locust"],
+        done: "docker run là dùng được, có số request/s và latency p95." },
+      { id: "p8.2", title: "MLOps", status: "planned",
+        t: ["Theo dõi thí nghiệm (W&B, MLflow)", "Quản lý phiên bản dữ liệu và model", "CI/CD bằng GitHub Actions, chặn deploy khi eval tụt", "Tái lập kết quả: seed, config, lock phiên bản"],
+        b: ["Viết workflow CI chạy test và eval cho mỗi pull request"],
+        p: ["Pipeline train → eval → deploy tự động cho một model nhỏ"],
+        done: "Một pull request làm eval tụt bị CI chặn lại." },
+      { id: "p8.3", title: "Bài 10b · Giám sát và chi phí", status: "planned",
+        t: ["Logging, tracing, latency p50/p95, tỉ lệ lỗi", "Data drift, vòng phản hồi từ người dùng, A/B test", "Chi phí mỗi request, cache"],
+        b: ["Thiết kế dashboard 6 chỉ số cho một chatbot"],
+        p: ["Lab 12: log từng request, dashboard, cảnh báo khi latency vượt ngưỡng"],
+        done: "Cảnh báo bắn ra khi bạn cố tình làm chậm API." },
+      { id: "p8.4", title: "Backend và dữ liệu cho AI", status: "planned",
+        t: ["SQL, Postgres, pgvector", "Redis cache, hàng đợi tác vụ", "Xác thực, phân quyền, bảo mật API key"],
+        b: ["20 bài SQL: join, group by, window function"],
+        p: ["Thêm cơ sở dữ liệu, cache và hàng đợi vào API ở 8.1"],
+        done: "Request lặp lại được trả từ cache, tác vụ nặng chạy nền không chặn API." },
+    ],
+  },
+  {
+    id: "p9", name: "Nâng cao và nghiên cứu", weeks: [38, 43], track: "main",
+    goal: "Đọc, hiểu và tái hiện được paper; nắm cách train ở quy mô lớn. Hợp với hướng nghiên cứu bạn quan tâm.",
+    modules: [
+      { id: "p9.1", title: "Đọc và tái hiện paper", status: "planned",
+        t: ["Đọc paper 3 lượt, đọc bảng kết quả và ablation", "Tìm code, tái hiện, so sánh với số trong paper"],
+        b: ["Mỗi tuần tóm tắt 1 paper trong 1 trang"],
+        p: ["Tái hiện kết quả chính của một paper nhỏ (ví dụ LoRA hoặc DDPM)"],
+        done: "Blog tiếng Anh giải thích paper và kết quả tái hiện của bạn." },
+      { id: "p9.2", title: "Train ở quy mô lớn", status: "planned",
+        t: ["Mixed precision, gradient accumulation, gradient checkpointing", "DDP, FSDP, DeepSpeed ZeRO", "Scaling law, trộn dữ liệu"],
+        b: ["Tính bộ nhớ cho tham số, gradient, optimizer state của model 1B với Adam"],
+        p: ["Train mini-GPT ở 3.3 trên 2 GPU (Kaggle 2×T4) bằng DDP"],
+        done: "Thông lượng gần gấp đôi so với 1 GPU, loss trùng với bản 1 GPU." },
+      { id: "p9.3", title: "Kiến trúc và hướng mới", status: "planned",
+        t: ["Mixture of Experts, state space model (Mamba)", "Long context, reasoning model, RL với phần thưởng kiểm chứng được", "Test-time compute"],
+        b: ["So sánh chi phí suy luận của dense và MoE cùng số tham số"],
+        p: ["Thí nghiệm nhỏ với một ý tưởng mới, viết báo cáo kỹ thuật"],
+        done: "Báo cáo có giả thuyết, thí nghiệm, kết quả, và điều bạn chưa giải thích được." },
+    ],
+  },
+  {
+    id: "p10", name: "Portfolio và đi làm", weeks: [24, 43], track: "side",
+    goal: "Biến những gì đã học thành bằng chứng mà nhà tuyển dụng hoặc khách hàng freelance tin được.",
+    modules: [
+      { id: "p10.1", title: "3 dự án chủ lực", status: "planned",
+        t: ["Thế nào là một dự án portfolio tốt: vấn đề thật, số đo thật, demo, README"],
+        b: ["Viết đề cương 1 trang cho từng dự án trước khi làm"],
+        p: ["(1) App Diffusion + LoRA ở P5", "(2) Hệ thống RAG có eval và giám sát (Lab 13)", "(3) LLM hoặc VLM fine-tune cho tiếng Việt, hoặc dự án EPIC-KITCHENS"],
+        done: "Cả 3 có demo chạy được, README có bảng kết quả, video 2 phút." },
+      { id: "p10.2", title: "Hồ sơ: CV, GitHub, LinkedIn, Hugging Face", status: "planned",
+        t: ["CV 1 trang theo kết quả đo được", "GitHub profile, pinned repo; Hugging Face profile", "Viết kỹ thuật bằng tiếng Anh"],
+        b: ["Viết lại 3 dòng kinh nghiệm theo mẫu: làm gì, bằng gì, kết quả bao nhiêu"],
+        p: ["Bộ hồ sơ hoàn chỉnh bằng tiếng Anh, 2 bài blog kỹ thuật"],
+        done: "CV qua được bài chấm của Claude đóng vai nhà tuyển dụng." },
+      { id: "p10.3", title: "Phỏng vấn", status: "planned",
+        t: ["Coding: Python, cấu trúc dữ liệu, LeetCode mức easy–medium", "Câu hỏi nền tảng ML/DL", "ML system design: thiết kế RAG cho 1 triệu tài liệu, hệ gợi ý", "Behavioral: kể dự án theo STAR"],
+        b: ["50 bài coding, 100 câu hỏi ML ngắn"],
+        p: ["4 buổi phỏng vấn thử với Claude: coding, ML, system design, behavioral"],
+        done: "Qua cả 4 buổi thử ở mức 'sẽ mời vòng sau'." },
+      { id: "p10.4", title: "Tìm việc remote và freelance", status: "planned",
+        t: ["Thị trường: vị trí entry-level ít, nên cần dự án đã ship", "Các cửa vào: freelance (chatbot, RAG, ảnh sản phẩm cho shop online), việc đánh giá và tạo dữ liệu cho AI, đóng góp mã nguồn mở, công ty Việt Nam làm remote", "Định giá, viết proposal, giao tiếp với khách"],
+        b: ["Viết 5 proposal mẫu cho 5 tin tuyển dụng thật"],
+        p: ["Ứng tuyển có hệ thống: 10 hồ sơ mỗi tuần, ghi lại phản hồi và điều chỉnh"],
+        done: "Có hợp đồng hoặc offer đầu tiên." },
+    ],
+  },
+];
+
+</script>
+<script>
+(function () {
+  "use strict";
+  const MARKET = [
+    ["Python", 71, "P0"], ["LLMs", 66, "P4"], ["RAG", 40, "P4"], ["Machine Learning", 38, "P1–P2"], ["AWS", 37, "P8"],
+    ["Monitoring", 31, "P8"], ["LangChain", 25, "P4"], ["CI/CD", 24, "P8"], ["PyTorch", 23, "P2–P3"], ["SQL", 19, "P8"],
+    ["Vector DB", 18, "P4"], ["Docker", 18, "P8"],
+  ];
+  const PARTS = [["t", "Lý thuyết"], ["b", "Bài tập"], ["p", "Thực hành"]];
+  const ORDER = ["p0", "p1", "p2", "p5", "p3", "p4", "p6", "p7", "p8", "p9", "p10"];
+  const NOW_WEEK = 8;
+  const LKEY = "ai-eng-roadmap-cache-v1";
+  let done = {};
+  try { const c = JSON.parse(localStorage.getItem(LKEY) || "null"); if (c && typeof c === "object") done = c; } catch (e) {}
+  let filter = "all";
+  const allModules = [];
+  PHASES.forEach((ph) => ph.modules.forEach((m) => allModules.push({ ph, m })));
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+  /* ---------- market bars ---------- */
+  document.getElementById("bars").innerHTML = MARKET.map(([n, v, ph]) =>
+    `<div class="bar-row"><span>${n}</span><span class="track"><i style="width:${v / 75 * 100}%"></i></span><span class="pct">${v}%</span><span class="ph">${ph}</span></div>`).join("");
+
+  /* ---------- progress helpers ---------- */
+  const isSkipped = (m) => !!done[m.id + ":skip"];
+  const partDone = (m, k) => isSkipped(m) || !!done[m.id + ":" + k];
+  function phaseStats(ph) {
+    let d = 0, n = 0;
+    ph.modules.forEach((m) => PARTS.forEach(([k]) => { n++; if (partDone(m, k)) d++; }));
+    return { d, n };
+  }
+  function nextStep() {
+    for (const pid of ORDER) {
+      const ph = PHASES.find((p) => p.id === pid);
+      for (const m of ph.modules) {
+        if (isSkipped(m)) continue;
+        const k = PARTS.find(([k]) => !done[m.id + ":" + k]);
+        if (k) return { ph, m, part: k[1] };
+      }
+    }
+    return null;
+  }
+  function firstFocus() {
+    // Start pointing from P2 (where the learner is) unless earlier phases have been started.
+    const started = (pid) => PHASES.find((p) => p.id === pid).modules.some((m) => PARTS.some(([k]) => done[m.id + ":" + k]) || isSkipped(m));
+    if (started("p0") || started("p1")) return nextStep();
+    for (const pid of ORDER.slice(2)) {
+      const ph = PHASES.find((p) => p.id === pid);
+      for (const m of ph.modules) {
+        if (isSkipped(m)) continue;
+        const k = PARTS.find(([k]) => !done[m.id + ":" + k]);
+        if (k) return { ph, m, part: k[1] };
+      }
+    }
+    return nextStep();
+  }
+
+  /* ---------- render ---------- */
+  const openState = { p2: true, p5: true };
+  function renderSummary() {
+    let d = 0, n = 0;
+    PHASES.forEach((ph) => { const s = phaseStats(ph); d += s.d; n += s.n; });
+    const pct = n ? Math.round(d / n * 100) : 0;
+    document.getElementById("sumPct").textContent = pct + "%";
+    document.getElementById("sumBar").style.width = pct + "%";
+    document.getElementById("sumParts").textContent = `${d} / ${n} phần đã xong`;
+    const nx = firstFocus();
+    document.getElementById("sumNext").textContent = nx ? nx.m.title : "Hoàn thành lộ trình";
+    document.getElementById("sumNextPart").textContent = nx ? `${nx.part} · ${nx.ph.id.toUpperCase()} ${nx.ph.name}` : "";
+    return nx;
+  }
+  function renderGantt() {
+    const W = 43, rows = ORDER.map((pid) => PHASES.find((p) => p.id === pid));
+    const pos = (w) => ((w - 1) / W) * 100;
+    let html = rows.map((ph) => {
+      const s = phaseStats(ph), [a, b] = ph.weeks, left = pos(a), width = ((b - a + 1) / W) * 100;
+      return `<div class="g-row"><div class="g-name"><b>${ph.id.toUpperCase()}</b>${esc(ph.name)}</div><div class="g-track">
+        <div class="g-bar ${ph.track === "side" ? "side" : ""}" style="left:${left}%;width:${width}%" title="Tuần ${a}–${b}"><i style="width:${s.n ? s.d / s.n * 100 : 0}%"></i></div>
+        <div class="g-now" style="left:${pos(NOW_WEEK)}%"></div></div></div>`;
+    }).join("");
+    html += `<div class="g-scale"><div></div><div>${[1, 5, 9, 13, 17, 21, 25, 29, 33, 37, 41].map((w) => `<span style="left:${pos(w)}%">${w === 1 ? "tuần 1" : w}</span>`).join("")}</div></div>`;
+    document.getElementById("gantt").innerHTML = html;
+  }
+  function moduleVisible(m) {
+    if (filter === "ready") return m.status === "ready" || m.status === "now";
+    if (filter === "todo") return !PARTS.every(([k]) => partDone(m, k));
+    return true;
+  }
+  function renderPhases(nx) {
+    const host = document.getElementById("phases");
+    host.querySelectorAll("details.phase").forEach((d) => (openState[d.dataset.id] = d.open));
+    host.innerHTML = ORDER.map((pid) => {
+      const ph = PHASES.find((p) => p.id === pid), s = phaseStats(ph), pct = s.n ? Math.round(s.d / s.n * 100) : 0;
+      const mods = ph.modules.filter(moduleVisible);
+      if (!mods.length && filter !== "all") return "";
+      const body = mods.map((m) => {
+        const chip = m.status === "ready" ? `<span class="chip ready">Tài liệu đã có</span>` : m.status === "now" ? `<span class="chip now">Đang học · tài liệu đã có</span>` : `<span class="chip planned">Claude soạn khi tới</span>`;
+        const needs = m.needs ? `<span class="chip needs">cần học xong ${esc(m.needs)}</span>` : "";
+        const sk = isSkipped(m) ? `<span class="chip skipped">đã bỏ qua</span>` : "";
+        const isNext = nx && nx.m.id === m.id ? `<span class="next-flag">Việc tiếp theo</span>` : "";
+        const links = (m.link || m.files) ? `<div class="m-links">${m.link ? `<a href="${m.link}">Mở trang lý thuyết →</a>` : ""}${m.files ? `<a class="file" href="notebooks/${m.files.split(" ")[0]}" download>tải notebook: ${esc(m.files)}</a>` : ""}</div>` : "";
+        const parts = PARTS.map(([k, label]) => {
+          const id = `cb-${m.id.replace(".", "-")}-${k}`, on = partDone(m, k), items = m[k] || [];
+          return `<div class="part ${on ? "done" : ""}"><label for="${id}"><input type="checkbox" id="${id}" data-key="${m.id}:${k}" ${on ? "checked" : ""} ${isSkipped(m) ? "disabled" : ""}>${label}</label>
+            <ul>${items.map((x) => `<li>${esc(x)}</li>`).join("")}</ul></div>`;
+        }).join("");
+        const skipBtn = ph.skip ? `<div class="m-actions"><button class="b" data-skip="${m.id}" id="skip-${m.id.replace(".", "-")}">${isSkipped(m) ? "Học lại bài này" : "Bỏ qua, đã biết"}</button></div>` : "";
+        return `<div class="module ${isSkipped(m) ? "is-skipped" : ""}" id="m-${m.id.replace(".", "-")}">
+          <div class="m-head"><span class="m-id">${m.id.toUpperCase()}</span><span class="m-title">${esc(m.title)}</span>${chip}${needs}${sk}${isNext}</div>
+          ${links}<div class="parts">${parts}</div>
+          <div class="m-done"><b>Xong khi:</b> ${esc(m.done)}</div>${skipBtn}</div>`;
+      }).join("");
+      const open = filter !== "all" ? true : !!openState[ph.id];
+      return `<details class="phase ${ph.track === "side" ? "side" : ""}" data-id="${ph.id}" ${open ? "open" : ""}>
+        <summary><span class="p-code">${ph.id.toUpperCase()}</span>
+          <span><span class="p-name">${esc(ph.name)}</span><div class="p-meta">Tuần ${ph.weeks[0]}–${ph.weeks[1]} · ${ph.modules.length} bài${ph.track === "side" ? " · chạy song song" : ""}</div></span>
+          <span class="p-right"><span class="p-pct">${pct}%<span class="chev" aria-hidden="true">›</span></span><div class="meter"><i style="width:${pct}%"></i></div></span></summary>
+        <div class="p-body"><div class="p-goal"><b>Mục tiêu:</b> ${esc(ph.goal)}</div>${ph.skip ? `<div class="p-skip">${esc(ph.skip)}</div>` : ""}${body}</div></details>`;
+    }).join("");
+  }
+  function renderAll() { const nx = renderSummary(); renderGantt(); renderPhases(nx); }
+
+  /* ---------- persistence ---------- */
+  const syncEl = document.getElementById("sync");
+  let ref = null, writing = Promise.resolve(), pendingTimer = null, readOnly = false, gotServer = false;
+  function cacheLocal() { try { localStorage.setItem(LKEY, JSON.stringify(done)); } catch (e) {} }
+  function scheduleSave() {
+    cacheLocal();
+    if (!ref || readOnly) return;
+    clearTimeout(pendingTimer);
+    pendingTimer = setTimeout(() => {
+      const body = { done: Object.assign({}, done), updatedAt: new Date().toISOString() };
+      writing = writing.then(() => ref.set(body)).then(() => { syncEl.textContent = "Đã lưu tiến độ vào tài khoản."; })
+        .catch((e) => {
+          if (e && e.code === "invalid_argument") { readOnly = true; syncEl.textContent = "Bạn đang xem ở chế độ chỉ đọc: thay đổi không được lưu."; }
+          else syncEl.textContent = "Chưa lưu được tiến độ (lỗi kết nối). Thay đổi vẫn giữ trên trình duyệt này.";
+        });
+    }, 600);
+  }
+  document.getElementById("phases").addEventListener("change", (e) => {
+    const cb = e.target.closest("input[data-key]"); if (!cb) return;
+    if (cb.checked) done[cb.dataset.key] = true; else delete done[cb.dataset.key];
+    renderAll(); scheduleSave();
+    const again = document.getElementById(cb.id); if (again) again.focus();
+  });
+  document.getElementById("phases").addEventListener("click", (e) => {
+    const b = e.target.closest("button[data-skip]"); if (!b) return;
+    const k = b.dataset.skip + ":skip";
+    if (done[k]) delete done[k]; else done[k] = true;
+    renderAll(); scheduleSave();
+    const again = document.getElementById(b.id); if (again) again.focus();
+  });
+  document.querySelectorAll("[data-filter]").forEach((b) => b.addEventListener("click", () => {
+    filter = b.dataset.filter;
+    document.querySelectorAll("[data-filter]").forEach((x) => x.classList.toggle("on", x === b));
+    renderPhases(firstFocus());
+  }));
+  document.getElementById("expandAll").addEventListener("click", () => { PHASES.forEach((p) => (openState[p.id] = true)); document.querySelectorAll("details.phase").forEach((d) => (d.open = true)); });
+  document.getElementById("collapseAll").addEventListener("click", () => { PHASES.forEach((p) => (openState[p.id] = false)); document.querySelectorAll("details.phase").forEach((d) => (d.open = false)); });
+
+  renderAll();
+
+  (async () => {
+    const use = window.claude && window.claude.use ? window.claude.use.bind(window.claude) : null;
+    const db = use ? await use("db") : null;
+    if (!db) { syncEl.textContent = "Tiến độ được lưu trên trình duyệt này. Mở bằng trình duyệt khác hoặc máy khác thì sẽ bắt đầu lại từ đầu."; return; }
+    ref = db.doc("progress/main");
+    const timer = setTimeout(() => { if (!gotServer) syncEl.textContent = "Chưa kết nối được nơi lưu tiến độ. Đang dùng bản lưu trên trình duyệt."; }, 10000);
+    ref.onSnapshot((snap) => {
+      if (!snap.metadata.fromCache) { gotServer = true; clearTimeout(timer); }
+      if (snap.exists) {
+        const d = snap.data().done;
+        if (d && typeof d === "object" && !snap.metadata.hasPendingWrites) { done = Object.assign({}, d); cacheLocal(); renderAll(); }
+        if (!snap.metadata.fromCache) syncEl.textContent = "Tiến độ được lưu vào tài khoản và đồng bộ giữa các thiết bị.";
+      } else if (!snap.metadata.fromCache) {
+        syncEl.textContent = "Tiến độ sẽ được lưu vào tài khoản khi bạn tích ô đầu tiên.";
+        if (Object.keys(done).length) scheduleSave();
+      }
+    }, (e) => { clearTimeout(timer); syncEl.textContent = "Không đọc được tiến độ đã lưu. Thay đổi giữ trên trình duyệt này."; });
+    try {
+      const user = use ? await use("user") : null;
+      const can = user && user.can ? await user.can("data.write") : null;
+      if (can === false) { readOnly = true; syncEl.textContent = "Bạn đang xem ở chế độ chỉ đọc."; }
+    } catch (e) {}
+  })();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,945 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Bài 1: tensor, Linear/ReLU, softmax và cross-entropy, gradient descent, backpropagation.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232C47D1'/%3E%3Cpath d='M8 22 L14 10 L18 18 L24 8' stroke='white' stroke-width='3' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<title>Mạng nơ-ron học thế nào</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: lab-notebook lesson — sticky progress rail on the left, one reading column; each section ends with a hand-calculation check and a pointer to the notebook part that drills it. */
+:root {
+  --paper: #F4F6FB;
+  --surface: #FFFFFF;
+  --ink: #131A33;
+  --muted: #59627F;
+  --line: #DCE1EE;
+  --grid: #E7EBF5;
+  --accent: #2C47D1;
+  --accent-soft: #E5E9FB;
+  --hot: #D2501B;
+  --hot-soft: #FCE8DE;
+  --ok: #1D8350;
+  --ok-soft: #E1F3E9;
+  --bad: #BF3128;
+  --bad-soft: #FBE4E2;
+  --code-bg: #EEF1F8;
+  --f-display: "Bricolage Grotesque", "Be Vietnam Pro", system-ui, sans-serif;
+  --f-body: "Be Vietnam Pro", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #0E1222; --surface: #161B30; --ink: #E5E8F4; --muted: #98A0BD; --line: #283052; --grid: #1B2140;
+    --accent: #93A6FF; --accent-soft: #1F2752; --hot: #FF9361; --hot-soft: #3A2419;
+    --ok: #52C98F; --ok-soft: #133022; --bad: #FF7B70; --bad-soft: #3A1A18; --code-bg: #1A2038;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #0E1222; --surface: #161B30; --ink: #E5E8F4; --muted: #98A0BD; --line: #283052; --grid: #1B2140;
+  --accent: #93A6FF; --accent-soft: #1F2752; --hot: #FF9361; --hot-soft: #3A2419;
+  --ok: #52C98F; --ok-soft: #133022; --bad: #FF7B70; --bad-soft: #3A1A18; --code-bg: #1A2038;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--f-body);
+  font-size: 16.5px;
+  line-height: 1.7;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.shell {
+  max-width: 1080px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  gap: 56px;
+  padding-block: 40px 96px;
+}
+@media (max-width: 860px) {
+  .shell { grid-template-columns: minmax(0, 1fr); gap: 0; padding-block: 24px 72px; }
+  .rail { display: none; }
+}
+
+/* rail */
+.rail { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 32px); align-self: start; }
+.rail-label { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+.rail ol { list-style: none; margin: 14px 0 20px; padding: 0; display: grid; gap: 2px; }
+.rail a {
+  display: grid; grid-template-columns: 22px 1fr; gap: 8px; align-items: baseline;
+  padding: 6px 8px; border-radius: 6px; color: var(--muted); text-decoration: none; font-size: 14px; line-height: 1.4;
+}
+.rail a:hover, .rail a:focus-visible { background: var(--accent-soft); color: var(--ink); outline: none; }
+.rail .n { font-family: var(--f-mono); font-size: 12px; }
+.rail a.done .n { color: var(--ok); font-weight: 600; }
+.meter { height: 6px; background: var(--line); border-radius: 3px; overflow: hidden; }
+.meter i { display: block; height: 100%; width: 0; background: var(--ok); transition: width .4s; }
+.meter-text { font-size: 13px; color: var(--muted); margin-top: 8px; font-variant-numeric: tabular-nums; }
+
+/* main */
+main { min-width: 0; max-width: 720px; }
+.eyebrow { font-size: 13px; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); font-weight: 600; }
+h1, h2, h3 { font-family: var(--f-display); text-wrap: balance; line-height: 1.15; margin: 0; }
+h1 { font-size: clamp(36px, 6vw, 56px); font-weight: 800; letter-spacing: -.02em; margin-top: 10px; }
+h2 { font-size: clamp(26px, 3.6vw, 34px); font-weight: 800; letter-spacing: -.01em; }
+h3 { font-size: 20px; font-weight: 600; margin-top: 28px; }
+p { margin: 14px 0 0; }
+.lede { font-size: 19px; color: var(--muted); max-width: 60ch; }
+a { color: var(--accent); }
+strong { font-weight: 600; }
+.mobile-progress { display: none; margin-top: 20px; }
+@media (max-width: 860px) { .mobile-progress { display: block; } }
+
+.howto { margin-top: 28px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.howto div { border-top: 2px solid var(--ink); padding-top: 10px; font-size: 14.5px; line-height: 1.5; }
+.howto b { display: block; font-family: var(--f-display); font-size: 17px; margin-bottom: 4px; }
+@media (max-width: 560px) { .howto { grid-template-columns: minmax(0, 1fr); } }
+
+section.lesson { margin-top: 88px; scroll-margin-top: 24px; }
+.sec-head { display: grid; grid-template-columns: auto 1fr; gap: 16px; align-items: baseline; }
+.sec-num { font-family: var(--f-mono); font-size: 15px; color: var(--accent); font-weight: 600; }
+.why { margin-top: 10px; color: var(--muted); font-size: 15px; }
+
+code, .mono { font-family: var(--f-mono); font-size: .88em; }
+:not(pre) > code { background: var(--code-bg); padding: 1px 5px; border-radius: 4px; }
+pre {
+  background: var(--code-bg); border-radius: 8px; padding: 16px 18px; overflow-x: auto;
+  font-family: var(--f-mono); font-size: 13.5px; line-height: 1.6; margin: 18px 0 0;
+}
+pre .c { color: var(--muted); }
+pre .k { color: var(--accent); font-weight: 600; }
+pre .h { color: var(--hot); font-weight: 600; }
+
+.formula {
+  margin: 18px 0 0; padding: 14px 18px; border-left: 3px solid var(--accent);
+  font-family: var(--f-mono); font-size: 15px; background: var(--surface); overflow-x: auto; white-space: nowrap;
+}
+.formula small { display: block; font-family: var(--f-body); color: var(--muted); font-size: 13.5px; white-space: normal; margin-top: 4px; }
+
+table.t { border-collapse: collapse; width: 100%; font-size: 14.5px; }
+.t-wrap { overflow-x: auto; margin-top: 18px; }
+.t th, .t td { text-align: left; padding: 8px 12px 8px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+.t th { font-size: 12.5px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+.t td.num { font-variant-numeric: tabular-nums; font-family: var(--f-mono); font-size: 13.5px; white-space: nowrap; }
+
+/* lab bench: interactive demo container */
+.bench {
+  margin-top: 24px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px;
+  padding: 18px; background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 22px 22px; background-position: -1px -1px;
+}
+.bench-title { font-size: 12.5px; letter-spacing: .08em; text-transform: uppercase; font-weight: 600; color: var(--muted); }
+.bench-inner { background: var(--surface); border-radius: 8px; margin-top: 10px; }
+.controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 12px; }
+button.b {
+  font: 500 14px/1 var(--f-body); color: var(--ink); background: var(--surface); border: 1px solid var(--line);
+  padding: 9px 14px; border-radius: 6px; cursor: pointer;
+}
+button.b:hover { border-color: var(--accent); }
+button.b:focus-visible, input:focus-visible, .opt:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+button.b.primary { background: var(--accent); color: var(--surface); border-color: var(--accent); }
+button.b.on { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+.readout { font-family: var(--f-mono); font-size: 13.5px; font-variant-numeric: tabular-nums; color: var(--muted); }
+.readout b { color: var(--ink); font-weight: 600; }
+
+/* pixel patch */
+.pix-wrap { display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start; }
+.pix { display: grid; grid-template-columns: repeat(6, 52px); gap: 2px; }
+.pix span {
+  height: 44px; display: grid; place-items: center; font-family: var(--f-mono); font-size: 11.5px;
+  border-radius: 3px; font-variant-numeric: tabular-nums;
+}
+@media (max-width: 480px) { .pix { grid-template-columns: repeat(6, 44px); } .pix span { font-size: 10.5px; } }
+.pix-side { flex: 1 1 220px; min-width: 0; font-size: 14.5px; line-height: 1.55; }
+
+/* softmax */
+.sm-grid { display: grid; gap: 10px; margin-top: 4px; }
+.sm-row { display: grid; grid-template-columns: 74px minmax(0, 1fr) 52px minmax(0, 1fr) 56px; gap: 10px; align-items: center; font-size: 14px; }
+.sm-row label { display: flex; gap: 6px; align-items: center; cursor: pointer; }
+.sm-row input[type=range] { width: 100%; accent-color: var(--accent); }
+.sm-row .lv { font-family: var(--f-mono); font-size: 13px; text-align: right; font-variant-numeric: tabular-nums; }
+.bar { height: 16px; background: var(--line); border-radius: 3px; overflow: hidden; }
+.bar i { display: block; height: 100%; background: var(--accent); transition: width .15s; }
+.sm-row.true .bar i { background: var(--hot); }
+.sm-row .pv { font-family: var(--f-mono); font-size: 13px; font-variant-numeric: tabular-nums; }
+.sm-head { display: grid; grid-template-columns: 74px minmax(0, 1fr) 52px minmax(0, 1fr) 56px; gap: 10px; font-size: 12px; color: var(--muted); letter-spacing: .05em; text-transform: uppercase; }
+@media (max-width: 520px) {
+  .sm-row, .sm-head { grid-template-columns: 64px minmax(0, 1fr) 40px; }
+  .sm-row .bar, .sm-row .pv, .sm-head .hide-s { display: none; }
+}
+.lossbox { margin-top: 14px; display: flex; flex-wrap: wrap; gap: 8px 24px; align-items: baseline; }
+.lossbox .big { font-family: var(--f-display); font-size: 34px; font-weight: 800; color: var(--hot); font-variant-numeric: tabular-nums; }
+
+canvas { display: block; width: 100%; touch-action: none; }
+
+/* backprop graph */
+.graph-wrap { overflow-x: auto; }
+.graph svg { display: block; width: 100%; min-width: 560px; height: auto; }
+.node rect { fill: var(--surface); stroke: var(--line); stroke-width: 1.5; }
+.node.cur rect { stroke: var(--accent); stroke-width: 2.5; }
+.node .nm { font: 600 15px var(--f-mono); fill: var(--ink); }
+.node .fv { font: 500 13px var(--f-mono); fill: var(--accent); }
+.node .gv { font: 600 13px var(--f-mono); fill: var(--hot); }
+.edge { stroke: var(--muted); stroke-width: 1.5; fill: none; }
+.edge-l { font: 500 12px var(--f-body); fill: var(--muted); }
+.steptext { margin-top: 12px; min-height: 76px; font-size: 15px; line-height: 1.6; }
+.steptext .eq { font-family: var(--f-mono); font-size: 14px; display: block; margin-top: 4px; color: var(--ink); }
+.dots { display: flex; gap: 5px; }
+.dots i { width: 8px; height: 8px; border-radius: 50%; background: var(--line); }
+.dots i.on { background: var(--accent); }
+
+/* loop diagram */
+.loop svg { display: block; width: 100%; min-width: 600px; height: auto; }
+.loop .box { fill: var(--surface); stroke: var(--ink); stroke-width: 1.5; }
+.loop .box.hot { stroke: var(--hot); }
+.loop .lbl { font: 600 14px var(--f-body); fill: var(--ink); }
+.loop .sub { font: 400 12px var(--f-mono); fill: var(--muted); }
+.loop .arr { stroke: var(--ink); stroke-width: 1.5; fill: none; }
+.loop .arr.back { stroke: var(--hot); stroke-dasharray: 5 4; }
+.loop .tag { font: 600 12px var(--f-body); }
+.loop .tag.f { fill: var(--accent); }
+.loop .tag.b { fill: var(--hot); }
+
+/* tự tính */
+.check {
+  margin-top: 28px; border: 1.5px solid var(--ink); border-radius: 10px; padding: 18px 20px; background: var(--surface);
+}
+.check-top { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; flex-wrap: wrap; }
+.check-tag { font-size: 12.5px; letter-spacing: .08em; text-transform: uppercase; font-weight: 700; }
+.check.solved { border-color: var(--ok); }
+.check.solved .check-tag { color: var(--ok); }
+.check .q { margin-top: 8px; font-size: 15.5px; }
+.fields { display: flex; flex-wrap: wrap; gap: 12px 18px; margin-top: 14px; align-items: end; }
+.fields label { display: grid; gap: 4px; font-size: 13.5px; color: var(--muted); }
+.fields input {
+  font: 500 15px var(--f-mono); width: 120px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 6px;
+  background: var(--paper); color: var(--ink);
+}
+.fields input.ok { border-color: var(--ok); background: var(--ok-soft); }
+.fields input.bad { border-color: var(--bad); background: var(--bad-soft); }
+.fb { margin-top: 10px; font-size: 14.5px; min-height: 1.2em; }
+.fb.ok { color: var(--ok); } .fb.bad { color: var(--bad); }
+details.sol { margin-top: 10px; font-size: 14.5px; }
+details.sol summary { cursor: pointer; color: var(--muted); }
+details.sol div { margin-top: 8px; padding: 10px 14px; background: var(--paper); border-radius: 6px; font-family: var(--f-mono); font-size: 13.5px; line-height: 1.7; overflow-x: auto; }
+
+.nb {
+  margin-top: 16px; display: grid; grid-template-columns: auto 1fr; gap: 14px; align-items: center;
+  padding: 12px 16px; background: var(--accent-soft); border-radius: 8px; font-size: 14.5px; line-height: 1.5;
+}
+.nb .pill { font: 700 12px var(--f-mono); color: var(--surface); background: var(--accent); padding: 4px 8px; border-radius: 4px; white-space: nowrap; }
+
+.note { margin-top: 18px; padding: 12px 16px; background: var(--hot-soft); border-radius: 8px; font-size: 15px; }
+
+/* quiz */
+.quiz { display: grid; gap: 26px; margin-top: 24px; }
+.qitem .qq { font-weight: 600; font-size: 16px; }
+.qitem .qn { font-family: var(--f-mono); color: var(--muted); font-weight: 400; margin-right: 6px; }
+.opts { display: grid; gap: 6px; margin-top: 10px; }
+.opt {
+  text-align: left; font: 400 15px/1.45 var(--f-body); color: var(--ink); background: var(--surface);
+  border: 1px solid var(--line); border-radius: 6px; padding: 10px 14px; cursor: pointer;
+}
+.opt:hover { border-color: var(--accent); }
+.opt.right { border-color: var(--ok); background: var(--ok-soft); }
+.opt.wrong { border-color: var(--bad); background: var(--bad-soft); }
+.opt:disabled { cursor: default; }
+.qexp { margin-top: 8px; font-size: 14.5px; color: var(--muted); }
+.score { margin-top: 28px; font-family: var(--f-display); font-size: 22px; font-weight: 600; }
+
+/* roadmap */
+.road { list-style: none; padding: 0; margin: 22px 0 0; display: grid; gap: 0; }
+.road li { display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--line); align-items: baseline; }
+.road .rn { font-family: var(--f-mono); color: var(--muted); }
+.road .rt { font-weight: 600; }
+.road .rd { display: block; font-size: 14px; color: var(--muted); font-weight: 400; }
+.road .rl { font-family: var(--f-mono); font-size: 12.5px; color: var(--muted); white-space: nowrap; }
+.road li.now .rn, .road li.now .rt { color: var(--accent); }
+.road li.now .rl { color: var(--accent); font-weight: 600; }
+footer { margin-top: 72px; padding-top: 18px; border-top: 1px solid var(--line); font-size: 14px; color: var(--muted); }
+</style>
+<style>
+body { margin: 0; }
+img { max-width: 100%; }
+[hidden] { display: none !important; }
+.sitenav { border-bottom: 1px solid var(--line); background: var(--paper); }
+.sitenav-in { max-width: 1080px; margin: 0 auto; display: flex; flex-wrap: wrap; gap: 4px 6px; align-items: center; padding-block: 10px; }
+.sitenav a { color: var(--muted); text-decoration: none; font: 500 14px/1 var(--f-body); padding: 8px 10px; border-radius: 6px; }
+.sitenav a:hover, .sitenav a:focus-visible { color: var(--ink); background: var(--accent-soft); outline: none; }
+.sitenav a[aria-current="page"] { color: var(--accent); background: var(--accent-soft); font-weight: 600; }
+.sitenav a.brand { font: 800 16px/1 var(--f-display); color: var(--ink); margin-right: 8px; padding-left: 0; }
+.sitenav a.brand:hover { background: none; }
+</style>
+</head>
+<body>
+<nav class="sitenav" aria-label="Điều hướng"><div class="sitenav-in"><a class="brand" href="index.html">AI Engineer</a><a href="index.html">Lộ trình</a><a href="bai01.html" aria-current="page">Bài 1</a><a href="diffusion-gd1.html">Diffusion GĐ1</a><a href="notebooks.html">Notebook</a></div></nav>
+<div class="shell">
+  <nav class="rail" aria-label="Mục lục">
+    <div class="rail-label">Bài 1 · Mục lục</div>
+    <ol id="toc">
+      <li><a href="#s1" data-sec="s1"><span class="n">01</span><span>Bức tranh tổng thể</span></a></li>
+      <li><a href="#s2" data-sec="s2"><span class="n">02</span><span>Dữ liệu là tensor</span></a></li>
+      <li><a href="#s3" data-sec="s3"><span class="n">03</span><span>Neuron, Linear, ReLU</span></a></li>
+      <li><a href="#s4" data-sec="s4"><span class="n">04</span><span>Softmax và cross-entropy</span></a></li>
+      <li><a href="#s5" data-sec="s5"><span class="n">05</span><span>Gradient descent</span></a></li>
+      <li><a href="#s6" data-sec="s6"><span class="n">06</span><span>Backpropagation</span></a></li>
+      <li><a href="#s7" data-sec="s7"><span class="n">07</span><span>Ghép lại thành code</span></a></li>
+      <li><a href="#s8" data-sec="s8"><span class="n">08</span><span>Kiểm tra cuối bài</span></a></li>
+      <li><a href="#s9" data-sec="s9"><span class="n">09</span><span>Lộ trình khóa học</span></a></li>
+    </ol>
+    <div class="meter"><i class="meterbar"></i></div>
+    <div class="meter-text meterlabel">0 / 7 phần đã xong</div>
+  </nav>
+
+  <main>
+    <header>
+      <div class="eyebrow">AI Engineer · Bài 1 / 10 · Nền tảng</div>
+      <h1>Mạng nơ-ron học thế nào</h1>
+      <p class="lede">Từ một bức ảnh thành con số, từ con số thành dự đoán, và cách model tự sửa sai sau mỗi lần đoán. Học xong bài này bạn đọc hiểu được từng dòng trong vòng lặp train của PyTorch.</p>
+      <div class="howto">
+        <div><b>Đọc và thử</b>Mỗi mục có phần lý thuyết và một demo kéo, bấm được.</div>
+        <div><b>Tự tính</b>Cuối mục có bài tính tay. Giải đúng thì mục đó được đánh dấu xong.</div>
+        <div><b>Code</b>Làm phần tương ứng trong notebook <a href="notebooks/bai01_thuc_hanh.ipynb" download><code>bai01_thuc_hanh.ipynb</code></a>, có ô tự chấm.</div>
+      </div>
+      <div class="mobile-progress">
+        <div class="meter"><i class="meterbar"></i></div>
+        <div class="meter-text meterlabel">0 / 7 phần đã xong</div>
+      </div>
+    </header>
+
+    <!-- 1 -->
+    <section class="lesson" id="s1">
+      <div class="sec-head"><span class="sec-num">01</span><h2>Bức tranh tổng thể</h2></div>
+      <p>Một mạng nơ-ron là một hàm có rất nhiều tham số, viết là <code>f(x; θ)</code>. <code>x</code> là đầu vào (một bức ảnh), <code>θ</code> (theta) là toàn bộ trọng số. Ban đầu <code>θ</code> là số ngẫu nhiên nên model đoán bừa. <strong>Train</strong> là lặp đi lặp lại một vòng gồm 4 việc để chỉnh <code>θ</code> dần dần:</p>
+      <div class="bench loop">
+        <div class="bench-title">Vòng lặp học — lặp lại hàng nghìn lần</div>
+        <div class="bench-inner graph-wrap">
+          <svg viewBox="0 0 680 230" role="img" aria-label="Sơ đồ vòng lặp train: dữ liệu đi qua model ra logits, tính loss, backward tính gradient, optimizer cập nhật trọng số">
+            <defs>
+              <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill: var(--ink)"/></marker>
+              <marker id="ahh" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill: var(--hot)"/></marker>
+            </defs>
+            <rect class="box" x="10" y="30" width="130" height="64" rx="6"/>
+            <text class="lbl" x="75" y="58" text-anchor="middle">Batch ảnh x</text>
+            <text class="sub" x="75" y="78" text-anchor="middle">+ nhãn đúng y</text>
+            <rect class="box" x="190" y="30" width="130" height="64" rx="6"/>
+            <text class="lbl" x="255" y="58" text-anchor="middle">Model f(x; θ)</text>
+            <text class="sub" x="255" y="78" text-anchor="middle">mục 02, 03</text>
+            <rect class="box" x="370" y="30" width="130" height="64" rx="6"/>
+            <text class="lbl" x="435" y="58" text-anchor="middle">Logits</text>
+            <text class="sub" x="435" y="78" text-anchor="middle">10 điểm số</text>
+            <rect class="box hot" x="550" y="30" width="120" height="64" rx="6"/>
+            <text class="lbl" x="610" y="58" text-anchor="middle">Loss</text>
+            <text class="sub" x="610" y="78" text-anchor="middle">mục 04</text>
+            <path class="arr" d="M140 62 H186" marker-end="url(#ah)"/>
+            <path class="arr" d="M320 62 H366" marker-end="url(#ah)"/>
+            <path class="arr" d="M500 62 H546" marker-end="url(#ah)"/>
+            <text class="tag f" x="345" y="20" text-anchor="middle">① forward: tính dự đoán</text>
+            <path class="arr back" d="M610 94 V160 H440" marker-end="url(#ahh)"/>
+            <rect class="box hot" x="300" y="138" width="138" height="46" rx="6"/>
+            <text class="lbl" x="369" y="160" text-anchor="middle">Gradient ∂L/∂θ</text>
+            <text class="sub" x="369" y="176" text-anchor="middle">mục 06</text>
+            <path class="arr back" d="M300 160 H200" marker-end="url(#ahh)"/>
+            <rect class="box hot" x="62" y="138" width="138" height="46" rx="6"/>
+            <text class="lbl" x="131" y="160" text-anchor="middle">Cập nhật θ</text>
+            <text class="sub" x="131" y="176" text-anchor="middle">mục 05</text>
+            <path class="arr back" d="M131 138 Q131 110 210 96" marker-end="url(#ahh)"/>
+            <text class="tag b" x="520" y="152" text-anchor="middle">② backward</text>
+            <text class="tag b" x="250" y="210" text-anchor="middle">③ optimizer.step(): θ mới cho vòng sau</text>
+          </svg>
+        </div>
+      </div>
+      <p>Mọi model bạn sẽ gặp, từ CNN nhỏ đến LLM hàng tỷ tham số, đều train theo đúng vòng này. Chỉ có model, dữ liệu và loss là khác nhau. Các mục tiếp theo đi qua từng ô trong sơ đồ.</p>
+      <div class="t-wrap"><table class="t">
+        <tr><th>Từ</th><th>Nghĩa</th></tr>
+        <tr><td><b>Tham số (θ)</b></td><td>Các con số model tự học. Lab 1 có 308.394 tham số, GPT-3 có 175 tỷ.</td></tr>
+        <tr><td><b>Loss</b></td><td>Một con số đo model sai bao nhiêu. Càng nhỏ càng tốt.</td></tr>
+        <tr><td><b>Gradient</b></td><td>Cho biết mỗi tham số nên tăng hay giảm, và bao nhiêu, để loss giảm.</td></tr>
+        <tr><td><b>Learning rate</b></td><td>Độ dài mỗi bước sửa. Là siêu tham số quan trọng nhất.</td></tr>
+      </table></div>
+      <div class="check" data-check="s1">
+        <div class="check-top"><span class="check-tag">Tự kiểm tra</span></div>
+        <p class="q">Theo sơ đồ, model dùng <b>thông tin nào</b> để biết nên sửa trọng số theo hướng nào? Gõ số thứ tự: 1 = logits, 2 = gradient, 3 = nhãn y.</p>
+        <div class="fields"><label>Đáp án<input inputmode="numeric" data-ans="2" data-tol="0" id="c1a"></label><button class="b primary" data-act="check">Kiểm tra</button></div>
+        <div class="fb"></div>
+        <details class="sol"><summary>Xem lời giải</summary><div>Gradient ∂L/∂θ. Logits và nhãn y chỉ dùng để tính loss; chính gradient của loss mới cho biết hướng sửa từng tham số.</div></details>
+      </div>
+    </section>
+
+    <!-- 2 -->
+    <section class="lesson" id="s2">
+      <div class="sec-head"><span class="sec-num">02</span><h2>Dữ liệu là tensor</h2></div>
+      <p class="why">Vì sao cần biết: 80% lỗi khi mới học PyTorch là lỗi sai shape.</p>
+      <p>Máy tính chỉ hiểu số. Một bức ảnh màu 32×32 là <strong>3 bảng số</strong> (kênh đỏ, xanh lá, xanh dương), mỗi bảng 32×32, mỗi ô là độ sáng từ 0 đến 255. Mảng nhiều chiều như vậy gọi là <strong>tensor</strong>.</p>
+      <p>PyTorch xếp một batch ảnh theo thứ tự <code>[N, C, H, W]</code>:</p>
+      <div class="formula">x.shape = [128, 3, 32, 32]<small>128 ảnh · 3 kênh màu · cao 32 · rộng 32 = 393.216 con số trong một batch</small></div>
+      <p>Trước khi đưa vào model, ảnh được biến đổi 2 bước. <code>ToTensor</code> chia 255 để về khoảng 0–1. <code>Normalize</code> trừ trung bình rồi chia độ lệch chuẩn của từng kênh để giá trị nằm quanh 0. Giá trị quanh 0 giúp gradient ổn định, model học nhanh hơn.</p>
+      <div class="formula">x' = (x / 255 − mean) / std<small>Kênh đỏ của CIFAR-10: mean = 0.4914, std = 0.2470</small></div>
+
+      <div class="bench">
+        <div class="bench-title">Thử: một góc 6×6 của kênh đỏ</div>
+        <div class="bench-inner" style="padding:14px">
+          <div class="controls" style="margin-top:0">
+            <button class="b on" data-pix="raw">Ảnh gốc 0–255</button>
+            <button class="b" data-pix="tt">Sau ToTensor</button>
+            <button class="b" data-pix="norm">Sau Normalize</button>
+          </div>
+          <div class="pix-wrap" style="margin-top:14px">
+            <div class="pix" id="pix" aria-label="Lưới 6×6 giá trị pixel"></div>
+            <div class="pix-side" id="pixside"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="check" data-check="s2">
+        <div class="check-top"><span class="check-tag">Tự tính</span></div>
+        <p class="q">Pixel kênh đỏ có giá trị <b>200</b>. Sau <code>ToTensor</code> và <code>Normalize</code> (mean 0.4914, std 0.2470) nó bằng bao nhiêu? Làm tròn 2 chữ số.</p>
+        <div class="fields"><label>Giá trị<input inputmode="decimal" data-ans="1.186" data-tol="0.011" id="c2a"></label><button class="b primary" data-act="check">Kiểm tra</button></div>
+        <div class="fb"></div>
+        <details class="sol"><summary>Xem lời giải</summary><div>200 / 255 = 0.7843<br>(0.7843 − 0.4914) / 0.2470 = 0.2929 / 0.2470 ≈ 1.19</div></details>
+      </div>
+      <div class="nb"><span class="pill">Phần A</span><span>Trong notebook: tự viết hàm <code>ToTensor + Normalize</code> bằng numpy và so với torchvision.</span></div>
+    </section>
+
+    <!-- 3 -->
+    <section class="lesson" id="s3">
+      <div class="sec-head"><span class="sec-num">03</span><h2>Neuron, lớp Linear và ReLU</h2></div>
+      <p>Một <strong>neuron</strong> nhân mỗi đầu vào với một trọng số, cộng lại, cộng thêm bias: <code>z = w₁x₁ + w₂x₂ + … + b</code>. Một <strong>lớp Linear</strong> là nhiều neuron chạy song song, viết gọn bằng phép nhân ma trận:</p>
+      <div class="formula">y = x · Wᵀ + b<small>x: (N, in) · W: (out, in) · b: (out,) → y: (N, out). Đây đúng là cách nn.Linear lưu trọng số.</small></div>
+      <p>Chỉ chồng các lớp Linear thì vô ích: hai phép biến đổi tuyến tính liên tiếp vẫn là một phép biến đổi tuyến tính, nên mạng 10 lớp Linear cũng chỉ mạnh bằng 1 lớp. Ta chèn một <strong>hàm kích hoạt</strong> phi tuyến giữa các lớp. Phổ biến nhất là ReLU:</p>
+      <div class="formula">relu(z) = max(0, z)<small>Số âm thành 0, số dương giữ nguyên. Đơn giản, tính nhanh, và đủ để mạng học được các hình dạng cong.</small></div>
+      <div class="bench">
+        <div class="bench-title">Một mạng 2 lớp nhỏ</div>
+        <div class="bench-inner graph-wrap" style="padding:10px">
+          <pre style="margin:0;background:transparent">x (N, 2) ──<span class="k">Linear(2, 16)</span>──▶ z1 (N, 16) ──<span class="h">ReLU</span>──▶ h (N, 16) ──<span class="k">Linear(16, 2)</span>──▶ logits (N, 2)
+<span class="c">tham số:    16·2 + 16 = 48                                 2·16 + 2 = 34      tổng = 82</span></pre>
+        </div>
+      </div>
+      <p>Đây chính là mạng bạn sẽ tự viết backprop ở Phần E của notebook. Nó đủ mạnh để tách hai vòng tròn lồng nhau, việc mà không đường thẳng nào làm được.</p>
+
+      <div class="check" data-check="s3">
+        <div class="check-top"><span class="check-tag">Tự tính</span></div>
+        <p class="q">Cho <code>x = [1, 2]</code>, <code>W = [[0.5, −1], [2, 0.5]]</code>, <code>b = [0, 1]</code>. Tính <code>z = x·Wᵀ + b</code>, rồi <code>h = relu(z)</code>.</p>
+        <div class="fields">
+          <label>z₁<input inputmode="decimal" data-ans="-1.5" data-tol="0.001" id="c3a"></label>
+          <label>z₂<input inputmode="decimal" data-ans="4" data-tol="0.001" id="c3b"></label>
+          <label>h₁<input inputmode="decimal" data-ans="0" data-tol="0.001" id="c3c"></label>
+          <label>h₂<input inputmode="decimal" data-ans="4" data-tol="0.001" id="c3d"></label>
+          <button class="b primary" data-act="check">Kiểm tra</button>
+        </div>
+        <div class="fb"></div>
+        <details class="sol"><summary>Xem lời giải</summary><div>Hàng 1 của W là neuron 1: z₁ = 0.5·1 + (−1)·2 + 0 = −1.5<br>Hàng 2 của W là neuron 2: z₂ = 2·1 + 0.5·2 + 1 = 4<br>h = relu([−1.5, 4]) = [0, 4]</div></details>
+      </div>
+      <div class="nb"><span class="pill">Phần B</span><span>Viết <code>linear</code>, <code>relu</code> bằng numpy, so với <code>nn.Linear</code>, và chứng minh 2 lớp Linear = 1 lớp.</span></div>
+    </section>
+
+    <!-- 4 -->
+    <section class="lesson" id="s4">
+      <div class="sec-head"><span class="sec-num">04</span><h2>Softmax và cross-entropy</h2></div>
+      <p>Lớp cuối của model phân loại 10 lớp trả về 10 số tùy ý, gọi là <strong>logits</strong>. Để biến chúng thành xác suất (dương, tổng bằng 1) ta dùng <strong>softmax</strong>:</p>
+      <div class="formula">pᵢ = e^(zᵢ) / Σⱼ e^(zⱼ)<small>Logit lớn hơn → xác suất lớn hơn. Cộng cùng một số vào mọi logit thì xác suất không đổi.</small></div>
+      <p>Loss cho bài phân loại là <strong>cross-entropy</strong>: lấy xác suất model gán cho <em>đúng lớp</em>, rồi lấy âm log.</p>
+      <div class="formula">L = −log(p_đúng)<small>p_đúng = 1 → L = 0. p_đúng → 0 → L → ∞. Đoán sai mà tự tin thì bị phạt rất nặng.</small></div>
+
+      <div class="bench">
+        <div class="bench-title">Thử: kéo logits, chọn lớp đúng</div>
+        <div class="bench-inner" style="padding:14px">
+          <div class="sm-head"><span>Lớp đúng</span><span>Logit z</span><span></span><span class="hide-s">Xác suất p</span><span class="hide-s"></span></div>
+          <div class="sm-grid" id="sm"></div>
+          <div class="lossbox">
+            <div><div class="readout">Loss = −log(p_đúng)</div><div class="big" id="smloss">0.00</div></div>
+            <div class="readout" id="smnote"></div>
+          </div>
+          <div class="controls">
+            <button class="b" data-sm="equal">Mọi logit bằng nhau</button>
+            <button class="b" data-sm="confident">Tự tin và đúng</button>
+            <button class="b" data-sm="wrong">Tự tin nhưng sai</button>
+            <button class="b" data-sm="shift">Cộng 3 vào mọi logit</button>
+          </div>
+        </div>
+      </div>
+      <p>Bấm <b>Mọi logit bằng nhau</b>: với 4 lớp, loss = ln 4 ≈ 1.39. Với 10 lớp như CIFAR-10 thì loss = ln 10 ≈ <b>2.30</b>. Đó là loss bạn sẽ thấy ở epoch đầu tiên của Lab 1, khi model còn đoán bừa. Thấy loss ban đầu khác xa 2.30 là dấu hiệu có bug.</p>
+
+      <div class="check" data-check="s4">
+        <div class="check-top"><span class="check-tag">Tự tính</span></div>
+        <p class="q">Logits <code>[2, 1, 0]</code>, lớp đúng là lớp đầu tiên. Tính <code>p_đúng</code> và loss. (e² ≈ 7.389, e¹ ≈ 2.718)</p>
+        <div class="fields">
+          <label>p_đúng<input inputmode="decimal" data-ans="0.665" data-tol="0.006" id="c4a"></label>
+          <label>Loss<input inputmode="decimal" data-ans="0.408" data-tol="0.006" id="c4b"></label>
+          <button class="b primary" data-act="check">Kiểm tra</button>
+        </div>
+        <div class="fb"></div>
+        <details class="sol"><summary>Xem lời giải</summary><div>Tổng = 7.389 + 2.718 + 1 = 11.107<br>p_đúng = 7.389 / 11.107 ≈ 0.665<br>Loss = −ln(0.665) ≈ 0.408</div></details>
+      </div>
+      <div class="nb"><span class="pill">Phần C</span><span>Viết softmax <b>ổn định số</b> (không ra <code>nan</code> với logit 1000) và cross-entropy cho cả batch.</span></div>
+    </section>
+
+    <!-- 5 -->
+    <section class="lesson" id="s5">
+      <div class="sec-head"><span class="sec-num">05</span><h2>Gradient descent</h2></div>
+      <p>Loss là một hàm của tham số. Hãy tưởng tượng loss là độ cao của một vùng đồi núi, mỗi tham số là một trục. Ta muốn xuống chỗ thấp nhất, nhưng chỉ nhìn được độ dốc ngay dưới chân. <strong>Đạo hàm</strong> (gradient) chỉ hướng dốc lên, nên ta bước ngược lại:</p>
+      <div class="formula">w ← w − η · ∂L/∂w<small>η (eta) là learning rate: độ dài mỗi bước</small></div>
+
+      <div class="bench">
+        <div class="bench-title">Thử: chọn learning rate rồi cho bóng lăn</div>
+        <div class="bench-inner">
+          <canvas id="gd" height="270" aria-label="Đồ thị hàm loss và vị trí tham số w"></canvas>
+        </div>
+        <div class="controls">
+          <label class="readout" for="lr">lr</label>
+          <input type="range" id="lr" min="0.01" max="1.2" step="0.01" value="0.30" style="flex:1 1 140px;accent-color:var(--accent)">
+          <span class="readout"><b id="lrv">0.30</b></span>
+        </div>
+        <div class="controls">
+          <button class="b" data-lr="0.02">Quá nhỏ · 0.02</button>
+          <button class="b" data-lr="0.3">Vừa · 0.3</button>
+          <button class="b" data-lr="1.1">Quá lớn · 1.1</button>
+        </div>
+        <div class="controls">
+          <button class="b primary" id="gd1">1 bước</button>
+          <button class="b" id="gd20">Chạy 20 bước</button>
+          <button class="b" id="gdr">Đặt lại</button>
+          <span class="readout" id="gdread"></span>
+        </div>
+        <div class="readout" style="margin-top:8px">Bấm vào đồ thị để đặt điểm xuất phát khác.</div>
+      </div>
+      <p>Bạn sẽ thấy 3 tình huống quen thuộc khi train thật:</p>
+      <div class="t-wrap"><table class="t">
+        <tr><th>lr</th><th>Hiện tượng</th><th>Khi train thật</th></tr>
+        <tr><td class="num">0.02</td><td>Bò rất chậm</td><td>Loss giảm lì rì, tốn GPU vô ích</td></tr>
+        <tr><td class="num">0.3</td><td>Xuống nhanh, dừng ở đáy gần nhất</td><td>Loss giảm đều</td></tr>
+        <tr><td class="num">1.1</td><td>Nhảy qua nhảy lại hai bên đáy</td><td>Loss dao động, có khi tăng thành <code>nan</code></td></tr>
+      </table></div>
+      <div class="note">Để ý: với lr 0.3 từ điểm xuất phát mặc định, bóng dừng ở <b>đáy cục bộ</b> bên trái, trong khi đáy thấp hơn nằm bên phải. Thử đặt điểm xuất phát ở w ≈ 1 xem sao. Với mạng nơ-ron hàng triệu chiều, đáy cục bộ ít khi là vấn đề lớn, nhưng điểm khởi tạo và learning rate vẫn ảnh hưởng nhiều đến kết quả.</div>
+      <p>Trong thực tế ta không tính gradient trên toàn bộ 45.000 ảnh mỗi bước (quá chậm) mà trên từng <strong>mini-batch</strong> 128 ảnh. Gradient khi đó hơi nhiễu nhưng rẻ hơn rất nhiều. Đây là <em>stochastic gradient descent</em> (SGD), sẽ học kỹ ở Bài 2 cùng Adam.</p>
+
+      <div class="check" data-check="s5">
+        <div class="check-top"><span class="check-tag">Tự tính</span></div>
+        <p class="q">Hàm <code>f(w) = (w − 3)²</code>, đạo hàm <code>f'(w) = 2(w − 3)</code>. Bắt đầu từ <code>w = 0</code>, lr = 0.1. Tính w sau bước 1 và bước 2.</p>
+        <div class="fields">
+          <label>w sau bước 1<input inputmode="decimal" data-ans="0.6" data-tol="0.001" id="c5a"></label>
+          <label>w sau bước 2<input inputmode="decimal" data-ans="1.08" data-tol="0.001" id="c5b"></label>
+          <button class="b primary" data-act="check">Kiểm tra</button>
+        </div>
+        <div class="fb"></div>
+        <details class="sol"><summary>Xem lời giải</summary><div>Bước 1: f'(0) = −6 → w = 0 − 0.1·(−6) = 0.6<br>Bước 2: f'(0.6) = −4.8 → w = 0.6 + 0.48 = 1.08</div></details>
+      </div>
+      <div class="nb"><span class="pill">Phần D</span><span>Viết vòng lặp gradient descent, rồi tự train hồi quy tuyến tính <code>y = 2x + 1</code> không dùng thư viện.</span></div>
+    </section>
+
+    <!-- 6 -->
+    <section class="lesson" id="s6">
+      <div class="sec-head"><span class="sec-num">06</span><h2>Backpropagation</h2></div>
+      <p>Mục 05 giả sử ta đã có đạo hàm. Nhưng model có hàng trăm nghìn tham số, loss lại phụ thuộc vào chúng qua nhiều lớp. <strong>Backpropagation</strong> tính tất cả đạo hàm đó bằng <strong>quy tắc dây chuyền</strong>, đi ngược từ loss về từng tham số:</p>
+      <div class="formula">∂L/∂w = ∂L/∂a · ∂a/∂z · ∂z/∂w<small>Mỗi bước ngược chỉ cần đạo hàm cục bộ của một phép tính nhỏ, rồi nhân với gradient từ phía sau truyền tới.</small></div>
+      <p>Bấm qua từng bước trên đồ thị tính toán nhỏ nhất có thể: một neuron, ReLU, loss bình phương.</p>
+
+      <div class="bench">
+        <div class="bench-title">Thử: forward rồi backward từng bước</div>
+        <div class="bench-inner graph-wrap graph" style="padding:8px 4px">
+          <svg viewBox="0 0 640 200" id="bp" role="img" aria-label="Đồ thị tính toán z = w·x + b, a = relu(z), L = (a − y)²">
+            <path class="edge" d="M92 40 C140 40 150 92 196 96"/>
+            <path class="edge" d="M92 100 H196"/>
+            <path class="edge" d="M92 160 C140 160 150 108 196 104"/>
+            <path class="edge" d="M286 100 H340"/>
+            <path class="edge" d="M430 100 H484"/>
+            <text class="edge-l" x="313" y="90" text-anchor="middle">relu</text>
+            <text class="edge-l" x="457" y="90" text-anchor="middle">(·−y)²</text>
+            <g class="node" data-n="x"><rect x="12" y="76" width="80" height="48" rx="6"/><text class="nm" x="52" y="96" text-anchor="middle">x</text><text class="fv" x="52" y="114" text-anchor="middle">2</text></g>
+            <g class="node" data-n="w"><rect x="12" y="16" width="80" height="48" rx="6"/><text class="nm" x="52" y="36" text-anchor="middle">w</text><text class="fv" x="52" y="54" text-anchor="middle">3</text></g>
+            <g class="node" data-n="b"><rect x="12" y="136" width="80" height="48" rx="6"/><text class="nm" x="52" y="156" text-anchor="middle">b</text><text class="fv" x="52" y="174" text-anchor="middle">1</text></g>
+            <g class="node" data-n="z"><rect x="196" y="70" width="90" height="60" rx="6"/><text class="nm" x="241" y="92" text-anchor="middle">z = wx+b</text><text class="fv" x="241" y="110" text-anchor="middle"></text><text class="gv" x="241" y="125" text-anchor="middle"></text></g>
+            <g class="node" data-n="a"><rect x="340" y="70" width="90" height="60" rx="6"/><text class="nm" x="385" y="92" text-anchor="middle">a</text><text class="fv" x="385" y="110" text-anchor="middle"></text><text class="gv" x="385" y="125" text-anchor="middle"></text></g>
+            <g class="node" data-n="L"><rect x="484" y="70" width="90" height="60" rx="6"/><text class="nm" x="529" y="92" text-anchor="middle">L</text><text class="fv" x="529" y="110" text-anchor="middle"></text><text class="gv" x="529" y="125" text-anchor="middle"></text></g>
+            <text class="edge-l" x="529" y="150" text-anchor="middle">y = 5</text>
+            <text class="gv" id="gw" x="100" y="34"></text>
+            <text class="gv" id="gb" x="100" y="190"></text>
+            <text class="edge-l" x="600" y="196" text-anchor="end">xanh = forward · cam = gradient</text>
+          </svg>
+        </div>
+        <div class="steptext" id="bptext"></div>
+        <div class="controls">
+          <button class="b" id="bpprev">Lùi</button>
+          <button class="b primary" id="bpnext">Bước tiếp</button>
+          <div class="dots" id="bpdots" aria-hidden="true"></div>
+        </div>
+      </div>
+      <p>Hai điều cần nhớ để đọc code PyTorch:</p>
+      <p><b>1.</b> <code>loss.backward()</code> làm đúng việc bạn vừa bấm qua, cho mọi tham số cùng lúc, và lưu kết quả vào thuộc tính <code>.grad</code> của từng tham số.</p>
+      <p><b>2.</b> <code>.grad</code> được <strong>cộng dồn</strong>, không ghi đè. Gọi <code>backward()</code> 3 lần liền thì <code>w.grad</code> lần lượt là 8, 16, 24. Vì vậy mỗi bước train phải bắt đầu bằng <code>optimizer.zero_grad()</code>.</p>
+      <p>Để ý thêm ở bước ReLU: gradient đi qua nguyên vẹn vì z = 7 &gt; 0. Nếu z âm, ReLU trả về 0 và gradient đi qua nó cũng bằng 0, tham số phía trước không học được gì từ mẫu đó. Một neuron mà z luôn âm với mọi dữ liệu thì "chết" hẳn (<em>dead ReLU</em>).</p>
+
+      <div class="check" data-check="s6">
+        <div class="check-top"><span class="check-tag">Tự tính</span></div>
+        <p class="q">Cùng đồ thị, nhưng <code>x = 3, w = 1, b = −1, y = 1</code>, lr = 0.1. Tính loss, hai gradient, và w sau một bước cập nhật.</p>
+        <div class="fields">
+          <label>L<input inputmode="decimal" data-ans="1" data-tol="0.001" id="c6a"></label>
+          <label>∂L/∂w<input inputmode="decimal" data-ans="6" data-tol="0.001" id="c6b"></label>
+          <label>∂L/∂b<input inputmode="decimal" data-ans="2" data-tol="0.001" id="c6c"></label>
+          <label>w mới<input inputmode="decimal" data-ans="0.4" data-tol="0.001" id="c6d"></label>
+          <button class="b primary" data-act="check">Kiểm tra</button>
+        </div>
+        <div class="fb"></div>
+        <details class="sol"><summary>Xem lời giải</summary><div>Forward: z = 1·3 − 1 = 2 → a = relu(2) = 2 → L = (2 − 1)² = 1<br>∂L/∂a = 2(a − y) = 2<br>∂a/∂z = 1 (vì z &gt; 0) → ∂L/∂z = 2 · 1 = 2<br>∂L/∂w = ∂L/∂z · x = 2 · 3 = 6<br>∂L/∂b = ∂L/∂z · 1 = 2<br>w mới = 1 − 0.1·6 = 0.4</div></details>
+      </div>
+      <div class="nb"><span class="pill">Phần E</span><span>Phần khó nhất: tự viết backprop cho mạng 2 lớp bằng numpy, so từng gradient với autograd, rồi train đạt &gt; 95%.</span></div>
+    </section>
+
+    <!-- 7 -->
+    <section class="lesson" id="s7">
+      <div class="sec-head"><span class="sec-num">07</span><h2>Ghép lại thành code</h2></div>
+      <p>Toàn bộ bài học nằm gọn trong 5 dòng. Đây là khung bạn sẽ viết ở Lab 1 và mọi dự án sau:</p>
+<pre><span class="k">for</span> x, y <span class="k">in</span> train_loader:          <span class="c"># mục 02 · mini-batch tensor [128, 3, 32, 32]</span>
+    optimizer.zero_grad()           <span class="c"># mục 06 · xóa .grad cũ vì gradient cộng dồn</span>
+    logits = model(x)               <span class="c"># mục 03 · forward qua Linear, ReLU, …</span>
+    loss = criterion(logits, y)     <span class="c"># mục 04 · softmax + cross-entropy</span>
+    loss.backward()                 <span class="c"># mục 06 · backprop, ghi gradient vào .grad</span>
+    optimizer.step()                <span class="c"># mục 05 · w ← w − lr · grad</span></pre>
+      <p>Khi đánh giá model, ta chỉ cần forward, không cần gradient:</p>
+<pre>model.eval()
+<span class="k">with</span> torch.no_grad():             <span class="c"># không lưu đồ thị tính toán → nhanh, ít bộ nhớ</span>
+    logits = model(x)
+    acc = (logits.argmax(dim=<span class="h">1</span>) == y).float().mean()</pre>
+      <div class="check" data-check="s7">
+        <div class="check-top"><span class="check-tag">Tự kiểm tra</span></div>
+        <p class="q">Nếu xóa dòng <code>optimizer.step()</code>, loss sau 100 bước sẽ thế nào? Gõ 1 = giảm bình thường, 2 = gần như không đổi, 3 = tăng thành nan.</p>
+        <div class="fields"><label>Đáp án<input inputmode="numeric" data-ans="2" data-tol="0" id="c7a"></label><button class="b primary" data-act="check">Kiểm tra</button></div>
+        <div class="fb"></div>
+        <details class="sol"><summary>Xem lời giải</summary><div>Gần như không đổi. Gradient vẫn được tính nhưng trọng số không bao giờ được cập nhật, nên model giữ nguyên. Loss chỉ dao động nhẹ vì mỗi batch khác nhau.</div></details>
+      </div>
+      <div class="nb"><span class="pill">Phần F</span><span>Viết lại mạng ở Phần E bằng <code>nn.Module</code> và 5 bước trên. Cùng kết quả, ít code hơn hẳn.</span></div>
+    </section>
+
+    <!-- 8 -->
+    <section class="lesson" id="s8">
+      <div class="sec-head"><span class="sec-num">08</span><h2>Kiểm tra cuối bài</h2></div>
+      <p>8 câu, chọn một đáp án. Đúng từ 7 câu trở lên là sẵn sàng sang Bài 2.</p>
+      <div class="quiz" id="quiz"></div>
+      <div class="score" id="score"></div>
+      <div class="controls"><button class="b" id="quizreset">Làm lại bài kiểm tra</button></div>
+    </section>
+
+    <!-- 9 -->
+    <section class="lesson" id="s9">
+      <div class="sec-head"><span class="sec-num">09</span><h2>Lộ trình khóa học</h2></div>
+      <p>Mỗi bài gồm trang lý thuyết như thế này và một notebook thực hành có tự chấm. Sau một số bài có Lab là dự án nhỏ để đưa lên GitHub.</p>
+      <ol class="road">
+        <li class="now"><span class="rn">01</span><span class="rt">Mạng nơ-ron học thế nào<span class="rd">tensor, Linear, softmax, gradient descent, backprop</span></span><span class="rl">đang học</span></li>
+        <li><span class="rn">02</span><span class="rt">Train mạng thật<span class="rd">mini-batch, Adam, CNN, BatchNorm, Dropout, overfitting</span></span><span class="rl">→ Lab 1</span></li>
+        <li><span class="rn">03</span><span class="rt">Attention và Transformer<span class="rd">embedding, self-attention, multi-head, positional encoding</span></span><span class="rl">→ Lab 2, 3</span></li>
+        <li><span class="rn">04</span><span class="rt">Làm việc với LLM<span class="rd">tokenizer, sampling, prompting, structured output, tool calling</span></span><span class="rl">→ Lab 4</span></li>
+        <li><span class="rn">05</span><span class="rt">Embedding và RAG<span class="rd">chunking, vector search, BM25, reranking</span></span><span class="rl">→ Lab 5</span></li>
+        <li><span class="rn">06</span><span class="rt">Đánh giá hệ thống AI<span class="rd">recall@k, LLM-as-judge, bộ eval, phân tích lỗi</span></span><span class="rl">→ Lab 6</span></li>
+        <li><span class="rn">07</span><span class="rt">Agent<span class="rd">vòng lặp agent, tool, bộ nhớ, giới hạn và an toàn</span></span><span class="rl">→ Lab 7</span></li>
+        <li><span class="rn">08</span><span class="rt">Fine-tuning và tối ưu<span class="rd">LoRA, QLoRA, quantization, đo latency</span></span><span class="rl">→ Lab 8, 9</span></li>
+        <li><span class="rn">09</span><span class="rt">Model thị giác<span class="rd">ViT, CLIP, linear probe, fine-tune</span></span><span class="rl">→ Lab 10</span></li>
+        <li><span class="rn">10</span><span class="rt">Đưa model lên production<span class="rd">FastAPI, vLLM, Docker, monitoring</span></span><span class="rl">→ Lab 11–13</span></li>
+      </ol>
+      <footer>Làm xong notebook, gửi Claude kết quả và câu trả lời phần "Câu hỏi nộp bài" ở cuối notebook để được chấm và nhận Bài 2. Tiến độ trên trang này chỉ lưu trong trình duyệt bạn đang dùng.</footer>
+    </section>
+  </main>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  const KEY = "ai-eng-bai01-v1";
+  let store = { solved: {}, quiz: {} };
+  try { const s = JSON.parse(localStorage.getItem(KEY) || "null"); if (s && s.solved && s.quiz) store = s; } catch (e) {}
+  const save = () => { try { localStorage.setItem(KEY, JSON.stringify(store)); } catch (e) {} };
+  const css = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const redrawers = [];
+  const redrawAll = () => redrawers.forEach((f) => f());
+  window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", redrawAll);
+  new MutationObserver(redrawAll).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+
+  /* ---------- progress ---------- */
+  const SECS = ["s1", "s2", "s3", "s4", "s5", "s6", "s7"];
+  function updateProgress() {
+    let done = 0;
+    SECS.forEach((s) => {
+      const ok = !!store.solved[s];
+      if (ok) done++;
+      const a = document.querySelector(`#toc a[data-sec="${s}"]`);
+      if (a) { a.classList.toggle("done", ok); a.querySelector(".n").textContent = ok ? "✓" : a.dataset.num; }
+    });
+    const qa = document.querySelector('#toc a[data-sec="s8"]');
+    const answered = Object.keys(store.quiz).length;
+    if (qa) { const ok = answered === QUIZ.length; qa.classList.toggle("done", ok); qa.querySelector(".n").textContent = ok ? "✓" : qa.dataset.num; }
+    document.querySelectorAll(".meterbar").forEach((m) => (m.style.width = (done / SECS.length) * 100 + "%"));
+    document.querySelectorAll(".meterlabel").forEach((m) => (m.textContent = `${done} / ${SECS.length} phần đã xong`));
+  }
+  document.querySelectorAll("#toc a").forEach((a) => (a.dataset.num = a.querySelector(".n").textContent));
+
+  /* ---------- tự tính ---------- */
+  const parseNum = (s) => parseFloat(String(s).trim().replace(",", ".").replace("−", "-"));
+  document.querySelectorAll(".check").forEach((box) => {
+    const id = box.dataset.check;
+    const inputs = [...box.querySelectorAll("input[data-ans]")];
+    const fb = box.querySelector(".fb");
+    const markSolved = () => {
+      box.classList.add("solved");
+      box.querySelector(".check-tag").textContent = "Đã xong ✓";
+      inputs.forEach((i) => { i.classList.add("ok"); if (!i.value) i.value = i.dataset.ans; });
+    };
+    if (store.solved[id]) markSolved();
+    const run = () => {
+      let allOk = true, empty = false;
+      inputs.forEach((i) => {
+        const v = parseNum(i.value);
+        if (i.value.trim() === "" || Number.isNaN(v)) { empty = true; allOk = false; i.classList.remove("ok", "bad"); return; }
+        const ok = Math.abs(v - parseFloat(i.dataset.ans)) <= parseFloat(i.dataset.tol) + 1e-9;
+        i.classList.toggle("ok", ok); i.classList.toggle("bad", !ok);
+        if (!ok) allOk = false;
+      });
+      if (allOk) {
+        fb.className = "fb ok"; fb.textContent = "Chính xác. Mục này đã được đánh dấu xong.";
+        store.solved[id] = true; save(); markSolved(); updateProgress();
+      } else {
+        fb.className = "fb bad";
+        fb.textContent = empty ? "Điền đủ các ô bằng số (dùng dấu chấm hoặc phẩy cho phần thập phân)." : "Ô màu đỏ chưa đúng. Tính lại bước đó, hoặc mở lời giải nếu bí.";
+      }
+    };
+    box.querySelector('[data-act="check"]').addEventListener("click", run);
+    inputs.forEach((i) => i.addEventListener("keydown", (e) => { if (e.key === "Enter") run(); }));
+  });
+
+  /* ---------- pixel patch ---------- */
+  const PIX = [
+    [20, 35, 60, 120, 200, 240], [30, 50, 110, 190, 235, 230], [45, 100, 180, 225, 210, 150],
+    [90, 170, 220, 200, 140, 80], [160, 215, 195, 130, 70, 40], [210, 190, 120, 60, 30, 15]];
+  const pixEl = document.getElementById("pix"), pixSide = document.getElementById("pixside");
+  const PIXTEXT = {
+    raw: "Số nguyên 0–255, đúng như lưu trong file ảnh. 0 là tối nhất, 255 là sáng nhất. Ô có giá trị 200 nằm ở hàng 1, cột 5.",
+    tt: "Chia 255: mọi giá trị về 0–1, kiểu float32. Ô 200 thành 0.78.",
+    norm: "Trừ mean 0.4914 rồi chia std 0.2470: giá trị nằm quanh 0, có âm có dương. Đây là thứ model thực sự nhìn thấy.",
+  };
+  function drawPix(mode) {
+    pixEl.innerHTML = "";
+    PIX.flat().forEach((v) => {
+      const s = document.createElement("span");
+      const g = Math.round(v);
+      s.style.background = `rgb(${g},${Math.round(g * 0.25)},${Math.round(g * 0.22)})`;
+      s.style.color = v > 140 ? "#1a0a08" : "#f6ece9";
+      const t = v / 255, n = (t - 0.4914) / 0.247;
+      s.textContent = mode === "raw" ? v : mode === "tt" ? t.toFixed(2) : n.toFixed(2);
+      pixEl.appendChild(s);
+    });
+    pixSide.textContent = PIXTEXT[mode];
+  }
+  document.querySelectorAll("[data-pix]").forEach((b) => b.addEventListener("click", () => {
+    document.querySelectorAll("[data-pix]").forEach((x) => x.classList.toggle("on", x === b));
+    drawPix(b.dataset.pix);
+  }));
+  drawPix("raw");
+
+  /* ---------- softmax ---------- */
+  const CL = ["mèo", "chó", "chim", "ô tô"];
+  const sm = { z: [2, 1, 0, -1], y: 0 };
+  const smEl = document.getElementById("sm");
+  CL.forEach((name, i) => {
+    const row = document.createElement("div");
+    row.className = "sm-row";
+    row.innerHTML = `<label><input type="radio" name="smy" id="smy${i}" value="${i}" ${i === 0 ? "checked" : ""}> ${name}</label>
+      <input type="range" id="smz${i}" min="-4" max="6" step="0.1" value="${sm.z[i]}" aria-label="logit ${name}">
+      <span class="lv"></span><span class="bar"><i></i></span><span class="pv"></span>`;
+    smEl.appendChild(row);
+    row.querySelector('input[type=range]').addEventListener("input", (e) => { sm.z[i] = parseFloat(e.target.value); renderSm(); });
+    row.querySelector('input[type=radio]').addEventListener("change", () => { sm.y = i; renderSm(); });
+  });
+  function renderSm() {
+    const m = Math.max(...sm.z), e = sm.z.map((v) => Math.exp(v - m)), s = e.reduce((a, b) => a + b, 0), p = e.map((v) => v / s);
+    [...smEl.children].forEach((row, i) => {
+      row.classList.toggle("true", i === sm.y);
+      row.querySelector(".lv").textContent = sm.z[i].toFixed(1);
+      row.querySelector(".bar i").style.width = (p[i] * 100).toFixed(1) + "%";
+      row.querySelector(".pv").textContent = p[i].toFixed(3);
+      row.querySelector("input[type=range]").value = sm.z[i];
+      row.querySelector("input[type=radio]").checked = i === sm.y;
+    });
+    const L = -Math.log(p[sm.y]);
+    document.getElementById("smloss").textContent = L.toFixed(3);
+    document.getElementById("smnote").innerHTML = `p_đúng = <b>${p[sm.y].toFixed(3)}</b> · tổng p = ${p.reduce((a, b) => a + b, 0).toFixed(3)}`;
+  }
+  document.querySelectorAll("[data-sm]").forEach((b) => b.addEventListener("click", () => {
+    const k = b.dataset.sm;
+    if (k === "equal") sm.z = [0, 0, 0, 0];
+    if (k === "confident") sm.z = sm.z.map((_, i) => (i === sm.y ? 5 : -2));
+    if (k === "wrong") sm.z = sm.z.map((_, i) => (i === (sm.y + 1) % 4 ? 5 : -2));
+    if (k === "shift") sm.z = sm.z.map((v) => Math.min(6, v + 3));
+    renderSm();
+  }));
+  renderSm();
+
+  /* ---------- gradient descent ---------- */
+  const f = (w) => 0.25 * (w - 1) ** 2 + 0.6 * Math.sin(2 * w);
+  const df = (w) => 0.5 * (w - 1) + 1.2 * Math.cos(2 * w);
+  const WMIN = -4, WMAX = 4.5, FMIN = -0.7, FMAX = 6.2, W0 = -3.5;
+  const gd = { w0: W0, path: [W0], timer: null };
+  const cv = document.getElementById("gd"), ctx = cv.getContext("2d");
+  const lrIn = document.getElementById("lr"), lrV = document.getElementById("lrv");
+  const pad = { l: 40, r: 14, t: 14, b: 30 };
+  let CW = 600, CH = 270;
+  const X = (w) => pad.l + ((w - WMIN) / (WMAX - WMIN)) * (CW - pad.l - pad.r);
+  const Y = (v) => pad.t + (1 - (v - FMIN) / (FMAX - FMIN)) * (CH - pad.t - pad.b);
+  function sizeGd() {
+    const r = cv.getBoundingClientRect(), dpr = window.devicePixelRatio || 1;
+    CW = Math.max(280, r.width); CH = 270;
+    cv.width = CW * dpr; cv.height = CH * dpr; cv.style.height = CH + "px";
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    drawGd();
+  }
+  function drawGd() {
+    const ink = css("--ink"), muted = css("--muted"), line = css("--line"), acc = css("--accent"), hot = css("--hot"), surf = css("--surface");
+    ctx.clearRect(0, 0, CW, CH);
+    ctx.fillStyle = surf; ctx.fillRect(0, 0, CW, CH);
+    ctx.font = "11px " + css("--f-mono"); ctx.fillStyle = muted; ctx.strokeStyle = line; ctx.lineWidth = 1;
+    for (let w = -4; w <= 4; w += 1) {
+      const x = X(w); ctx.beginPath(); ctx.moveTo(x, pad.t); ctx.lineTo(x, CH - pad.b); ctx.stroke();
+      ctx.textAlign = "center"; ctx.fillText(String(w), x, CH - pad.b + 16);
+    }
+    for (let v = 0; v <= 6; v += 2) {
+      const y = Y(v); ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(CW - pad.r, y); ctx.stroke();
+      ctx.textAlign = "right"; ctx.fillText(String(v), pad.l - 6, y + 4);
+    }
+    ctx.textAlign = "left"; ctx.fillText("w", CW - pad.r - 10, CH - pad.b - 6); ctx.fillText("loss", pad.l + 4, pad.t + 10);
+    ctx.strokeStyle = ink; ctx.lineWidth = 2; ctx.beginPath();
+    for (let i = 0; i <= 300; i++) { const w = WMIN + (i / 300) * (WMAX - WMIN); const x = X(w), y = Y(f(w)); i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }
+    ctx.stroke();
+    const vis = gd.path.filter((w) => w >= WMIN && w <= WMAX);
+    ctx.strokeStyle = hot; ctx.lineWidth = 1.2; ctx.globalAlpha = 0.7; ctx.beginPath();
+    vis.forEach((w, i) => (i ? ctx.lineTo(X(w), Y(f(w))) : ctx.moveTo(X(w), Y(f(w)))));
+    ctx.stroke(); ctx.globalAlpha = 1;
+    vis.forEach((w, i) => { ctx.fillStyle = i === vis.length - 1 ? hot : acc; ctx.globalAlpha = i === vis.length - 1 ? 1 : 0.45; ctx.beginPath(); ctx.arc(X(w), Y(f(w)), i === vis.length - 1 ? 7 : 3.5, 0, 7); ctx.fill(); });
+    ctx.globalAlpha = 1;
+    const w = gd.path[gd.path.length - 1];
+    if (w >= WMIN && w <= WMAX) {
+      const g = df(w), x = X(w), y = Y(f(w)), dx = 0.6;
+      ctx.strokeStyle = acc; ctx.lineWidth = 1.5; ctx.setLineDash([4, 3]); ctx.beginPath();
+      ctx.moveTo(X(w - dx), Y(f(w) - g * dx)); ctx.lineTo(X(w + dx), Y(f(w) + g * dx)); ctx.stroke(); ctx.setLineDash([]);
+    }
+    const out = !(w >= WMIN && w <= WMAX) || !Number.isFinite(w);
+    document.getElementById("gdread").innerHTML = out
+      ? `bước <b>${gd.path.length - 1}</b> · w văng ra ngoài: lr quá lớn`
+      : `bước <b>${gd.path.length - 1}</b> · w = <b>${w.toFixed(3)}</b> · loss = <b>${f(w).toFixed(3)}</b> · độ dốc = <b>${df(w).toFixed(3)}</b>`;
+  }
+  const lr = () => parseFloat(lrIn.value);
+  function stepGd() {
+    const w = gd.path[gd.path.length - 1];
+    if (!Number.isFinite(w) || Math.abs(w) > 1e6) return false;
+    gd.path.push(w - lr() * df(w));
+    return true;
+  }
+  function stopTimer() { if (gd.timer) { clearInterval(gd.timer); gd.timer = null; } }
+  function resetGd(w0) { stopTimer(); gd.w0 = w0 ?? gd.w0; gd.path = [gd.w0]; drawGd(); }
+  lrIn.addEventListener("input", () => { lrV.textContent = lr().toFixed(2); resetGd(); });
+  document.querySelectorAll("[data-lr]").forEach((b) => b.addEventListener("click", () => { lrIn.value = b.dataset.lr; lrV.textContent = lr().toFixed(2); resetGd(W0); }));
+  document.getElementById("gd1").addEventListener("click", () => { stopTimer(); stepGd(); drawGd(); });
+  document.getElementById("gd20").addEventListener("click", () => {
+    stopTimer();
+    if (reduced) { for (let i = 0; i < 20; i++) stepGd(); drawGd(); return; }
+    let n = 0; gd.timer = setInterval(() => { stepGd(); drawGd(); if (++n >= 20) stopTimer(); }, 110);
+  });
+  document.getElementById("gdr").addEventListener("click", () => resetGd(W0));
+  cv.addEventListener("pointerdown", (e) => {
+    const r = cv.getBoundingClientRect();
+    const w = WMIN + ((e.clientX - r.left - pad.l) / (CW - pad.l - pad.r)) * (WMAX - WMIN);
+    if (w >= WMIN && w <= WMAX) resetGd(Math.round(w * 100) / 100);
+  });
+  new ResizeObserver(sizeGd).observe(cv);
+  redrawers.push(drawGd);
+
+  /* ---------- backprop stepper ---------- */
+  const STEPS = [
+    { cur: [], txt: "Đồ thị tính toán của một neuron: <b>z = w·x + b</b>, <b>a = relu(z)</b>, <b>L = (a − y)²</b>. Giá trị ban đầu: x = 2, w = 3, b = 1, nhãn đúng y = 5. Bấm <b>Bước tiếp</b> để chạy forward." },
+    { cur: ["z"], fv: { z: "= 7" }, txt: "Forward 1: <span class='eq'>z = w·x + b = 3·2 + 1 = 7</span>" },
+    { cur: ["a"], fv: { a: "= 7" }, txt: "Forward 2: <span class='eq'>a = relu(7) = max(0, 7) = 7</span>" },
+    { cur: ["L"], fv: { L: "= 4" }, txt: "Forward 3: <span class='eq'>L = (a − y)² = (7 − 5)² = 4</span>Model dự đoán 7, đúng ra là 5, loss = 4. Giờ đi ngược để biết sửa w, b thế nào." },
+    { cur: ["L"], gv: { L: "∂=1" }, txt: "Backward bắt đầu từ loss: <span class='eq'>∂L/∂L = 1</span>" },
+    { cur: ["a"], gv: { a: "∂L/∂a=4" }, txt: "Đạo hàm của (a − y)² theo a: <span class='eq'>∂L/∂a = 2(a − y) = 2·(7 − 5) = 4</span>Dương nghĩa là: tăng a thì loss tăng, nên cần giảm a." },
+    { cur: ["z"], gv: { z: "∂L/∂z=4" }, txt: "Qua ReLU. Vì z = 7 &gt; 0 nên ∂a/∂z = 1, gradient đi qua nguyên vẹn: <span class='eq'>∂L/∂z = ∂L/∂a · ∂a/∂z = 4 · 1 = 4</span>" },
+    { cur: ["w", "b"], gw: "∂L/∂w = 8", gb: "∂L/∂b = 4", txt: "Tới tham số. z = w·x + b nên ∂z/∂w = x = 2 và ∂z/∂b = 1: <span class='eq'>∂L/∂w = 4 · 2 = 8      ∂L/∂b = 4 · 1 = 4</span>Đây là những gì <code>loss.backward()</code> ghi vào <code>w.grad</code> và <code>b.grad</code>." },
+    { cur: ["w", "b"], gw: "w ← 3 − 0.1·8 = 2.2", gb: "b ← 1 − 0.1·4 = 0.6", txt: "<code>optimizer.step()</code> với lr = 0.1: <span class='eq'>w = 3 − 0.1·8 = 2.2      b = 1 − 0.1·4 = 0.6</span>Kiểm tra lại: z = 2.2·2 + 0.6 = 5, đúng bằng y, loss = 0. Ở ví dụ này loss về đúng 0 sau một bước là do trùng hợp; train thật thì loss giảm dần qua rất nhiều bước." },
+  ];
+  let bpI = 0;
+  const bpSvg = document.getElementById("bp"), bpText = document.getElementById("bptext"), bpDots = document.getElementById("bpdots");
+  STEPS.forEach(() => bpDots.appendChild(document.createElement("i")));
+  function renderBp() {
+    const fv = {}, gv = {}; let gw = "", gb = "";
+    for (let i = 0; i <= bpI; i++) { Object.assign(fv, STEPS[i].fv || {}); Object.assign(gv, STEPS[i].gv || {}); if (STEPS[i].gw) gw = STEPS[i].gw; if (STEPS[i].gb) gb = STEPS[i].gb; }
+    bpSvg.querySelectorAll(".node").forEach((g) => {
+      const n = g.dataset.n;
+      g.classList.toggle("cur", STEPS[bpI].cur.includes(n));
+      if (["z", "a", "L"].includes(n)) { g.querySelector(".fv").textContent = fv[n] || ""; g.querySelector(".gv").textContent = gv[n] || ""; }
+    });
+    document.getElementById("gw").textContent = gw; document.getElementById("gb").textContent = gb;
+    bpText.innerHTML = `<b>Bước ${bpI} / ${STEPS.length - 1}.</b> ` + STEPS[bpI].txt;
+    [...bpDots.children].forEach((d, i) => d.classList.toggle("on", i <= bpI));
+    document.getElementById("bpprev").disabled = bpI === 0;
+    document.getElementById("bpnext").textContent = bpI === STEPS.length - 1 ? "Chạy lại" : "Bước tiếp";
+  }
+  document.getElementById("bpnext").addEventListener("click", () => { bpI = bpI === STEPS.length - 1 ? 0 : bpI + 1; renderBp(); });
+  document.getElementById("bpprev").addEventListener("click", () => { if (bpI > 0) bpI--; renderBp(); });
+  renderBp();
+
+  /* ---------- quiz ---------- */
+  const QUIZ = [
+    { q: "Một batch 128 ảnh màu 32×32 trong PyTorch có shape nào?", o: ["[128, 32, 32, 3]", "[128, 3, 32, 32]", "[3, 32, 32, 128]", "[32, 32, 3, 128]"], a: 1, e: "PyTorch dùng thứ tự [N, C, H, W]. Thứ tự [N, H, W, C] là của TensorFlow và file ảnh." },
+    { q: "Bỏ hết ReLU khỏi một mạng 10 lớp Linear thì sao?", o: ["Mạng học nhanh hơn và tốt hơn", "Mạng tương đương đúng một lớp Linear", "Mạng không chạy được vì lỗi shape", "Không ảnh hưởng gì"], a: 1, e: "Ghép nhiều phép biến đổi tuyến tính vẫn ra một phép tuyến tính. Hàm kích hoạt phi tuyến mới làm độ sâu có ý nghĩa." },
+    { q: "Model 10 lớp mới khởi tạo, logits gần như bằng nhau. Loss cross-entropy khoảng bao nhiêu?", o: ["0", "0.1", "2.30", "10"], a: 2, e: "Mỗi lớp có p = 0.1, loss = −ln(0.1) = ln 10 ≈ 2.30. Loss ban đầu khác xa con số này là dấu hiệu có bug." },
+    { q: "Model gán p_đúng = 0.01 cho một ảnh. Loss của ảnh đó khoảng?", o: ["0.01", "0.99", "4.6", "100"], a: 2, e: "−ln(0.01) ≈ 4.6. So với p_đúng = 0.99 thì loss chỉ ≈ 0.01. Đoán sai mà tự tin bị phạt rất nặng." },
+    { q: "Loss nhảy lên xuống mạnh rồi thành nan sau vài trăm bước. Nghi ngờ đầu tiên là gì?", o: ["Learning rate quá lớn", "Learning rate quá nhỏ", "Batch size quá nhỏ", "Thiếu dữ liệu test"], a: 0, e: "Bước quá dài làm tham số nhảy qua đáy rồi văng ra xa, giống demo ở mục 05 với lr lớn." },
+    { q: "Vì sao mỗi bước train phải gọi optimizer.zero_grad()?", o: ["Để reset learning rate", "Vì .grad được cộng dồn qua các lần backward", "Để xóa trọng số cũ", "Để tiết kiệm bộ nhớ GPU"], a: 1, e: "backward() cộng gradient mới vào .grad. Không xóa thì bước sau dùng tổng gradient của mọi batch trước đó." },
+    { q: "Một neuron có z = −2 trước ReLU. Gradient đi ngược qua ReLU tới trọng số của neuron đó bằng?", o: ["−2", "0", "1", "Bằng gradient phía sau"], a: 1, e: "relu(z) = 0 khi z < 0 nên đạo hàm cục bộ bằng 0, chặn gradient. Neuron luôn có z < 0 sẽ không học nữa (dead ReLU)." },
+    { q: "Thứ tự đúng của một bước train?", o: ["forward → loss → step → backward → zero_grad", "zero_grad → forward → loss → backward → step", "forward → backward → loss → step → zero_grad", "zero_grad → backward → forward → loss → step"], a: 1, e: "Xóa gradient cũ, tính dự đoán, tính loss, tính gradient, rồi cập nhật tham số." },
+  ];
+  const quizEl = document.getElementById("quiz");
+  function renderQuiz() {
+    quizEl.innerHTML = "";
+    QUIZ.forEach((item, qi) => {
+      const div = document.createElement("div");
+      div.className = "qitem";
+      div.innerHTML = `<div class="qq"><span class="qn">${qi + 1}.</span>${item.q}</div><div class="opts"></div><div class="qexp" hidden></div>`;
+      const opts = div.querySelector(".opts"), exp = div.querySelector(".qexp");
+      item.o.forEach((txt, oi) => {
+        const b = document.createElement("button");
+        b.className = "opt"; b.type = "button"; b.textContent = txt;
+        b.addEventListener("click", () => { store.quiz[qi] = oi; save(); renderQuiz(); updateProgress(); });
+        opts.appendChild(b);
+      });
+      if (qi in store.quiz) {
+        const chosen = store.quiz[qi];
+        [...opts.children].forEach((b, oi) => {
+          b.disabled = true;
+          if (oi === item.a) b.classList.add("right");
+          else if (oi === chosen) b.classList.add("wrong");
+        });
+        exp.hidden = false;
+        exp.textContent = (chosen === item.a ? "Đúng. " : "Chưa đúng. ") + item.e;
+      }
+      quizEl.appendChild(div);
+    });
+    const answered = Object.keys(store.quiz).length;
+    const right = Object.entries(store.quiz).filter(([qi, oi]) => QUIZ[qi].a === oi).length;
+    document.getElementById("score").textContent = answered === QUIZ.length
+      ? `Kết quả: ${right} / ${QUIZ.length}. ` + (right >= 7 ? "Sẵn sàng làm notebook và sang Bài 2." : "Đọc lại các mục có câu sai rồi làm lại.")
+      : `Đã trả lời ${answered} / ${QUIZ.length} câu.`;
+  }
+  document.getElementById("quizreset").addEventListener("click", () => { store.quiz = {}; save(); renderQuiz(); updateProgress(); });
+  renderQuiz();
+  updateProgress();
+})();
+</script>
+</body>
+</html>
