@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>P1.2 · Đánh giá model đúng cách · AI Engineer</title>
-<meta name="description" content="Đánh giá model đúng cách: Train/val/test, cross-validation, data leakage; Overfitting, underfitting, bias–variance; Metric: accuracy, precision, recall, F1, ROC-AUC, PR-AUC, MAE, RMSE; confusion matrix">
+<meta name="description" content="Đánh giá model đúng cách: lý thuyết, bài tập và thực hành. Train/val/test, cross-validation, data leakage; Overfitting, underfitting, bias–variance">
 <meta property="og:title" content="P1.2 · Đánh giá model đúng cách · AI Engineer">
-<meta property="og:description" content="Đánh giá model đúng cách: Train/val/test, cross-validation, data leakage; Overfitting, underfitting, bias–variance; Metric: accuracy, precision, recall, F1, ROC-AUC, PR-AUC, MAE, RMSE; confusion matrix">
+<meta property="og:description" content="Đánh giá model đúng cách: lý thuyết, bài tập và thực hành. Train/val/test, cross-validation, data leakage; Overfitting, underfitting, bias–variance">
 <meta name="theme-color" content="#F4F6FB">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23131A33'/%3E%3Cpath d='M9 22 L16 10 L23 19' stroke='%23E5E9FB' stroke-width='2' fill='none'/%3E%3Ccircle cx='9' cy='22' r='3' fill='%23E5E9FB'/%3E%3Ccircle cx='16' cy='10' r='3' fill='%23E5E9FB'/%3E%3Ccircle cx='23' cy='19' r='3' fill='%23FF9361'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -14,23 +14,223 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="../assets/chrome.css">
 <link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/lesson.css">
 </head>
 <body data-mid="p1.2">
 <header class="sh"><div class="sh-in"><a class="sh-brand" href="../index.html"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="var(--ink)"/><circle cx="9" cy="22" r="2.6" fill="var(--accent-soft)"/><circle cx="16" cy="10" r="2.6" fill="var(--accent-soft)"/><circle cx="23" cy="19" r="2.6" fill="#FF9361"/><path d="M9 22 L16 10 L23 19" stroke="var(--accent-soft)" stroke-width="1.8" fill="none"/></svg><span>AI Engineer<small>lộ trình tự học</small></span></a><nav class="sh-nav" id="sh-nav" aria-label="Chính"><a href="../index.html">Trang chủ</a><a href="../bai-hoc.html" aria-current="page">Bài học</a><a href="../lo-trinh.html">Lộ trình</a><a href="../notebooks.html">Notebook</a><a class="sh-cta-m" href="../bai01.html" data-next-lesson>Học tiếp →</a></nav><a class="sh-cta" href="../bai01.html" data-next-lesson>Học tiếp <span class="arr">→</span></a><button class="sh-burger" type="button" aria-expanded="false" aria-controls="sh-nav">Menu</button></div></header>
 
 <main class="container">
   <div class="crumbs"><a href="../bai-hoc.html">Bài học</a><span>/</span><a href="../bai-hoc.html#p1">P1 · Machine Learning cổ điển</a><span>/</span><span>P1.2</span></div>
-  <section class="lhero"><div class="code">P1.2</div><h1>Đánh giá model đúng cách</h1><div class="lmeta"><span class="m">Giai đoạn P1 · Machine Learning cổ điển</span><span class="m">Tuần 4–7</span><span class="chip planned">Đề cương</span></div></section>
-  <div class="lgrid">
-    <div>
-      <div class="goal"><b>Mục tiêu giai đoạn:</b> Hiểu vòng đời một bài toán ML: dữ liệu → model → đánh giá → cải thiện. Nhiều câu hỏi phỏng vấn nằm ở đây.</div>
-      <div class="soon">Nội dung đầy đủ (trang lý thuyết tương tác và notebook tự chấm) đang được soạn và sẽ có khi bạn học tới bài này. Đề cương dưới đây là phạm vi chính xác của bài.</div>
-      <section class="pblock reveal"><div class="pblock-head"><span class="num">1</span><h2>Lý thuyết<span style="display:block;font:400 13.5px var(--f-body);color:var(--muted);margin-top:4px">Những gì cần hiểu</span></h2><label class="tick" for="cb-t"><input type="checkbox" id="cb-t" data-key="p1.2:t">Xong</label></div><ol><li>Train/val/test, cross-validation, data leakage</li><li>Overfitting, underfitting, bias–variance</li><li>Metric: accuracy, precision, recall, F1, ROC-AUC, PR-AUC, MAE, RMSE; confusion matrix</li><li>Chọn metric theo bài toán và dữ liệu mất cân bằng</li></ol></section><section class="pblock reveal"><div class="pblock-head"><span class="num">2</span><h2>Bài tập<span style="display:block;font:400 13.5px var(--f-body);color:var(--muted);margin-top:4px">Tính tay và tự kiểm tra</span></h2><label class="tick" for="cb-b"><input type="checkbox" id="cb-b" data-key="p1.2:b">Xong</label></div><ol><li>Tính tay mọi metric từ một confusion matrix</li><li>Tìm lỗi leakage trong 5 đoạn code cho sẵn</li></ol></section><section class="pblock reveal"><div class="pblock-head"><span class="num">3</span><h2>Thực hành<span style="display:block;font:400 13.5px var(--f-body);color:var(--muted);margin-top:4px">Code và dự án</span></h2><label class="tick" for="cb-p"><input type="checkbox" id="cb-p" data-key="p1.2:p">Xong</label></div><ol><li>Báo cáo đánh giá đầy đủ cho model ở 1.1: biểu đồ ROC, PR, learning curve</li></ol></section>
-      <div class="donewhen reveal"><b>Xong khi</b>Báo cáo trả lời được: model sai ở đâu, vì sao, và nên cải thiện gì tiếp.</div>
+  <section class="lhero"><div class="code">P1.2</div><h1>Đánh giá model đúng cách</h1><div class="lmeta"><span class="m">Giai đoạn P1 · Machine Learning cổ điển</span><span class="m">Tuần 4–7</span><span class="chip ready"><span class="dot"></span>Có nội dung đầy đủ</span></div>
+    <div class="intro"><p>Một model 97% accuracy có thể vô dụng, còn model 80% có thể tuyệt vời. Mọi thứ phụ thuộc vào cách bạn chia dữ liệu, chọn metric và kiểm tra rò rỉ. Đây là phần hay bị hỏi nhất khi phỏng vấn ML, và cũng là phần phân biệt người làm thật với người chỉ chạy <code>model.fit()</code>.</p></div></section>
+  
+  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">6 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
+  <div class="lgrid" style="margin-top:22px">
+    <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">Train, validation, test</h2>
+<table>
+<thead>
+<tr>
+<th>Tập</th>
+<th>Dùng để</th>
+<th>Được nhìn bao nhiêu lần</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Train</td>
+<td>học tham số</td>
+<td>thoải mái</td>
+</tr>
+<tr>
+<td>Validation</td>
+<td>chọn siêu tham số, chọn model, early stopping</td>
+<td>nhiều lần</td>
+</tr>
+<tr>
+<td>Test</td>
+<td>báo cáo kết quả cuối</td>
+<td><strong>một lần</strong></td>
+</tr>
+</tbody>
+</table>
+<p>Mỗi lần bạn chỉnh model dựa trên điểm test, tập test bị "học" một chút và con số báo cáo trở nên lạc quan giả tạo.</p>
+<p><strong>Cross-validation k-fold:</strong> chia train thành k phần, lần lượt lấy mỗi phần làm validation, train trên k − 1 phần còn lại, rồi lấy trung bình. Dùng khi dữ liệu ít. Với dữ liệu phân loại mất cân bằng, dùng <code>StratifiedKFold</code> để mỗi fold giữ tỉ lệ các lớp.</p>
+<h2 id="lt-2">Rò rỉ dữ liệu (data leakage)</h2>
+<p>Rò rỉ là khi thông tin từ validation/test hoặc từ "tương lai" lọt vào lúc train. Kết quả validation đẹp nhưng chạy thật thì sụp. Các dạng hay gặp:</p>
+<ul>
+<li><strong>Chuẩn hóa trước khi chia:</strong> <code>StandardScaler().fit(X)</code> trên toàn bộ dữ liệu rồi mới chia train/test. Đúng ra phải fit trên train, transform cả hai. Dùng <code>Pipeline</code> để tránh hẳn lỗi này.</li>
+<li><strong>Dữ liệu thời gian chia ngẫu nhiên:</strong> dự đoán doanh thu tháng 6 nhưng train có dữ liệu tháng 7. Phải chia theo thời gian.</li>
+<li><strong>Đặc trưng chứa đáp án:</strong> cột "ngày hoàn tiền" khi dự đoán "khách có hoàn hàng không".</li>
+<li><strong>Trùng lặp:</strong> cùng một ảnh (hoặc gần giống) xuất hiện ở cả train và test.</li>
+<li><strong>Nhóm:</strong> nhiều ảnh của cùng một bệnh nhân nằm ở cả train và test. Dùng <code>GroupKFold</code>.</li>
+</ul>
+<div class="keep">
+<p><strong>Ghi nhớ:</strong> nếu kết quả tốt đến mức khó tin, hãy đi tìm rò rỉ trước khi ăn mừng.</p>
+</div>
+<h2 id="lt-3">Overfitting, underfitting, bias và variance</h2>
+<ul>
+<li><strong>Underfitting (bias cao):</strong> train tệ, val tệ. Model quá đơn giản. Giải pháp: model mạnh hơn, thêm đặc trưng, train lâu hơn.</li>
+<li><strong>Overfitting (variance cao):</strong> train rất tốt, val tệ. Model học thuộc nhiễu. Giải pháp: thêm dữ liệu, regularization, augmentation, model đơn giản hơn, early stopping.</li>
+</ul>
+<p><strong>Learning curve</strong> (điểm train và val theo kích thước tập train) cho biết bạn đang ở trường hợp nào. Hai đường cách xa nhau thì thêm dữ liệu sẽ giúp. Hai đường sát nhau mà đều thấp thì thêm dữ liệu vô ích, cần model mạnh hơn.</p>
+<h2 id="lt-4">Metric phân loại</h2>
+<p>Từ ma trận nhầm lẫn với TP, FP, FN, TN:</p>
+<div class="hl"><pre><span></span><code>Accuracy  = (TP + TN) / tổng
+Precision = TP / (TP + FP)      trong những gì model báo dương, bao nhiêu đúng
+Recall    = TP / (TP + FN)      trong những ca dương thật, model bắt được bao nhiêu
+F1        = 2·P·R / (P + R)     trung bình điều hòa, phạt khi một trong hai thấp
+</code></pre></div>
+
+<p><strong>ROC-AUC</strong> đo khả năng xếp hạng ca dương cao hơn ca âm, không phụ thuộc ngưỡng. Khi lớp dương rất hiếm (gian lận, bệnh hiếm), <strong>PR-AUC</strong> phản ánh đúng hơn ROC-AUC.</p>
+<table>
+<thead>
+<tr>
+<th>Bài toán</th>
+<th>Ưu tiên</th>
+<th>Vì sao</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Lọc thư rác</td>
+<td>precision</td>
+<td>báo nhầm thư quan trọng là rác thì rất hại</td>
+</tr>
+<tr>
+<td>Tầm soát ung thư</td>
+<td>recall</td>
+<td>bỏ sót ca bệnh nguy hiểm hơn báo nhầm</td>
+</tr>
+<tr>
+<td>Chống gian lận</td>
+<td>PR-AUC, recall ở precision cố định</td>
+<td>lớp dương cực hiếm</td>
+</tr>
+</tbody>
+</table>
+<h2 id="lt-5">Metric hồi quy</h2>
+<div class="hl"><pre><span></span><code>MAE  = mean(|ŷ − y|)        cùng đơn vị với y, bền với ngoại lai
+RMSE = √mean((ŷ − y)²)      phạt nặng lỗi lớn
+R²   = 1 − SS_res / SS_tot  tỉ lệ phương sai giải thích được, 1 là hoàn hảo
+</code></pre></div>
+
+<h2 id="lt-6">Ngưỡng quyết định</h2>
+<p>Model trả về xác suất; ngưỡng 0.5 chỉ là mặc định. Hạ ngưỡng thì recall tăng, precision giảm. Chọn ngưỡng trên <strong>validation</strong> theo mục tiêu kinh doanh, ví dụ "recall ≥ 95%, precision cao nhất có thể", rồi giữ nguyên ngưỡng đó khi đo trên test.</p></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p1.2:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 3</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Metric từ ma trận nhầm lẫn</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Model phát hiện gian lận trên 1000 giao dịch: TP = 40, FP = 10, FN = 20, TN = 930.</p>
+<div class="ans" id="p1-2-e1-a1"><div class="ans-fields"><label>Accuracy<input inputmode="decimal" data-ans="0.97" data-tol="0.001" autocomplete="off"></label><label>Precision<input inputmode="decimal" data-ans="0.8" data-tol="0.001" autocomplete="off"></label><label>Recall<input inputmode="decimal" data-ans="0.6667" data-tol="0.001" autocomplete="off"></label><label>F1<input inputmode="decimal" data-ans="0.7273" data-tol="0.001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+
+<details class="fold solution">
+<summary>Lời giải</summary>
+<p>Accuracy 0.97 nhìn đẹp, nhưng một model luôn đoán "không gian lận" cũng đạt 940/1000 = 0.94. Recall 0.667 nghĩa là bỏ sót 1/3 ca gian lận. F1 = 2·0.8·0.667 / 1.467 ≈ 0.727.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 2</span><h3>MAE và RMSE</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Sai số (ŷ − y) của 4 dự đoán: 1, −2, 3, −4.</p>
+<div class="ans" id="p1-2-e2-a1"><div class="ans-fields"><label>MAE<input inputmode="decimal" data-ans="2.5" data-tol="0.001" autocomplete="off"></label><label>RMSE<input inputmode="decimal" data-ans="2.7386" data-tol="0.001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+
+<details class="fold solution">
+<summary>Lời giải</summary>
+<p>MAE = (1 + 2 + 3 + 4) / 4 = 2.5. RMSE = √((1 + 4 + 9 + 16) / 4) = √7.5 ≈ 2.739. RMSE luôn ≥ MAE, chênh càng nhiều khi có lỗi lớn.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 3</span><h3>Chia k-fold</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>1000 mẫu train, 5-fold cross-validation.</p>
+<div class="ans" id="p1-2-e3-a1"><div class="ans-fields"><label>Số mẫu validation mỗi fold<input inputmode="decimal" data-ans="200.0" data-tol="0.0" autocomplete="off"></label><label>Số mẫu train mỗi fold<input inputmode="decimal" data-ans="800.0" data-tol="0.0" autocomplete="off"></label><label>Số lần train model<input inputmode="decimal" data-ans="5.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 4</span><h3>Tìm rò rỉ</h3><span class="ex-tag concept">khái niệm</span></div><div class="prose"><p>Mỗi đoạn dưới có một lỗi rò rỉ. Chỉ ra lỗi và cách sửa.</p>
+<div class="hl"><pre><span></span><code><span class="c1"># (a)</span>
+<span class="n">X</span> <span class="o">=</span> <span class="n">StandardScaler</span><span class="p">()</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+<span class="n">Xtr</span><span class="p">,</span> <span class="n">Xte</span><span class="p">,</span> <span class="n">ytr</span><span class="p">,</span> <span class="n">yte</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+
+<span class="c1"># (b) dự đoán giá cổ phiếu ngày mai</span>
+<span class="n">Xtr</span><span class="p">,</span> <span class="n">Xte</span><span class="p">,</span> <span class="n">ytr</span><span class="p">,</span> <span class="n">yte</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span><span class="n">X_by_day</span><span class="p">,</span> <span class="n">y_by_day</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="c1"># (c) dự đoán khách có rời bỏ dịch vụ không</span>
+<span class="n">features</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"tuổi"</span><span class="p">,</span> <span class="s2">"số đơn 6 tháng"</span><span class="p">,</span> <span class="s2">"ngày hủy tài khoản"</span><span class="p">]</span>
+
+<span class="c1"># (d) phân loại ảnh X-quang, mỗi bệnh nhân có 5 ảnh</span>
+<span class="n">Xtr</span><span class="p">,</span> <span class="n">Xte</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span><span class="n">all_images</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="mf">0.2</span><span class="p">)</span>
+</code></pre></div>
+
+<details class="fold solution">
+<summary>Lời giải</summary>
+<p>(a) Scaler đã nhìn thấy test. Sửa: chia trước, <code>fit</code> scaler trên train, hoặc dùng <code>make_pipeline(StandardScaler(), model)</code>.
+(b) Xáo trộn dữ liệu thời gian làm train chứa tương lai. Sửa: chia theo mốc thời gian hoặc dùng <code>TimeSeriesSplit</code>.
+(c) "ngày hủy tài khoản" chỉ có khi khách đã rời bỏ, nên nó chứa đáp án. Bỏ cột này.
+(d) Ảnh của cùng bệnh nhân rơi vào cả hai tập, model nhận ra bệnh nhân thay vì bệnh. Sửa: chia theo bệnh nhân bằng <code>GroupShuffleSplit</code> hoặc <code>GroupKFold</code>.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 5</span><h3>Chọn ngưỡng tối ưu F1</h3><span class="ex-tag code">code</span></div><div class="prose"><p>Viết hàm nhận <code>y_val</code> và <code>proba_val</code>, thử mọi ngưỡng từ 0.05 đến 0.95 (bước 0.01), trả về ngưỡng cho F1 cao nhất. Áp dụng ngưỡng đó cho test và so với ngưỡng 0.5.</p>
+<details class="fold code">
+<summary>Code tham khảo</summary>
+<div class="hl"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.metrics</span><span class="w"> </span><span class="kn">import</span> <span class="n">f1_score</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">best_threshold</span><span class="p">(</span><span class="n">y_val</span><span class="p">,</span> <span class="n">proba_val</span><span class="p">):</span>
+    <span class="n">ths</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mf">0.05</span><span class="p">,</span> <span class="mf">0.96</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">)</span>
+    <span class="n">scores</span> <span class="o">=</span> <span class="p">[</span><span class="n">f1_score</span><span class="p">(</span><span class="n">y_val</span><span class="p">,</span> <span class="n">proba_val</span> <span class="o">&gt;=</span> <span class="n">t</span><span class="p">)</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">ths</span><span class="p">]</span>
+    <span class="n">i</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">scores</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">ths</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">scores</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+
+<span class="n">t</span><span class="p">,</span> <span class="n">f</span> <span class="o">=</span> <span class="n">best_threshold</span><span class="p">(</span><span class="n">y_val</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">predict_proba</span><span class="p">(</span><span class="n">X_val</span><span class="p">)[:,</span> <span class="mi">1</span><span class="p">])</span>
+<span class="n">p_test</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">predict_proba</span><span class="p">(</span><span class="n">X_test</span><span class="p">)[:,</span> <span class="mi">1</span><span class="p">]</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"ngưỡng </span><span class="si">{</span><span class="n">t</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">: F1 test </span><span class="si">{</span><span class="n">f1_score</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span><span class="w"> </span><span class="n">p_test</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="n">t</span><span class="p">)</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2"> | ngưỡng 0.5: </span><span class="si">{</span><span class="n">f1_score</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span><span class="w"> </span><span class="n">p_test</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="mf">0.5</span><span class="p">)</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</code></pre></div>
+
+</details></div></article><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p1.2:b">Tôi đã xong phần bài tập</label><button class="btn" type="button" data-goto="thuc-hanh">Sang thực hành <span class="arr">→</span></button></div></section><section class="panel" id="thuc-hanh" role="tabpanel" hidden><div class="prose"><h2>Báo cáo đánh giá đầy đủ</h2>
+<p>Lấy model phân loại ở bài P1.1 (Breast Cancer) và viết một báo cáo đánh giá như ở công ty thật.</p>
+<p><strong>Các bước</strong></p>
+<ol>
+<li>Chia train / val / test = 60 / 20 / 20, có <code>stratify</code>.</li>
+<li>Dùng <code>StratifiedKFold(5)</code> trên train để chọn C của <code>LogisticRegression</code> theo ROC-AUC.</li>
+<li>Vẽ <strong>learning curve</strong> (<code>sklearn.model_selection.learning_curve</code>) và nhận xét: đang overfit hay underfit?</li>
+<li>Trên validation: vẽ ROC và PR curve, chọn ngưỡng sao cho <strong>recall ≥ 0.97</strong> với precision cao nhất.</li>
+<li>Áp ngưỡng đó <strong>một lần</strong> trên test: báo cáo confusion matrix, precision, recall, F1, ROC-AUC.</li>
+<li>Liệt kê 5 ca model sai trên test (in đặc trưng và xác suất), đoán vì sao sai.</li>
+</ol>
+<p><strong>Mẫu báo cáo</strong></p>
+<div class="hl"><pre><span></span><code><span class="gu">## Kết quả trên test (ngưỡng 0.31, chọn trên validation)</span>
+| Metric | Giá trị |
+|---|---|
+| Recall | ... |
+| Precision | ... |
+| ROC-AUC | ... |
+<span class="gu">## Model sai ở đâu</span>
+<span class="gu">## Nên làm gì tiếp</span>
+</code></pre></div>
+
+<p><strong>Xong khi</strong></p>
+<ul>
+<li>Ngưỡng được chọn hoàn toàn trên validation, test chỉ dùng một lần.</li>
+<li>Có 3 biểu đồ: learning curve, ROC, PR.</li>
+<li>Báo cáo trả lời được: model sai ở đâu, vì sao, nên cải thiện gì tiếp.</li>
+</ul>
+<details class="fold code">
+<summary>Code tham khảo</summary>
+<div class="hl"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span><span class="o">,</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.datasets</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_breast_cancer</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.model_selection</span><span class="w"> </span><span class="kn">import</span> <span class="n">train_test_split</span><span class="p">,</span> <span class="n">StratifiedKFold</span><span class="p">,</span> <span class="n">GridSearchCV</span><span class="p">,</span> <span class="n">learning_curve</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.pipeline</span><span class="w"> </span><span class="kn">import</span> <span class="n">make_pipeline</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.preprocessing</span><span class="w"> </span><span class="kn">import</span> <span class="n">StandardScaler</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.linear_model</span><span class="w"> </span><span class="kn">import</span> <span class="n">LogisticRegression</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.metrics</span><span class="w"> </span><span class="kn">import</span> <span class="n">precision_recall_curve</span><span class="p">,</span> <span class="n">RocCurveDisplay</span><span class="p">,</span> <span class="n">PrecisionRecallDisplay</span><span class="p">,</span> <span class="n">classification_report</span><span class="p">,</span> <span class="n">roc_auc_score</span>
+
+<span class="n">X</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">load_breast_cancer</span><span class="p">(</span><span class="n">return_X_y</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">Xtmp</span><span class="p">,</span> <span class="n">Xte</span><span class="p">,</span> <span class="n">ytmp</span><span class="p">,</span> <span class="n">yte</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">stratify</span><span class="o">=</span><span class="n">y</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">Xtr</span><span class="p">,</span> <span class="n">Xva</span><span class="p">,</span> <span class="n">ytr</span><span class="p">,</span> <span class="n">yva</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span><span class="n">Xtmp</span><span class="p">,</span> <span class="n">ytmp</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="mf">0.25</span><span class="p">,</span> <span class="n">stratify</span><span class="o">=</span><span class="n">ytmp</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+<span class="n">pipe</span> <span class="o">=</span> <span class="n">make_pipeline</span><span class="p">(</span><span class="n">StandardScaler</span><span class="p">(),</span> <span class="n">LogisticRegression</span><span class="p">(</span><span class="n">max_iter</span><span class="o">=</span><span class="mi">5000</span><span class="p">))</span>
+<span class="n">gs</span> <span class="o">=</span> <span class="n">GridSearchCV</span><span class="p">(</span><span class="n">pipe</span><span class="p">,</span> <span class="p">{</span><span class="s2">"logisticregression__C"</span><span class="p">:</span> <span class="p">[</span><span class="mf">0.01</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">10</span><span class="p">]},</span> <span class="n">cv</span><span class="o">=</span><span class="n">StratifiedKFold</span><span class="p">(</span><span class="mi">5</span><span class="p">),</span> <span class="n">scoring</span><span class="o">=</span><span class="s2">"roc_auc"</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">Xtr</span><span class="p">,</span> <span class="n">ytr</span><span class="p">)</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">gs</span><span class="o">.</span><span class="n">best_estimator_</span>
+
+<span class="n">sizes</span><span class="p">,</span> <span class="n">tr</span><span class="p">,</span> <span class="n">va</span> <span class="o">=</span> <span class="n">learning_curve</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">Xtr</span><span class="p">,</span> <span class="n">ytr</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">scoring</span><span class="o">=</span><span class="s2">"roc_auc"</span><span class="p">,</span> <span class="n">train_sizes</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mf">0.2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">sizes</span><span class="p">,</span> <span class="n">tr</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">label</span><span class="o">=</span><span class="s2">"train"</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">sizes</span><span class="p">,</span> <span class="n">va</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">label</span><span class="o">=</span><span class="s2">"val"</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">();</span> <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+<span class="n">pva</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">predict_proba</span><span class="p">(</span><span class="n">Xva</span><span class="p">)[:,</span> <span class="mi">1</span><span class="p">]</span>
+<span class="n">prec</span><span class="p">,</span> <span class="n">rec</span><span class="p">,</span> <span class="n">th</span> <span class="o">=</span> <span class="n">precision_recall_curve</span><span class="p">(</span><span class="n">yva</span><span class="p">,</span> <span class="n">pva</span><span class="p">)</span>
+<span class="n">ok</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">rec</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="mf">0.97</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">t</span> <span class="o">=</span> <span class="n">th</span><span class="p">[</span><span class="n">ok</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">prec</span><span class="p">[</span><span class="n">ok</span><span class="p">])]]</span>
+<span class="n">pte</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">predict_proba</span><span class="p">(</span><span class="n">Xte</span><span class="p">)[:,</span> <span class="mi">1</span><span class="p">]</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"ngưỡng"</span><span class="p">,</span> <span class="nb">round</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="mi">3</span><span class="p">));</span> <span class="nb">print</span><span class="p">(</span><span class="n">classification_report</span><span class="p">(</span><span class="n">yte</span><span class="p">,</span> <span class="n">pte</span> <span class="o">&gt;=</span> <span class="n">t</span><span class="p">));</span> <span class="nb">print</span><span class="p">(</span><span class="s2">"ROC-AUC"</span><span class="p">,</span> <span class="n">roc_auc_score</span><span class="p">(</span><span class="n">yte</span><span class="p">,</span> <span class="n">pte</span><span class="p">))</span>
+<span class="n">RocCurveDisplay</span><span class="o">.</span><span class="n">from_predictions</span><span class="p">(</span><span class="n">yva</span><span class="p">,</span> <span class="n">pva</span><span class="p">);</span> <span class="n">PrecisionRecallDisplay</span><span class="o">.</span><span class="n">from_predictions</span><span class="p">(</span><span class="n">yva</span><span class="p">,</span> <span class="n">pva</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</code></pre></div>
+
+</details></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p1.2:p">Tôi đã xong phần thực hành</label></div></section>
+      <div class="donewhen"><b>Xong bài khi</b>Báo cáo trả lời được: model sai ở đâu, vì sao, và nên cải thiện gì tiếp.</div>
       <nav class="pn" aria-label="Bài trước, bài sau"><a href="p1-1.html"><span class="dir">← Bài trước · P1.1</span><span class="tt">Hồi quy tuyến tính và logistic</span></a><a class="nx" href="p1-3.html"><span class="dir">Bài sau · P1.3 →</span><span class="tt">Cây quyết định và ensemble</span></a></nav>
     </div>
     <aside class="aside">
       <div class="abox"><h4>Tiến độ bài này</h4><div class="ring"><svg viewBox="0 0 64 64" aria-hidden="true"><circle class="bg" cx="32" cy="32" r="28"/><circle class="fg" cx="32" cy="32" r="28" stroke-dasharray="176" stroke-dashoffset="176"/></svg><div><b id="ring-n">0/3</b><span id="ring-sub">phần đã xong</span></div></div></div>
+      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Train, validation, test</a></li><li><a href="#lt-2">Rò rỉ dữ liệu (data leakage)</a></li><li><a href="#lt-3">Overfitting, underfitting, bias và variance</a></li><li><a href="#lt-4">Metric phân loại</a></li><li><a href="#lt-5">Metric hồi quy</a></li><li><a href="#lt-6">Ngưỡng quyết định</a></li></ol></div>
       
       <div class="abox"><h4>Cùng giai đoạn</h4><ul><li><a href="p1-1.html">Hồi quy tuyến tính và logistic</a></li><li><span class=cur>Đánh giá model đúng cách</span></li><li><a href="p1-3.html">Cây quyết định và ensemble</a></li><li><a href="p1-4.html">Học không giám sát và feature engineering</a></li></ul></div>
     </aside>
@@ -43,16 +243,75 @@
 
 (function () {
   const mid = document.body.dataset.mid; let d = AIE.load();
+  const EXK = "aie-ex-" + mid;
+  let solved = {}; try { solved = JSON.parse(localStorage.getItem(EXK) || "{}") || {}; } catch (e) {}
+  const saveSolved = () => { try { localStorage.setItem(EXK, JSON.stringify(solved)); } catch (e) {} };
+  const tabs = [...document.querySelectorAll(".tab")], panels = [...document.querySelectorAll(".panel")];
   const boxes = [...document.querySelectorAll("input[data-key]")], ring = document.querySelector(".ring .fg"), rt = document.getElementById("ring-n");
-  const skipped = () => !!d[mid + ":skip"];
+  const toc = document.getElementById("toc-box");
+  function show(id, scroll) {
+    tabs.forEach((t) => t.setAttribute("aria-selected", String(t.dataset.tab === id)));
+    panels.forEach((p) => { const on = p.id === id; if (on && p.hidden) { p.classList.remove("enter"); void p.offsetWidth; p.classList.add("enter"); } p.hidden = !on; });
+    if (toc) toc.hidden = id !== "ly-thuyet";
+    if (scroll) document.querySelector(".tabs").scrollIntoView({ block: "start" });
+  }
+  tabs.forEach((t) => t.addEventListener("click", () => { history.replaceState(null, "", "#" + t.dataset.tab); show(t.dataset.tab, true); }));
+  document.querySelectorAll("[data-goto]").forEach((b) => b.addEventListener("click", () => { history.replaceState(null, "", "#" + b.dataset.goto); show(b.dataset.goto, true); }));
+  const start = ["ly-thuyet", "bai-tap", "thuc-hanh"].includes(location.hash.slice(1)) ? location.hash.slice(1) : "ly-thuyet";
+  show(start, false);
+  window.addEventListener("hashchange", () => { const h = location.hash.slice(1); if (["ly-thuyet", "bai-tap", "thuc-hanh"].includes(h)) show(h, true); });
+  document.querySelectorAll(".toc a").forEach((a) => a.addEventListener("click", () => show("ly-thuyet", false)));
+
   function render() {
     let n = 0;
-    boxes.forEach((b) => { const on = skipped() || !!d[b.dataset.key]; b.checked = on; b.disabled = skipped(); b.closest(".pblock").classList.toggle("done", on); if (on) n++; });
+    const skip = !!d[mid + ":skip"];
+    boxes.forEach((b) => { const on = skip || !!d[b.dataset.key]; b.checked = on; if (on) n++; });
+    const kmap = { t: "ly-thuyet", b: "bai-tap", p: "thuc-hanh" };
+    tabs.forEach((t) => { const k = Object.keys(kmap).find((x) => kmap[x] === t.dataset.tab); t.classList.toggle("is-done", skip || !!d[mid + ":" + k]); });
     ring.style.strokeDashoffset = String(176 * (1 - n / 3)); rt.textContent = n + "/3";
-    document.getElementById("ring-sub").textContent = skipped() ? "đã đánh dấu bỏ qua" : n === 3 ? "hoàn thành bài này" : "phần đã xong";
+    document.getElementById("ring-sub").textContent = n === 3 ? "hoàn thành bài này" : "phần đã xong";
   }
-  boxes.forEach((b) => b.addEventListener("change", () => { d = AIE.load(); if (b.checked) d[b.dataset.key] = true; else delete d[b.dataset.key]; AIE.save(d); render(); }));
+  boxes.forEach((b) => b.addEventListener("change", () => {
+    d = AIE.load(); if (b.checked) d[b.dataset.key] = true; else delete d[b.dataset.key]; AIE.save(d);
+    boxes.filter((x) => x.dataset.key === b.dataset.key).forEach((x) => (x.checked = b.checked)); render();
+  }));
   render();
+
+  /* answer boxes */
+  const parse = (s) => parseFloat(String(s).trim().replace(",", ".").replace("−", "-"));
+  const allAns = [...document.querySelectorAll(".ans")];
+  function score() {
+    const ok = allAns.filter((a) => solved[a.id]).length;
+    const el = document.getElementById("ex-score");
+    if (el) { el.querySelector("b").textContent = `${ok} / ${allAns.length}`; el.querySelector(".bar i").style.width = (allAns.length ? ok / allAns.length * 100 : 0) + "%"; }
+    document.querySelectorAll(".excard").forEach((c) => { const as = [...c.querySelectorAll(".ans")]; c.classList.toggle("solved", as.length > 0 && as.every((a) => solved[a.id])); });
+  }
+  allAns.forEach((box) => {
+    const inputs = [...box.querySelectorAll("input")], fb = box.querySelector(".ans-fb");
+    const mark = () => { box.classList.add("ok"); inputs.forEach((i) => { i.classList.add("ok"); if (!i.value) i.value = i.dataset.ans; }); fb.className = "ans-fb ok"; fb.textContent = "Chính xác."; };
+    if (solved[box.id]) mark();
+    const run = () => {
+      let all = true, empty = false;
+      inputs.forEach((i) => {
+        const v = parse(i.value);
+        if (i.value.trim() === "" || Number.isNaN(v)) { empty = true; all = false; i.classList.remove("ok", "bad"); return; }
+        const good = Math.abs(v - parseFloat(i.dataset.ans)) <= parseFloat(i.dataset.tol) + 1e-9;
+        i.classList.toggle("ok", good); i.classList.toggle("bad", !good); if (!good) all = false;
+      });
+      if (all) { solved[box.id] = true; saveSolved(); mark(); box.classList.remove("pop"); void box.offsetWidth; box.classList.add("pop"); score(); }
+      else { fb.className = "ans-fb bad"; fb.textContent = empty ? "Điền đủ các ô bằng số (dấu chấm hoặc phẩy đều được)." : "Ô màu cam chưa đúng. Xem lại bước đó, hoặc mở gợi ý."; }
+    };
+    box.querySelector(".btn-check").addEventListener("click", run);
+    inputs.forEach((i) => i.addEventListener("keydown", (e) => { if (e.key === "Enter") run(); }));
+  });
+  score();
+
+  /* highlight current theory section in the toc */
+  if (toc && "IntersectionObserver" in window) {
+    const links = [...toc.querySelectorAll("a")];
+    const io = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) links.forEach((a) => a.classList.toggle("on", a.getAttribute("href") === "#" + e.target.id)); }), { rootMargin: "-140px 0px -65% 0px" });
+    document.querySelectorAll("#ly-thuyet h2[id]").forEach((h) => io.observe(h));
+  }
 })();
 
 </script>

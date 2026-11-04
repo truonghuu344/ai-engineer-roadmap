@@ -20,19 +20,19 @@
 
 <main class="container">
   <div class="crumbs"><a href="../bai-hoc.html">Bài học</a><span>/</span><a href="../bai-hoc.html#p4">P4 · LLM Engineering</a><span>/</span><span>P4.4</span></div>
-  <section class="lhero"><div class="code">P4.4</div><h1>Bài 7 · Agent</h1><div class="lmeta"><span class="m">Giai đoạn P4 · LLM Engineering</span><span class="m">Tuần 18–23</span><span class="chip planned">Đề cương</span></div></section>
+  <section class="lhero"><div class="code">P4.4</div><h1>Bài 7 · Agent</h1><div class="lmeta"><span class="m">Giai đoạn P4 · LLM Engineering</span><span class="m">Tuần 18–25</span><span class="chip planned">Đề cương</span></div></section>
   <div class="lgrid">
     <div>
-      <div class="goal"><b>Mục tiêu giai đoạn:</b> Nhóm kỹ năng được tuyển nhiều nhất: xây ứng dụng LLM chạy ổn định, đo được chất lượng.</div>
+      <div class="goal"><b>Mục tiêu giai đoạn:</b> Nhóm kỹ năng được tuyển nhiều nhất: ứng dụng LLM, RAG, agent và multi-agent chạy ổn định, an toàn và đo được chất lượng.</div>
       <div class="soon">Nội dung đầy đủ (trang lý thuyết tương tác và notebook tự chấm) đang được soạn và sẽ có khi bạn học tới bài này. Đề cương dưới đây là phạm vi chính xác của bài.</div>
       <section class="pblock reveal"><div class="pblock-head"><span class="num">1</span><h2>Lý thuyết<span style="display:block;font:400 13.5px var(--f-body);color:var(--muted);margin-top:4px">Những gì cần hiểu</span></h2><label class="tick" for="cb-t"><input type="checkbox" id="cb-t" data-key="p4.4:t">Xong</label></div><ol><li>Vòng lặp agent, ReAct, chọn tool, giới hạn số bước</li><li>Bộ nhớ ngắn hạn và dài hạn, lập kế hoạch</li><li>LangGraph: state, node, edge, checkpoint, human-in-the-loop</li><li>An toàn: prompt injection, quyền của tool, kiểm soát chi phí</li></ol></section><section class="pblock reveal"><div class="pblock-head"><span class="num">2</span><h2>Bài tập<span style="display:block;font:400 13.5px var(--f-body);color:var(--muted);margin-top:4px">Tính tay và tự kiểm tra</span></h2><label class="tick" for="cb-b"><input type="checkbox" id="cb-b" data-key="p4.4:b">Xong</label></div><ol><li>Vẽ tay state graph cho một agent đặt lịch hẹn</li></ol></section><section class="pblock reveal"><div class="pblock-head"><span class="num">3</span><h2>Thực hành<span style="display:block;font:400 13.5px var(--f-body);color:var(--muted);margin-top:4px">Code và dự án</span></h2><label class="tick" for="cb-p"><input type="checkbox" id="cb-p" data-key="p4.4:p">Xong</label></div><ol><li>Lab 7: agent tự viết (không framework) giải 5 task nhiều bước; viết lại bằng LangGraph</li></ol></section>
       <div class="donewhen reveal"><b>Xong khi</b>Cả hai phiên bản giải được 5 task, log từng bước, chặn được 1 prompt injection bạn tự thử.</div>
-      <nav class="pn" aria-label="Bài trước, bài sau"><a href="p4-3.html"><span class="dir">← Bài trước · P4.3</span><span class="tt">Bài 6 · Đánh giá hệ thống AI</span></a><a class="nx" href="p6-1.html"><span class="dir">Bài sau · P6.1 →</span><span class="tt">Bài 8a · SFT và PEFT</span></a></nav>
+      <nav class="pn" aria-label="Bài trước, bài sau"><a href="p4-3.html"><span class="dir">← Bài trước · P4.3</span><span class="tt">Bài 6 · Đánh giá hệ thống AI</span></a><a class="nx" href="p4-5.html"><span class="dir">Bài sau · P4.5 →</span><span class="tt">RAG nâng cao</span></a></nav>
     </div>
     <aside class="aside">
       <div class="abox"><h4>Tiến độ bài này</h4><div class="ring"><svg viewBox="0 0 64 64" aria-hidden="true"><circle class="bg" cx="32" cy="32" r="28"/><circle class="fg" cx="32" cy="32" r="28" stroke-dasharray="176" stroke-dashoffset="176"/></svg><div><b id="ring-n">0/3</b><span id="ring-sub">phần đã xong</span></div></div></div>
       
-      <div class="abox"><h4>Cùng giai đoạn</h4><ul><li><a href="p4-1.html">Bài 4 · Làm việc với LLM</a></li><li><a href="p4-2.html">Bài 5 · Embedding và RAG</a></li><li><a href="p4-3.html">Bài 6 · Đánh giá hệ thống AI</a></li><li><span class=cur>Bài 7 · Agent</span></li></ul></div>
+      <div class="abox"><h4>Cùng giai đoạn</h4><ul><li><a href="p4-1.html">Bài 4 · Làm việc với LLM</a></li><li><a href="p4-2.html">Bài 5 · Embedding và RAG</a></li><li><a href="p4-3.html">Bài 6 · Đánh giá hệ thống AI</a></li><li><span class=cur>Bài 7 · Agent</span></li><li><a href="p4-5.html">RAG nâng cao</a></li><li><a href="p4-6.html">Multi-agent</a></li><li><a href="p4-7.html">MCP và hệ sinh thái tool</a></li><li><a href="p4-8.html">Guardrails, an toàn và human-in-the-loop</a></li></ul></div>
     </aside>
   </div>
 </main>

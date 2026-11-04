@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>P2.1 · Bài 1 · Mạng nơ-ron học thế nào · AI Engineer</title>
-<meta name="description" content="Bài 1 · Mạng nơ-ron học thế nào: Tensor và shape [N, C, H, W], chuẩn hóa dữ liệu; Neuron, lớp Linear, ReLU, vì sao cần phi tuyến; Softmax, cross-entropy">
+<meta name="description" content="Bài 1 · Mạng nơ-ron học thế nào: lý thuyết, bài tập và thực hành. Tensor và shape [N, C, H, W], chuẩn hóa dữ liệu; Neuron, lớp Linear, ReLU, vì sao cần phi tuyến">
 <meta property="og:title" content="P2.1 · Bài 1 · Mạng nơ-ron học thế nào · AI Engineer">
-<meta property="og:description" content="Bài 1 · Mạng nơ-ron học thế nào: Tensor và shape [N, C, H, W], chuẩn hóa dữ liệu; Neuron, lớp Linear, ReLU, vì sao cần phi tuyến; Softmax, cross-entropy">
+<meta property="og:description" content="Bài 1 · Mạng nơ-ron học thế nào: lý thuyết, bài tập và thực hành. Tensor và shape [N, C, H, W], chuẩn hóa dữ liệu; Neuron, lớp Linear, ReLU, vì sao cần phi tuyến">
 <meta name="theme-color" content="#F4F6FB">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23131A33'/%3E%3Cpath d='M9 22 L16 10 L23 19' stroke='%23E5E9FB' stroke-width='2' fill='none'/%3E%3Ccircle cx='9' cy='22' r='3' fill='%23E5E9FB'/%3E%3Ccircle cx='16' cy='10' r='3' fill='%23E5E9FB'/%3E%3Ccircle cx='23' cy='19' r='3' fill='%23FF9361'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -14,23 +14,106 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="../assets/chrome.css">
 <link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/lesson.css">
 </head>
 <body data-mid="p2.1">
 <header class="sh"><div class="sh-in"><a class="sh-brand" href="../index.html"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="var(--ink)"/><circle cx="9" cy="22" r="2.6" fill="var(--accent-soft)"/><circle cx="16" cy="10" r="2.6" fill="var(--accent-soft)"/><circle cx="23" cy="19" r="2.6" fill="#FF9361"/><path d="M9 22 L16 10 L23 19" stroke="var(--accent-soft)" stroke-width="1.8" fill="none"/></svg><span>AI Engineer<small>lộ trình tự học</small></span></a><nav class="sh-nav" id="sh-nav" aria-label="Chính"><a href="../index.html">Trang chủ</a><a href="../bai-hoc.html" aria-current="page">Bài học</a><a href="../lo-trinh.html">Lộ trình</a><a href="../notebooks.html">Notebook</a><a class="sh-cta-m" href="../bai01.html" data-next-lesson>Học tiếp →</a></nav><a class="sh-cta" href="../bai01.html" data-next-lesson>Học tiếp <span class="arr">→</span></a><button class="sh-burger" type="button" aria-expanded="false" aria-controls="sh-nav">Menu</button></div></header>
 
 <main class="container">
   <div class="crumbs"><a href="../bai-hoc.html">Bài học</a><span>/</span><a href="../bai-hoc.html#p2">P2 · Deep Learning nền tảng</a><span>/</span><span>P2.1</span></div>
-  <section class="lhero"><div class="code">P2.1</div><h1>Bài 1 · Mạng nơ-ron học thế nào</h1><div class="lmeta"><span class="m">Giai đoạn P2 · Deep Learning nền tảng</span><span class="m">Tuần 8–12</span><span class="chip now"><span class="dot"></span>Đang học</span></div></section>
-  <div class="lgrid">
-    <div>
-      <div class="goal"><b>Mục tiêu giai đoạn:</b> Hiểu mạng nơ-ron học thế nào và tự viết được training loop PyTorch.</div>
-      <div class="full-cta"><div><b>Bài này đã có nội dung đầy đủ</b><p>Trang lý thuyết tương tác, bài tính tay và bài kiểm tra cuối bài.</p></div><a class="btn primary" href="../bai01.html">Vào bài học <span class="arr">→</span></a></div>
-      <section class="pblock reveal"><div class="pblock-head"><span class="num">1</span><h2>Lý thuyết<span style="display:block;font:400 13.5px var(--f-body);color:var(--muted);margin-top:4px">Những gì cần hiểu</span></h2><label class="tick" for="cb-t"><input type="checkbox" id="cb-t" data-key="p2.1:t">Xong</label></div><ol><li>Tensor và shape [N, C, H, W], chuẩn hóa dữ liệu</li><li>Neuron, lớp Linear, ReLU, vì sao cần phi tuyến</li><li>Softmax, cross-entropy</li><li>Gradient descent, learning rate</li><li>Backpropagation, quy tắc dây chuyền, zero_grad</li></ol></section><section class="pblock reveal"><div class="pblock-head"><span class="num">2</span><h2>Bài tập<span style="display:block;font:400 13.5px var(--f-body);color:var(--muted);margin-top:4px">Tính tay và tự kiểm tra</span></h2><label class="tick" for="cb-b"><input type="checkbox" id="cb-b" data-key="p2.1:b">Xong</label></div><ol><li>7 bài tính tay trong trang lý thuyết</li><li>Bài kiểm tra cuối bài 8 câu (đạt ≥ 7)</li></ol></section><section class="pblock reveal"><div class="pblock-head"><span class="num">3</span><h2>Thực hành<span style="display:block;font:400 13.5px var(--f-body);color:var(--muted);margin-top:4px">Code và dự án</span></h2><label class="tick" for="cb-p"><input type="checkbox" id="cb-p" data-key="p2.1:p">Xong</label></div><ol><li>Notebook bai01: tự viết softmax, gradient descent, backprop thủ công cho mạng 2 lớp, so với autograd</li></ol></section>
-      <div class="donewhen reveal"><b>Xong khi</b>Mọi ô ✅ trong notebook qua, và trả lời đúng 3 câu hỏi nộp bài.</div>
+  <section class="lhero"><div class="code">P2.1</div><h1>Bài 1 · Mạng nơ-ron học thế nào</h1><div class="lmeta"><span class="m">Giai đoạn P2 · Deep Learning nền tảng</span><span class="m">Tuần 8–12</span><span class="chip now"><span class="dot"></span>Đang học</span></div>
+    <div class="intro"><p>Bài nền tảng nhất của lộ trình. Trang lý thuyết tương tác đầy đủ (có demo kéo-thả, 7 bài tính tay và bài kiểm tra 8 câu) nằm ở nút <strong>Vào bài học</strong> phía trên. Trang này tóm tắt các ý chính, có thêm bộ bài tập mới để tự kiểm tra, và hướng dẫn phần thực hành.</p></div></section>
+  <div class="full-cta"><div><b>Bài này đã có nội dung đầy đủ</b><p>Trang lý thuyết tương tác, bài tính tay và bài kiểm tra cuối bài.</p></div><a class="btn primary" href="../bai01.html">Vào bài học <span class="arr">→</span></a></div>
+  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">5 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
+  <div class="lgrid" style="margin-top:22px">
+    <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">Vòng lặp học</h2>
+<p>Mạng nơ-ron là một hàm f(x; θ) với rất nhiều tham số θ. Train là lặp lại bốn việc: <strong>forward</strong> (tính dự đoán), tính <strong>loss</strong>, <strong>backward</strong> (tính gradient của loss theo từng tham số), <strong>cập nhật</strong> tham số ngược hướng gradient.</p>
+<h2 id="lt-2">Dữ liệu là tensor</h2>
+<p>PyTorch xếp batch ảnh theo <code>[N, C, H, W]</code>. Trước khi đưa vào model, ảnh được chia 255 rồi chuẩn hóa theo từng kênh: <code>(x/255 − mean) / std</code>.</p>
+<h2 id="lt-3">Linear và ReLU</h2>
+<p><code>y = x·Wᵀ + b</code> với W shape (out, in). Hai lớp Linear không có hàm kích hoạt ở giữa vẫn chỉ là một lớp Linear. ReLU = max(0, z) thêm tính phi tuyến.</p>
+<h2 id="lt-4">Softmax và cross-entropy</h2>
+<p>Softmax biến logits thành xác suất: pᵢ = e^zᵢ / Σ e^zⱼ. Cross-entropy = −log(p_đúng). Model đoán đều cho 10 lớp có loss ln 10 ≈ 2.30.</p>
+<h2 id="lt-5">Gradient descent và backprop</h2>
+<p><code>w ← w − η·∂L/∂w</code>. Learning rate quá nhỏ thì chậm, quá lớn thì dao động hoặc phân kỳ. Backprop dùng quy tắc dây chuyền đi ngược từ loss; <code>.grad</code> cộng dồn nên mỗi bước phải gọi <code>zero_grad()</code>.</p>
+<div class="keep">
+<p><strong>Ghi nhớ:</strong> năm dòng của mọi bước train: <code>zero_grad → forward → loss → backward → step</code>.</p>
+</div></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p2.1:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class=ex-lead><p>Bộ bài tập này khác các bài tính tay trong trang lý thuyết, dùng để kiểm tra lại sau khi học xong.</p></div><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 4</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Softmax với hai logit bằng nhau</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Logits = [1, 1, 0]. Biết e ≈ 2.718.</p>
+<div class="ans" id="p2-1-e1-a1"><div class="ans-fields"><label>p của lớp đầu tiên<input inputmode="decimal" data-ans="0.4223" data-tol="0.001" autocomplete="off"></label><label>Loss nếu lớp đúng là lớp thứ 3<input inputmode="decimal" data-ans="1.862" data-tol="0.002" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+
+<details class="fold solution">
+<summary>Lời giải</summary>
+<p>Tổng e¹ + e¹ + e⁰ = 6.437. p₀ = 2.718/6.437 = 0.422. Lớp thứ 3 có p = 1/6.437 = 0.155, loss = −ln 0.155 = ln 6.437 ≈ 1.862.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 2</span><h3>Đếm tham số</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Mạng phân loại chữ số MNIST: <code>Linear(784, 128) → ReLU → Linear(128, 10)</code>.</p>
+<div class="ans" id="p2-1-e2-a1"><div class="ans-fields"><label>Tham số lớp thứ nhất<input inputmode="decimal" data-ans="100480.0" data-tol="0.0" autocomplete="off"></label><label>Tổng tham số<input inputmode="decimal" data-ans="101770.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+
+<details class="fold solution">
+<summary>Lời giải</summary>
+<p>Mỗi lớp Linear có in·out trọng số cộng out bias. 784·128 + 128 = 100.480. 128·10 + 10 = 1.290. Tổng 101.770. ReLU không có tham số.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 3</span><h3>Hai bước gradient descent</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>f(w) = w², bắt đầu từ w = 3, learning rate 0.25.</p>
+<div class="ans" id="p2-1-e3-a1"><div class="ans-fields"><label>w sau bước 1<input inputmode="decimal" data-ans="1.5" data-tol="0.001" autocomplete="off"></label><label>w sau bước 2<input inputmode="decimal" data-ans="0.75" data-tol="0.001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+
+<details class="fold solution">
+<summary>Lời giải</summary>
+<p>f′(w) = 2w. Bước 1: 3 − 0.25·6 = 1.5. Bước 2: 1.5 − 0.25·3 = 0.75. Mỗi bước w giảm một nửa: với hàm bậc hai, w nhân với (1 − 2η) sau mỗi bước.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 4</span><h3>ReLU chặn gradient</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>z = w·x với w = 2, x = −1. a = relu(z), loss L = (a − 1)².</p>
+<div class="ans" id="p2-1-e4-a1"><div class="ans-fields"><label>a<input inputmode="decimal" data-ans="0.0" data-tol="0.0" autocomplete="off"></label><label>∂L/∂w<input inputmode="decimal" data-ans="0.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+
+<details class="fold solution">
+<summary>Lời giải</summary>
+<p>z = −2 nên a = 0. ∂L/∂a = 2(0 − 1) = −2, nhưng ∂a/∂z = 0 vì z &lt; 0. Mọi gradient phía trước đều bằng 0: mẫu này không giúp w học gì. Nếu z âm với mọi mẫu, neuron "chết".</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 5</span><h3>Learning rate nào phân kỳ</h3><span class="ex-tag concept">khái niệm</span></div><div class="prose"><p>Với f(w) = w², bước cập nhật là w ← (1 − 2η)·w. Với η nào thì w dao động đổi dấu nhưng vẫn hội tụ? Với η nào thì phân kỳ? Giải thích bằng hệ số (1 − 2η).</p>
+<details class="fold solution">
+<summary>Lời giải</summary>
+<p>Hội tụ khi |1 − 2η| &lt; 1, tức 0 &lt; η &lt; 1. Nếu 0.5 &lt; η &lt; 1 thì 1 − 2η âm: w đổi dấu mỗi bước (dao động) nhưng biên độ giảm. η = 1 thì w bật qua lại mãi giữa ±w. η &gt; 1 thì |1 − 2η| &gt; 1, w lớn dần: phân kỳ. Đây là ví dụ đơn giản nhất cho "learning rate quá lớn làm loss thành nan".</p>
+</details></div></article><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p2.1:b">Tôi đã xong phần bài tập</label><button class="btn" type="button" data-goto="thuc-hanh">Sang thực hành <span class="arr">→</span></button></div></section><section class="panel" id="thuc-hanh" role="tabpanel" hidden><div class="prose"><h2>Notebook bai01_thuc_hanh.ipynb</h2>
+<p>Tải notebook ở cột bên phải, mở bằng Colab (chạy được trên CPU). Notebook có 6 phần ứng với các mục lý thuyết, mỗi phần có ô ✅ tự chấm:</p>
+<table>
+<thead>
+<tr>
+<th>Phần</th>
+<th>Bạn tự viết</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A</td>
+<td>shape, reshape, hàm <code>ToTensor + Normalize</code> giống hệt torchvision</td>
+</tr>
+<tr>
+<td>B</td>
+<td>lớp Linear và ReLU bằng numpy; chứng minh 2 lớp Linear = 1 lớp</td>
+</tr>
+<tr>
+<td>C</td>
+<td>softmax ổn định số và cross-entropy</td>
+</tr>
+<tr>
+<td>D</td>
+<td>vòng lặp gradient descent; hồi quy tuyến tính từ đầu</td>
+</tr>
+<tr>
+<td>E</td>
+<td>backprop thủ công cho mạng 2 lớp, so với autograd; train đạt &gt; 95%</td>
+</tr>
+<tr>
+<td>F</td>
+<td>cùng mạng đó bằng PyTorch với 5 bước của training loop</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Xong khi</strong></p>
+<ul>
+<li>Mọi ô ✅ trong notebook đều qua.</li>
+<li>Trả lời được 3 câu hỏi nộp bài ở cuối notebook.</li>
+</ul>
+<p>Bí ở phần nào thì mở file lời giải, nhưng chỉ sau khi đã thử tự làm và đọc gợi ý.</p></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p2.1:p">Tôi đã xong phần thực hành</label></div></section>
+      <div class="donewhen"><b>Xong bài khi</b>Mọi ô ✅ trong notebook qua, và trả lời đúng 3 câu hỏi nộp bài.</div>
       <nav class="pn" aria-label="Bài trước, bài sau"><a href="p1-4.html"><span class="dir">← Bài trước · P1.4</span><span class="tt">Học không giám sát và feature engineering</span></a><a class="nx" href="p2-2.html"><span class="dir">Bài sau · P2.2 →</span><span class="tt">Bài 2 · Train mạng thật</span></a></nav>
     </div>
     <aside class="aside">
       <div class="abox"><h4>Tiến độ bài này</h4><div class="ring"><svg viewBox="0 0 64 64" aria-hidden="true"><circle class="bg" cx="32" cy="32" r="28"/><circle class="fg" cx="32" cy="32" r="28" stroke-dasharray="176" stroke-dashoffset="176"/></svg><div><b id="ring-n">0/3</b><span id="ring-sub">phần đã xong</span></div></div></div>
+      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Vòng lặp học</a></li><li><a href="#lt-2">Dữ liệu là tensor</a></li><li><a href="#lt-3">Linear và ReLU</a></li><li><a href="#lt-4">Softmax và cross-entropy</a></li><li><a href="#lt-5">Gradient descent và backprop</a></li></ol></div>
       <div class="abox"><h4>Notebook</h4><div style="display:grid;gap:8px"><a class="dl" href="../notebooks/bai01_thuc_hanh.ipynb" download><span class="ext">IPYNB</span><span>Bài tập<span style="display:block;font:400 12px var(--f-mono);color:var(--muted)">bai01_thuc_hanh.ipynb</span></span></a><a class="dl" href="../notebooks/bai01_thuc_hanh_LOI_GIAI.ipynb" download><span class="ext">IPYNB</span><span>Lời giải<span style="display:block;font:400 12px var(--f-mono);color:var(--muted)">bai01_thuc_hanh_LOI_GIAI.ipynb</span></span></a></div></div>
       <div class="abox"><h4>Cùng giai đoạn</h4><ul><li><span class=cur>Bài 1 · Mạng nơ-ron học thế nào</span></li><li><a href="p2-2.html">Bài 2 · Train mạng thật</a></li><li><a href="p2-3.html">CNN hiện đại và transfer learning</a></li></ul></div>
     </aside>
@@ -43,16 +126,75 @@
 
 (function () {
   const mid = document.body.dataset.mid; let d = AIE.load();
+  const EXK = "aie-ex-" + mid;
+  let solved = {}; try { solved = JSON.parse(localStorage.getItem(EXK) || "{}") || {}; } catch (e) {}
+  const saveSolved = () => { try { localStorage.setItem(EXK, JSON.stringify(solved)); } catch (e) {} };
+  const tabs = [...document.querySelectorAll(".tab")], panels = [...document.querySelectorAll(".panel")];
   const boxes = [...document.querySelectorAll("input[data-key]")], ring = document.querySelector(".ring .fg"), rt = document.getElementById("ring-n");
-  const skipped = () => !!d[mid + ":skip"];
+  const toc = document.getElementById("toc-box");
+  function show(id, scroll) {
+    tabs.forEach((t) => t.setAttribute("aria-selected", String(t.dataset.tab === id)));
+    panels.forEach((p) => { const on = p.id === id; if (on && p.hidden) { p.classList.remove("enter"); void p.offsetWidth; p.classList.add("enter"); } p.hidden = !on; });
+    if (toc) toc.hidden = id !== "ly-thuyet";
+    if (scroll) document.querySelector(".tabs").scrollIntoView({ block: "start" });
+  }
+  tabs.forEach((t) => t.addEventListener("click", () => { history.replaceState(null, "", "#" + t.dataset.tab); show(t.dataset.tab, true); }));
+  document.querySelectorAll("[data-goto]").forEach((b) => b.addEventListener("click", () => { history.replaceState(null, "", "#" + b.dataset.goto); show(b.dataset.goto, true); }));
+  const start = ["ly-thuyet", "bai-tap", "thuc-hanh"].includes(location.hash.slice(1)) ? location.hash.slice(1) : "ly-thuyet";
+  show(start, false);
+  window.addEventListener("hashchange", () => { const h = location.hash.slice(1); if (["ly-thuyet", "bai-tap", "thuc-hanh"].includes(h)) show(h, true); });
+  document.querySelectorAll(".toc a").forEach((a) => a.addEventListener("click", () => show("ly-thuyet", false)));
+
   function render() {
     let n = 0;
-    boxes.forEach((b) => { const on = skipped() || !!d[b.dataset.key]; b.checked = on; b.disabled = skipped(); b.closest(".pblock").classList.toggle("done", on); if (on) n++; });
+    const skip = !!d[mid + ":skip"];
+    boxes.forEach((b) => { const on = skip || !!d[b.dataset.key]; b.checked = on; if (on) n++; });
+    const kmap = { t: "ly-thuyet", b: "bai-tap", p: "thuc-hanh" };
+    tabs.forEach((t) => { const k = Object.keys(kmap).find((x) => kmap[x] === t.dataset.tab); t.classList.toggle("is-done", skip || !!d[mid + ":" + k]); });
     ring.style.strokeDashoffset = String(176 * (1 - n / 3)); rt.textContent = n + "/3";
-    document.getElementById("ring-sub").textContent = skipped() ? "đã đánh dấu bỏ qua" : n === 3 ? "hoàn thành bài này" : "phần đã xong";
+    document.getElementById("ring-sub").textContent = n === 3 ? "hoàn thành bài này" : "phần đã xong";
   }
-  boxes.forEach((b) => b.addEventListener("change", () => { d = AIE.load(); if (b.checked) d[b.dataset.key] = true; else delete d[b.dataset.key]; AIE.save(d); render(); }));
+  boxes.forEach((b) => b.addEventListener("change", () => {
+    d = AIE.load(); if (b.checked) d[b.dataset.key] = true; else delete d[b.dataset.key]; AIE.save(d);
+    boxes.filter((x) => x.dataset.key === b.dataset.key).forEach((x) => (x.checked = b.checked)); render();
+  }));
   render();
+
+  /* answer boxes */
+  const parse = (s) => parseFloat(String(s).trim().replace(",", ".").replace("−", "-"));
+  const allAns = [...document.querySelectorAll(".ans")];
+  function score() {
+    const ok = allAns.filter((a) => solved[a.id]).length;
+    const el = document.getElementById("ex-score");
+    if (el) { el.querySelector("b").textContent = `${ok} / ${allAns.length}`; el.querySelector(".bar i").style.width = (allAns.length ? ok / allAns.length * 100 : 0) + "%"; }
+    document.querySelectorAll(".excard").forEach((c) => { const as = [...c.querySelectorAll(".ans")]; c.classList.toggle("solved", as.length > 0 && as.every((a) => solved[a.id])); });
+  }
+  allAns.forEach((box) => {
+    const inputs = [...box.querySelectorAll("input")], fb = box.querySelector(".ans-fb");
+    const mark = () => { box.classList.add("ok"); inputs.forEach((i) => { i.classList.add("ok"); if (!i.value) i.value = i.dataset.ans; }); fb.className = "ans-fb ok"; fb.textContent = "Chính xác."; };
+    if (solved[box.id]) mark();
+    const run = () => {
+      let all = true, empty = false;
+      inputs.forEach((i) => {
+        const v = parse(i.value);
+        if (i.value.trim() === "" || Number.isNaN(v)) { empty = true; all = false; i.classList.remove("ok", "bad"); return; }
+        const good = Math.abs(v - parseFloat(i.dataset.ans)) <= parseFloat(i.dataset.tol) + 1e-9;
+        i.classList.toggle("ok", good); i.classList.toggle("bad", !good); if (!good) all = false;
+      });
+      if (all) { solved[box.id] = true; saveSolved(); mark(); box.classList.remove("pop"); void box.offsetWidth; box.classList.add("pop"); score(); }
+      else { fb.className = "ans-fb bad"; fb.textContent = empty ? "Điền đủ các ô bằng số (dấu chấm hoặc phẩy đều được)." : "Ô màu cam chưa đúng. Xem lại bước đó, hoặc mở gợi ý."; }
+    };
+    box.querySelector(".btn-check").addEventListener("click", run);
+    inputs.forEach((i) => i.addEventListener("keydown", (e) => { if (e.key === "Enter") run(); }));
+  });
+  score();
+
+  /* highlight current theory section in the toc */
+  if (toc && "IntersectionObserver" in window) {
+    const links = [...toc.querySelectorAll("a")];
+    const io = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) links.forEach((a) => a.classList.toggle("on", a.getAttribute("href") === "#" + e.target.id)); }), { rootMargin: "-140px 0px -65% 0px" });
+    document.querySelectorAll("#ly-thuyet h2[id]").forEach((h) => io.observe(h));
+  }
 })();
 
 </script>

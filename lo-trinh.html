@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Lộ trình và tiến độ · AI Engineer</title>
-<meta name="description" content="Lộ trình AI Engineer 11 giai đoạn, 42 bài với checklist tiến độ, dòng thời gian và dữ liệu tuyển dụng 2026.">
+<meta name="description" content="Lộ trình AI Engineer 11 giai đoạn, 46 bài với checklist tiến độ, dòng thời gian và dữ liệu tuyển dụng 2026.">
 <meta property="og:title" content="Lộ trình và tiến độ · AI Engineer">
-<meta property="og:description" content="Lộ trình AI Engineer 11 giai đoạn, 42 bài với checklist tiến độ, dòng thời gian và dữ liệu tuyển dụng 2026.">
+<meta property="og:description" content="Lộ trình AI Engineer 11 giai đoạn, 46 bài với checklist tiến độ, dòng thời gian và dữ liệu tuyển dụng 2026.">
 <meta name="theme-color" content="#F4F6FB">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23131A33'/%3E%3Cpath d='M9 22 L16 10 L23 19' stroke='%23E5E9FB' stroke-width='2' fill='none'/%3E%3Ccircle cx='9' cy='22' r='3' fill='%23E5E9FB'/%3E%3Ccircle cx='16' cy='10' r='3' fill='%23E5E9FB'/%3E%3Ccircle cx='23' cy='19' r='3' fill='%23FF9361'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -94,7 +94,7 @@ section.block { margin-top: 64px; }
 .g-row { display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 12px; align-items: center; font-size: 13.5px; }
 .g-row .g-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .g-row .g-name b { font-family: var(--f-mono); font-size: 12px; color: var(--muted); margin-right: 6px; font-weight: 600; }
-.g-track { position: relative; height: 20px; background-image: linear-gradient(90deg, var(--line) 1px, transparent 1px); background-size: calc(100% / 43 * 4) 100%; }
+.g-track { position: relative; height: 20px; background-image: linear-gradient(90deg, var(--line) 1px, transparent 1px); background-size: calc(100% / 45 * 4) 100%; }
 .g-bar { position: absolute; top: 3px; height: 14px; border-radius: 3px; background: var(--accent); overflow: hidden; }
 .g-bar.side { background: var(--side); opacity: .85; }
 .g-bar i { position: absolute; inset: 0 auto 0 0; background: var(--ok); }
@@ -177,12 +177,12 @@ footer { margin-top: 64px; padding-top: 18px; border-top: 1px solid var(--line);
   <header>
     <div class="eyebrow">Lộ trình của Trường · từ cơ bản đến nâng cao</div>
     <h1>Lộ trình AI Engineer</h1>
-    <p class="lede">11 giai đoạn, 42 bài. Bài nào cũng có ba phần: lý thuyết, bài tập và thực hành, kèm tiêu chí rõ ràng để biết khi nào là xong. Tích vào từng phần khi làm xong; tiến độ được lưu trên trình duyệt và đồng bộ với các trang bài học.</p>
+    <p class="lede">11 giai đoạn, 46 bài. Bài nào cũng có ba phần: lý thuyết, bài tập và thực hành, kèm tiêu chí rõ ràng để biết khi nào là xong. Tích vào từng phần khi làm xong; tiến độ được lưu trên trình duyệt và đồng bộ với các trang bài học.</p>
     <div class="summary">
       <div><div class="s-label">Tiến độ</div><div class="s-big" id="sumPct">0%</div><div class="meter"><i id="sumBar"></i></div><div class="s-small" id="sumParts">0 / 0 phần</div></div>
       <div><div class="s-label">Đang ở</div><div class="s-text" id="sumNow">P2 · Deep Learning nền tảng</div><div class="s-small">song song: dự án Diffusion</div></div>
       <div><div class="s-label">Việc tiếp theo</div><div class="s-text" id="sumNext">Đang tải…</div><div class="s-small" id="sumNextPart"></div></div>
-      <div><div class="s-label">Thời lượng</div><div class="s-big">43<span style="font-size:18px"> tuần</span></div><div class="s-small">khoảng 20 giờ mỗi tuần</div></div>
+      <div><div class="s-label">Thời lượng</div><div class="s-big">45<span style="font-size:18px"> tuần</span></div><div class="s-small">khoảng 20 giờ mỗi tuần</div></div>
     </div>
     <div class="sync" id="sync">Tiến độ được lưu trên trình duyệt này.</div>
   </header>
@@ -312,7 +312,7 @@ footer { margin-top: 64px; padding-top: 18px; border-top: 1px solid var(--line);
     return nx;
   }
   function renderGantt() {
-    const W = 43, rows = ORDER.map((pid) => PHASES.find((p) => p.id === pid));
+    const W = 45, rows = ORDER.map((pid) => PHASES.find((p) => p.id === pid));
     const pos = (w) => ((w - 1) / W) * 100;
     let html = rows.map((ph) => {
       const s = phaseStats(ph), [a, b] = ph.weeks, left = pos(a), width = ((b - a + 1) / W) * 100;
@@ -320,7 +320,7 @@ footer { margin-top: 64px; padding-top: 18px; border-top: 1px solid var(--line);
         <div class="g-bar ${ph.track === "side" ? "side" : ""}" style="left:${left}%;width:${width}%" title="Tuần ${a}–${b}"><i style="width:${s.n ? s.d / s.n * 100 : 0}%"></i></div>
         <div class="g-now" style="left:${pos(NOW_WEEK)}%"></div></div></div>`;
     }).join("");
-    html += `<div class="g-scale"><div></div><div>${[1, 5, 9, 13, 17, 21, 25, 29, 33, 37, 41].map((w) => `<span style="left:${pos(w)}%">${w === 1 ? "tuần 1" : w}</span>`).join("")}</div></div>`;
+    html += `<div class="g-scale"><div></div><div>${[1, 5, 9, 13, 17, 21, 25, 29, 33, 37, 41, 45].map((w) => `<span style="left:${pos(w)}%">${w === 1 ? "tuần 1" : w}</span>`).join("")}</div></div>`;
     document.getElementById("gantt").innerHTML = html;
   }
   function moduleVisible(m) {

@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>P1.4 · Học không giám sát và feature engineering · AI Engineer</title>
-<meta name="description" content="Học không giám sát và feature engineering: k-means, chọn k; PCA và giảm chiều; Scaling, mã hóa biến phân loại, xử lý thiếu, tạo feature; scikit-learn Pipeline và ColumnTransformer">
+<meta name="description" content="Học không giám sát và feature engineering: lý thuyết, bài tập và thực hành. k-means, chọn k; PCA và giảm chiều; Scaling, mã hóa biến phân loại, xử lý thiếu, tạo feature">
 <meta property="og:title" content="P1.4 · Học không giám sát và feature engineering · AI Engineer">
-<meta property="og:description" content="Học không giám sát và feature engineering: k-means, chọn k; PCA và giảm chiều; Scaling, mã hóa biến phân loại, xử lý thiếu, tạo feature; scikit-learn Pipeline và ColumnTransformer">
+<meta property="og:description" content="Học không giám sát và feature engineering: lý thuyết, bài tập và thực hành. k-means, chọn k; PCA và giảm chiều; Scaling, mã hóa biến phân loại, xử lý thiếu, tạo feature">
 <meta name="theme-color" content="#F4F6FB">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23131A33'/%3E%3Cpath d='M9 22 L16 10 L23 19' stroke='%23E5E9FB' stroke-width='2' fill='none'/%3E%3Ccircle cx='9' cy='22' r='3' fill='%23E5E9FB'/%3E%3Ccircle cx='16' cy='10' r='3' fill='%23E5E9FB'/%3E%3Ccircle cx='23' cy='19' r='3' fill='%23FF9361'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -14,23 +14,201 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="../assets/chrome.css">
 <link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/lesson.css">
 </head>
 <body data-mid="p1.4">
 <header class="sh"><div class="sh-in"><a class="sh-brand" href="../index.html"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="var(--ink)"/><circle cx="9" cy="22" r="2.6" fill="var(--accent-soft)"/><circle cx="16" cy="10" r="2.6" fill="var(--accent-soft)"/><circle cx="23" cy="19" r="2.6" fill="#FF9361"/><path d="M9 22 L16 10 L23 19" stroke="var(--accent-soft)" stroke-width="1.8" fill="none"/></svg><span>AI Engineer<small>lộ trình tự học</small></span></a><nav class="sh-nav" id="sh-nav" aria-label="Chính"><a href="../index.html">Trang chủ</a><a href="../bai-hoc.html" aria-current="page">Bài học</a><a href="../lo-trinh.html">Lộ trình</a><a href="../notebooks.html">Notebook</a><a class="sh-cta-m" href="../bai01.html" data-next-lesson>Học tiếp →</a></nav><a class="sh-cta" href="../bai01.html" data-next-lesson>Học tiếp <span class="arr">→</span></a><button class="sh-burger" type="button" aria-expanded="false" aria-controls="sh-nav">Menu</button></div></header>
 
 <main class="container">
   <div class="crumbs"><a href="../bai-hoc.html">Bài học</a><span>/</span><a href="../bai-hoc.html#p1">P1 · Machine Learning cổ điển</a><span>/</span><span>P1.4</span></div>
-  <section class="lhero"><div class="code">P1.4</div><h1>Học không giám sát và feature engineering</h1><div class="lmeta"><span class="m">Giai đoạn P1 · Machine Learning cổ điển</span><span class="m">Tuần 4–7</span><span class="chip planned">Đề cương</span></div></section>
-  <div class="lgrid">
-    <div>
-      <div class="goal"><b>Mục tiêu giai đoạn:</b> Hiểu vòng đời một bài toán ML: dữ liệu → model → đánh giá → cải thiện. Nhiều câu hỏi phỏng vấn nằm ở đây.</div>
-      <div class="soon">Nội dung đầy đủ (trang lý thuyết tương tác và notebook tự chấm) đang được soạn và sẽ có khi bạn học tới bài này. Đề cương dưới đây là phạm vi chính xác của bài.</div>
-      <section class="pblock reveal"><div class="pblock-head"><span class="num">1</span><h2>Lý thuyết<span style="display:block;font:400 13.5px var(--f-body);color:var(--muted);margin-top:4px">Những gì cần hiểu</span></h2><label class="tick" for="cb-t"><input type="checkbox" id="cb-t" data-key="p1.4:t">Xong</label></div><ol><li>k-means, chọn k; PCA và giảm chiều</li><li>Scaling, mã hóa biến phân loại, xử lý thiếu, tạo feature</li><li>scikit-learn Pipeline và ColumnTransformer</li></ol></section><section class="pblock reveal"><div class="pblock-head"><span class="num">2</span><h2>Bài tập<span style="display:block;font:400 13.5px var(--f-body);color:var(--muted);margin-top:4px">Tính tay và tự kiểm tra</span></h2><label class="tick" for="cb-b"><input type="checkbox" id="cb-b" data-key="p1.4:b">Xong</label></div><ol><li>Chạy tay 2 vòng k-means trên 6 điểm</li><li>Giải thích PCA giữ lại bao nhiêu phương sai</li></ol></section><section class="pblock reveal"><div class="pblock-head"><span class="num">3</span><h2>Thực hành<span style="display:block;font:400 13.5px var(--f-body);color:var(--muted);margin-top:4px">Code và dự án</span></h2><label class="tick" for="cb-p"><input type="checkbox" id="cb-p" data-key="p1.4:p">Xong</label></div><ol><li>Phân cụm khách hàng theo RFM (recency, frequency, monetary) từ dữ liệu bán hàng</li></ol></section>
-      <div class="donewhen reveal"><b>Xong khi</b>Pipeline một lệnh chạy từ CSV thô tới dự đoán, không rò dữ liệu.</div>
+  <section class="lhero"><div class="code">P1.4</div><h1>Học không giám sát và feature engineering</h1><div class="lmeta"><span class="m">Giai đoạn P1 · Machine Learning cổ điển</span><span class="m">Tuần 4–7</span><span class="chip ready"><span class="dot"></span>Có nội dung đầy đủ</span></div>
+    <div class="intro"><p>Không phải lúc nào cũng có nhãn. <strong>Học không giám sát</strong> tìm cấu trúc trong dữ liệu: nhóm khách hàng giống nhau, nén dữ liệu nhiều chiều để nhìn được. Bài này cũng dạy phần việc chiếm phần lớn thời gian thật của kỹ sư: <strong>chuẩn bị đặc trưng</strong>, gói gọn trong một <code>Pipeline</code> không rò rỉ.</p></div></section>
+  
+  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">5 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
+  <div class="lgrid" style="margin-top:22px">
+    <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">k-means</h2>
+<p>Chia n điểm thành k cụm sao cho mỗi điểm gần tâm cụm của nó nhất.</p>
+<div class="hl"><pre><span></span><code>1. Chọn k tâm ban đầu (k-means++ chọn tâm xa nhau)
+2. Gán mỗi điểm vào tâm gần nhất
+3. Cập nhật mỗi tâm = trung bình các điểm trong cụm
+4. Lặp 2–3 tới khi tâm không đổi
+</code></pre></div>
+
+<p>Mục tiêu tối thiểu hóa <strong>inertia</strong> = tổng bình phương khoảng cách từ điểm tới tâm cụm. k-means giả định cụm có dạng tròn, cỡ tương đương, và <strong>nhạy với thang đo</strong>: phải chuẩn hóa đặc trưng trước.</p>
+<h2 id="lt-2">Chọn k</h2>
+<ul>
+<li><strong>Elbow:</strong> vẽ inertia theo k, chọn chỗ đường cong gãy khúc. Inertia luôn giảm khi k tăng nên không thể chọn k có inertia nhỏ nhất.</li>
+<li><strong>Silhouette score:</strong> từ −1 đến 1, đo điểm gần cụm của mình hơn cụm láng giềng bao nhiêu. Chọn k có silhouette cao.</li>
+<li><strong>Ý nghĩa nghiệp vụ:</strong> 4 nhóm khách hàng mà đội marketing hành động được tốt hơn 9 nhóm tối ưu về toán.</li>
+</ul>
+<h2 id="lt-3">PCA: giảm chiều</h2>
+<p>PCA tìm các hướng (thành phần chính) mà dữ liệu biến thiên nhiều nhất, rồi chiếu dữ liệu lên vài hướng đầu. Mỗi thành phần có một trị riêng λ là lượng phương sai nó giữ lại.</p>
+<div class="hl"><pre><span></span><code>Tỉ lệ phương sai giải thích của thành phần i = λᵢ / Σ λ
+</code></pre></div>
+
+<p>Dùng PCA để: vẽ dữ liệu nhiều chiều lên 2D, giảm nhiễu, tăng tốc model. Luôn <strong>chuẩn hóa trước PCA</strong>, nếu không đặc trưng có đơn vị lớn (giá tiền) sẽ chiếm hết các thành phần.</p>
+<h2 id="lt-4">Chuẩn hóa và mã hóa</h2>
+<table>
+<thead>
+<tr>
+<th>Kỹ thuật</th>
+<th>Công thức</th>
+<th>Dùng khi</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>StandardScaler</td>
+<td>(x − mean) / std</td>
+<td>model tuyến tính, mạng nơ-ron, k-means, PCA</td>
+</tr>
+<tr>
+<td>MinMaxScaler</td>
+<td>(x − min) / (max − min)</td>
+<td>cần giá trị trong [0, 1]</td>
+</tr>
+<tr>
+<td>Không scale</td>
+<td></td>
+<td>model cây không cần</td>
+</tr>
+<tr>
+<td>One-hot</td>
+<td>mỗi giá trị một cột 0/1</td>
+<td>biến phân loại ít giá trị</td>
+</tr>
+<tr>
+<td>Ordinal</td>
+<td>thứ tự 0, 1, 2…</td>
+<td>biến có thứ tự (S, M, L)</td>
+</tr>
+<tr>
+<td>Target encoding</td>
+<td>trung bình y của từng giá trị</td>
+<td>nhiều giá trị, <strong>phải làm trong CV</strong> để tránh rò rỉ</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Giá trị thiếu:</strong> điền trung vị (số) hoặc giá trị hay gặp nhất (phân loại), và thường thêm một cột cờ "bị thiếu" vì việc thiếu đôi khi chính là thông tin.</p>
+<h2 id="lt-5">Pipeline và ColumnTransformer</h2>
+<p>Gói mọi bước tiền xử lý vào cùng model. Khi gọi <code>fit</code>, mọi scaler và encoder chỉ học từ train. Khi <code>predict</code>, cùng phép biến đổi được áp lên dữ liệu mới.</p>
+<div class="hl"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.compose</span><span class="w"> </span><span class="kn">import</span> <span class="n">ColumnTransformer</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.pipeline</span><span class="w"> </span><span class="kn">import</span> <span class="n">Pipeline</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.impute</span><span class="w"> </span><span class="kn">import</span> <span class="n">SimpleImputer</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.preprocessing</span><span class="w"> </span><span class="kn">import</span> <span class="n">StandardScaler</span><span class="p">,</span> <span class="n">OneHotEncoder</span>
+
+<span class="n">num</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"tuổi"</span><span class="p">,</span> <span class="s2">"thu_nhập"</span><span class="p">];</span> <span class="n">cat</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"thành_phố"</span><span class="p">,</span> <span class="s2">"kênh"</span><span class="p">]</span>
+<span class="n">pre</span> <span class="o">=</span> <span class="n">ColumnTransformer</span><span class="p">([</span>
+    <span class="p">(</span><span class="s2">"num"</span><span class="p">,</span> <span class="n">Pipeline</span><span class="p">([(</span><span class="s2">"imp"</span><span class="p">,</span> <span class="n">SimpleImputer</span><span class="p">(</span><span class="n">strategy</span><span class="o">=</span><span class="s2">"median"</span><span class="p">)),</span> <span class="p">(</span><span class="s2">"sc"</span><span class="p">,</span> <span class="n">StandardScaler</span><span class="p">())]),</span> <span class="n">num</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">"cat"</span><span class="p">,</span> <span class="n">Pipeline</span><span class="p">([(</span><span class="s2">"imp"</span><span class="p">,</span> <span class="n">SimpleImputer</span><span class="p">(</span><span class="n">strategy</span><span class="o">=</span><span class="s2">"most_frequent"</span><span class="p">)),</span> <span class="p">(</span><span class="s2">"oh"</span><span class="p">,</span> <span class="n">OneHotEncoder</span><span class="p">(</span><span class="n">handle_unknown</span><span class="o">=</span><span class="s2">"ignore"</span><span class="p">))]),</span> <span class="n">cat</span><span class="p">),</span>
+<span class="p">])</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">([(</span><span class="s2">"pre"</span><span class="p">,</span> <span class="n">pre</span><span class="p">),</span> <span class="p">(</span><span class="s2">"clf"</span><span class="p">,</span> <span class="n">LogisticRegression</span><span class="p">(</span><span class="n">max_iter</span><span class="o">=</span><span class="mi">1000</span><span class="p">))])</span>
+<span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>        <span class="c1"># một lệnh, không rò rỉ</span>
+</code></pre></div>
+
+<div class="keep">
+<p><strong>Ghi nhớ:</strong> mọi phép biến đổi có "học" từ dữ liệu (mean, std, danh sách giá trị, trung bình y) phải nằm trong Pipeline.</p>
+</div></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p1.4:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 3</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>k-means bằng tay</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Dữ liệu 1 chiều: 1, 2, 3, 10, 11, 12. k = 2, tâm ban đầu c₁ = 1, c₂ = 2. Chạy 2 vòng (gán điểm, cập nhật tâm).</p>
+<div class="ans" id="p1-4-e1-a1"><div class="ans-fields"><label>c₂ sau vòng 1<input inputmode="decimal" data-ans="7.6" data-tol="0.001" autocomplete="off"></label><label>c₁ sau vòng 2<input inputmode="decimal" data-ans="2.0" data-tol="0.001" autocomplete="off"></label><label>c₂ sau vòng 2<input inputmode="decimal" data-ans="11.0" data-tol="0.001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+
+<details class="fold solution">
+<summary>Lời giải</summary>
+<p>Vòng 1: điểm 1 về c₁; 2, 3, 10, 11, 12 gần c₂ = 2 hơn. Cập nhật c₁ = 1, c₂ = 38/5 = 7.6. Vòng 2: 2 và 3 giờ gần c₁ = 1 hơn (khoảng cách 1 và 2 so với 5.6 và 4.6), nên c₁ = 2, c₂ = 11. Tâm ban đầu tệ vẫn hội tụ đúng ở ví dụ này, nhưng không phải lúc nào cũng vậy; đó là lý do dùng k-means++ và chạy nhiều lần (<code>n_init</code>).</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 2</span><h3>Phương sai giải thích</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>PCA trên dữ liệu 2 chiều cho trị riêng λ₁ = 4, λ₂ = 1.</p>
+<div class="ans" id="p1-4-e2-a1"><div class="ans-fields"><label>Tỉ lệ phương sai của PC1<input inputmode="decimal" data-ans="0.8" data-tol="0.001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+
+<details class="fold solution">
+<summary>Lời giải</summary>
+<p>4 / (4 + 1) = 0.8. Giữ một thành phần là giữ 80% thông tin về độ biến thiên.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 3</span><h3>Chuẩn hóa</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Đặc trưng có ba giá trị 2, 4, 6. Dùng std chia cho n.</p>
+<div class="ans" id="p1-4-e3-a1"><div class="ans-fields"><label>StandardScaler của 6<input inputmode="decimal" data-ans="1.2247" data-tol="0.001" autocomplete="off"></label><label>MinMaxScaler của 4<input inputmode="decimal" data-ans="0.5" data-tol="0.001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+
+<details class="fold solution">
+<summary>Lời giải</summary>
+<p>Mean 4, std = √((4 + 0 + 4)/3) = √(8/3) ≈ 1.633. z = 2 / 1.633 ≈ 1.225. Min-max: (4 − 2)/(6 − 2) = 0.5.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 4</span><h3>Target encoding rò rỉ</h3><span class="ex-tag concept">khái niệm</span></div><div class="prose"><p>Một đồng nghiệp tính target encoding cho cột <code>mã_cửa_hàng</code> (5000 cửa hàng) bằng trung bình <code>y</code> trên <strong>toàn bộ tập train</strong>, rồi train model và thấy điểm validation rất cao. Vì sao kết quả này đáng ngờ, và sửa thế nào?</p>
+<details class="fold solution">
+<summary>Lời giải</summary>
+<p>Với cửa hàng ít mẫu, trung bình y gần như chính là y của mẫu đó, nên đặc trưng chứa đáp án. Model học thuộc và điểm cao giả. Sửa: tính encoding theo kiểu out-of-fold (mỗi fold dùng trung bình từ các fold khác), làm mượt về trung bình toàn cục cho nhóm ít mẫu, và đặt trong Pipeline (<code>sklearn.preprocessing.TargetEncoder</code> làm sẵn cross-fitting).</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 5</span><h3>Pipeline hoàn chỉnh</h3><span class="ex-tag code">code</span></div><div class="prose"><p>Với tập <code>titanic</code> (<code>sns.load_dataset("titanic")</code>), xây Pipeline xử lý cột số (<code>age</code>, <code>fare</code>) và cột phân loại (<code>sex</code>, <code>embarked</code>, <code>class</code>), đánh giá bằng 5-fold CV. Sau đó chứng minh rằng làm <code>fit_transform</code> trước khi chia cho điểm CV khác so với dùng Pipeline.</p>
+<details class="fold code">
+<summary>Code tham khảo</summary>
+<div class="hl"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">seaborn</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sns</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.compose</span><span class="w"> </span><span class="kn">import</span> <span class="n">ColumnTransformer</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.pipeline</span><span class="w"> </span><span class="kn">import</span> <span class="n">Pipeline</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.impute</span><span class="w"> </span><span class="kn">import</span> <span class="n">SimpleImputer</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.preprocessing</span><span class="w"> </span><span class="kn">import</span> <span class="n">StandardScaler</span><span class="p">,</span> <span class="n">OneHotEncoder</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.linear_model</span><span class="w"> </span><span class="kn">import</span> <span class="n">LogisticRegression</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.model_selection</span><span class="w"> </span><span class="kn">import</span> <span class="n">cross_val_score</span>
+
+<span class="n">df</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">load_dataset</span><span class="p">(</span><span class="s2">"titanic"</span><span class="p">)</span>
+<span class="n">X</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">df</span><span class="p">[[</span><span class="s2">"age"</span><span class="p">,</span> <span class="s2">"fare"</span><span class="p">,</span> <span class="s2">"sex"</span><span class="p">,</span> <span class="s2">"embarked"</span><span class="p">,</span> <span class="s2">"class"</span><span class="p">]],</span> <span class="n">df</span><span class="p">[</span><span class="s2">"survived"</span><span class="p">]</span>
+<span class="n">pre</span> <span class="o">=</span> <span class="n">ColumnTransformer</span><span class="p">([</span>
+    <span class="p">(</span><span class="s2">"num"</span><span class="p">,</span> <span class="n">Pipeline</span><span class="p">([(</span><span class="s2">"imp"</span><span class="p">,</span> <span class="n">SimpleImputer</span><span class="p">(</span><span class="n">strategy</span><span class="o">=</span><span class="s2">"median"</span><span class="p">)),</span> <span class="p">(</span><span class="s2">"sc"</span><span class="p">,</span> <span class="n">StandardScaler</span><span class="p">())]),</span> <span class="p">[</span><span class="s2">"age"</span><span class="p">,</span> <span class="s2">"fare"</span><span class="p">]),</span>
+    <span class="p">(</span><span class="s2">"cat"</span><span class="p">,</span> <span class="n">Pipeline</span><span class="p">([(</span><span class="s2">"imp"</span><span class="p">,</span> <span class="n">SimpleImputer</span><span class="p">(</span><span class="n">strategy</span><span class="o">=</span><span class="s2">"most_frequent"</span><span class="p">)),</span> <span class="p">(</span><span class="s2">"oh"</span><span class="p">,</span> <span class="n">OneHotEncoder</span><span class="p">(</span><span class="n">handle_unknown</span><span class="o">=</span><span class="s2">"ignore"</span><span class="p">))]),</span> <span class="p">[</span><span class="s2">"sex"</span><span class="p">,</span> <span class="s2">"embarked"</span><span class="p">,</span> <span class="s2">"class"</span><span class="p">]),</span>
+<span class="p">])</span>
+<span class="n">pipe</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">([(</span><span class="s2">"pre"</span><span class="p">,</span> <span class="n">pre</span><span class="p">),</span> <span class="p">(</span><span class="s2">"clf"</span><span class="p">,</span> <span class="n">LogisticRegression</span><span class="p">(</span><span class="n">max_iter</span><span class="o">=</span><span class="mi">1000</span><span class="p">))])</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Pipeline CV:"</span><span class="p">,</span> <span class="n">cross_val_score</span><span class="p">(</span><span class="n">pipe</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">4</span><span class="p">))</span>
+<span class="n">Xall</span> <span class="o">=</span> <span class="n">pre</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>   <span class="c1"># sai: học trên toàn bộ dữ liệu trước khi CV</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Rò rỉ CV:"</span><span class="p">,</span> <span class="n">cross_val_score</span><span class="p">(</span><span class="n">LogisticRegression</span><span class="p">(</span><span class="n">max_iter</span><span class="o">=</span><span class="mi">1000</span><span class="p">),</span> <span class="n">Xall</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">4</span><span class="p">))</span>
+</code></pre></div>
+
+</details></div></article><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p1.4:b">Tôi đã xong phần bài tập</label><button class="btn" type="button" data-goto="thuc-hanh">Sang thực hành <span class="arr">→</span></button></div></section><section class="panel" id="thuc-hanh" role="tabpanel" hidden><div class="prose"><h2>Phân cụm khách hàng theo RFM</h2>
+<p>RFM là cách phân khúc khách hàng kinh điển trong thương mại điện tử:</p>
+<ul>
+<li><strong>Recency:</strong> bao nhiêu ngày từ lần mua gần nhất</li>
+<li><strong>Frequency:</strong> mua bao nhiêu đơn</li>
+<li><strong>Monetary:</strong> tổng tiền đã chi</li>
+</ul>
+<p><strong>Các bước</strong></p>
+<ol>
+<li>Dùng dữ liệu đơn hàng ở P0.1 (thêm cột <code>customer_id</code>), hoặc tập Online Retail của UCI.</li>
+<li>Tính bảng RFM, mỗi khách một dòng. Lấy log của F và M vì phân bố lệch phải.</li>
+<li>Chuẩn hóa, chạy k-means với k từ 2 tới 8, vẽ elbow và silhouette.</li>
+<li>Chọn k, mô tả mỗi cụm bằng giá trị trung bình RFM và <strong>đặt tên nghiệp vụ</strong> (khách trung thành, khách sắp rời bỏ, khách mới…).</li>
+<li>PCA về 2 chiều, vẽ scatter tô màu theo cụm.</li>
+<li>Đề xuất một hành động marketing cho mỗi cụm.</li>
+</ol>
+<p><strong>Xong khi</strong></p>
+<ul>
+<li>Có biểu đồ elbow, silhouette và scatter PCA.</li>
+<li>Mỗi cụm có tên, số khách, giá trị RFM trung bình và một hành động đề xuất.</li>
+<li>Toàn bộ tiền xử lý nằm trong một Pipeline.</li>
+</ul>
+<details class="fold code">
+<summary>Code tham khảo</summary>
+<div class="hl"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span><span class="o">,</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span><span class="o">,</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.pipeline</span><span class="w"> </span><span class="kn">import</span> <span class="n">make_pipeline</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.preprocessing</span><span class="w"> </span><span class="kn">import</span> <span class="n">StandardScaler</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.cluster</span><span class="w"> </span><span class="kn">import</span> <span class="n">KMeans</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.metrics</span><span class="w"> </span><span class="kn">import</span> <span class="n">silhouette_score</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.decomposition</span><span class="w"> </span><span class="kn">import</span> <span class="n">PCA</span>
+
+<span class="n">now</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">"date"</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">+</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">rfm</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s2">"customer_id"</span><span class="p">)</span><span class="o">.</span><span class="n">agg</span><span class="p">(</span><span class="n">R</span><span class="o">=</span><span class="p">(</span><span class="s2">"date"</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">d</span><span class="p">:</span> <span class="p">(</span><span class="n">now</span> <span class="o">-</span> <span class="n">d</span><span class="o">.</span><span class="n">max</span><span class="p">())</span><span class="o">.</span><span class="n">days</span><span class="p">),</span> <span class="n">F</span><span class="o">=</span><span class="p">(</span><span class="s2">"date"</span><span class="p">,</span> <span class="s2">"count"</span><span class="p">),</span> <span class="n">M</span><span class="o">=</span><span class="p">(</span><span class="s2">"revenue"</span><span class="p">,</span> <span class="s2">"sum"</span><span class="p">))</span>
+<span class="n">X</span> <span class="o">=</span> <span class="n">rfm</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">F</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">log1p</span><span class="p">(</span><span class="n">rfm</span><span class="o">.</span><span class="n">F</span><span class="p">),</span> <span class="n">M</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">log1p</span><span class="p">(</span><span class="n">rfm</span><span class="o">.</span><span class="n">M</span><span class="p">))</span>
+
+<span class="n">ks</span><span class="p">,</span> <span class="n">inert</span><span class="p">,</span> <span class="n">sil</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">9</span><span class="p">),</span> <span class="p">[],</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">ks</span><span class="p">:</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="n">make_pipeline</span><span class="p">(</span><span class="n">StandardScaler</span><span class="p">(),</span> <span class="n">KMeans</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">n_init</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+    <span class="n">inert</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">inertia_</span><span class="p">);</span> <span class="n">sil</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">silhouette_score</span><span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">X</span><span class="p">),</span> <span class="n">p</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">labels_</span><span class="p">))</span>
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mf">3.5</span><span class="p">))</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ks</span><span class="p">,</span> <span class="n">inert</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s2">"o"</span><span class="p">);</span> <span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">"Elbow"</span><span class="p">);</span> <span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ks</span><span class="p">,</span> <span class="n">sil</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s2">"o"</span><span class="p">);</span> <span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">"Silhouette"</span><span class="p">)</span>
+
+<span class="n">best</span> <span class="o">=</span> <span class="n">make_pipeline</span><span class="p">(</span><span class="n">StandardScaler</span><span class="p">(),</span> <span class="n">KMeans</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="n">n_init</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+<span class="n">rfm</span><span class="p">[</span><span class="s2">"cluster"</span><span class="p">]</span> <span class="o">=</span> <span class="n">best</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">labels_</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">rfm</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s2">"cluster"</span><span class="p">)[[</span><span class="s2">"R"</span><span class="p">,</span> <span class="s2">"F"</span><span class="p">,</span> <span class="s2">"M"</span><span class="p">]]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="n">rfm</span><span class="o">.</span><span class="n">cluster</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()))</span>
+<span class="n">xy</span> <span class="o">=</span> <span class="n">PCA</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">best</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">X</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">();</span> <span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">xy</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">xy</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">c</span><span class="o">=</span><span class="n">rfm</span><span class="o">.</span><span class="n">cluster</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">"tab10"</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">"Khách hàng theo cụm (PCA)"</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</code></pre></div>
+
+</details></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p1.4:p">Tôi đã xong phần thực hành</label></div></section>
+      <div class="donewhen"><b>Xong bài khi</b>Pipeline một lệnh chạy từ CSV thô tới dự đoán, không rò dữ liệu.</div>
       <nav class="pn" aria-label="Bài trước, bài sau"><a href="p1-3.html"><span class="dir">← Bài trước · P1.3</span><span class="tt">Cây quyết định và ensemble</span></a><a class="nx" href="p2-1.html"><span class="dir">Bài sau · P2.1 →</span><span class="tt">Bài 1 · Mạng nơ-ron học thế nào</span></a></nav>
     </div>
     <aside class="aside">
       <div class="abox"><h4>Tiến độ bài này</h4><div class="ring"><svg viewBox="0 0 64 64" aria-hidden="true"><circle class="bg" cx="32" cy="32" r="28"/><circle class="fg" cx="32" cy="32" r="28" stroke-dasharray="176" stroke-dashoffset="176"/></svg><div><b id="ring-n">0/3</b><span id="ring-sub">phần đã xong</span></div></div></div>
+      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">k-means</a></li><li><a href="#lt-2">Chọn k</a></li><li><a href="#lt-3">PCA: giảm chiều</a></li><li><a href="#lt-4">Chuẩn hóa và mã hóa</a></li><li><a href="#lt-5">Pipeline và ColumnTransformer</a></li></ol></div>
       
       <div class="abox"><h4>Cùng giai đoạn</h4><ul><li><a href="p1-1.html">Hồi quy tuyến tính và logistic</a></li><li><a href="p1-2.html">Đánh giá model đúng cách</a></li><li><a href="p1-3.html">Cây quyết định và ensemble</a></li><li><span class=cur>Học không giám sát và feature engineering</span></li></ul></div>
     </aside>
@@ -43,16 +221,75 @@
 
 (function () {
   const mid = document.body.dataset.mid; let d = AIE.load();
+  const EXK = "aie-ex-" + mid;
+  let solved = {}; try { solved = JSON.parse(localStorage.getItem(EXK) || "{}") || {}; } catch (e) {}
+  const saveSolved = () => { try { localStorage.setItem(EXK, JSON.stringify(solved)); } catch (e) {} };
+  const tabs = [...document.querySelectorAll(".tab")], panels = [...document.querySelectorAll(".panel")];
   const boxes = [...document.querySelectorAll("input[data-key]")], ring = document.querySelector(".ring .fg"), rt = document.getElementById("ring-n");
-  const skipped = () => !!d[mid + ":skip"];
+  const toc = document.getElementById("toc-box");
+  function show(id, scroll) {
+    tabs.forEach((t) => t.setAttribute("aria-selected", String(t.dataset.tab === id)));
+    panels.forEach((p) => { const on = p.id === id; if (on && p.hidden) { p.classList.remove("enter"); void p.offsetWidth; p.classList.add("enter"); } p.hidden = !on; });
+    if (toc) toc.hidden = id !== "ly-thuyet";
+    if (scroll) document.querySelector(".tabs").scrollIntoView({ block: "start" });
+  }
+  tabs.forEach((t) => t.addEventListener("click", () => { history.replaceState(null, "", "#" + t.dataset.tab); show(t.dataset.tab, true); }));
+  document.querySelectorAll("[data-goto]").forEach((b) => b.addEventListener("click", () => { history.replaceState(null, "", "#" + b.dataset.goto); show(b.dataset.goto, true); }));
+  const start = ["ly-thuyet", "bai-tap", "thuc-hanh"].includes(location.hash.slice(1)) ? location.hash.slice(1) : "ly-thuyet";
+  show(start, false);
+  window.addEventListener("hashchange", () => { const h = location.hash.slice(1); if (["ly-thuyet", "bai-tap", "thuc-hanh"].includes(h)) show(h, true); });
+  document.querySelectorAll(".toc a").forEach((a) => a.addEventListener("click", () => show("ly-thuyet", false)));
+
   function render() {
     let n = 0;
-    boxes.forEach((b) => { const on = skipped() || !!d[b.dataset.key]; b.checked = on; b.disabled = skipped(); b.closest(".pblock").classList.toggle("done", on); if (on) n++; });
+    const skip = !!d[mid + ":skip"];
+    boxes.forEach((b) => { const on = skip || !!d[b.dataset.key]; b.checked = on; if (on) n++; });
+    const kmap = { t: "ly-thuyet", b: "bai-tap", p: "thuc-hanh" };
+    tabs.forEach((t) => { const k = Object.keys(kmap).find((x) => kmap[x] === t.dataset.tab); t.classList.toggle("is-done", skip || !!d[mid + ":" + k]); });
     ring.style.strokeDashoffset = String(176 * (1 - n / 3)); rt.textContent = n + "/3";
-    document.getElementById("ring-sub").textContent = skipped() ? "đã đánh dấu bỏ qua" : n === 3 ? "hoàn thành bài này" : "phần đã xong";
+    document.getElementById("ring-sub").textContent = n === 3 ? "hoàn thành bài này" : "phần đã xong";
   }
-  boxes.forEach((b) => b.addEventListener("change", () => { d = AIE.load(); if (b.checked) d[b.dataset.key] = true; else delete d[b.dataset.key]; AIE.save(d); render(); }));
+  boxes.forEach((b) => b.addEventListener("change", () => {
+    d = AIE.load(); if (b.checked) d[b.dataset.key] = true; else delete d[b.dataset.key]; AIE.save(d);
+    boxes.filter((x) => x.dataset.key === b.dataset.key).forEach((x) => (x.checked = b.checked)); render();
+  }));
   render();
+
+  /* answer boxes */
+  const parse = (s) => parseFloat(String(s).trim().replace(",", ".").replace("−", "-"));
+  const allAns = [...document.querySelectorAll(".ans")];
+  function score() {
+    const ok = allAns.filter((a) => solved[a.id]).length;
+    const el = document.getElementById("ex-score");
+    if (el) { el.querySelector("b").textContent = `${ok} / ${allAns.length}`; el.querySelector(".bar i").style.width = (allAns.length ? ok / allAns.length * 100 : 0) + "%"; }
+    document.querySelectorAll(".excard").forEach((c) => { const as = [...c.querySelectorAll(".ans")]; c.classList.toggle("solved", as.length > 0 && as.every((a) => solved[a.id])); });
+  }
+  allAns.forEach((box) => {
+    const inputs = [...box.querySelectorAll("input")], fb = box.querySelector(".ans-fb");
+    const mark = () => { box.classList.add("ok"); inputs.forEach((i) => { i.classList.add("ok"); if (!i.value) i.value = i.dataset.ans; }); fb.className = "ans-fb ok"; fb.textContent = "Chính xác."; };
+    if (solved[box.id]) mark();
+    const run = () => {
+      let all = true, empty = false;
+      inputs.forEach((i) => {
+        const v = parse(i.value);
+        if (i.value.trim() === "" || Number.isNaN(v)) { empty = true; all = false; i.classList.remove("ok", "bad"); return; }
+        const good = Math.abs(v - parseFloat(i.dataset.ans)) <= parseFloat(i.dataset.tol) + 1e-9;
+        i.classList.toggle("ok", good); i.classList.toggle("bad", !good); if (!good) all = false;
+      });
+      if (all) { solved[box.id] = true; saveSolved(); mark(); box.classList.remove("pop"); void box.offsetWidth; box.classList.add("pop"); score(); }
+      else { fb.className = "ans-fb bad"; fb.textContent = empty ? "Điền đủ các ô bằng số (dấu chấm hoặc phẩy đều được)." : "Ô màu cam chưa đúng. Xem lại bước đó, hoặc mở gợi ý."; }
+    };
+    box.querySelector(".btn-check").addEventListener("click", run);
+    inputs.forEach((i) => i.addEventListener("keydown", (e) => { if (e.key === "Enter") run(); }));
+  });
+  score();
+
+  /* highlight current theory section in the toc */
+  if (toc && "IntersectionObserver" in window) {
+    const links = [...toc.querySelectorAll("a")];
+    const io = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) links.forEach((a) => a.classList.toggle("on", a.getAttribute("href") === "#" + e.target.id)); }), { rootMargin: "-140px 0px -65% 0px" });
+    document.querySelectorAll("#ly-thuyet h2[id]").forEach((h) => io.observe(h));
+  }
 })();
 
 </script>

@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>P1.1 · Hồi quy tuyến tính và logistic · AI Engineer</title>
-<meta name="description" content="Hồi quy tuyến tính và logistic: Hồi quy tuyến tính, MSE, nghiệm đóng và gradient descent; Hồi quy logistic, sigmoid, binary cross-entropy, ranh giới quyết định; Regularization L1, L2 và ý nghĩa của nó">
+<meta name="description" content="Hồi quy tuyến tính và logistic: lý thuyết, bài tập và thực hành. Hồi quy tuyến tính, MSE, nghiệm đóng và gradient descent; Hồi quy logistic, sigmoid, binary cross-entropy, ranh giới quyết định">
 <meta property="og:title" content="P1.1 · Hồi quy tuyến tính và logistic · AI Engineer">
-<meta property="og:description" content="Hồi quy tuyến tính và logistic: Hồi quy tuyến tính, MSE, nghiệm đóng và gradient descent; Hồi quy logistic, sigmoid, binary cross-entropy, ranh giới quyết định; Regularization L1, L2 và ý nghĩa của nó">
+<meta property="og:description" content="Hồi quy tuyến tính và logistic: lý thuyết, bài tập và thực hành. Hồi quy tuyến tính, MSE, nghiệm đóng và gradient descent; Hồi quy logistic, sigmoid, binary cross-entropy, ranh giới quyết định">
 <meta name="theme-color" content="#F4F6FB">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23131A33'/%3E%3Cpath d='M9 22 L16 10 L23 19' stroke='%23E5E9FB' stroke-width='2' fill='none'/%3E%3Ccircle cx='9' cy='22' r='3' fill='%23E5E9FB'/%3E%3Ccircle cx='16' cy='10' r='3' fill='%23E5E9FB'/%3E%3Ccircle cx='23' cy='19' r='3' fill='%23FF9361'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -14,23 +14,189 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="../assets/chrome.css">
 <link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/lesson.css">
 </head>
 <body data-mid="p1.1">
 <header class="sh"><div class="sh-in"><a class="sh-brand" href="../index.html"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="var(--ink)"/><circle cx="9" cy="22" r="2.6" fill="var(--accent-soft)"/><circle cx="16" cy="10" r="2.6" fill="var(--accent-soft)"/><circle cx="23" cy="19" r="2.6" fill="#FF9361"/><path d="M9 22 L16 10 L23 19" stroke="var(--accent-soft)" stroke-width="1.8" fill="none"/></svg><span>AI Engineer<small>lộ trình tự học</small></span></a><nav class="sh-nav" id="sh-nav" aria-label="Chính"><a href="../index.html">Trang chủ</a><a href="../bai-hoc.html" aria-current="page">Bài học</a><a href="../lo-trinh.html">Lộ trình</a><a href="../notebooks.html">Notebook</a><a class="sh-cta-m" href="../bai01.html" data-next-lesson>Học tiếp →</a></nav><a class="sh-cta" href="../bai01.html" data-next-lesson>Học tiếp <span class="arr">→</span></a><button class="sh-burger" type="button" aria-expanded="false" aria-controls="sh-nav">Menu</button></div></header>
 
 <main class="container">
   <div class="crumbs"><a href="../bai-hoc.html">Bài học</a><span>/</span><a href="../bai-hoc.html#p1">P1 · Machine Learning cổ điển</a><span>/</span><span>P1.1</span></div>
-  <section class="lhero"><div class="code">P1.1</div><h1>Hồi quy tuyến tính và logistic</h1><div class="lmeta"><span class="m">Giai đoạn P1 · Machine Learning cổ điển</span><span class="m">Tuần 4–7</span><span class="chip planned">Đề cương</span></div></section>
-  <div class="lgrid">
-    <div>
-      <div class="goal"><b>Mục tiêu giai đoạn:</b> Hiểu vòng đời một bài toán ML: dữ liệu → model → đánh giá → cải thiện. Nhiều câu hỏi phỏng vấn nằm ở đây.</div>
-      <div class="soon">Nội dung đầy đủ (trang lý thuyết tương tác và notebook tự chấm) đang được soạn và sẽ có khi bạn học tới bài này. Đề cương dưới đây là phạm vi chính xác của bài.</div>
-      <section class="pblock reveal"><div class="pblock-head"><span class="num">1</span><h2>Lý thuyết<span style="display:block;font:400 13.5px var(--f-body);color:var(--muted);margin-top:4px">Những gì cần hiểu</span></h2><label class="tick" for="cb-t"><input type="checkbox" id="cb-t" data-key="p1.1:t">Xong</label></div><ol><li>Hồi quy tuyến tính, MSE, nghiệm đóng và gradient descent</li><li>Hồi quy logistic, sigmoid, binary cross-entropy, ranh giới quyết định</li><li>Regularization L1, L2 và ý nghĩa của nó</li></ol></section><section class="pblock reveal"><div class="pblock-head"><span class="num">2</span><h2>Bài tập<span style="display:block;font:400 13.5px var(--f-body);color:var(--muted);margin-top:4px">Tính tay và tự kiểm tra</span></h2><label class="tick" for="cb-b"><input type="checkbox" id="cb-b" data-key="p1.1:b">Xong</label></div><ol><li>Tính tay một bước gradient descent cho logistic</li><li>Viết hồi quy logistic từ đầu bằng numpy, so với scikit-learn</li></ol></section><section class="pblock reveal"><div class="pblock-head"><span class="num">3</span><h2>Thực hành<span style="display:block;font:400 13.5px var(--f-body);color:var(--muted);margin-top:4px">Code và dự án</span></h2><label class="tick" for="cb-p"><input type="checkbox" id="cb-p" data-key="p1.1:p">Xong</label></div><ol><li>Dự đoán giá nhà (California Housing) và phân loại ung thư vú (Breast Cancer) với scikit-learn</li></ol></section>
-      <div class="donewhen reveal"><b>Xong khi</b>Bản numpy của bạn cho kết quả chênh không quá 1% so với scikit-learn.</div>
+  <section class="lhero"><div class="code">P1.1</div><h1>Hồi quy tuyến tính và logistic</h1><div class="lmeta"><span class="m">Giai đoạn P1 · Machine Learning cổ điển</span><span class="m">Tuần 4–7</span><span class="chip ready"><span class="dot"></span>Có nội dung đầy đủ</span></div>
+    <div class="intro"><p>Hai model đơn giản nhất của ML, và cũng là hai thứ có mặt trong mọi mạng nơ-ron: lớp cuối của mạng hồi quy là <strong>hồi quy tuyến tính</strong>, lớp cuối của mạng phân loại nhị phân là <strong>hồi quy logistic</strong>. Hiểu kỹ hai model này thì phần deep learning chỉ là "xếp chồng nhiều lớp".</p></div></section>
+  
+  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">5 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
+  <div class="lgrid" style="margin-top:22px">
+    <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">Hồi quy tuyến tính</h2>
+<p>Dự đoán một số thực từ các đặc trưng: giá nhà từ diện tích, số phòng, vị trí.</p>
+<div class="hl"><pre><span></span><code>ŷ = w₁x₁ + w₂x₂ + … + wₙxₙ + b = w · x + b
+MSE = (1/N) Σ (ŷᵢ − yᵢ)²
+</code></pre></div>
+
+<p>MSE phạt lỗi lớn rất nặng vì bình phương. Nếu dữ liệu có nhiều điểm ngoại lai, MAE (trung bình trị tuyệt đối) bền hơn.</p>
+<h2 id="lt-2">Hai cách tìm w: nghiệm đóng và gradient descent</h2>
+<p><strong>Nghiệm đóng (normal equation):</strong> đặt gradient bằng 0 và giải ra</p>
+<div class="hl"><pre><span></span><code>w = (XᵀX)⁻¹ Xᵀy        (X có thêm cột toàn 1 cho bias)
+</code></pre></div>
+
+<p>Với một biến, công thức gọn: <code>w = Σ(x − x̄)(y − ȳ) / Σ(x − x̄)²</code>, <code>b = ȳ − w·x̄</code>. Nghiệm đóng chính xác nhưng tốn O(n³) theo số đặc trưng, không dùng được khi có hàng triệu tham số.</p>
+<p><strong>Gradient descent:</strong> lặp <code>w ← w − η·∇MSE</code> với <code>∇_w MSE = (2/N) Xᵀ(ŷ − y)</code>. Chậm hơn nhưng mở rộng được tới mạng nơ-ron.</p>
+<div class="keep">
+<p><strong>Ghi nhớ:</strong> chuẩn hóa đặc trưng (trừ mean, chia std) trước khi chạy gradient descent. Đặc trưng có thang đo lệch nhau (diện tích 50–500 m², số phòng 1–5) làm gradient descent đi zig-zag và rất chậm.</p>
+</div>
+<h2 id="lt-3">Hồi quy logistic</h2>
+<p>Phân loại hai lớp: email rác hay không, khối u lành hay ác. Tính điểm tuyến tính rồi ép về xác suất bằng <strong>sigmoid</strong>:</p>
+<div class="hl"><pre><span></span><code>z = w · x + b
+p = σ(z) = 1 / (1 + e⁻ᶻ)       σ(0) = 0.5, σ(z) → 1 khi z → +∞
+</code></pre></div>
+
+<p>Ranh giới quyết định là nơi p = 0.5, tức z = 0: một <strong>đường thẳng</strong> (siêu phẳng) trong không gian đặc trưng. Đó là lý do logistic không tách được dữ liệu hình vòng tròn, còn mạng nơ-ron có lớp ẩn thì tách được.</p>
+<h2 id="lt-4">Binary cross-entropy và gradient đẹp</h2>
+<div class="hl"><pre><span></span><code>BCE = −[ y·log p + (1 − y)·log(1 − p) ]
+∂BCE/∂z = p − y
+∂BCE/∂w = (p − y) · x
+</code></pre></div>
+
+<p>Gradient theo z chỉ là "dự đoán trừ đáp án", giống hệt softmax + cross-entropy ở Bài 1. Không phải trùng hợp: logistic chính là softmax với hai lớp.</p>
+<h2 id="lt-5">Regularization L1 và L2</h2>
+<p>Khi có nhiều đặc trưng, model dễ học thuộc nhiễu. Ta phạt trọng số lớn:</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Loss</th>
+<th>Hiệu ứng</th>
+<th>Trong scikit-learn</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>L2 (Ridge)</td>
+<td>MSE + λ Σ w²</td>
+<td>thu nhỏ đều mọi trọng số</td>
+<td><code>Ridge(alpha=λ)</code></td>
+</tr>
+<tr>
+<td>L1 (Lasso)</td>
+<td>MSE + λ Σ |w|</td>
+<td>đẩy nhiều trọng số về đúng 0, tự chọn đặc trưng</td>
+<td><code>Lasso(alpha=λ)</code></td>
+</tr>
+</tbody>
+</table>
+<p>Trong <code>LogisticRegression</code>, tham số <code>C = 1/λ</code>: <strong>C nhỏ thì phạt mạnh</strong>. Đây là nguồn nhầm lẫn kinh điển. Weight decay trong AdamW ở Bài 2 chính là L2.</p>
+<div class="keep">
+<p><strong>Ghi nhớ:</strong> λ quá lớn thì underfit (model quá đơn giản), quá nhỏ thì overfit. Chọn λ bằng validation, không bao giờ bằng tập test.</p>
+</div></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p1.1:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 4</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Giá trị sigmoid</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><div class="ans" id="p1-1-e1-a1"><div class="ans-fields"><label>σ(0)<input inputmode="decimal" data-ans="0.5" data-tol="0.001" autocomplete="off"></label><label>σ(2)<input inputmode="decimal" data-ans="0.8808" data-tol="0.001" autocomplete="off"></label><label>σ(−2)<input inputmode="decimal" data-ans="0.1192" data-tol="0.001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+
+<details class="fold hint">
+<summary>Gợi ý</summary>
+<p>e² ≈ 7.389. Để ý σ(−z) = 1 − σ(z).</p>
+</details>
+<details class="fold solution">
+<summary>Lời giải</summary>
+<p>σ(2) = 1 / (1 + 0.1353) = 0.8808. σ(−2) = 1 − 0.8808 = 0.1192.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 2</span><h3>Binary cross-entropy</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Model dự đoán p = 0.8 cho một mẫu.</p>
+<div class="ans" id="p1-1-e2-a1"><div class="ans-fields"><label>BCE nếu y = 1<input inputmode="decimal" data-ans="0.2231" data-tol="0.001" autocomplete="off"></label><label>BCE nếu y = 0<input inputmode="decimal" data-ans="1.6094" data-tol="0.001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+
+<details class="fold solution">
+<summary>Lời giải</summary>
+<p>y = 1: −ln 0.8 = 0.223. y = 0: −ln(1 − 0.8) = −ln 0.2 = 1.609. Đoán 80% cho lớp 1 mà đáp án là 0 bị phạt gấp 7 lần.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 3</span><h3>Một bước gradient descent cho logistic</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>x = [1, 2], y = 1, khởi tạo w = [0, 0], b = 0, learning rate 0.1.</p>
+<div class="ans" id="p1-1-e3-a1"><div class="ans-fields"><label>p ban đầu<input inputmode="decimal" data-ans="0.5" data-tol="0.001" autocomplete="off"></label><label>w₁ mới<input inputmode="decimal" data-ans="0.05" data-tol="0.0001" autocomplete="off"></label><label>w₂ mới<input inputmode="decimal" data-ans="0.1" data-tol="0.0001" autocomplete="off"></label><label>b mới<input inputmode="decimal" data-ans="0.05" data-tol="0.0001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+
+<details class="fold solution">
+<summary>Lời giải</summary>
+<p>z = 0 nên p = 0.5. p − y = −0.5. Gradient w = −0.5·[1, 2] = [−0.5, −1], gradient b = −0.5. Cập nhật: w = [0.05, 0.1], b = 0.05. Trọng số tăng để đẩy p lên phía y = 1.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 4</span><h3>Nghiệm đóng một biến</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Ba điểm (x, y): (1, 2), (2, 3), (3, 5). Tìm đường thẳng y = wx + b khớp nhất theo MSE.</p>
+<div class="ans" id="p1-1-e4-a1"><div class="ans-fields"><label>w<input inputmode="decimal" data-ans="1.5" data-tol="0.001" autocomplete="off"></label><label>b<input inputmode="decimal" data-ans="0.3333" data-tol="0.001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+
+<details class="fold solution">
+<summary>Lời giải</summary>
+<p>x̄ = 2, ȳ = 10/3. Σ(x − x̄)(y − ȳ) = (−1)(−4/3) + 0 + (1)(5/3) = 3. Σ(x − x̄)² = 2. w = 1.5, b = 10/3 − 1.5·2 = 1/3.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 5</span><h3>Logistic regression từ đầu</h3><span class="ex-tag code">code</span></div><div class="prose"><p>Viết lớp <code>LogReg</code> bằng numpy với <code>fit(X, y, lr, epochs)</code> (gradient descent toàn batch, có L2 với hệ số <code>lam</code>) và <code>predict_proba(X)</code>. So độ chính xác với <code>sklearn.linear_model.LogisticRegression</code> trên <code>load_breast_cancer</code>, nhớ chuẩn hóa dữ liệu.</p>
+<details class="fold code">
+<summary>Code tham khảo</summary>
+<div class="hl"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.datasets</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_breast_cancer</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.model_selection</span><span class="w"> </span><span class="kn">import</span> <span class="n">train_test_split</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.preprocessing</span><span class="w"> </span><span class="kn">import</span> <span class="n">StandardScaler</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.linear_model</span><span class="w"> </span><span class="kn">import</span> <span class="n">LogisticRegression</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">LogReg</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">lr</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span> <span class="n">lam</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">):</span>
+        <span class="n">n</span><span class="p">,</span> <span class="n">d</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">w</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">d</span><span class="p">),</span> <span class="mf">0.0</span>
+        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">epochs</span><span class="p">):</span>
+            <span class="n">p</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="p">(</span><span class="n">X</span> <span class="o">@</span> <span class="bp">self</span><span class="o">.</span><span class="n">w</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">b</span><span class="p">)))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">w</span> <span class="o">-=</span> <span class="n">lr</span> <span class="o">*</span> <span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="p">(</span><span class="n">p</span> <span class="o">-</span> <span class="n">y</span><span class="p">)</span> <span class="o">/</span> <span class="n">n</span> <span class="o">+</span> <span class="n">lam</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">w</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">b</span> <span class="o">-=</span> <span class="n">lr</span> <span class="o">*</span> <span class="p">(</span><span class="n">p</span> <span class="o">-</span> <span class="n">y</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">predict_proba</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
+        <span class="k">return</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="p">(</span><span class="n">X</span> <span class="o">@</span> <span class="bp">self</span><span class="o">.</span><span class="n">w</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">b</span><span class="p">)))</span>
+
+<span class="n">X</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">load_breast_cancer</span><span class="p">(</span><span class="n">return_X_y</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">Xtr</span><span class="p">,</span> <span class="n">Xte</span><span class="p">,</span> <span class="n">ytr</span><span class="p">,</span> <span class="n">yte</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">stratify</span><span class="o">=</span><span class="n">y</span><span class="p">)</span>
+<span class="n">sc</span> <span class="o">=</span> <span class="n">StandardScaler</span><span class="p">()</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">Xtr</span><span class="p">)</span>
+<span class="n">Xtr</span><span class="p">,</span> <span class="n">Xte</span> <span class="o">=</span> <span class="n">sc</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">Xtr</span><span class="p">),</span> <span class="n">sc</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">Xte</span><span class="p">)</span>
+<span class="n">ours</span> <span class="o">=</span> <span class="p">((</span><span class="n">LogReg</span><span class="p">()</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">Xtr</span><span class="p">,</span> <span class="n">ytr</span><span class="p">)</span><span class="o">.</span><span class="n">predict_proba</span><span class="p">(</span><span class="n">Xte</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">==</span> <span class="n">yte</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+<span class="n">ref</span> <span class="o">=</span> <span class="n">LogisticRegression</span><span class="p">(</span><span class="n">max_iter</span><span class="o">=</span><span class="mi">5000</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">Xtr</span><span class="p">,</span> <span class="n">ytr</span><span class="p">)</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">Xte</span><span class="p">,</span> <span class="n">yte</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"của bạn </span><span class="si">{</span><span class="n">ours</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2"> | sklearn </span><span class="si">{</span><span class="n">ref</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</code></pre></div>
+
+</details></div></article><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p1.1:b">Tôi đã xong phần bài tập</label><button class="btn" type="button" data-goto="thuc-hanh">Sang thực hành <span class="arr">→</span></button></div></section><section class="panel" id="thuc-hanh" role="tabpanel" hidden><div class="prose"><h2>Hai bài toán kinh điển với scikit-learn</h2>
+<p><strong>Phần A: hồi quy giá nhà (California Housing)</strong></p>
+<ol>
+<li><code>fetch_california_housing(as_frame=True)</code>, chia train/test 80/20 với <code>random_state=42</code>.</li>
+<li>Vẽ histogram của biến mục tiêu và scatter giữa thu nhập trung vị (<code>MedInc</code>) với giá.</li>
+<li>Train <code>LinearRegression</code> trong một <code>Pipeline</code> có <code>StandardScaler</code>. Báo cáo MAE và RMSE trên test.</li>
+<li>Thử <code>Ridge</code> với alpha ∈ {0.01, 0.1, 1, 10, 100} bằng <code>cross_val_score</code> 5-fold. Vẽ RMSE theo alpha.</li>
+<li>In 3 hệ số lớn nhất theo trị tuyệt đối và giải thích bằng lời.</li>
+</ol>
+<p><strong>Phần B: phân loại ung thư vú (Breast Cancer)</strong></p>
+<ol>
+<li>So sánh <code>LogReg</code> tự viết (bài tập 5) với scikit-learn.</li>
+<li>Thử C ∈ {0.01, 0.1, 1, 10}. C nào cho kết quả validation tốt nhất?</li>
+<li>Vẽ ma trận nhầm lẫn trên tập test.</li>
+</ol>
+<p><strong>Xong khi</strong></p>
+<ul>
+<li>Bản numpy chênh không quá 1% độ chính xác so với scikit-learn.</li>
+<li>Có biểu đồ RMSE theo alpha và giải thích vì sao alpha quá lớn làm tệ đi.</li>
+<li>README của lab ghi kết quả: MAE, RMSE, accuracy, kèm 3 nhận xét.</li>
+</ul>
+<details class="fold code">
+<summary>Code tham khảo</summary>
+<div class="hl"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span><span class="o">,</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.datasets</span><span class="w"> </span><span class="kn">import</span> <span class="n">fetch_california_housing</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.model_selection</span><span class="w"> </span><span class="kn">import</span> <span class="n">train_test_split</span><span class="p">,</span> <span class="n">cross_val_score</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.pipeline</span><span class="w"> </span><span class="kn">import</span> <span class="n">make_pipeline</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.preprocessing</span><span class="w"> </span><span class="kn">import</span> <span class="n">StandardScaler</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.linear_model</span><span class="w"> </span><span class="kn">import</span> <span class="n">LinearRegression</span><span class="p">,</span> <span class="n">Ridge</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.metrics</span><span class="w"> </span><span class="kn">import</span> <span class="n">mean_absolute_error</span><span class="p">,</span> <span class="n">mean_squared_error</span>
+
+<span class="n">X</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">fetch_california_housing</span><span class="p">(</span><span class="n">return_X_y</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">as_frame</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">Xtr</span><span class="p">,</span> <span class="n">Xte</span><span class="p">,</span> <span class="n">ytr</span><span class="p">,</span> <span class="n">yte</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+<span class="n">lin</span> <span class="o">=</span> <span class="n">make_pipeline</span><span class="p">(</span><span class="n">StandardScaler</span><span class="p">(),</span> <span class="n">LinearRegression</span><span class="p">())</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">Xtr</span><span class="p">,</span> <span class="n">ytr</span><span class="p">)</span>
+<span class="n">pred</span> <span class="o">=</span> <span class="n">lin</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">Xte</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"MAE"</span><span class="p">,</span> <span class="n">mean_absolute_error</span><span class="p">(</span><span class="n">yte</span><span class="p">,</span> <span class="n">pred</span><span class="p">),</span> <span class="s2">"RMSE"</span><span class="p">,</span> <span class="n">mean_squared_error</span><span class="p">(</span><span class="n">yte</span><span class="p">,</span> <span class="n">pred</span><span class="p">)</span> <span class="o">**</span> <span class="mf">0.5</span><span class="p">)</span>
+
+<span class="n">alphas</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.01</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">100</span><span class="p">]</span>
+<span class="n">rmse</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="n">cross_val_score</span><span class="p">(</span><span class="n">make_pipeline</span><span class="p">(</span><span class="n">StandardScaler</span><span class="p">(),</span> <span class="n">Ridge</span><span class="p">(</span><span class="n">alpha</span><span class="o">=</span><span class="n">a</span><span class="p">)),</span> <span class="n">Xtr</span><span class="p">,</span> <span class="n">ytr</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+                         <span class="n">scoring</span><span class="o">=</span><span class="s2">"neg_root_mean_squared_error"</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">alphas</span><span class="p">]</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">semilogx</span><span class="p">(</span><span class="n">alphas</span><span class="p">,</span> <span class="n">rmse</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s2">"o"</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">"alpha"</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">"RMSE (CV)"</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+<span class="n">coef</span> <span class="o">=</span> <span class="n">lin</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">coef_</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">coef</span><span class="p">))[:</span><span class="mi">3</span><span class="p">]:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">columns</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="nb">round</span><span class="p">(</span><span class="n">coef</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="mi">3</span><span class="p">))</span>
+</code></pre></div>
+
+</details></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p1.1:p">Tôi đã xong phần thực hành</label></div></section>
+      <div class="donewhen"><b>Xong bài khi</b>Bản numpy của bạn cho kết quả chênh không quá 1% so với scikit-learn.</div>
       <nav class="pn" aria-label="Bài trước, bài sau"><a href="p0-3.html"><span class="dir">← Bài trước · P0.3</span><span class="tt">Công cụ: Git, GitHub, terminal, Colab</span></a><a class="nx" href="p1-2.html"><span class="dir">Bài sau · P1.2 →</span><span class="tt">Đánh giá model đúng cách</span></a></nav>
     </div>
     <aside class="aside">
       <div class="abox"><h4>Tiến độ bài này</h4><div class="ring"><svg viewBox="0 0 64 64" aria-hidden="true"><circle class="bg" cx="32" cy="32" r="28"/><circle class="fg" cx="32" cy="32" r="28" stroke-dasharray="176" stroke-dashoffset="176"/></svg><div><b id="ring-n">0/3</b><span id="ring-sub">phần đã xong</span></div></div></div>
+      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Hồi quy tuyến tính</a></li><li><a href="#lt-2">Hai cách tìm w: nghiệm đóng và gradient descent</a></li><li><a href="#lt-3">Hồi quy logistic</a></li><li><a href="#lt-4">Binary cross-entropy và gradient đẹp</a></li><li><a href="#lt-5">Regularization L1 và L2</a></li></ol></div>
       
       <div class="abox"><h4>Cùng giai đoạn</h4><ul><li><span class=cur>Hồi quy tuyến tính và logistic</span></li><li><a href="p1-2.html">Đánh giá model đúng cách</a></li><li><a href="p1-3.html">Cây quyết định và ensemble</a></li><li><a href="p1-4.html">Học không giám sát và feature engineering</a></li></ul></div>
     </aside>
@@ -43,16 +209,75 @@
 
 (function () {
   const mid = document.body.dataset.mid; let d = AIE.load();
+  const EXK = "aie-ex-" + mid;
+  let solved = {}; try { solved = JSON.parse(localStorage.getItem(EXK) || "{}") || {}; } catch (e) {}
+  const saveSolved = () => { try { localStorage.setItem(EXK, JSON.stringify(solved)); } catch (e) {} };
+  const tabs = [...document.querySelectorAll(".tab")], panels = [...document.querySelectorAll(".panel")];
   const boxes = [...document.querySelectorAll("input[data-key]")], ring = document.querySelector(".ring .fg"), rt = document.getElementById("ring-n");
-  const skipped = () => !!d[mid + ":skip"];
+  const toc = document.getElementById("toc-box");
+  function show(id, scroll) {
+    tabs.forEach((t) => t.setAttribute("aria-selected", String(t.dataset.tab === id)));
+    panels.forEach((p) => { const on = p.id === id; if (on && p.hidden) { p.classList.remove("enter"); void p.offsetWidth; p.classList.add("enter"); } p.hidden = !on; });
+    if (toc) toc.hidden = id !== "ly-thuyet";
+    if (scroll) document.querySelector(".tabs").scrollIntoView({ block: "start" });
+  }
+  tabs.forEach((t) => t.addEventListener("click", () => { history.replaceState(null, "", "#" + t.dataset.tab); show(t.dataset.tab, true); }));
+  document.querySelectorAll("[data-goto]").forEach((b) => b.addEventListener("click", () => { history.replaceState(null, "", "#" + b.dataset.goto); show(b.dataset.goto, true); }));
+  const start = ["ly-thuyet", "bai-tap", "thuc-hanh"].includes(location.hash.slice(1)) ? location.hash.slice(1) : "ly-thuyet";
+  show(start, false);
+  window.addEventListener("hashchange", () => { const h = location.hash.slice(1); if (["ly-thuyet", "bai-tap", "thuc-hanh"].includes(h)) show(h, true); });
+  document.querySelectorAll(".toc a").forEach((a) => a.addEventListener("click", () => show("ly-thuyet", false)));
+
   function render() {
     let n = 0;
-    boxes.forEach((b) => { const on = skipped() || !!d[b.dataset.key]; b.checked = on; b.disabled = skipped(); b.closest(".pblock").classList.toggle("done", on); if (on) n++; });
+    const skip = !!d[mid + ":skip"];
+    boxes.forEach((b) => { const on = skip || !!d[b.dataset.key]; b.checked = on; if (on) n++; });
+    const kmap = { t: "ly-thuyet", b: "bai-tap", p: "thuc-hanh" };
+    tabs.forEach((t) => { const k = Object.keys(kmap).find((x) => kmap[x] === t.dataset.tab); t.classList.toggle("is-done", skip || !!d[mid + ":" + k]); });
     ring.style.strokeDashoffset = String(176 * (1 - n / 3)); rt.textContent = n + "/3";
-    document.getElementById("ring-sub").textContent = skipped() ? "đã đánh dấu bỏ qua" : n === 3 ? "hoàn thành bài này" : "phần đã xong";
+    document.getElementById("ring-sub").textContent = n === 3 ? "hoàn thành bài này" : "phần đã xong";
   }
-  boxes.forEach((b) => b.addEventListener("change", () => { d = AIE.load(); if (b.checked) d[b.dataset.key] = true; else delete d[b.dataset.key]; AIE.save(d); render(); }));
+  boxes.forEach((b) => b.addEventListener("change", () => {
+    d = AIE.load(); if (b.checked) d[b.dataset.key] = true; else delete d[b.dataset.key]; AIE.save(d);
+    boxes.filter((x) => x.dataset.key === b.dataset.key).forEach((x) => (x.checked = b.checked)); render();
+  }));
   render();
+
+  /* answer boxes */
+  const parse = (s) => parseFloat(String(s).trim().replace(",", ".").replace("−", "-"));
+  const allAns = [...document.querySelectorAll(".ans")];
+  function score() {
+    const ok = allAns.filter((a) => solved[a.id]).length;
+    const el = document.getElementById("ex-score");
+    if (el) { el.querySelector("b").textContent = `${ok} / ${allAns.length}`; el.querySelector(".bar i").style.width = (allAns.length ? ok / allAns.length * 100 : 0) + "%"; }
+    document.querySelectorAll(".excard").forEach((c) => { const as = [...c.querySelectorAll(".ans")]; c.classList.toggle("solved", as.length > 0 && as.every((a) => solved[a.id])); });
+  }
+  allAns.forEach((box) => {
+    const inputs = [...box.querySelectorAll("input")], fb = box.querySelector(".ans-fb");
+    const mark = () => { box.classList.add("ok"); inputs.forEach((i) => { i.classList.add("ok"); if (!i.value) i.value = i.dataset.ans; }); fb.className = "ans-fb ok"; fb.textContent = "Chính xác."; };
+    if (solved[box.id]) mark();
+    const run = () => {
+      let all = true, empty = false;
+      inputs.forEach((i) => {
+        const v = parse(i.value);
+        if (i.value.trim() === "" || Number.isNaN(v)) { empty = true; all = false; i.classList.remove("ok", "bad"); return; }
+        const good = Math.abs(v - parseFloat(i.dataset.ans)) <= parseFloat(i.dataset.tol) + 1e-9;
+        i.classList.toggle("ok", good); i.classList.toggle("bad", !good); if (!good) all = false;
+      });
+      if (all) { solved[box.id] = true; saveSolved(); mark(); box.classList.remove("pop"); void box.offsetWidth; box.classList.add("pop"); score(); }
+      else { fb.className = "ans-fb bad"; fb.textContent = empty ? "Điền đủ các ô bằng số (dấu chấm hoặc phẩy đều được)." : "Ô màu cam chưa đúng. Xem lại bước đó, hoặc mở gợi ý."; }
+    };
+    box.querySelector(".btn-check").addEventListener("click", run);
+    inputs.forEach((i) => i.addEventListener("keydown", (e) => { if (e.key === "Enter") run(); }));
+  });
+  score();
+
+  /* highlight current theory section in the toc */
+  if (toc && "IntersectionObserver" in window) {
+    const links = [...toc.querySelectorAll("a")];
+    const io = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) links.forEach((a) => a.classList.toggle("on", a.getAttribute("href") === "#" + e.target.id)); }), { rootMargin: "-140px 0px -65% 0px" });
+    document.querySelectorAll("#ly-thuyet h2[id]").forEach((h) => io.observe(h));
+  }
 })();
 
 </script>

@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>P0.1 · Python cho ML: numpy, pandas, matplotlib · AI Engineer</title>
-<meta name="description" content="Python cho ML: numpy, pandas, matplotlib: List/dict comprehension, hàm, class, module, môi trường ảo (venv, pip); numpy: array, shape, dtype, indexing, slicing, broadcasting, vector hóa thay vòng for; pandas: DataFrame, đọc CSV/Excel, lọc, groupby, merge, xử lý giá trị thiếu">
+<meta name="description" content="Python cho ML: numpy, pandas, matplotlib: lý thuyết, bài tập và thực hành. List/dict comprehension, hàm, class, module, môi trường ảo (venv, pip); numpy: array, shape, dtype, indexing, slicing, broadcasting, vector hóa thay vòng for">
 <meta property="og:title" content="P0.1 · Python cho ML: numpy, pandas, matplotlib · AI Engineer">
-<meta property="og:description" content="Python cho ML: numpy, pandas, matplotlib: List/dict comprehension, hàm, class, module, môi trường ảo (venv, pip); numpy: array, shape, dtype, indexing, slicing, broadcasting, vector hóa thay vòng for; pandas: DataFrame, đọc CSV/Excel, lọc, groupby, merge, xử lý giá trị thiếu">
+<meta property="og:description" content="Python cho ML: numpy, pandas, matplotlib: lý thuyết, bài tập và thực hành. List/dict comprehension, hàm, class, module, môi trường ảo (venv, pip); numpy: array, shape, dtype, indexing, slicing, broadcasting, vector hóa thay vòng for">
 <meta name="theme-color" content="#F4F6FB">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23131A33'/%3E%3Cpath d='M9 22 L16 10 L23 19' stroke='%23E5E9FB' stroke-width='2' fill='none'/%3E%3Ccircle cx='9' cy='22' r='3' fill='%23E5E9FB'/%3E%3Ccircle cx='16' cy='10' r='3' fill='%23E5E9FB'/%3E%3Ccircle cx='23' cy='19' r='3' fill='%23FF9361'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -14,23 +14,277 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="../assets/chrome.css">
 <link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/lesson.css">
 </head>
 <body data-mid="p0.1">
 <header class="sh"><div class="sh-in"><a class="sh-brand" href="../index.html"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="var(--ink)"/><circle cx="9" cy="22" r="2.6" fill="var(--accent-soft)"/><circle cx="16" cy="10" r="2.6" fill="var(--accent-soft)"/><circle cx="23" cy="19" r="2.6" fill="#FF9361"/><path d="M9 22 L16 10 L23 19" stroke="var(--accent-soft)" stroke-width="1.8" fill="none"/></svg><span>AI Engineer<small>lộ trình tự học</small></span></a><nav class="sh-nav" id="sh-nav" aria-label="Chính"><a href="../index.html">Trang chủ</a><a href="../bai-hoc.html" aria-current="page">Bài học</a><a href="../lo-trinh.html">Lộ trình</a><a href="../notebooks.html">Notebook</a><a class="sh-cta-m" href="../bai01.html" data-next-lesson>Học tiếp →</a></nav><a class="sh-cta" href="../bai01.html" data-next-lesson>Học tiếp <span class="arr">→</span></a><button class="sh-burger" type="button" aria-expanded="false" aria-controls="sh-nav">Menu</button></div></header>
 
 <main class="container">
   <div class="crumbs"><a href="../bai-hoc.html">Bài học</a><span>/</span><a href="../bai-hoc.html#p0">P0 · Nền móng</a><span>/</span><span>P0.1</span></div>
-  <section class="lhero"><div class="code">P0.1</div><h1>Python cho ML: numpy, pandas, matplotlib</h1><div class="lmeta"><span class="m">Giai đoạn P0 · Nền móng</span><span class="m">Tuần 1–3</span><span class="chip planned">Đề cương</span></div></section>
-  <div class="lgrid">
-    <div>
-      <div class="goal"><b>Mục tiêu giai đoạn:</b> Đủ Python, toán và công cụ để không bị kẹt ở các giai đoạn sau.</div>
-      <div class="soon">Nội dung đầy đủ (trang lý thuyết tương tác và notebook tự chấm) đang được soạn và sẽ có khi bạn học tới bài này. Đề cương dưới đây là phạm vi chính xác của bài.</div>
-      <section class="pblock reveal"><div class="pblock-head"><span class="num">1</span><h2>Lý thuyết<span style="display:block;font:400 13.5px var(--f-body);color:var(--muted);margin-top:4px">Những gì cần hiểu</span></h2><label class="tick" for="cb-t"><input type="checkbox" id="cb-t" data-key="p0.1:t">Xong</label></div><ol><li>List/dict comprehension, hàm, class, module, môi trường ảo (venv, pip)</li><li>numpy: array, shape, dtype, indexing, slicing, broadcasting, vector hóa thay vòng for</li><li>pandas: DataFrame, đọc CSV/Excel, lọc, groupby, merge, xử lý giá trị thiếu</li><li>matplotlib: line, bar, scatter, histogram, subplot</li></ol></section><section class="pblock reveal"><div class="pblock-head"><span class="num">2</span><h2>Bài tập<span style="display:block;font:400 13.5px var(--f-body);color:var(--muted);margin-top:4px">Tính tay và tự kiểm tra</span></h2><label class="tick" for="cb-b"><input type="checkbox" id="cb-b" data-key="p0.1:b">Xong</label></div><ol><li>30 bài numpy không dùng vòng for: chuẩn hóa, one-hot, khoảng cách từng cặp, top-k</li><li>10 bài pandas trên bảng đơn hàng: doanh thu theo tháng, sản phẩm bán chạy, tỉ lệ hoàn</li></ol></section><section class="pblock reveal"><div class="pblock-head"><span class="num">3</span><h2>Thực hành<span style="display:block;font:400 13.5px var(--f-body);color:var(--muted);margin-top:4px">Code và dự án</span></h2><label class="tick" for="cb-p"><input type="checkbox" id="cb-p" data-key="p0.1:p">Xong</label></div><ol><li>Notebook phân tích dữ liệu bán hàng thật (ví dụ shop Shopee của bạn): 5 biểu đồ + 5 kết luận</li></ol></section>
-      <div class="donewhen reveal"><b>Xong khi</b>Hàm vector hóa của bạn nhanh hơn bản vòng for ít nhất 50 lần, và notebook phân tích chạy lại được từ đầu.</div>
+  <section class="lhero"><div class="code">P0.1</div><h1>Python cho ML: numpy, pandas, matplotlib</h1><div class="lmeta"><span class="m">Giai đoạn P0 · Nền móng</span><span class="m">Tuần 1–3</span><span class="chip ready"><span class="dot"></span>Có nội dung đầy đủ</span></div>
+    <div class="intro"><p>Mọi model bạn train sau này đều nhận dữ liệu dưới dạng mảng số. Bài này luyện ba thư viện bạn sẽ dùng hằng ngày: <strong>numpy</strong> để tính trên mảng, <strong>pandas</strong> để làm sạch bảng dữ liệu, <strong>matplotlib</strong> để nhìn dữ liệu. Kỹ năng quan trọng nhất của bài là <strong>vector hóa</strong>: viết phép tính trên cả mảng thay cho vòng <code>for</code>.</p></div></section>
+  
+  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">6 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
+  <div class="lgrid" style="margin-top:22px">
+    <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">Python đủ dùng cho ML</h2>
+<p>Bạn không cần biết hết Python, chỉ cần dùng thạo vài thứ sau.</p>
+<div class="hl"><pre><span></span><code><span class="n">squares</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="o">*</span> <span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">)]</span>               <span class="c1"># list comprehension</span>
+<span class="n">by_len</span> <span class="o">=</span> <span class="p">{</span><span class="n">w</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">w</span><span class="p">)</span> <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">"mèo"</span><span class="p">,</span> <span class="s2">"chó"</span><span class="p">]}</span>      <span class="c1"># dict comprehension</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">accuracy</span><span class="p">(</span><span class="n">pred</span><span class="p">,</span> <span class="n">true</span><span class="p">):</span>                          <span class="c1"># hàm có giá trị trả về</span>
+    <span class="k">return</span> <span class="nb">sum</span><span class="p">(</span><span class="n">p</span> <span class="o">==</span> <span class="n">t</span> <span class="k">for</span> <span class="n">p</span><span class="p">,</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">pred</span><span class="p">,</span> <span class="n">true</span><span class="p">))</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">true</span><span class="p">)</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">Dataset</span><span class="p">:</span>                                     <span class="c1"># class: Dataset của PyTorch có đúng 2 hàm này</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rows</span><span class="p">):</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span> <span class="o">=</span> <span class="n">rows</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rows</span><span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span> <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+</code></pre></div>
+
+<p>Mỗi dự án nên có <strong>môi trường ảo</strong> riêng để thư viện không đá nhau: <code>python -m venv .venv</code>, kích hoạt, rồi <code>pip install numpy pandas matplotlib</code>. Ghi phiên bản vào <code>requirements.txt</code> để người khác chạy lại được.</p>
+<h2 id="lt-2">Mảng numpy: shape, dtype, indexing</h2>
+<p><code>np.array</code> là bảng số nhiều chiều, mọi phần tử cùng kiểu (<code>dtype</code>). Thuộc tính quan trọng nhất là <strong>shape</strong>: số phần tử theo từng trục.</p>
+<div class="hl"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">12</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>   <span class="c1"># shape (3, 4): 3 hàng, 4 cột</span>
+<span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>          <span class="c1"># hàng thứ 2 → shape (4,)</span>
+<span class="n">x</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>       <span class="c1"># cột đầu → shape (3,)</span>
+<span class="n">x</span><span class="p">[</span><span class="n">x</span> <span class="o">&gt;</span> <span class="mi">5</span><span class="p">]</span>      <span class="c1"># lọc bằng mặt nạ boolean → các phần tử lớn hơn 5</span>
+<span class="n">x</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="c1"># duỗi thành 1 chiều, -1 nghĩa là "tự tính"</span>
+<span class="n">x</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="c1"># cộng dọc theo trục 0 (gộp các hàng) → shape (4,)</span>
+</code></pre></div>
+
+<p>Quy ước nhớ <code>axis</code>: tham số <code>axis=k</code> là trục <strong>bị gộp mất</strong>. <code>x.sum(axis=0)</code> gộp các hàng nên còn lại một giá trị cho mỗi cột.</p>
+<h2 id="lt-3">Broadcasting</h2>
+<p>Khi hai mảng khác shape, numpy so shape <strong>từ phải sang trái</strong>: hai kích thước khớp nhau nếu bằng nhau hoặc một trong hai bằng 1. Trục bằng 1 sẽ được "kéo dài" mà không tốn bộ nhớ.</p>
+<table>
+<thead>
+<tr>
+<th>a</th>
+<th>b</th>
+<th>a + b</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>(4, 3)</td>
+<td>(3,)</td>
+<td>(4, 3): b cộng vào từng hàng</td>
+</tr>
+<tr>
+<td>(4, 3)</td>
+<td>(4, 1)</td>
+<td>(4, 3): b cộng vào từng cột</td>
+</tr>
+<tr>
+<td>(4, 3)</td>
+<td>(4,)</td>
+<td>lỗi: 3 và 4 không khớp</td>
+</tr>
+</tbody>
+</table>
+<p>Chuẩn hóa từng cột về trung bình 0 chỉ cần một dòng: <code>(X - X.mean(axis=0)) / X.std(axis=0)</code>.</p>
+<h2 id="lt-4">Vector hóa thay vòng for</h2>
+<p>Vòng <code>for</code> của Python chạy từng phần tử, mỗi bước tốn chi phí thông dịch. Phép toán numpy chạy trong code C trên cả khối bộ nhớ, thường nhanh hơn 50 đến 500 lần.</p>
+<div class="hl"><pre><span></span><code><span class="c1"># khoảng cách Euclid giữa mọi cặp điểm: A (n, d), B (m, d) → D (n, m)</span>
+<span class="n">diff</span> <span class="o">=</span> <span class="n">A</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">,</span> <span class="p">:]</span> <span class="o">-</span> <span class="n">B</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:]</span>      <span class="c1"># (n, 1, d) - (1, m, d) → (n, m, d)</span>
+<span class="n">D</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">diff</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">))</span>
+</code></pre></div>
+
+<p>Mẹo <code>None</code> (hay <code>np.newaxis</code>) chèn một trục độ dài 1 để broadcasting làm phần còn lại.</p>
+<div class="keep">
+<p><strong>Ghi nhớ:</strong> trước khi viết vòng for trên mảng, hỏi: "phép này có thể viết trên cả mảng không?". Hầu như luôn có.</p>
+</div>
+<h2 id="lt-5">pandas: làm việc với bảng</h2>
+<div class="hl"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">"orders.csv"</span><span class="p">,</span> <span class="n">parse_dates</span><span class="o">=</span><span class="p">[</span><span class="s2">"date"</span><span class="p">])</span>
+<span class="n">df</span><span class="o">.</span><span class="n">info</span><span class="p">();</span> <span class="n">df</span><span class="o">.</span><span class="n">describe</span><span class="p">()</span>                       <span class="c1"># xem kiểu cột, giá trị thiếu, thống kê</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">dropna</span><span class="p">(</span><span class="n">subset</span><span class="o">=</span><span class="p">[</span><span class="s2">"price"</span><span class="p">])</span>               <span class="c1"># bỏ dòng thiếu giá</span>
+<span class="n">df</span><span class="p">[</span><span class="s2">"revenue"</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">"qty"</span><span class="p">]</span> <span class="o">*</span> <span class="n">df</span><span class="p">[</span><span class="s2">"price"</span><span class="p">]</span>        <span class="c1"># cột mới, vector hóa</span>
+<span class="n">monthly</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">"date"</span><span class="p">]</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">to_period</span><span class="p">(</span><span class="s2">"M"</span><span class="p">))[</span><span class="s2">"revenue"</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+<span class="n">top</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s2">"product"</span><span class="p">)[</span><span class="s2">"qty"</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">nlargest</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+<span class="n">full</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">products</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="s2">"product_id"</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s2">"left"</span><span class="p">)</span>   <span class="c1"># nối bảng như SQL JOIN</span>
+</code></pre></div>
+
+<p><code>groupby</code> là tách nhóm, áp dụng hàm, gộp kết quả. Đây là thao tác dùng nhiều nhất khi phân tích dữ liệu.</p>
+<h2 id="lt-6">matplotlib: nhìn dữ liệu trước khi train</h2>
+<div class="hl"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mf">3.5</span><span class="p">))</span>
+<span class="n">monthly</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">marker</span><span class="o">=</span><span class="s2">"o"</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">"Doanh thu theo tháng"</span><span class="p">)</span>
+<span class="n">df</span><span class="p">[</span><span class="s2">"price"</span><span class="p">]</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">bins</span><span class="o">=</span><span class="mi">30</span><span class="p">);</span> <span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">"Phân bố giá"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">();</span> <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</code></pre></div>
+
+<p>Chọn biểu đồ theo câu hỏi: xu hướng theo thời gian dùng <strong>line</strong>, so sánh nhóm dùng <strong>bar</strong>, phân bố dùng <strong>histogram</strong>, quan hệ hai biến dùng <strong>scatter</strong>.</p>
+<div class="keep">
+<p><strong>Ghi nhớ:</strong> luôn vẽ dữ liệu trước khi train. Nhiều lỗi (giá trị âm vô lý, cột bị lệch đơn vị, dữ liệu trùng) lộ ra ngay trên biểu đồ.</p>
+</div></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p0.1:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class=ex-lead><p>Làm bằng giấy bút trước, rồi kiểm tra lại bằng code nếu muốn.</p></div><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 3</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Đoán shape</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Cho <code>a = np.zeros((4, 3))</code>, <code>b = np.ones(3)</code>, <code>x = np.zeros((2, 3, 4))</code>.</p>
+<ol>
+<li><code>(a + b).shape</code> có bao nhiêu hàng, bao nhiêu cột?</li>
+<li><code>x.reshape(-1, 4).shape[0]</code> bằng bao nhiêu?</li>
+<li><code>x.sum(axis=1).shape</code> có dạng <code>(p, q)</code>. Tìm p, q.</li>
+</ol>
+<div class="ans" id="p0-1-e1-a1"><div class="ans-fields"><label>(a+b) số hàng<input inputmode="decimal" data-ans="4.0" data-tol="0.0" autocomplete="off"></label><label>(a+b) số cột<input inputmode="decimal" data-ans="3.0" data-tol="0.0" autocomplete="off"></label><label>reshape: số hàng<input inputmode="decimal" data-ans="6.0" data-tol="0.0" autocomplete="off"></label><label>p<input inputmode="decimal" data-ans="2.0" data-tol="0.0" autocomplete="off"></label><label>q<input inputmode="decimal" data-ans="4.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+
+<details class="fold hint">
+<summary>Gợi ý</summary>
+<p>Với <code>reshape(-1, 4)</code>, tổng số phần tử giữ nguyên: 2·3·4 = 24, chia cho 4. Với <code>sum(axis=1)</code>, trục thứ hai (độ dài 3) bị gộp mất.</p>
+</details>
+<details class="fold solution">
+<summary>Lời giải</summary>
+<p><code>b</code> shape (3,) khớp với trục cuối của <code>a</code> nên kết quả (4, 3). <code>reshape(-1, 4)</code> cho (6, 4). <code>sum(axis=1)</code> bỏ trục độ dài 3, còn (2, 4).</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 2</span><h3>Tính theo trục</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p><code>a = np.arange(6).reshape(2, 3)</code>, tức là <code>[[0, 1, 2], [3, 4, 5]]</code>.</p>
+<div class="ans" id="p0-1-e2-a1"><div class="ans-fields"><label>a.sum(axis=0)[2]<input inputmode="decimal" data-ans="7.0" data-tol="0.0" autocomplete="off"></label><label>a.mean(axis=1)[1]<input inputmode="decimal" data-ans="4.0" data-tol="0.0" autocomplete="off"></label><label>a.max(axis=0).sum()<input inputmode="decimal" data-ans="12.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+
+<details class="fold solution">
+<summary>Lời giải</summary>
+<p><code>sum(axis=0)</code> cộng dọc các hàng: [3, 5, 7], phần tử thứ 3 là 7. <code>mean(axis=1)</code> lấy trung bình mỗi hàng: [1, 4]. <code>max(axis=0)</code> lấy max mỗi cột: [3, 4, 5], tổng 12.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 3</span><h3>One-hot không dùng vòng for</h3><span class="ex-tag code">code</span></div><div class="prose"><p>Viết hàm <code>one_hot(y, k)</code> nhận mảng nhãn số nguyên <code>y</code> shape (n,) và trả về ma trận (n, k), hàng i có số 1 ở cột <code>y[i]</code>. Không dùng vòng <code>for</code>.</p>
+<div class="hl"><pre><span></span><code><span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+<span class="n">one_hot</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="c1"># [[0, 0, 1],</span>
+<span class="c1">#  [1, 0, 0],</span>
+<span class="c1">#  [0, 1, 0]]</span>
+</code></pre></div>
+
+<details class="fold hint">
+<summary>Gợi ý</summary>
+<p>Ma trận đơn vị <code>np.eye(k)</code> có hàng j chính là one-hot của j. Bạn chỉ cần chọn đúng các hàng.</p>
+</details>
+<details class="fold code">
+<summary>Code tham khảo</summary>
+<div class="hl"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">one_hot</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">k</span><span class="p">)[</span><span class="n">y</span><span class="p">]</span>
+
+<span class="c1"># cách khác, không tạo ma trận k×k:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">one_hot2</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">y</span><span class="p">),</span> <span class="n">k</span><span class="p">))</span>
+    <span class="n">out</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">y</span><span class="p">)),</span> <span class="n">y</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="k">return</span> <span class="n">out</span>
+</code></pre></div>
+
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 4</span><h3>Khoảng cách từng cặp</h3><span class="ex-tag code">code</span></div><div class="prose"><p>Viết <code>pairwise_dist(A, B)</code> với A shape (n, d), B shape (m, d), trả về (n, m) khoảng cách Euclid. Sau đó đo thời gian so với bản hai vòng <code>for</code> trên n = m = 500, d = 64.</p>
+<details class="fold code">
+<summary>Code tham khảo</summary>
+<div class="hl"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">pairwise_dist</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">B</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(((</span><span class="n">A</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">,</span> <span class="p">:]</span> <span class="o">-</span> <span class="n">B</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:])</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">pairwise_loop</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">B</span><span class="p">):</span>
+    <span class="n">D</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">A</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">B</span><span class="p">)))</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">A</span><span class="p">)):</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">B</span><span class="p">)):</span>
+            <span class="n">D</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(((</span><span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">B</span><span class="p">[</span><span class="n">j</span><span class="p">])</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
+    <span class="k">return</span> <span class="n">D</span>
+
+<span class="n">A</span><span class="p">,</span> <span class="n">B</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">500</span><span class="p">,</span> <span class="mi">64</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">500</span><span class="p">,</span> <span class="mi">64</span><span class="p">)</span>
+<span class="n">t</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">();</span> <span class="n">D1</span> <span class="o">=</span> <span class="n">pairwise_dist</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">B</span><span class="p">);</span> <span class="n">t1</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">t</span>
+<span class="n">t</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">();</span> <span class="n">D2</span> <span class="o">=</span> <span class="n">pairwise_loop</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">B</span><span class="p">);</span> <span class="n">t2</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">t</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">D1</span><span class="p">,</span> <span class="n">D2</span><span class="p">),</span> <span class="sa">f</span><span class="s2">"nhanh hơn </span><span class="si">{</span><span class="n">t2</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">t1</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2"> lần"</span><span class="p">)</span>
+</code></pre></div>
+
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 5</span><h3>groupby bằng tay</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Bảng đơn hàng (giá tính bằng nghìn đồng):</p>
+<table>
+<thead>
+<tr>
+<th>tháng</th>
+<th>sản phẩm</th>
+<th>số lượng</th>
+<th>giá</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>bàn trang điểm</td>
+<td>2</td>
+<td>1500</td>
+</tr>
+<tr>
+<td>1</td>
+<td>gương</td>
+<td>1</td>
+<td>300</td>
+</tr>
+<tr>
+<td>2</td>
+<td>gương</td>
+<td>3</td>
+<td>300</td>
+</tr>
+<tr>
+<td>2</td>
+<td>bàn trang điểm</td>
+<td>1</td>
+<td>1500</td>
+</tr>
+</tbody>
+</table>
+<div class="ans" id="p0-1-e5-a1"><div class="ans-fields"><label>Doanh thu tháng 1<input inputmode="decimal" data-ans="3300.0" data-tol="0.0" autocomplete="off"></label><label>Doanh thu tháng 2<input inputmode="decimal" data-ans="2400.0" data-tol="0.0" autocomplete="off"></label><label>Tổng số gương bán ra<input inputmode="decimal" data-ans="4.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+
+<details class="fold solution">
+<summary>Lời giải</summary>
+<p><code>df["revenue"] = qty * price</code> rồi <code>groupby("tháng")["revenue"].sum()</code>: tháng 1 là 3000 + 300 = 3300, tháng 2 là 900 + 1500 = 2400. <code>groupby("sản phẩm")["số lượng"].sum()</code> cho gương: 1 + 3 = 4.</p>
+</details></div></article><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p0.1:b">Tôi đã xong phần bài tập</label><button class="btn" type="button" data-goto="thuc-hanh">Sang thực hành <span class="arr">→</span></button></div></section><section class="panel" id="thuc-hanh" role="tabpanel" hidden><div class="prose"><h2>Phân tích dữ liệu bán hàng</h2>
+<p>Bạn sẽ viết một notebook phân tích hoàn chỉnh. Dùng dữ liệu đơn hàng thật của bạn (ví dụ xuất từ kênh người bán), hoặc tạo dữ liệu giả bằng đoạn code dưới.</p>
+<p><strong>Các bước</strong></p>
+<ol>
+<li>Nạp dữ liệu, xem <code>info()</code>, <code>describe()</code>, đếm giá trị thiếu và dòng trùng.</li>
+<li>Làm sạch: bỏ dòng thiếu giá, bỏ trùng, đổi cột ngày sang <code>datetime</code>.</li>
+<li>Tạo cột <code>revenue</code>, tính doanh thu theo tháng và 5 sản phẩm bán chạy nhất.</li>
+<li>Tính tỉ lệ đơn hoàn theo từng sản phẩm.</li>
+<li>Vẽ 5 biểu đồ: doanh thu theo tháng (line), top sản phẩm (bar), phân bố giá trị đơn (histogram), số lượng theo ngày trong tuần (bar), giá với số lượng (scatter).</li>
+<li>Viết 5 kết luận, mỗi kết luận một câu, dựa trên biểu đồ.</li>
+</ol>
+<p><strong>Code khởi đầu (dữ liệu giả)</strong></p>
+<div class="hl"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span><span class="o">,</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">n</span> <span class="o">=</span> <span class="mi">2000</span>
+<span class="n">products</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"bàn trang điểm"</span><span class="p">:</span> <span class="mi">1500</span><span class="p">,</span> <span class="s2">"gương LED"</span><span class="p">:</span> <span class="mi">450</span><span class="p">,</span> <span class="s2">"ghế đôn"</span><span class="p">:</span> <span class="mi">250</span><span class="p">,</span> <span class="s2">"kệ mỹ phẩm"</span><span class="p">:</span> <span class="mi">320</span><span class="p">,</span> <span class="s2">"đèn bàn"</span><span class="p">:</span> <span class="mi">280</span><span class="p">}</span>
+<span class="n">names</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">products</span><span class="p">),</span> <span class="n">n</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="p">[</span><span class="mf">0.25</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.15</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">])</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span>
+    <span class="s2">"date"</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">(</span><span class="s2">"2026-01-01"</span><span class="p">)</span> <span class="o">+</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_timedelta</span><span class="p">(</span><span class="n">rng</span><span class="o">.</span><span class="n">integers</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">300</span><span class="p">,</span> <span class="n">n</span><span class="p">),</span> <span class="n">unit</span><span class="o">=</span><span class="s2">"D"</span><span class="p">),</span>
+    <span class="s2">"product"</span><span class="p">:</span> <span class="n">names</span><span class="p">,</span>
+    <span class="s2">"qty"</span><span class="p">:</span> <span class="n">rng</span><span class="o">.</span><span class="n">integers</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="n">n</span><span class="p">),</span>
+    <span class="s2">"price"</span><span class="p">:</span> <span class="p">[</span><span class="n">products</span><span class="p">[</span><span class="n">p</span><span class="p">]</span> <span class="o">*</span> <span class="n">rng</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mf">0.9</span><span class="p">,</span> <span class="mf">1.1</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">names</span><span class="p">],</span>
+    <span class="s2">"returned"</span><span class="p">:</span> <span class="n">rng</span><span class="o">.</span><span class="n">random</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">0.06</span><span class="p">,</span>
+<span class="p">})</span>
+<span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">rng</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span> <span class="s2">"price"</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>   <span class="c1"># giá trị thiếu để làm sạch</span>
+</code></pre></div>
+
+<p><strong>Xong khi</strong></p>
+<ul>
+<li>Notebook chạy lại từ đầu không lỗi (Kernel → Restart &amp; Run All).</li>
+<li>Không có vòng <code>for</code> duyệt từng dòng dữ liệu.</li>
+<li>Có đủ 5 biểu đồ, mỗi biểu đồ có tiêu đề và nhãn trục, và 5 kết luận.</li>
+</ul>
+<details class="fold code">
+<summary>Code tham khảo</summary>
+<div class="hl"><pre><span></span><code><span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">dropna</span><span class="p">(</span><span class="n">subset</span><span class="o">=</span><span class="p">[</span><span class="s2">"price"</span><span class="p">])</span><span class="o">.</span><span class="n">drop_duplicates</span><span class="p">()</span>
+<span class="n">df</span><span class="p">[</span><span class="s2">"revenue"</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">"qty"</span><span class="p">]</span> <span class="o">*</span> <span class="n">df</span><span class="p">[</span><span class="s2">"price"</span><span class="p">]</span>
+<span class="n">monthly</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">"date"</span><span class="p">]</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">to_period</span><span class="p">(</span><span class="s2">"M"</span><span class="p">))[</span><span class="s2">"revenue"</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+<span class="n">top5</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s2">"product"</span><span class="p">)[</span><span class="s2">"qty"</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">nlargest</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+<span class="n">return_rate</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s2">"product"</span><span class="p">)[</span><span class="s2">"returned"</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">weekday</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">"date"</span><span class="p">]</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">dayofweek</span><span class="p">)[</span><span class="s2">"qty"</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="mi">8</span><span class="p">))</span>
+<span class="n">monthly</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">marker</span><span class="o">=</span><span class="s2">"o"</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">"Doanh thu theo tháng"</span><span class="p">)</span>
+<span class="n">top5</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">bar</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">title</span><span class="o">=</span><span class="s2">"Top sản phẩm (số lượng)"</span><span class="p">)</span>
+<span class="n">df</span><span class="p">[</span><span class="s2">"revenue"</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">bins</span><span class="o">=</span><span class="mi">40</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">"Giá trị đơn"</span><span class="p">)</span>
+<span class="n">weekday</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">bar</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">title</span><span class="o">=</span><span class="s2">"Số lượng theo thứ (0 = thứ Hai)"</span><span class="p">)</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">"price"</span><span class="p">],</span> <span class="n">df</span><span class="p">[</span><span class="s2">"qty"</span><span class="p">],</span> <span class="n">s</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">.3</span><span class="p">);</span> <span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">"Giá và số lượng"</span><span class="p">)</span>
+<span class="n">return_rate</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">barh</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">title</span><span class="o">=</span><span class="s2">"Tỉ lệ hoàn"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">();</span> <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</code></pre></div>
+
+</details></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p0.1:p">Tôi đã xong phần thực hành</label></div></section>
+      <div class="donewhen"><b>Xong bài khi</b>Hàm vector hóa của bạn nhanh hơn bản vòng for ít nhất 50 lần, và notebook phân tích chạy lại được từ đầu.</div>
       <nav class="pn" aria-label="Bài trước, bài sau"><span></span><a class="nx" href="p0-2.html"><span class="dir">Bài sau · P0.2 →</span><span class="tt">Toán cho AI: đại số tuyến tính, giải tích, xác suất</span></a></nav>
     </div>
     <aside class="aside">
       <div class="abox"><h4>Tiến độ bài này</h4><div class="ring"><svg viewBox="0 0 64 64" aria-hidden="true"><circle class="bg" cx="32" cy="32" r="28"/><circle class="fg" cx="32" cy="32" r="28" stroke-dasharray="176" stroke-dashoffset="176"/></svg><div><b id="ring-n">0/3</b><span id="ring-sub">phần đã xong</span></div></div></div>
+      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Python đủ dùng cho ML</a></li><li><a href="#lt-2">Mảng numpy: shape, dtype, indexing</a></li><li><a href="#lt-3">Broadcasting</a></li><li><a href="#lt-4">Vector hóa thay vòng for</a></li><li><a href="#lt-5">pandas: làm việc với bảng</a></li><li><a href="#lt-6">matplotlib: nhìn dữ liệu trước khi train</a></li></ol></div>
       
       <div class="abox"><h4>Cùng giai đoạn</h4><ul><li><span class=cur>Python cho ML: numpy, pandas, matplotlib</span></li><li><a href="p0-2.html">Toán cho AI: đại số tuyến tính, giải tích, xác suất</a></li><li><a href="p0-3.html">Công cụ: Git, GitHub, terminal, Colab</a></li></ul></div>
     </aside>
@@ -43,16 +297,75 @@
 
 (function () {
   const mid = document.body.dataset.mid; let d = AIE.load();
+  const EXK = "aie-ex-" + mid;
+  let solved = {}; try { solved = JSON.parse(localStorage.getItem(EXK) || "{}") || {}; } catch (e) {}
+  const saveSolved = () => { try { localStorage.setItem(EXK, JSON.stringify(solved)); } catch (e) {} };
+  const tabs = [...document.querySelectorAll(".tab")], panels = [...document.querySelectorAll(".panel")];
   const boxes = [...document.querySelectorAll("input[data-key]")], ring = document.querySelector(".ring .fg"), rt = document.getElementById("ring-n");
-  const skipped = () => !!d[mid + ":skip"];
+  const toc = document.getElementById("toc-box");
+  function show(id, scroll) {
+    tabs.forEach((t) => t.setAttribute("aria-selected", String(t.dataset.tab === id)));
+    panels.forEach((p) => { const on = p.id === id; if (on && p.hidden) { p.classList.remove("enter"); void p.offsetWidth; p.classList.add("enter"); } p.hidden = !on; });
+    if (toc) toc.hidden = id !== "ly-thuyet";
+    if (scroll) document.querySelector(".tabs").scrollIntoView({ block: "start" });
+  }
+  tabs.forEach((t) => t.addEventListener("click", () => { history.replaceState(null, "", "#" + t.dataset.tab); show(t.dataset.tab, true); }));
+  document.querySelectorAll("[data-goto]").forEach((b) => b.addEventListener("click", () => { history.replaceState(null, "", "#" + b.dataset.goto); show(b.dataset.goto, true); }));
+  const start = ["ly-thuyet", "bai-tap", "thuc-hanh"].includes(location.hash.slice(1)) ? location.hash.slice(1) : "ly-thuyet";
+  show(start, false);
+  window.addEventListener("hashchange", () => { const h = location.hash.slice(1); if (["ly-thuyet", "bai-tap", "thuc-hanh"].includes(h)) show(h, true); });
+  document.querySelectorAll(".toc a").forEach((a) => a.addEventListener("click", () => show("ly-thuyet", false)));
+
   function render() {
     let n = 0;
-    boxes.forEach((b) => { const on = skipped() || !!d[b.dataset.key]; b.checked = on; b.disabled = skipped(); b.closest(".pblock").classList.toggle("done", on); if (on) n++; });
+    const skip = !!d[mid + ":skip"];
+    boxes.forEach((b) => { const on = skip || !!d[b.dataset.key]; b.checked = on; if (on) n++; });
+    const kmap = { t: "ly-thuyet", b: "bai-tap", p: "thuc-hanh" };
+    tabs.forEach((t) => { const k = Object.keys(kmap).find((x) => kmap[x] === t.dataset.tab); t.classList.toggle("is-done", skip || !!d[mid + ":" + k]); });
     ring.style.strokeDashoffset = String(176 * (1 - n / 3)); rt.textContent = n + "/3";
-    document.getElementById("ring-sub").textContent = skipped() ? "đã đánh dấu bỏ qua" : n === 3 ? "hoàn thành bài này" : "phần đã xong";
+    document.getElementById("ring-sub").textContent = n === 3 ? "hoàn thành bài này" : "phần đã xong";
   }
-  boxes.forEach((b) => b.addEventListener("change", () => { d = AIE.load(); if (b.checked) d[b.dataset.key] = true; else delete d[b.dataset.key]; AIE.save(d); render(); }));
+  boxes.forEach((b) => b.addEventListener("change", () => {
+    d = AIE.load(); if (b.checked) d[b.dataset.key] = true; else delete d[b.dataset.key]; AIE.save(d);
+    boxes.filter((x) => x.dataset.key === b.dataset.key).forEach((x) => (x.checked = b.checked)); render();
+  }));
   render();
+
+  /* answer boxes */
+  const parse = (s) => parseFloat(String(s).trim().replace(",", ".").replace("−", "-"));
+  const allAns = [...document.querySelectorAll(".ans")];
+  function score() {
+    const ok = allAns.filter((a) => solved[a.id]).length;
+    const el = document.getElementById("ex-score");
+    if (el) { el.querySelector("b").textContent = `${ok} / ${allAns.length}`; el.querySelector(".bar i").style.width = (allAns.length ? ok / allAns.length * 100 : 0) + "%"; }
+    document.querySelectorAll(".excard").forEach((c) => { const as = [...c.querySelectorAll(".ans")]; c.classList.toggle("solved", as.length > 0 && as.every((a) => solved[a.id])); });
+  }
+  allAns.forEach((box) => {
+    const inputs = [...box.querySelectorAll("input")], fb = box.querySelector(".ans-fb");
+    const mark = () => { box.classList.add("ok"); inputs.forEach((i) => { i.classList.add("ok"); if (!i.value) i.value = i.dataset.ans; }); fb.className = "ans-fb ok"; fb.textContent = "Chính xác."; };
+    if (solved[box.id]) mark();
+    const run = () => {
+      let all = true, empty = false;
+      inputs.forEach((i) => {
+        const v = parse(i.value);
+        if (i.value.trim() === "" || Number.isNaN(v)) { empty = true; all = false; i.classList.remove("ok", "bad"); return; }
+        const good = Math.abs(v - parseFloat(i.dataset.ans)) <= parseFloat(i.dataset.tol) + 1e-9;
+        i.classList.toggle("ok", good); i.classList.toggle("bad", !good); if (!good) all = false;
+      });
+      if (all) { solved[box.id] = true; saveSolved(); mark(); box.classList.remove("pop"); void box.offsetWidth; box.classList.add("pop"); score(); }
+      else { fb.className = "ans-fb bad"; fb.textContent = empty ? "Điền đủ các ô bằng số (dấu chấm hoặc phẩy đều được)." : "Ô màu cam chưa đúng. Xem lại bước đó, hoặc mở gợi ý."; }
+    };
+    box.querySelector(".btn-check").addEventListener("click", run);
+    inputs.forEach((i) => i.addEventListener("keydown", (e) => { if (e.key === "Enter") run(); }));
+  });
+  score();
+
+  /* highlight current theory section in the toc */
+  if (toc && "IntersectionObserver" in window) {
+    const links = [...toc.querySelectorAll("a")];
+    const io = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) links.forEach((a) => a.classList.toggle("on", a.getAttribute("href") === "#" + e.target.id)); }), { rootMargin: "-140px 0px -65% 0px" });
+    document.querySelectorAll("#ly-thuyet h2[id]").forEach((h) => io.observe(h));
+  }
 })();
 
 </script>

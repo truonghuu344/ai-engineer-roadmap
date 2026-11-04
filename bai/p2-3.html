@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>P2.3 · CNN hiện đại và transfer learning · AI Engineer</title>
-<meta name="description" content="CNN hiện đại và transfer learning: ResNet và kết nối tắt (residual); Dùng model pretrained: linear probe so với fine-tune toàn bộ; Mixed precision, GPU, DataLoader nhanh">
+<meta name="description" content="CNN hiện đại và transfer learning: lý thuyết, bài tập và thực hành. ResNet và kết nối tắt (residual); Dùng model pretrained: linear probe so với fine-tune toàn bộ">
 <meta property="og:title" content="P2.3 · CNN hiện đại và transfer learning · AI Engineer">
-<meta property="og:description" content="CNN hiện đại và transfer learning: ResNet và kết nối tắt (residual); Dùng model pretrained: linear probe so với fine-tune toàn bộ; Mixed precision, GPU, DataLoader nhanh">
+<meta property="og:description" content="CNN hiện đại và transfer learning: lý thuyết, bài tập và thực hành. ResNet và kết nối tắt (residual); Dùng model pretrained: linear probe so với fine-tune toàn bộ">
 <meta name="theme-color" content="#F4F6FB">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23131A33'/%3E%3Cpath d='M9 22 L16 10 L23 19' stroke='%23E5E9FB' stroke-width='2' fill='none'/%3E%3Ccircle cx='9' cy='22' r='3' fill='%23E5E9FB'/%3E%3Ccircle cx='16' cy='10' r='3' fill='%23E5E9FB'/%3E%3Ccircle cx='23' cy='19' r='3' fill='%23FF9361'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -14,23 +14,212 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="../assets/chrome.css">
 <link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/lesson.css">
 </head>
 <body data-mid="p2.3">
 <header class="sh"><div class="sh-in"><a class="sh-brand" href="../index.html"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="var(--ink)"/><circle cx="9" cy="22" r="2.6" fill="var(--accent-soft)"/><circle cx="16" cy="10" r="2.6" fill="var(--accent-soft)"/><circle cx="23" cy="19" r="2.6" fill="#FF9361"/><path d="M9 22 L16 10 L23 19" stroke="var(--accent-soft)" stroke-width="1.8" fill="none"/></svg><span>AI Engineer<small>lộ trình tự học</small></span></a><nav class="sh-nav" id="sh-nav" aria-label="Chính"><a href="../index.html">Trang chủ</a><a href="../bai-hoc.html" aria-current="page">Bài học</a><a href="../lo-trinh.html">Lộ trình</a><a href="../notebooks.html">Notebook</a><a class="sh-cta-m" href="../bai01.html" data-next-lesson>Học tiếp →</a></nav><a class="sh-cta" href="../bai01.html" data-next-lesson>Học tiếp <span class="arr">→</span></a><button class="sh-burger" type="button" aria-expanded="false" aria-controls="sh-nav">Menu</button></div></header>
 
 <main class="container">
   <div class="crumbs"><a href="../bai-hoc.html">Bài học</a><span>/</span><a href="../bai-hoc.html#p2">P2 · Deep Learning nền tảng</a><span>/</span><span>P2.3</span></div>
-  <section class="lhero"><div class="code">P2.3</div><h1>CNN hiện đại và transfer learning</h1><div class="lmeta"><span class="m">Giai đoạn P2 · Deep Learning nền tảng</span><span class="m">Tuần 8–12</span><span class="chip planned">Đề cương</span></div></section>
-  <div class="lgrid">
-    <div>
-      <div class="goal"><b>Mục tiêu giai đoạn:</b> Hiểu mạng nơ-ron học thế nào và tự viết được training loop PyTorch.</div>
-      <div class="soon">Nội dung đầy đủ (trang lý thuyết tương tác và notebook tự chấm) đang được soạn và sẽ có khi bạn học tới bài này. Đề cương dưới đây là phạm vi chính xác của bài.</div>
-      <section class="pblock reveal"><div class="pblock-head"><span class="num">1</span><h2>Lý thuyết<span style="display:block;font:400 13.5px var(--f-body);color:var(--muted);margin-top:4px">Những gì cần hiểu</span></h2><label class="tick" for="cb-t"><input type="checkbox" id="cb-t" data-key="p2.3:t">Xong</label></div><ol><li>ResNet và kết nối tắt (residual)</li><li>Dùng model pretrained: linear probe so với fine-tune toàn bộ</li><li>Mixed precision, GPU, DataLoader nhanh</li><li>Debug training: overfit 1 batch, LR range test, đọc learning curve</li></ol></section><section class="pblock reveal"><div class="pblock-head"><span class="num">2</span><h2>Bài tập<span style="display:block;font:400 13.5px var(--f-body);color:var(--muted);margin-top:4px">Tính tay và tự kiểm tra</span></h2><label class="tick" for="cb-b"><input type="checkbox" id="cb-b" data-key="p2.3:b">Xong</label></div><ol><li>Vì sao residual giúp gradient đi qua mạng sâu: tính tay trên chuỗi 3 lớp</li></ol></section><section class="pblock reveal"><div class="pblock-head"><span class="num">3</span><h2>Thực hành<span style="display:block;font:400 13.5px var(--f-body);color:var(--muted);margin-top:4px">Code và dự án</span></h2><label class="tick" for="cb-p"><input type="checkbox" id="cb-p" data-key="p2.3:p">Xong</label></div><ol><li>Fine-tune ResNet-18 phân loại ảnh của riêng bạn (ví dụ ảnh sản phẩm nội thất), có confusion matrix</li></ol></section>
-      <div class="donewhen reveal"><b>Xong khi</b>Accuracy ≥ 90% trên tập test bạn tự gom, và README giải thích các lỗi còn lại.</div>
+  <section class="lhero"><div class="code">P2.3</div><h1>CNN hiện đại và transfer learning</h1><div class="lmeta"><span class="m">Giai đoạn P2 · Deep Learning nền tảng</span><span class="m">Tuần 8–12</span><span class="chip ready"><span class="dot"></span>Có nội dung đầy đủ</span></div>
+    <div class="intro"><p>Trong công việc thật, gần như không ai train CNN từ đầu. Ta lấy một model đã học trên hàng triệu ảnh (ImageNet) rồi <strong>chuyển giao</strong> sang bài toán của mình với vài trăm ảnh. Bài này giải thích vì sao ResNet train được rất sâu, cách fine-tune đúng, và cách debug khi training không chạy.</p></div></section>
+  
+  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">4 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
+  <div class="lgrid" style="margin-top:22px">
+    <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">ResNet và kết nối tắt</h2>
+<p>Mạng càng sâu thì gradient phải đi qua càng nhiều lớp khi backprop. Nếu mỗi lớp nhân gradient với một số nhỏ hơn 1, sau 50 lớp gradient gần như bằng 0 (<strong>vanishing gradient</strong>) và các lớp đầu không học được.</p>
+<p>ResNet thêm <strong>kết nối tắt</strong>: đầu ra của block là <code>x + F(x)</code> thay vì <code>F(x)</code>.</p>
+<div class="hl"><pre><span></span><code>y = x + F(x)   ⇒   ∂y/∂x = 1 + ∂F/∂x
+</code></pre></div>
+
+<p>Số 1 trong đạo hàm là "đường cao tốc" cho gradient: dù F học gì, gradient vẫn đi thẳng về các lớp trước. Nhờ đó ResNet train được 50, 101, 152 lớp. Kết nối tắt cũng có mặt trong mọi Transformer.</p>
+<h2 id="lt-2">Transfer learning: linear probe và fine-tune</h2>
+<p>Model pretrained trên ImageNet đã học được cạnh, hoa văn, hình dạng: những thứ hữu ích cho hầu hết bài toán ảnh. Hai cách dùng:</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Linear probe</th>
+<th>Fine-tune toàn bộ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Train gì</td>
+<td>chỉ lớp cuối (head mới)</td>
+<td>mọi lớp</td>
+</tr>
+<tr>
+<td>Dữ liệu cần</td>
+<td>rất ít (vài chục ảnh mỗi lớp)</td>
+<td>nhiều hơn</td>
+</tr>
+<tr>
+<td>Tốc độ</td>
+<td>rất nhanh</td>
+<td>chậm hơn</td>
+</tr>
+<tr>
+<td>Khi nào</td>
+<td>dữ liệu giống ImageNet, ít ảnh</td>
+<td>dữ liệu khác biệt (X-quang, ảnh vệ tinh)</td>
+</tr>
+</tbody>
+</table>
+<p>Cách làm phổ biến: linear probe vài epoch cho head ổn định, rồi mở khóa toàn bộ và fine-tune với <strong>learning rate nhỏ</strong> cho backbone (ví dụ bằng 1/10 lr của head). Learning rate lớn sẽ phá những gì model đã học.</p>
+<div class="hl"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">torchvision</span>
+<span class="n">m</span> <span class="o">=</span> <span class="n">torchvision</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">resnet18</span><span class="p">(</span><span class="n">weights</span><span class="o">=</span><span class="s2">"IMAGENET1K_V1"</span><span class="p">)</span>
+<span class="n">m</span><span class="o">.</span><span class="n">fc</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">fc</span><span class="o">.</span><span class="n">in_features</span><span class="p">,</span> <span class="n">num_classes</span><span class="p">)</span>       <span class="c1"># head mới</span>
+<span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">m</span><span class="o">.</span><span class="n">parameters</span><span class="p">():</span> <span class="n">p</span><span class="o">.</span><span class="n">requires_grad</span> <span class="o">=</span> <span class="kc">False</span>             <span class="c1"># linear probe: khóa backbone</span>
+<span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">m</span><span class="o">.</span><span class="n">fc</span><span class="o">.</span><span class="n">parameters</span><span class="p">():</span> <span class="n">p</span><span class="o">.</span><span class="n">requires_grad</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="n">opt</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">AdamW</span><span class="p">([</span>
+    <span class="p">{</span><span class="s2">"params"</span><span class="p">:</span> <span class="n">m</span><span class="o">.</span><span class="n">fc</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="s2">"lr"</span><span class="p">:</span> <span class="mf">1e-3</span><span class="p">},</span>
+    <span class="p">{</span><span class="s2">"params"</span><span class="p">:</span> <span class="p">[</span><span class="n">p</span> <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">m</span><span class="o">.</span><span class="n">named_parameters</span><span class="p">()</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">n</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"fc"</span><span class="p">)],</span> <span class="s2">"lr"</span><span class="p">:</span> <span class="mf">1e-4</span><span class="p">},</span>
+<span class="p">])</span>
+</code></pre></div>
+
+<p>Nhớ dùng <strong>cùng mean/std chuẩn hóa</strong> như lúc pretrain (ImageNet: mean 0.485, 0.456, 0.406; std 0.229, 0.224, 0.225) và kích thước ảnh tương đương (224×224).</p>
+<h2 id="lt-3">Mixed precision và tốc độ</h2>
+<p>GPU hiện đại tính nhanh hơn nhiều ở 16 bit. <strong>Mixed precision</strong> chạy forward/backward ở fp16 hoặc bf16, giữ trọng số chính ở fp32.</p>
+<div class="hl"><pre><span></span><code><span class="n">scaler</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">amp</span><span class="o">.</span><span class="n">GradScaler</span><span class="p">()</span>
+<span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">autocast</span><span class="p">(</span><span class="n">device_type</span><span class="o">=</span><span class="s2">"cuda"</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float16</span><span class="p">):</span>
+    <span class="n">loss</span> <span class="o">=</span> <span class="n">criterion</span><span class="p">(</span><span class="n">model</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">y</span><span class="p">)</span>
+<span class="n">scaler</span><span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="n">loss</span><span class="p">)</span><span class="o">.</span><span class="n">backward</span><span class="p">();</span> <span class="n">scaler</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">opt</span><span class="p">);</span> <span class="n">scaler</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
+</code></pre></div>
+
+<p>Với bf16 (GPU A100, H100) không cần GradScaler. Thường nhanh hơn 1,5–3 lần và tiết kiệm gần một nửa bộ nhớ activation.</p>
+<p><strong>DataLoader nhanh:</strong> <code>num_workers</code> = số nhân CPU, <code>pin_memory=True</code>, ảnh lưu sẵn kích thước nhỏ. Nếu GPU utilization trong <code>nvidia-smi</code> thấp, nút thắt là dữ liệu chứ không phải model.</p>
+<h2 id="lt-4">Debug training</h2>
+<p>Khi training không chạy, kiểm tra theo thứ tự:</p>
+<ol>
+<li><strong>Overfit một batch:</strong> loss trên 1 batch cố định phải về gần 0. Không về 0 thì có bug (quên <code>zero_grad</code>, sai nhãn, sai shape).</li>
+<li><strong>Loss ban đầu:</strong> phân loại K lớp phải gần ln K. Lệch xa là có bug khởi tạo hoặc dữ liệu.</li>
+<li><strong>Nhìn dữ liệu sau transform:</strong> vẽ một batch kèm nhãn. Ảnh có bị lật màu, nhãn có khớp không?</li>
+<li><strong>LR range test:</strong> tăng lr theo cấp số nhân qua vài trăm bước, chọn lr nhỏ hơn khoảng 10 lần so với chỗ loss bắt đầu bùng nổ.</li>
+<li><strong>Đọc learning curve:</strong> train và val cùng cao là underfit, cách xa nhau là overfit.</li>
+</ol>
+<div class="keep">
+<p><strong>Ghi nhớ:</strong> overfit một batch trước khi train thật. Năm phút kiểm tra này tiết kiệm hàng giờ GPU.</p>
+</div></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p2.3:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 3</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Gradient qua kết nối tắt</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Một chuỗi 3 block, mỗi block có đạo hàm cục bộ ∂F/∂x = 0.5. Gradient từ phía sau truyền về là 1.</p>
+<div class="ans" id="p2-3-e1-a1"><div class="ans-fields"><label>Không có kết nối tắt<input inputmode="decimal" data-ans="0.125" data-tol="0.0001" autocomplete="off"></label><label>Có kết nối tắt<input inputmode="decimal" data-ans="3.375" data-tol="0.0001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+
+<details class="fold solution">
+<summary>Lời giải</summary>
+<p>Không tắt: 0.5³ = 0.125, với 30 block thì còn 0.5³⁰ ≈ 10⁻⁹. Có tắt: mỗi block nhân (1 + 0.5), được 1.5³ = 3.375. Trong thực tế đạo hàm có thể âm và BatchNorm giữ độ lớn ổn định, nhưng ý chính là đường tắt không để gradient tắt dần.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 2</span><h3>Thay head cho ResNet-18</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>ResNet-18 có 512 đặc trưng trước lớp cuối. Bạn phân loại 10 loại sản phẩm nội thất.</p>
+<div class="ans" id="p2-3-e2-a1"><div class="ans-fields"><label>Tham số của head mới<input inputmode="decimal" data-ans="5130.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+
+<details class="fold solution">
+<summary>Lời giải</summary>
+<p>Linear(512, 10): 512·10 + 10 = 5130. So với khoảng 11,7 triệu tham số của cả mạng, linear probe chỉ train 0,04% số tham số, nên rất nhanh và khó overfit.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 3</span><h3>Bộ nhớ trọng số</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>ResNet-18 có khoảng 11,7 triệu tham số. 1 MB = 10⁶ byte.</p>
+<div class="ans" id="p2-3-e3-a1"><div class="ans-fields"><label>Trọng số ở fp32 (MB)<input inputmode="decimal" data-ans="46.8" data-tol="0.1" autocomplete="off"></label><label>Ở bf16 (MB)<input inputmode="decimal" data-ans="23.4" data-tol="0.1" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+
+<details class="fold solution">
+<summary>Lời giải</summary>
+<p>fp32 dùng 4 byte mỗi số: 46,8 MB. bf16 dùng 2 byte: 23,4 MB. Khi train còn có gradient, trạng thái optimizer (Adam lưu thêm 2 số mỗi tham số) và activation, nên bộ nhớ thật lớn hơn nhiều lần.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 4</span><h3>Chọn chiến lược</h3><span class="ex-tag concept">khái niệm</span></div><div class="prose"><p>Chọn linear probe hay fine-tune toàn bộ cho từng tình huống, và giải thích:</p>
+<ol>
+<li>50 ảnh mỗi lớp, phân loại 5 giống chó.</li>
+<li>20.000 ảnh X-quang phổi, 3 lớp bệnh.</li>
+<li>300 ảnh mỗi lớp, phân loại lỗi bề mặt sản phẩm trong nhà máy.</li>
+</ol>
+<details class="fold solution">
+<summary>Lời giải</summary>
+<ol>
+<li>Linear probe: ImageNet đã có nhiều giống chó, đặc trưng sẵn rất phù hợp, dữ liệu ít.</li>
+<li>Fine-tune toàn bộ: ảnh X-quang khác xa ảnh tự nhiên và có nhiều dữ liệu.</li>
+<li>Bắt đầu bằng linear probe làm baseline, rồi fine-tune với lr nhỏ cho backbone. Lỗi bề mặt là chi tiết nhỏ, đặc trưng ImageNet có thể chưa đủ.</li>
+</ol>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 5</span><h3>Debug một vòng train hỏng</h3><span class="ex-tag code">code</span></div><div class="prose"><p>Đoạn code dưới train không lên (loss đứng yên quanh 2.3 với 10 lớp). Tìm ba lỗi.</p>
+<div class="hl"><pre><span></span><code><span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+<span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">loader</span><span class="p">:</span>
+    <span class="n">logits</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="n">loss</span> <span class="o">=</span> <span class="n">criterion</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">softmax</span><span class="p">(</span><span class="n">logits</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="n">y</span><span class="p">)</span>
+    <span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
+    <span class="n">optimizer</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+</code></pre></div>
+
+<details class="fold solution">
+<summary>Lời giải</summary>
+<ol>
+<li><code>model.eval()</code> thay vì <code>model.train()</code>: BatchNorm và Dropout chạy sai chế độ.</li>
+<li>Thiếu <code>optimizer.zero_grad()</code>: gradient cộng dồn qua các batch.</li>
+<li>Gọi softmax trước <code>CrossEntropyLoss</code>: hàm này đã có log-softmax bên trong, softmax hai lần làm gradient rất nhỏ nên loss gần như không giảm.</li>
+</ol>
+<div class="hl"><pre><span></span><code><span class="n">model</span><span class="o">.</span><span class="n">train</span><span class="p">()</span>
+<span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">loader</span><span class="p">:</span>
+    <span class="n">optimizer</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
+    <span class="n">loss</span> <span class="o">=</span> <span class="n">criterion</span><span class="p">(</span><span class="n">model</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">y</span><span class="p">)</span>
+    <span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
+    <span class="n">optimizer</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+</code></pre></div>
+
+</details></div></article><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p2.3:b">Tôi đã xong phần bài tập</label><button class="btn" type="button" data-goto="thuc-hanh">Sang thực hành <span class="arr">→</span></button></div></section><section class="panel" id="thuc-hanh" role="tabpanel" hidden><div class="prose"><h2>Fine-tune ResNet-18 trên ảnh của bạn</h2>
+<p>Tự gom một bộ ảnh nhỏ (ví dụ ảnh sản phẩm nội thất: bàn trang điểm, gương, ghế, kệ, đèn), khoảng 80–150 ảnh mỗi lớp, rồi fine-tune.</p>
+<p><strong>Các bước</strong></p>
+<ol>
+<li>Xếp ảnh theo thư mục <code>data/train/&lt;tên lớp&gt;/</code>, <code>data/val/&lt;tên lớp&gt;/</code>, <code>data/test/&lt;tên lớp&gt;/</code> (70/15/15). Dùng <code>torchvision.datasets.ImageFolder</code>.</li>
+<li>Transform: train có <code>RandomResizedCrop(224)</code>, <code>RandomHorizontalFlip</code>, <code>ColorJitter</code> nhẹ; val/test chỉ <code>Resize(256)</code> + <code>CenterCrop(224)</code>. Chuẩn hóa theo mean/std ImageNet.</li>
+<li><strong>Giai đoạn 1:</strong> linear probe 5 epoch, lr 1e-3.</li>
+<li><strong>Giai đoạn 2:</strong> mở khóa toàn bộ, fine-tune 10 epoch, lr backbone 1e-4, head 1e-3, cosine schedule, mixed precision.</li>
+<li>Vẽ learning curve, confusion matrix trên test, và hiển thị 8 ảnh bị đoán sai kèm xác suất.</li>
+<li>So sánh 3 cấu hình trong một bảng: train từ đầu, linear probe, fine-tune.</li>
+</ol>
+<p><strong>Xong khi</strong></p>
+<ul>
+<li>Accuracy test ≥ 90% với fine-tune.</li>
+<li>Bảng so sánh 3 cấu hình, kèm giải thích vì sao fine-tune thắng.</li>
+<li>README giải thích các lỗi còn lại dựa trên ảnh bị đoán sai.</li>
+</ul>
+<details class="fold code">
+<summary>Code tham khảo</summary>
+<div class="hl"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span><span class="o">,</span><span class="w"> </span><span class="nn">torchvision</span><span class="o">,</span><span class="w"> </span><span class="nn">torchvision.transforms</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">T</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">torch.utils.data</span><span class="w"> </span><span class="kn">import</span> <span class="n">DataLoader</span>
+<span class="n">dev</span> <span class="o">=</span> <span class="s2">"cuda"</span>
+<span class="n">MEAN</span><span class="p">,</span> <span class="n">STD</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.485</span><span class="p">,</span> <span class="mf">0.456</span><span class="p">,</span> <span class="mf">0.406</span><span class="p">),</span> <span class="p">(</span><span class="mf">0.229</span><span class="p">,</span> <span class="mf">0.224</span><span class="p">,</span> <span class="mf">0.225</span><span class="p">)</span>
+<span class="n">tf_train</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">Compose</span><span class="p">([</span><span class="n">T</span><span class="o">.</span><span class="n">RandomResizedCrop</span><span class="p">(</span><span class="mi">224</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="p">(</span><span class="mf">0.6</span><span class="p">,</span> <span class="mi">1</span><span class="p">)),</span> <span class="n">T</span><span class="o">.</span><span class="n">RandomHorizontalFlip</span><span class="p">(),</span> <span class="n">T</span><span class="o">.</span><span class="n">ColorJitter</span><span class="p">(</span><span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">),</span> <span class="n">T</span><span class="o">.</span><span class="n">ToTensor</span><span class="p">(),</span> <span class="n">T</span><span class="o">.</span><span class="n">Normalize</span><span class="p">(</span><span class="n">MEAN</span><span class="p">,</span> <span class="n">STD</span><span class="p">)])</span>
+<span class="n">tf_eval</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">Compose</span><span class="p">([</span><span class="n">T</span><span class="o">.</span><span class="n">Resize</span><span class="p">(</span><span class="mi">256</span><span class="p">),</span> <span class="n">T</span><span class="o">.</span><span class="n">CenterCrop</span><span class="p">(</span><span class="mi">224</span><span class="p">),</span> <span class="n">T</span><span class="o">.</span><span class="n">ToTensor</span><span class="p">(),</span> <span class="n">T</span><span class="o">.</span><span class="n">Normalize</span><span class="p">(</span><span class="n">MEAN</span><span class="p">,</span> <span class="n">STD</span><span class="p">)])</span>
+<span class="n">ds</span> <span class="o">=</span> <span class="p">{</span><span class="n">s</span><span class="p">:</span> <span class="n">torchvision</span><span class="o">.</span><span class="n">datasets</span><span class="o">.</span><span class="n">ImageFolder</span><span class="p">(</span><span class="sa">f</span><span class="s2">"data/</span><span class="si">{</span><span class="n">s</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="n">tf_train</span> <span class="k">if</span> <span class="n">s</span> <span class="o">==</span> <span class="s2">"train"</span> <span class="k">else</span> <span class="n">tf_eval</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">"train"</span><span class="p">,</span> <span class="s2">"val"</span><span class="p">,</span> <span class="s2">"test"</span><span class="p">]}</span>
+<span class="n">dl</span> <span class="o">=</span> <span class="p">{</span><span class="n">s</span><span class="p">:</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="p">(</span><span class="n">s</span> <span class="o">==</span> <span class="s2">"train"</span><span class="p">),</span> <span class="n">num_workers</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">pin_memory</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span><span class="p">,</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">ds</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+
+<span class="n">m</span> <span class="o">=</span> <span class="n">torchvision</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">resnet18</span><span class="p">(</span><span class="n">weights</span><span class="o">=</span><span class="s2">"IMAGENET1K_V1"</span><span class="p">)</span>
+<span class="n">m</span><span class="o">.</span><span class="n">fc</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">512</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">ds</span><span class="p">[</span><span class="s2">"train"</span><span class="p">]</span><span class="o">.</span><span class="n">classes</span><span class="p">));</span> <span class="n">m</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">dev</span><span class="p">)</span>
+<span class="n">crit</span><span class="p">,</span> <span class="n">scaler</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">CrossEntropyLoss</span><span class="p">(),</span> <span class="n">torch</span><span class="o">.</span><span class="n">amp</span><span class="o">.</span><span class="n">GradScaler</span><span class="p">()</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">run_epoch</span><span class="p">(</span><span class="n">opt</span><span class="p">,</span> <span class="n">train</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">split</span><span class="o">=</span><span class="s2">"train"</span><span class="p">):</span>
+    <span class="n">m</span><span class="o">.</span><span class="n">train</span><span class="p">(</span><span class="n">train</span><span class="p">);</span> <span class="n">correct</span> <span class="o">=</span> <span class="n">n</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">set_grad_enabled</span><span class="p">(</span><span class="n">train</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">dl</span><span class="p">[</span><span class="n">split</span><span class="p">]:</span>
+            <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">dev</span><span class="p">),</span> <span class="n">y</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">dev</span><span class="p">)</span>
+            <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">autocast</span><span class="p">(</span><span class="s2">"cuda"</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float16</span><span class="p">):</span>
+                <span class="n">out</span> <span class="o">=</span> <span class="n">m</span><span class="p">(</span><span class="n">x</span><span class="p">);</span> <span class="n">loss</span> <span class="o">=</span> <span class="n">crit</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">train</span><span class="p">:</span>
+                <span class="n">opt</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">();</span> <span class="n">scaler</span><span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="n">loss</span><span class="p">)</span><span class="o">.</span><span class="n">backward</span><span class="p">();</span> <span class="n">scaler</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">opt</span><span class="p">);</span> <span class="n">scaler</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
+            <span class="n">correct</span> <span class="o">+=</span> <span class="p">(</span><span class="n">out</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">==</span> <span class="n">y</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">();</span> <span class="n">n</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">correct</span> <span class="o">/</span> <span class="n">n</span>
+
+<span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">m</span><span class="o">.</span><span class="n">parameters</span><span class="p">():</span> <span class="n">p</span><span class="o">.</span><span class="n">requires_grad</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">m</span><span class="o">.</span><span class="n">fc</span><span class="o">.</span><span class="n">parameters</span><span class="p">():</span> <span class="n">p</span><span class="o">.</span><span class="n">requires_grad</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="n">opt</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">AdamW</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">fc</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">):</span> <span class="nb">print</span><span class="p">(</span><span class="s2">"probe"</span><span class="p">,</span> <span class="n">e</span><span class="p">,</span> <span class="n">run_epoch</span><span class="p">(</span><span class="n">opt</span><span class="p">),</span> <span class="n">run_epoch</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="s2">"val"</span><span class="p">))</span>
+
+<span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">m</span><span class="o">.</span><span class="n">parameters</span><span class="p">():</span> <span class="n">p</span><span class="o">.</span><span class="n">requires_grad</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="n">opt</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">AdamW</span><span class="p">([{</span><span class="s2">"params"</span><span class="p">:</span> <span class="n">m</span><span class="o">.</span><span class="n">fc</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="s2">"lr"</span><span class="p">:</span> <span class="mf">1e-3</span><span class="p">},</span>
+                         <span class="p">{</span><span class="s2">"params"</span><span class="p">:</span> <span class="p">[</span><span class="n">p</span> <span class="k">for</span> <span class="n">n_</span><span class="p">,</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">m</span><span class="o">.</span><span class="n">named_parameters</span><span class="p">()</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">n_</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"fc"</span><span class="p">)],</span> <span class="s2">"lr"</span><span class="p">:</span> <span class="mf">1e-4</span><span class="p">}],</span> <span class="n">weight_decay</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">)</span>
+<span class="n">sched</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">lr_scheduler</span><span class="o">.</span><span class="n">CosineAnnealingLR</span><span class="p">(</span><span class="n">opt</span><span class="p">,</span> <span class="n">T_max</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"finetune"</span><span class="p">,</span> <span class="n">e</span><span class="p">,</span> <span class="n">run_epoch</span><span class="p">(</span><span class="n">opt</span><span class="p">),</span> <span class="n">run_epoch</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="s2">"val"</span><span class="p">));</span> <span class="n">sched</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"test"</span><span class="p">,</span> <span class="n">run_epoch</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="s2">"test"</span><span class="p">))</span>
+</code></pre></div>
+
+</details></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p2.3:p">Tôi đã xong phần thực hành</label></div></section>
+      <div class="donewhen"><b>Xong bài khi</b>Accuracy ≥ 90% trên tập test bạn tự gom, và README giải thích các lỗi còn lại.</div>
       <nav class="pn" aria-label="Bài trước, bài sau"><a href="p2-2.html"><span class="dir">← Bài trước · P2.2</span><span class="tt">Bài 2 · Train mạng thật</span></a><a class="nx" href="p5-1.html"><span class="dir">Bài sau · P5.1 →</span><span class="tt">GĐ 1 · Diffusion tạo ảnh thế nào</span></a></nav>
     </div>
     <aside class="aside">
       <div class="abox"><h4>Tiến độ bài này</h4><div class="ring"><svg viewBox="0 0 64 64" aria-hidden="true"><circle class="bg" cx="32" cy="32" r="28"/><circle class="fg" cx="32" cy="32" r="28" stroke-dasharray="176" stroke-dashoffset="176"/></svg><div><b id="ring-n">0/3</b><span id="ring-sub">phần đã xong</span></div></div></div>
+      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">ResNet và kết nối tắt</a></li><li><a href="#lt-2">Transfer learning: linear probe và fine-tune</a></li><li><a href="#lt-3">Mixed precision và tốc độ</a></li><li><a href="#lt-4">Debug training</a></li></ol></div>
       
       <div class="abox"><h4>Cùng giai đoạn</h4><ul><li><a href="p2-1.html">Bài 1 · Mạng nơ-ron học thế nào</a></li><li><a href="p2-2.html">Bài 2 · Train mạng thật</a></li><li><span class=cur>CNN hiện đại và transfer learning</span></li></ul></div>
     </aside>
@@ -43,16 +232,75 @@
 
 (function () {
   const mid = document.body.dataset.mid; let d = AIE.load();
+  const EXK = "aie-ex-" + mid;
+  let solved = {}; try { solved = JSON.parse(localStorage.getItem(EXK) || "{}") || {}; } catch (e) {}
+  const saveSolved = () => { try { localStorage.setItem(EXK, JSON.stringify(solved)); } catch (e) {} };
+  const tabs = [...document.querySelectorAll(".tab")], panels = [...document.querySelectorAll(".panel")];
   const boxes = [...document.querySelectorAll("input[data-key]")], ring = document.querySelector(".ring .fg"), rt = document.getElementById("ring-n");
-  const skipped = () => !!d[mid + ":skip"];
+  const toc = document.getElementById("toc-box");
+  function show(id, scroll) {
+    tabs.forEach((t) => t.setAttribute("aria-selected", String(t.dataset.tab === id)));
+    panels.forEach((p) => { const on = p.id === id; if (on && p.hidden) { p.classList.remove("enter"); void p.offsetWidth; p.classList.add("enter"); } p.hidden = !on; });
+    if (toc) toc.hidden = id !== "ly-thuyet";
+    if (scroll) document.querySelector(".tabs").scrollIntoView({ block: "start" });
+  }
+  tabs.forEach((t) => t.addEventListener("click", () => { history.replaceState(null, "", "#" + t.dataset.tab); show(t.dataset.tab, true); }));
+  document.querySelectorAll("[data-goto]").forEach((b) => b.addEventListener("click", () => { history.replaceState(null, "", "#" + b.dataset.goto); show(b.dataset.goto, true); }));
+  const start = ["ly-thuyet", "bai-tap", "thuc-hanh"].includes(location.hash.slice(1)) ? location.hash.slice(1) : "ly-thuyet";
+  show(start, false);
+  window.addEventListener("hashchange", () => { const h = location.hash.slice(1); if (["ly-thuyet", "bai-tap", "thuc-hanh"].includes(h)) show(h, true); });
+  document.querySelectorAll(".toc a").forEach((a) => a.addEventListener("click", () => show("ly-thuyet", false)));
+
   function render() {
     let n = 0;
-    boxes.forEach((b) => { const on = skipped() || !!d[b.dataset.key]; b.checked = on; b.disabled = skipped(); b.closest(".pblock").classList.toggle("done", on); if (on) n++; });
+    const skip = !!d[mid + ":skip"];
+    boxes.forEach((b) => { const on = skip || !!d[b.dataset.key]; b.checked = on; if (on) n++; });
+    const kmap = { t: "ly-thuyet", b: "bai-tap", p: "thuc-hanh" };
+    tabs.forEach((t) => { const k = Object.keys(kmap).find((x) => kmap[x] === t.dataset.tab); t.classList.toggle("is-done", skip || !!d[mid + ":" + k]); });
     ring.style.strokeDashoffset = String(176 * (1 - n / 3)); rt.textContent = n + "/3";
-    document.getElementById("ring-sub").textContent = skipped() ? "đã đánh dấu bỏ qua" : n === 3 ? "hoàn thành bài này" : "phần đã xong";
+    document.getElementById("ring-sub").textContent = n === 3 ? "hoàn thành bài này" : "phần đã xong";
   }
-  boxes.forEach((b) => b.addEventListener("change", () => { d = AIE.load(); if (b.checked) d[b.dataset.key] = true; else delete d[b.dataset.key]; AIE.save(d); render(); }));
+  boxes.forEach((b) => b.addEventListener("change", () => {
+    d = AIE.load(); if (b.checked) d[b.dataset.key] = true; else delete d[b.dataset.key]; AIE.save(d);
+    boxes.filter((x) => x.dataset.key === b.dataset.key).forEach((x) => (x.checked = b.checked)); render();
+  }));
   render();
+
+  /* answer boxes */
+  const parse = (s) => parseFloat(String(s).trim().replace(",", ".").replace("−", "-"));
+  const allAns = [...document.querySelectorAll(".ans")];
+  function score() {
+    const ok = allAns.filter((a) => solved[a.id]).length;
+    const el = document.getElementById("ex-score");
+    if (el) { el.querySelector("b").textContent = `${ok} / ${allAns.length}`; el.querySelector(".bar i").style.width = (allAns.length ? ok / allAns.length * 100 : 0) + "%"; }
+    document.querySelectorAll(".excard").forEach((c) => { const as = [...c.querySelectorAll(".ans")]; c.classList.toggle("solved", as.length > 0 && as.every((a) => solved[a.id])); });
+  }
+  allAns.forEach((box) => {
+    const inputs = [...box.querySelectorAll("input")], fb = box.querySelector(".ans-fb");
+    const mark = () => { box.classList.add("ok"); inputs.forEach((i) => { i.classList.add("ok"); if (!i.value) i.value = i.dataset.ans; }); fb.className = "ans-fb ok"; fb.textContent = "Chính xác."; };
+    if (solved[box.id]) mark();
+    const run = () => {
+      let all = true, empty = false;
+      inputs.forEach((i) => {
+        const v = parse(i.value);
+        if (i.value.trim() === "" || Number.isNaN(v)) { empty = true; all = false; i.classList.remove("ok", "bad"); return; }
+        const good = Math.abs(v - parseFloat(i.dataset.ans)) <= parseFloat(i.dataset.tol) + 1e-9;
+        i.classList.toggle("ok", good); i.classList.toggle("bad", !good); if (!good) all = false;
+      });
+      if (all) { solved[box.id] = true; saveSolved(); mark(); box.classList.remove("pop"); void box.offsetWidth; box.classList.add("pop"); score(); }
+      else { fb.className = "ans-fb bad"; fb.textContent = empty ? "Điền đủ các ô bằng số (dấu chấm hoặc phẩy đều được)." : "Ô màu cam chưa đúng. Xem lại bước đó, hoặc mở gợi ý."; }
+    };
+    box.querySelector(".btn-check").addEventListener("click", run);
+    inputs.forEach((i) => i.addEventListener("keydown", (e) => { if (e.key === "Enter") run(); }));
+  });
+  score();
+
+  /* highlight current theory section in the toc */
+  if (toc && "IntersectionObserver" in window) {
+    const links = [...toc.querySelectorAll("a")];
+    const io = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) links.forEach((a) => a.classList.toggle("on", a.getAttribute("href") === "#" + e.target.id)); }), { rootMargin: "-140px 0px -65% 0px" });
+    document.querySelectorAll("#ly-thuyet h2[id]").forEach((h) => io.observe(h));
+  }
 })();
 
 </script>

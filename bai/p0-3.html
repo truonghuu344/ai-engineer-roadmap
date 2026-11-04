@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>P0.3 · Công cụ: Git, GitHub, terminal, Colab · AI Engineer</title>
-<meta name="description" content="Công cụ: Git, GitHub, terminal, Colab: Git: commit, branch, merge, pull request, .gitignore; Terminal Linux: cd, ls, grep, pipe, quyền file, SSH; Colab/Jupyter: GPU runtime, lưu vào Drive; VS Code + Python extension">
+<meta name="description" content="Công cụ: Git, GitHub, terminal, Colab: lý thuyết, bài tập và thực hành. Git: commit, branch, merge, pull request, .gitignore; Terminal Linux: cd, ls, grep, pipe, quyền file, SSH">
 <meta property="og:title" content="P0.3 · Công cụ: Git, GitHub, terminal, Colab · AI Engineer">
-<meta property="og:description" content="Công cụ: Git, GitHub, terminal, Colab: Git: commit, branch, merge, pull request, .gitignore; Terminal Linux: cd, ls, grep, pipe, quyền file, SSH; Colab/Jupyter: GPU runtime, lưu vào Drive; VS Code + Python extension">
+<meta property="og:description" content="Công cụ: Git, GitHub, terminal, Colab: lý thuyết, bài tập và thực hành. Git: commit, branch, merge, pull request, .gitignore; Terminal Linux: cd, ls, grep, pipe, quyền file, SSH">
 <meta name="theme-color" content="#F4F6FB">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23131A33'/%3E%3Cpath d='M9 22 L16 10 L23 19' stroke='%23E5E9FB' stroke-width='2' fill='none'/%3E%3Ccircle cx='9' cy='22' r='3' fill='%23E5E9FB'/%3E%3Ccircle cx='16' cy='10' r='3' fill='%23E5E9FB'/%3E%3Ccircle cx='23' cy='19' r='3' fill='%23FF9361'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -14,23 +14,212 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="../assets/chrome.css">
 <link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/lesson.css">
 </head>
 <body data-mid="p0.3">
 <header class="sh"><div class="sh-in"><a class="sh-brand" href="../index.html"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="var(--ink)"/><circle cx="9" cy="22" r="2.6" fill="var(--accent-soft)"/><circle cx="16" cy="10" r="2.6" fill="var(--accent-soft)"/><circle cx="23" cy="19" r="2.6" fill="#FF9361"/><path d="M9 22 L16 10 L23 19" stroke="var(--accent-soft)" stroke-width="1.8" fill="none"/></svg><span>AI Engineer<small>lộ trình tự học</small></span></a><nav class="sh-nav" id="sh-nav" aria-label="Chính"><a href="../index.html">Trang chủ</a><a href="../bai-hoc.html" aria-current="page">Bài học</a><a href="../lo-trinh.html">Lộ trình</a><a href="../notebooks.html">Notebook</a><a class="sh-cta-m" href="../bai01.html" data-next-lesson>Học tiếp →</a></nav><a class="sh-cta" href="../bai01.html" data-next-lesson>Học tiếp <span class="arr">→</span></a><button class="sh-burger" type="button" aria-expanded="false" aria-controls="sh-nav">Menu</button></div></header>
 
 <main class="container">
   <div class="crumbs"><a href="../bai-hoc.html">Bài học</a><span>/</span><a href="../bai-hoc.html#p0">P0 · Nền móng</a><span>/</span><span>P0.3</span></div>
-  <section class="lhero"><div class="code">P0.3</div><h1>Công cụ: Git, GitHub, terminal, Colab</h1><div class="lmeta"><span class="m">Giai đoạn P0 · Nền móng</span><span class="m">Tuần 1–3</span><span class="chip planned">Đề cương</span></div></section>
-  <div class="lgrid">
-    <div>
-      <div class="goal"><b>Mục tiêu giai đoạn:</b> Đủ Python, toán và công cụ để không bị kẹt ở các giai đoạn sau.</div>
-      <div class="soon">Nội dung đầy đủ (trang lý thuyết tương tác và notebook tự chấm) đang được soạn và sẽ có khi bạn học tới bài này. Đề cương dưới đây là phạm vi chính xác của bài.</div>
-      <section class="pblock reveal"><div class="pblock-head"><span class="num">1</span><h2>Lý thuyết<span style="display:block;font:400 13.5px var(--f-body);color:var(--muted);margin-top:4px">Những gì cần hiểu</span></h2><label class="tick" for="cb-t"><input type="checkbox" id="cb-t" data-key="p0.3:t">Xong</label></div><ol><li>Git: commit, branch, merge, pull request, .gitignore</li><li>Terminal Linux: cd, ls, grep, pipe, quyền file, SSH</li><li>Colab/Jupyter: GPU runtime, lưu vào Drive; VS Code + Python extension</li></ol></section><section class="pblock reveal"><div class="pblock-head"><span class="num">2</span><h2>Bài tập<span style="display:block;font:400 13.5px var(--f-body);color:var(--muted);margin-top:4px">Tính tay và tự kiểm tra</span></h2><label class="tick" for="cb-b"><input type="checkbox" id="cb-b" data-key="p0.3:b">Xong</label></div><ol><li>Tạo branch, sửa, mở pull request, tự review và merge</li></ol></section><section class="pblock reveal"><div class="pblock-head"><span class="num">3</span><h2>Thực hành<span style="display:block;font:400 13.5px var(--f-body);color:var(--muted);margin-top:4px">Code và dự án</span></h2><label class="tick" for="cb-p"><input type="checkbox" id="cb-p" data-key="p0.3:p">Xong</label></div><ol><li>Repo ai-engineer-labs trên GitHub: README, cấu trúc thư mục cho các lab</li></ol></section>
-      <div class="donewhen reveal"><b>Xong khi</b>Repo công khai, có ít nhất 5 commit có ý nghĩa và một pull request đã merge.</div>
+  <section class="lhero"><div class="code">P0.3</div><h1>Công cụ: Git, GitHub, terminal, Colab</h1><div class="lmeta"><span class="m">Giai đoạn P0 · Nền móng</span><span class="m">Tuần 1–3</span><span class="chip ready"><span class="dot"></span>Có nội dung đầy đủ</span></div>
+    <div class="intro"><p>Code ML không chỉ chạy trong notebook. Bạn cần lưu lịch sử thay đổi (Git), chia sẻ và nhận góp ý (GitHub), điều khiển máy chủ GPU (terminal), và train trên GPU miễn phí (Colab). Nhà tuyển dụng nhìn GitHub của bạn trước khi đọc CV.</p></div></section>
+  
+  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">5 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
+  <div class="lgrid" style="margin-top:22px">
+    <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">Git hoạt động thế nào</h2>
+<p>Git chụp "ảnh" toàn bộ dự án mỗi lần bạn <strong>commit</strong>. Có ba khu vực:</p>
+<table>
+<thead>
+<tr>
+<th>Khu vực</th>
+<th>Ý nghĩa</th>
+<th>Lệnh đưa vào</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Working directory</td>
+<td>file bạn đang sửa</td>
+<td>(sửa file)</td>
+</tr>
+<tr>
+<td>Staging area</td>
+<td>những thay đổi sẽ vào commit tiếp theo</td>
+<td><code>git add &lt;file&gt;</code></td>
+</tr>
+<tr>
+<td>Repository</td>
+<td>lịch sử các commit</td>
+<td><code>git commit -m "..."</code></td>
+</tr>
+</tbody>
+</table>
+<div class="hl"><pre><span></span><code>git<span class="w"> </span>init<span class="w">                      </span><span class="c1"># tạo repo mới</span>
+git<span class="w"> </span>status<span class="w">                    </span><span class="c1"># xem file nào đã sửa, đã stage</span>
+git<span class="w"> </span>add<span class="w"> </span>train.py<span class="w">              </span><span class="c1"># stage một file</span>
+git<span class="w"> </span>commit<span class="w"> </span>-m<span class="w"> </span><span class="s2">"Thêm vòng lặp train có checkpoint"</span>
+git<span class="w"> </span>log<span class="w"> </span>--oneline<span class="w">             </span><span class="c1"># lịch sử ngắn</span>
+git<span class="w"> </span>diff<span class="w">                      </span><span class="c1"># xem thay đổi chưa stage</span>
+</code></pre></div>
+
+<p>Viết commit message ở thì hiện tại, nói <strong>làm gì và vì sao</strong>: "Sửa lỗi rò dữ liệu khi chia train/val" tốt hơn "update".</p>
+<h2 id="lt-2">Branch, merge và pull request</h2>
+<p><strong>Branch</strong> là một dòng phát triển riêng. Bạn thử ý tưởng mới trên branch mà không phá nhánh chính.</p>
+<div class="hl"><pre><span></span><code>git<span class="w"> </span>switch<span class="w"> </span>-c<span class="w"> </span>feature/augmentation<span class="w">   </span><span class="c1"># tạo và chuyển sang branch mới</span>
+<span class="c1"># ... sửa code, commit ...</span>
+git<span class="w"> </span>push<span class="w"> </span>-u<span class="w"> </span>origin<span class="w"> </span>feature/augmentation
+</code></pre></div>
+
+<p>Trên GitHub, mở <strong>pull request</strong> (PR) để đề nghị gộp branch vào <code>main</code>. PR là nơi người khác review code, CI chạy test, rồi bấm Merge. Ngay cả khi làm một mình, dùng PR giúp bạn tự review và giữ lịch sử sạch.</p>
+<h2 id="lt-3">.gitignore cho dự án ML</h2>
+<p>Không bao giờ commit dữ liệu lớn, checkpoint, môi trường ảo hay khóa API. GitHub chặn file lớn hơn 100 MB, và khóa API lộ ra sẽ bị quét lấy trong vài phút.</p>
+<div class="hl"><pre><span></span><code>.venv/
+__pycache__/
+*.ipynb_checkpoints
+data/
+checkpoints/
+*.pt
+*.ckpt
+wandb/
+.env
+</code></pre></div>
+
+<p>Dữ liệu và model lớn thì lưu ở Google Drive, Hugging Face Hub hoặc dùng DVC (học ở P8).</p>
+<div class="keep">
+<p><strong>Ghi nhớ:</strong> khóa API đặt trong file <code>.env</code>, đọc bằng <code>os.environ</code>, và <code>.env</code> luôn nằm trong <code>.gitignore</code>.</p>
+</div>
+<h2 id="lt-4">Terminal Linux đủ dùng</h2>
+<p>Máy GPU trên cloud không có giao diện. Bạn điều khiển bằng terminal.</p>
+<div class="hl"><pre><span></span><code>pwd<span class="p">;</span><span class="w"> </span>ls<span class="w"> </span>-lh<span class="p">;</span><span class="w"> </span><span class="nb">cd</span><span class="w"> </span>project/<span class="w">          </span><span class="c1"># đang ở đâu, có gì, chuyển thư mục</span>
+cat<span class="w"> </span>log.txt<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>ERROR<span class="w"> </span><span class="p">|</span><span class="w"> </span>wc<span class="w"> </span>-l<span class="w">  </span><span class="c1"># pipe: đếm số dòng có ERROR</span>
+tail<span class="w"> </span>-f<span class="w"> </span>train.log<span class="w">                 </span><span class="c1"># theo dõi log đang ghi</span>
+du<span class="w"> </span>-sh<span class="w"> </span>data/*<span class="w">                     </span><span class="c1"># dung lượng từng thư mục</span>
+nvidia-smi<span class="w">                        </span><span class="c1"># GPU nào, đang dùng bao nhiêu VRAM</span>
+nohup<span class="w"> </span>python<span class="w"> </span>train.py<span class="w"> </span>&gt;<span class="w"> </span>train.log<span class="w"> </span><span class="m">2</span>&gt;<span class="p">&amp;</span><span class="m">1</span><span class="w"> </span><span class="p">&amp;</span><span class="w">   </span><span class="c1"># chạy nền, đóng terminal vẫn chạy</span>
+ssh<span class="w"> </span>user@server<span class="w">                   </span><span class="c1"># đăng nhập máy chủ</span>
+chmod<span class="w"> </span>+x<span class="w"> </span>run.sh<span class="w">                   </span><span class="c1"># cho phép chạy script</span>
+</code></pre></div>
+
+<p>Dấu <code>|</code> (pipe) đưa đầu ra của lệnh trước làm đầu vào lệnh sau. Ghép các lệnh nhỏ bằng pipe là kỹ năng mạnh nhất của terminal.</p>
+<h2 id="lt-5">Colab và VS Code</h2>
+<p><strong>Colab</strong> cho GPU miễn phí (thường là T4 16 GB) nhưng phiên bị ngắt sau vài giờ hoặc khi bỏ máy lâu. Ba thói quen bắt buộc:</p>
+<div class="hl"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">google.colab</span><span class="w"> </span><span class="kn">import</span> <span class="n">drive</span>
+<span class="n">drive</span><span class="o">.</span><span class="n">mount</span><span class="p">(</span><span class="s2">"/content/drive"</span><span class="p">)</span>                  <span class="c1"># 1. lưu checkpoint vào Drive, không lưu trong /content</span>
+<span class="err">!</span><span class="n">nvidia</span><span class="o">-</span><span class="n">smi</span>                                    <span class="c1"># 2. kiểm tra đã có GPU chưa</span>
+<span class="err">!</span><span class="n">pip</span> <span class="n">install</span> <span class="o">-</span><span class="n">q</span> <span class="n">transformers</span> <span class="n">datasets</span>          <span class="c1"># 3. cài thư viện ở ô đầu notebook</span>
+</code></pre></div>
+
+<p>Dùng <strong>VS Code</strong> cho code dài (module <code>.py</code>, test, Git tích hợp), notebook cho thí nghiệm và trực quan hóa. Code tái sử dụng nên chuyển dần từ notebook sang file <code>.py</code>.</p>
+<div class="keep">
+<p><strong>Ghi nhớ:</strong> trên Colab, mọi thứ không nằm trong Drive sẽ mất khi phiên kết thúc.</p>
+</div></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p0.3:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 2</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Đếm bằng pipe</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>File <code>train.log</code> có 6 dòng dưới đây. Mỗi lệnh in ra số mấy?</p>
+<ol>
+<li><code>cat train.log | grep ERROR | wc -l</code></li>
+<li><code>grep -c epoch train.log</code></li>
+<li><code>grep -v ERROR train.log | wc -l</code></li>
+</ol>
+<p>Nội dung file:</p>
+<div class="hl"><pre><span></span><code>epoch 1 loss 2.10
+ERROR cuda out of memory
+epoch 2 loss 1.80
+WARNING lr too high
+ERROR nan loss
+epoch 3 loss 1.75
+</code></pre></div>
+
+<div class="ans" id="p0-3-e1-a1"><div class="ans-fields"><label>Lệnh 1: đếm dòng ERROR<input inputmode="decimal" data-ans="2.0" data-tol="0.0" autocomplete="off"></label><label>Lệnh 2: grep -c epoch<input inputmode="decimal" data-ans="3.0" data-tol="0.0" autocomplete="off"></label><label>Lệnh 3: grep -v ERROR, đếm dòng<input inputmode="decimal" data-ans="4.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+
+<details class="fold solution">
+<summary>Lời giải</summary>
+<p><code>grep ERROR</code> giữ 2 dòng chứa ERROR, <code>wc -l</code> đếm số dòng. <code>grep -c</code> đếm trực tiếp số dòng khớp. <code>grep -v</code> lấy các dòng <strong>không</strong> khớp: 6 − 2 = 4.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 2</span><h3>Cái gì vào commit</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Bạn sửa <code>model.py</code>, <code>train.py</code>, tạo file mới <code>utils.py</code>, rồi chạy:</p>
+<div class="hl"><pre><span></span><code>git<span class="w"> </span>add<span class="w"> </span>model.py<span class="w"> </span>utils.py
+git<span class="w"> </span>commit<span class="w"> </span>-m<span class="w"> </span><span class="s2">"Tách hàm tiện ích"</span>
+</code></pre></div>
+
+<div class="ans" id="p0-3-e2-a1"><div class="ans-fields"><label>Số file trong commit<input inputmode="decimal" data-ans="2.0" data-tol="0.0" autocomplete="off"></label><label>Số file còn &quot;modified&quot; chưa stage<input inputmode="decimal" data-ans="1.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+
+<details class="fold solution">
+<summary>Lời giải</summary>
+<p>Chỉ những gì đã <code>git add</code> mới vào commit: <code>model.py</code> và <code>utils.py</code>. <code>train.py</code> vẫn ở trạng thái modified. Đây là lý do nên chạy <code>git status</code> trước mỗi commit.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 3</span><h3>Viết .gitignore</h3><span class="ex-tag concept">khái niệm</span></div><div class="prose"><p>Dự án có các thư mục: <code>.venv/</code>, <code>data/raw/</code> (8 GB ảnh), <code>notebooks/</code>, <code>src/</code>, <code>checkpoints/</code> (file <code>.pt</code>), <code>wandb/</code>, và file <code>.env</code> chứa <code>OPENAI_API_KEY</code>. Viết <code>.gitignore</code> và giải thích dòng nào quan trọng nhất.</p>
+<details class="fold solution">
+<summary>Lời giải</summary>
+<div class="hl"><pre><span></span><code>.venv/
+data/
+checkpoints/
+*.pt
+wandb/
+.env
+__pycache__/
+.ipynb_checkpoints/
+</code></pre></div>
+
+<p>Quan trọng nhất là <code>.env</code>: lộ khóa API gây mất tiền ngay. Sau đó là <code>data/</code> và <code>checkpoints/</code> vì vượt giới hạn dung lượng của GitHub. <code>notebooks/</code> và <code>src/</code> phải được commit.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 4</span><h3>Năm file lớn nhất</h3><span class="ex-tag code">code</span></div><div class="prose"><p>Viết một dòng lệnh terminal in ra 5 file lớn nhất trong thư mục hiện tại và các thư mục con, kèm dung lượng dễ đọc.</p>
+<details class="fold hint">
+<summary>Gợi ý</summary>
+<p><code>du -ah .</code> liệt kê dung lượng, <code>sort -rh</code> sắp xếp giảm dần theo dạng dễ đọc, <code>head -5</code> lấy 5 dòng đầu.</p>
+</details>
+<details class="fold code">
+<summary>Code tham khảo</summary>
+<div class="hl"><pre><span></span><code>du<span class="w"> </span>-ah<span class="w"> </span>.<span class="w"> </span><span class="m">2</span>&gt;/dev/null<span class="w"> </span><span class="p">|</span><span class="w"> </span>sort<span class="w"> </span>-rh<span class="w"> </span><span class="p">|</span><span class="w"> </span>head<span class="w"> </span>-5
+<span class="c1"># hoặc chỉ lấy file, bỏ thư mục:</span>
+find<span class="w"> </span>.<span class="w"> </span>-type<span class="w"> </span>f<span class="w"> </span>-exec<span class="w"> </span>du<span class="w"> </span>-h<span class="w"> </span><span class="o">{}</span><span class="w"> </span>+<span class="w"> </span><span class="m">2</span>&gt;/dev/null<span class="w"> </span><span class="p">|</span><span class="w"> </span>sort<span class="w"> </span>-rh<span class="w"> </span><span class="p">|</span><span class="w"> </span>head<span class="w"> </span>-5
+</code></pre></div>
+
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 5</span><h3>Colab bị ngắt giữa chừng</h3><span class="ex-tag concept">khái niệm</span></div><div class="prose"><p>Bạn train 3 giờ trên Colab, checkpoint lưu ở <code>/content/checkpoints/</code>. Tới giờ thứ 2 phiên bị ngắt. Cái gì bị mất? Sửa quy trình thế nào để lần sau chỉ mất tối đa vài phút?</p>
+<details class="fold solution">
+<summary>Lời giải</summary>
+<p>Mất toàn bộ: <code>/content</code> bị xóa khi phiên kết thúc, gồm checkpoint, dữ liệu đã tải và thư viện đã cài. Cách sửa: mount Drive và lưu checkpoint vào <code>/content/drive/MyDrive/...</code> sau mỗi epoch (hoặc mỗi N bước). Lưu đủ model, optimizer, scheduler, epoch như Lab 1. Thêm cờ <code>RESUME</code> để nạp checkpoint cuối khi chạy lại.</p>
+</details></div></article><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p0.3:b">Tôi đã xong phần bài tập</label><button class="btn" type="button" data-goto="thuc-hanh">Sang thực hành <span class="arr">→</span></button></div></section><section class="panel" id="thuc-hanh" role="tabpanel" hidden><div class="prose"><h2>Repo ai-engineer-labs</h2>
+<p>Tạo repo chứa toàn bộ lab trong lộ trình. Đây là trang đầu tiên nhà tuyển dụng thấy trên GitHub của bạn.</p>
+<p><strong>Các bước</strong></p>
+<ol>
+<li>Tạo repo <code>ai-engineer-labs</code> trên GitHub (public, có README), clone về máy.</li>
+<li>Tạo cấu trúc:</li>
+</ol>
+<div class="hl"><pre><span></span><code>ai-engineer-labs/
+├── README.md
+├── .gitignore
+├── requirements.txt
+├── lab00-python-ml/
+├── lab01-training-loop/
+└── utils/
+    └── __init__.py
+</code></pre></div>
+
+<ol start="3">
+<li>Commit lần đầu trên <code>main</code>.</li>
+<li>Tạo branch <code>add-lab00</code>, thêm notebook phân tích dữ liệu từ bài P0.1 vào <code>lab00-python-ml/</code> cùng một README ngắn (mục tiêu, cách chạy, kết quả), commit.</li>
+<li>Push branch, mở pull request, tự review (đọc diff, sửa một lỗi chính tả, commit thêm), rồi merge.</li>
+<li>Trên Colab, mở notebook từ GitHub (File → Open notebook → GitHub), chạy, và lưu một file kết quả vào Drive.</li>
+</ol>
+<p><strong>README chính nên có</strong></p>
+<div class="hl"><pre><span></span><code><span class="gh"># AI Engineer Labs</span>
+Các bài thực hành theo lộ trình AI Engineer, từ numpy tới LLM và diffusion.
+
+| Lab | Nội dung | Kết quả |
+|---|---|---|
+| 00 | Phân tích dữ liệu bán hàng | 5 biểu đồ, 5 kết luận |
+| 01 | Training loop CIFAR-10 | test acc ≥ 70% |
+
+<span class="gu">## Chạy</span>
+pip install -r requirements.txt
+</code></pre></div>
+
+<p><strong>Xong khi</strong></p>
+<ul>
+<li>Repo công khai, có ít nhất 5 commit có message rõ nghĩa.</li>
+<li>Có một pull request đã merge.</li>
+<li><code>.gitignore</code> chặn <code>.venv</code>, <code>data/</code>, checkpoint và <code>.env</code>.</li>
+</ul></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p0.3:p">Tôi đã xong phần thực hành</label></div></section>
+      <div class="donewhen"><b>Xong bài khi</b>Repo công khai, có ít nhất 5 commit có ý nghĩa và một pull request đã merge.</div>
       <nav class="pn" aria-label="Bài trước, bài sau"><a href="p0-2.html"><span class="dir">← Bài trước · P0.2</span><span class="tt">Toán cho AI: đại số tuyến tính, giải tích, xác suất</span></a><a class="nx" href="p1-1.html"><span class="dir">Bài sau · P1.1 →</span><span class="tt">Hồi quy tuyến tính và logistic</span></a></nav>
     </div>
     <aside class="aside">
       <div class="abox"><h4>Tiến độ bài này</h4><div class="ring"><svg viewBox="0 0 64 64" aria-hidden="true"><circle class="bg" cx="32" cy="32" r="28"/><circle class="fg" cx="32" cy="32" r="28" stroke-dasharray="176" stroke-dashoffset="176"/></svg><div><b id="ring-n">0/3</b><span id="ring-sub">phần đã xong</span></div></div></div>
+      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Git hoạt động thế nào</a></li><li><a href="#lt-2">Branch, merge và pull request</a></li><li><a href="#lt-3">.gitignore cho dự án ML</a></li><li><a href="#lt-4">Terminal Linux đủ dùng</a></li><li><a href="#lt-5">Colab và VS Code</a></li></ol></div>
       
       <div class="abox"><h4>Cùng giai đoạn</h4><ul><li><a href="p0-1.html">Python cho ML: numpy, pandas, matplotlib</a></li><li><a href="p0-2.html">Toán cho AI: đại số tuyến tính, giải tích, xác suất</a></li><li><span class=cur>Công cụ: Git, GitHub, terminal, Colab</span></li></ul></div>
     </aside>
@@ -43,16 +232,75 @@
 
 (function () {
   const mid = document.body.dataset.mid; let d = AIE.load();
+  const EXK = "aie-ex-" + mid;
+  let solved = {}; try { solved = JSON.parse(localStorage.getItem(EXK) || "{}") || {}; } catch (e) {}
+  const saveSolved = () => { try { localStorage.setItem(EXK, JSON.stringify(solved)); } catch (e) {} };
+  const tabs = [...document.querySelectorAll(".tab")], panels = [...document.querySelectorAll(".panel")];
   const boxes = [...document.querySelectorAll("input[data-key]")], ring = document.querySelector(".ring .fg"), rt = document.getElementById("ring-n");
-  const skipped = () => !!d[mid + ":skip"];
+  const toc = document.getElementById("toc-box");
+  function show(id, scroll) {
+    tabs.forEach((t) => t.setAttribute("aria-selected", String(t.dataset.tab === id)));
+    panels.forEach((p) => { const on = p.id === id; if (on && p.hidden) { p.classList.remove("enter"); void p.offsetWidth; p.classList.add("enter"); } p.hidden = !on; });
+    if (toc) toc.hidden = id !== "ly-thuyet";
+    if (scroll) document.querySelector(".tabs").scrollIntoView({ block: "start" });
+  }
+  tabs.forEach((t) => t.addEventListener("click", () => { history.replaceState(null, "", "#" + t.dataset.tab); show(t.dataset.tab, true); }));
+  document.querySelectorAll("[data-goto]").forEach((b) => b.addEventListener("click", () => { history.replaceState(null, "", "#" + b.dataset.goto); show(b.dataset.goto, true); }));
+  const start = ["ly-thuyet", "bai-tap", "thuc-hanh"].includes(location.hash.slice(1)) ? location.hash.slice(1) : "ly-thuyet";
+  show(start, false);
+  window.addEventListener("hashchange", () => { const h = location.hash.slice(1); if (["ly-thuyet", "bai-tap", "thuc-hanh"].includes(h)) show(h, true); });
+  document.querySelectorAll(".toc a").forEach((a) => a.addEventListener("click", () => show("ly-thuyet", false)));
+
   function render() {
     let n = 0;
-    boxes.forEach((b) => { const on = skipped() || !!d[b.dataset.key]; b.checked = on; b.disabled = skipped(); b.closest(".pblock").classList.toggle("done", on); if (on) n++; });
+    const skip = !!d[mid + ":skip"];
+    boxes.forEach((b) => { const on = skip || !!d[b.dataset.key]; b.checked = on; if (on) n++; });
+    const kmap = { t: "ly-thuyet", b: "bai-tap", p: "thuc-hanh" };
+    tabs.forEach((t) => { const k = Object.keys(kmap).find((x) => kmap[x] === t.dataset.tab); t.classList.toggle("is-done", skip || !!d[mid + ":" + k]); });
     ring.style.strokeDashoffset = String(176 * (1 - n / 3)); rt.textContent = n + "/3";
-    document.getElementById("ring-sub").textContent = skipped() ? "đã đánh dấu bỏ qua" : n === 3 ? "hoàn thành bài này" : "phần đã xong";
+    document.getElementById("ring-sub").textContent = n === 3 ? "hoàn thành bài này" : "phần đã xong";
   }
-  boxes.forEach((b) => b.addEventListener("change", () => { d = AIE.load(); if (b.checked) d[b.dataset.key] = true; else delete d[b.dataset.key]; AIE.save(d); render(); }));
+  boxes.forEach((b) => b.addEventListener("change", () => {
+    d = AIE.load(); if (b.checked) d[b.dataset.key] = true; else delete d[b.dataset.key]; AIE.save(d);
+    boxes.filter((x) => x.dataset.key === b.dataset.key).forEach((x) => (x.checked = b.checked)); render();
+  }));
   render();
+
+  /* answer boxes */
+  const parse = (s) => parseFloat(String(s).trim().replace(",", ".").replace("−", "-"));
+  const allAns = [...document.querySelectorAll(".ans")];
+  function score() {
+    const ok = allAns.filter((a) => solved[a.id]).length;
+    const el = document.getElementById("ex-score");
+    if (el) { el.querySelector("b").textContent = `${ok} / ${allAns.length}`; el.querySelector(".bar i").style.width = (allAns.length ? ok / allAns.length * 100 : 0) + "%"; }
+    document.querySelectorAll(".excard").forEach((c) => { const as = [...c.querySelectorAll(".ans")]; c.classList.toggle("solved", as.length > 0 && as.every((a) => solved[a.id])); });
+  }
+  allAns.forEach((box) => {
+    const inputs = [...box.querySelectorAll("input")], fb = box.querySelector(".ans-fb");
+    const mark = () => { box.classList.add("ok"); inputs.forEach((i) => { i.classList.add("ok"); if (!i.value) i.value = i.dataset.ans; }); fb.className = "ans-fb ok"; fb.textContent = "Chính xác."; };
+    if (solved[box.id]) mark();
+    const run = () => {
+      let all = true, empty = false;
+      inputs.forEach((i) => {
+        const v = parse(i.value);
+        if (i.value.trim() === "" || Number.isNaN(v)) { empty = true; all = false; i.classList.remove("ok", "bad"); return; }
+        const good = Math.abs(v - parseFloat(i.dataset.ans)) <= parseFloat(i.dataset.tol) + 1e-9;
+        i.classList.toggle("ok", good); i.classList.toggle("bad", !good); if (!good) all = false;
+      });
+      if (all) { solved[box.id] = true; saveSolved(); mark(); box.classList.remove("pop"); void box.offsetWidth; box.classList.add("pop"); score(); }
+      else { fb.className = "ans-fb bad"; fb.textContent = empty ? "Điền đủ các ô bằng số (dấu chấm hoặc phẩy đều được)." : "Ô màu cam chưa đúng. Xem lại bước đó, hoặc mở gợi ý."; }
+    };
+    box.querySelector(".btn-check").addEventListener("click", run);
+    inputs.forEach((i) => i.addEventListener("keydown", (e) => { if (e.key === "Enter") run(); }));
+  });
+  score();
+
+  /* highlight current theory section in the toc */
+  if (toc && "IntersectionObserver" in window) {
+    const links = [...toc.querySelectorAll("a")];
+    const io = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) links.forEach((a) => a.classList.toggle("on", a.getAttribute("href") === "#" + e.target.id)); }), { rootMargin: "-140px 0px -65% 0px" });
+    document.querySelectorAll("#ly-thuyet h2[id]").forEach((h) => io.observe(h));
+  }
 })();
 
 </script>

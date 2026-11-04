@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>P1.3 · Cây quyết định và ensemble · AI Engineer</title>
-<meta name="description" content="Cây quyết định và ensemble: Decision tree: Gini, entropy, độ sâu; Random forest, bagging; gradient boosting, XGBoost, LightGBM; Feature importance, tuning siêu tham số (grid, random, Optuna)">
+<meta name="description" content="Cây quyết định và ensemble: lý thuyết, bài tập và thực hành. Decision tree: Gini, entropy, độ sâu; Random forest, bagging; gradient boosting, XGBoost, LightGBM">
 <meta property="og:title" content="P1.3 · Cây quyết định và ensemble · AI Engineer">
-<meta property="og:description" content="Cây quyết định và ensemble: Decision tree: Gini, entropy, độ sâu; Random forest, bagging; gradient boosting, XGBoost, LightGBM; Feature importance, tuning siêu tham số (grid, random, Optuna)">
+<meta property="og:description" content="Cây quyết định và ensemble: lý thuyết, bài tập và thực hành. Decision tree: Gini, entropy, độ sâu; Random forest, bagging; gradient boosting, XGBoost, LightGBM">
 <meta name="theme-color" content="#F4F6FB">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23131A33'/%3E%3Cpath d='M9 22 L16 10 L23 19' stroke='%23E5E9FB' stroke-width='2' fill='none'/%3E%3Ccircle cx='9' cy='22' r='3' fill='%23E5E9FB'/%3E%3Ccircle cx='16' cy='10' r='3' fill='%23E5E9FB'/%3E%3Ccircle cx='23' cy='19' r='3' fill='%23FF9361'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -14,23 +14,201 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="../assets/chrome.css">
 <link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/lesson.css">
 </head>
 <body data-mid="p1.3">
 <header class="sh"><div class="sh-in"><a class="sh-brand" href="../index.html"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="var(--ink)"/><circle cx="9" cy="22" r="2.6" fill="var(--accent-soft)"/><circle cx="16" cy="10" r="2.6" fill="var(--accent-soft)"/><circle cx="23" cy="19" r="2.6" fill="#FF9361"/><path d="M9 22 L16 10 L23 19" stroke="var(--accent-soft)" stroke-width="1.8" fill="none"/></svg><span>AI Engineer<small>lộ trình tự học</small></span></a><nav class="sh-nav" id="sh-nav" aria-label="Chính"><a href="../index.html">Trang chủ</a><a href="../bai-hoc.html" aria-current="page">Bài học</a><a href="../lo-trinh.html">Lộ trình</a><a href="../notebooks.html">Notebook</a><a class="sh-cta-m" href="../bai01.html" data-next-lesson>Học tiếp →</a></nav><a class="sh-cta" href="../bai01.html" data-next-lesson>Học tiếp <span class="arr">→</span></a><button class="sh-burger" type="button" aria-expanded="false" aria-controls="sh-nav">Menu</button></div></header>
 
 <main class="container">
   <div class="crumbs"><a href="../bai-hoc.html">Bài học</a><span>/</span><a href="../bai-hoc.html#p1">P1 · Machine Learning cổ điển</a><span>/</span><span>P1.3</span></div>
-  <section class="lhero"><div class="code">P1.3</div><h1>Cây quyết định và ensemble</h1><div class="lmeta"><span class="m">Giai đoạn P1 · Machine Learning cổ điển</span><span class="m">Tuần 4–7</span><span class="chip planned">Đề cương</span></div></section>
-  <div class="lgrid">
-    <div>
-      <div class="goal"><b>Mục tiêu giai đoạn:</b> Hiểu vòng đời một bài toán ML: dữ liệu → model → đánh giá → cải thiện. Nhiều câu hỏi phỏng vấn nằm ở đây.</div>
-      <div class="soon">Nội dung đầy đủ (trang lý thuyết tương tác và notebook tự chấm) đang được soạn và sẽ có khi bạn học tới bài này. Đề cương dưới đây là phạm vi chính xác của bài.</div>
-      <section class="pblock reveal"><div class="pblock-head"><span class="num">1</span><h2>Lý thuyết<span style="display:block;font:400 13.5px var(--f-body);color:var(--muted);margin-top:4px">Những gì cần hiểu</span></h2><label class="tick" for="cb-t"><input type="checkbox" id="cb-t" data-key="p1.3:t">Xong</label></div><ol><li>Decision tree: Gini, entropy, độ sâu</li><li>Random forest, bagging; gradient boosting, XGBoost, LightGBM</li><li>Feature importance, tuning siêu tham số (grid, random, Optuna)</li></ol></section><section class="pblock reveal"><div class="pblock-head"><span class="num">2</span><h2>Bài tập<span style="display:block;font:400 13.5px var(--f-body);color:var(--muted);margin-top:4px">Tính tay và tự kiểm tra</span></h2><label class="tick" for="cb-b"><input type="checkbox" id="cb-b" data-key="p1.3:b">Xong</label></div><ol><li>Tính tay Gini của một lần tách</li><li>Dự đoán trước: tăng max_depth thì train/val score đổi thế nào, rồi chạy kiểm chứng</li></ol></section><section class="pblock reveal"><div class="pblock-head"><span class="num">3</span><h2>Thực hành<span style="display:block;font:400 13.5px var(--f-body);color:var(--muted);margin-top:4px">Code và dự án</span></h2><label class="tick" for="cb-p"><input type="checkbox" id="cb-p" data-key="p1.3:p">Xong</label></div><ol><li>Một cuộc thi Kaggle dạng bảng: nộp submission vượt baseline</li></ol></section>
-      <div class="donewhen reveal"><b>Xong khi</b>Có điểm Kaggle công khai, và notebook ghi lại 5 thí nghiệm với kết quả từng cái.</div>
+  <section class="lhero"><div class="code">P1.3</div><h1>Cây quyết định và ensemble</h1><div class="lmeta"><span class="m">Giai đoạn P1 · Machine Learning cổ điển</span><span class="m">Tuần 4–7</span><span class="chip ready"><span class="dot"></span>Có nội dung đầy đủ</span></div>
+    <div class="intro"><p>Với dữ liệu dạng bảng (đơn hàng, khách hàng, giao dịch), các model cây như <strong>XGBoost</strong> và <strong>LightGBM</strong> vẫn thường thắng deep learning, lại train nhanh trên CPU. Hầu hết các cuộc thi Kaggle dạng bảng đều có gradient boosting trong top. Bài này đi từ một cây quyết định tới rừng cây và boosting.</p></div></section>
+  
+  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">5 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
+  <div class="lgrid" style="margin-top:22px">
+    <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">Cây quyết định</h2>
+<p>Cây hỏi liên tiếp các câu có/không về đặc trưng: "thu nhập &gt; 50 triệu?", "tuổi &lt; 30?". Mỗi lá trả về một dự đoán: lớp chiếm đa số (phân loại) hoặc trung bình y (hồi quy).</p>
+<p>Ở mỗi nút, cây thử mọi đặc trưng và mọi ngưỡng, chọn cách tách làm <strong>các nút con thuần nhất</strong>. Độ "lẫn lộn" của một nút đo bằng:</p>
+<div class="hl"><pre><span></span><code>Gini    = 1 − Σ pₖ²          (pₖ: tỉ lệ lớp k trong nút)
+Entropy = −Σ pₖ log₂ pₖ
+Gain    = độ lẫn của nút cha − trung bình có trọng số độ lẫn của các nút con
+</code></pre></div>
+
+<p>Nút toàn một lớp có Gini = 0. Nút hai lớp chia đôi 50/50 có Gini = 0.5 và entropy = 1 bit.</p>
+<h2 id="lt-2">Độ sâu và overfitting</h2>
+<p>Cây không giới hạn sẽ tách tới khi mỗi lá chỉ còn một mẫu: train đúng 100%, test tệ. Các tham số kìm cây:</p>
+<table>
+<thead>
+<tr>
+<th>Tham số</th>
+<th>Tác dụng</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>max_depth</code></td>
+<td>độ sâu tối đa</td>
+</tr>
+<tr>
+<td><code>min_samples_leaf</code></td>
+<td>mỗi lá phải có ít nhất n mẫu</td>
+</tr>
+<tr>
+<td><code>max_features</code></td>
+<td>mỗi lần tách chỉ xét một phần đặc trưng</td>
+</tr>
+</tbody>
+</table>
+<p>Một cây đơn có <strong>variance cao</strong>: đổi vài mẫu dữ liệu là cây đổi hẳn. Hai cách khắc phục là bagging và boosting.</p>
+<h2 id="lt-3">Bagging và random forest</h2>
+<p><strong>Bagging:</strong> train nhiều cây, mỗi cây trên một mẫu bootstrap (rút có hoàn lại) của dữ liệu, rồi lấy trung bình hoặc bỏ phiếu. Trung bình nhiều model độc lập làm giảm variance.</p>
+<p><strong>Random forest</strong> = bagging + mỗi lần tách chỉ xét ngẫu nhiên một tập con đặc trưng. Nhờ vậy các cây khác nhau hơn và trung bình hiệu quả hơn. Random forest gần như không cần tuning, là baseline tốt đầu tiên cho mọi bài toán bảng.</p>
+<h2 id="lt-4">Gradient boosting</h2>
+<p>Boosting train các cây <strong>nối tiếp</strong>: cây sau học sửa lỗi của tổng các cây trước.</p>
+<div class="hl"><pre><span></span><code>F₀(x) = trung bình y
+lặp m = 1..M:
+    rₘ = y − Fₘ₋₁(x)              phần dư (với MSE, đúng bằng −gradient)
+    hₘ = cây nhỏ fit vào rₘ
+    Fₘ(x) = Fₘ₋₁(x) + η · hₘ(x)  η là learning rate, thường 0.01–0.1
+</code></pre></div>
+
+<p>Đây chính là gradient descent, nhưng mỗi "bước" là một cây trong không gian hàm. <strong>XGBoost</strong>, <strong>LightGBM</strong>, <strong>CatBoost</strong> là ba cài đặt nhanh, có regularization và xử lý giá trị thiếu sẵn.</p>
+<div class="keep">
+<p><strong>Ghi nhớ:</strong> learning rate nhỏ thì cần nhiều cây hơn nhưng thường tổng quát tốt hơn. Dùng <code>early_stopping_rounds</code> trên validation để tự chọn số cây.</p>
+</div>
+<h2 id="lt-5">Feature importance và tuning</h2>
+<p><code>feature_importances_</code> cho biết đặc trưng nào được dùng để tách nhiều. Nhưng nó thiên vị đặc trưng có nhiều giá trị khác nhau (ví dụ ID). <strong>Permutation importance</strong> (xáo một cột rồi đo điểm tụt bao nhiêu) đáng tin hơn.</p>
+<p>Tham số quan trọng của LightGBM theo thứ tự nên tune: <code>learning_rate</code> và <code>n_estimators</code> (với early stopping), <code>num_leaves</code>, <code>min_child_samples</code>, <code>feature_fraction</code>, <code>bagging_fraction</code>, <code>lambda_l2</code>. Dùng <strong>Optuna</strong> để tìm tự động thay vì grid search.</p></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p1.3:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 3</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Gini và information gain</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Nút cha có 10 mẫu: 6 dương, 4 âm. Một phép tách cho nút trái (4 dương, 0 âm) và nút phải (2 dương, 4 âm).</p>
+<div class="ans" id="p1-3-e1-a1"><div class="ans-fields"><label>Gini nút cha<input inputmode="decimal" data-ans="0.48" data-tol="0.001" autocomplete="off"></label><label>Gini nút phải<input inputmode="decimal" data-ans="0.4444" data-tol="0.001" autocomplete="off"></label><label>Gini có trọng số sau tách<input inputmode="decimal" data-ans="0.2667" data-tol="0.001" autocomplete="off"></label><label>Gain<input inputmode="decimal" data-ans="0.2133" data-tol="0.001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+
+<details class="fold solution">
+<summary>Lời giải</summary>
+<p>Cha: 1 − (0.36 + 0.16) = 0.48. Trái thuần nên Gini 0. Phải: 1 − (1/9 + 4/9) = 4/9 ≈ 0.444. Trọng số theo số mẫu: 0.4·0 + 0.6·0.444 = 0.267. Gain = 0.48 − 0.267 = 0.213.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 2</span><h3>Entropy</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><div class="ans" id="p1-3-e2-a1"><div class="ans-fields"><label>Entropy nút 50/50 (bit)<input inputmode="decimal" data-ans="1.0" data-tol="0.001" autocomplete="off"></label><label>Entropy nút 75/25 (bit)<input inputmode="decimal" data-ans="0.8113" data-tol="0.001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+
+<details class="fold solution">
+<summary>Lời giải</summary>
+<p>50/50: −2·0.5·log₂0.5 = 1. 75/25: −(0.75·(−0.415) + 0.25·(−2)) = 0.311 + 0.5 = 0.811.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 3</span><h3>Một vòng gradient boosting</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Ba mẫu có y = 3, 5, 10. Khởi tạo F₀ = trung bình y. Giả sử cây đầu tiên dự đoán đúng hoàn toàn phần dư. Learning rate η = 0.1.</p>
+<div class="ans" id="p1-3-e3-a1"><div class="ans-fields"><label>F₀<input inputmode="decimal" data-ans="6.0" data-tol="0.0" autocomplete="off"></label><label>Phần dư của mẫu thứ 3<input inputmode="decimal" data-ans="4.0" data-tol="0.0" autocomplete="off"></label><label>F₁ của mẫu thứ 3<input inputmode="decimal" data-ans="6.4" data-tol="0.001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+
+<details class="fold solution">
+<summary>Lời giải</summary>
+<p>F₀ = 18/3 = 6. Phần dư: −3, −1, 4. F₁ = F₀ + 0.1·r = 5.7, 5.9, 6.4. Mỗi vòng chỉ đi 10% quãng đường, nên cần nhiều cây, nhưng bước nhỏ giúp tránh overfit.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 4</span><h3>Đoán trước rồi kiểm chứng</h3><span class="ex-tag concept">khái niệm</span></div><div class="prose"><p>Với <code>DecisionTreeClassifier</code> trên một tập dữ liệu có nhiễu, khi tăng <code>max_depth</code> từ 1 lên 20:</p>
+<ol>
+<li>Accuracy trên train thay đổi thế nào?</li>
+<li>Accuracy trên validation thay đổi thế nào?</li>
+<li>Random forest 300 cây với cùng <code>max_depth=20</code> thì sao?</li>
+</ol>
+<p>Viết dự đoán ra giấy, rồi chạy đoạn code trong lời giải để kiểm chứng.</p>
+<details class="fold solution">
+<summary>Lời giải</summary>
+<ol>
+<li>Train tăng đều, tới gần 100%. 2. Validation tăng rồi giảm (hình chữ U ngược): sâu quá thì học thuộc nhiễu. 3. Random forest giữ validation cao ở độ sâu lớn vì trung bình nhiều cây làm giảm variance.</li>
+</ol>
+<div class="hl"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.datasets</span><span class="w"> </span><span class="kn">import</span> <span class="n">make_classification</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.model_selection</span><span class="w"> </span><span class="kn">import</span> <span class="n">train_test_split</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.tree</span><span class="w"> </span><span class="kn">import</span> <span class="n">DecisionTreeClassifier</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.ensemble</span><span class="w"> </span><span class="kn">import</span> <span class="n">RandomForestClassifier</span>
+<span class="n">X</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">make_classification</span><span class="p">(</span><span class="mi">2000</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="n">n_informative</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">flip_y</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">Xtr</span><span class="p">,</span> <span class="n">Xva</span><span class="p">,</span> <span class="n">ytr</span><span class="p">,</span> <span class="n">yva</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">20</span><span class="p">]:</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="n">DecisionTreeClassifier</span><span class="p">(</span><span class="n">max_depth</span><span class="o">=</span><span class="n">d</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">Xtr</span><span class="p">,</span> <span class="n">ytr</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="nb">round</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">Xtr</span><span class="p">,</span> <span class="n">ytr</span><span class="p">),</span> <span class="mi">3</span><span class="p">),</span> <span class="nb">round</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">Xva</span><span class="p">,</span> <span class="n">yva</span><span class="p">),</span> <span class="mi">3</span><span class="p">))</span>
+<span class="n">rf</span> <span class="o">=</span> <span class="n">RandomForestClassifier</span><span class="p">(</span><span class="mi">300</span><span class="p">,</span> <span class="n">max_depth</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">Xtr</span><span class="p">,</span> <span class="n">ytr</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"RF"</span><span class="p">,</span> <span class="n">rf</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">Xva</span><span class="p">,</span> <span class="n">yva</span><span class="p">))</span>
+</code></pre></div>
+
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 5</span><h3>LightGBM với early stopping</h3><span class="ex-tag code">code</span></div><div class="prose"><p>Train LightGBM trên <code>load_breast_cancer</code> với <code>learning_rate=0.05</code>, tối đa 2000 cây, dừng sớm sau 50 vòng không cải thiện trên validation. In số cây tốt nhất và vẽ 10 đặc trưng có permutation importance cao nhất.</p>
+<details class="fold code">
+<summary>Code tham khảo</summary>
+<div class="hl"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">lightgbm</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">lgb</span><span class="o">,</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span><span class="o">,</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.datasets</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_breast_cancer</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.model_selection</span><span class="w"> </span><span class="kn">import</span> <span class="n">train_test_split</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.inspection</span><span class="w"> </span><span class="kn">import</span> <span class="n">permutation_importance</span>
+
+<span class="n">data</span> <span class="o">=</span> <span class="n">load_breast_cancer</span><span class="p">(</span><span class="n">as_frame</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">Xtr</span><span class="p">,</span> <span class="n">Xva</span><span class="p">,</span> <span class="n">ytr</span><span class="p">,</span> <span class="n">yva</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">target</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="mf">0.25</span><span class="p">,</span> <span class="n">stratify</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">target</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">m</span> <span class="o">=</span> <span class="n">lgb</span><span class="o">.</span><span class="n">LGBMClassifier</span><span class="p">(</span><span class="n">n_estimators</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span> <span class="n">learning_rate</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span> <span class="n">num_leaves</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">m</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">Xtr</span><span class="p">,</span> <span class="n">ytr</span><span class="p">,</span> <span class="n">eval_set</span><span class="o">=</span><span class="p">[(</span><span class="n">Xva</span><span class="p">,</span> <span class="n">yva</span><span class="p">)],</span> <span class="n">callbacks</span><span class="o">=</span><span class="p">[</span><span class="n">lgb</span><span class="o">.</span><span class="n">early_stopping</span><span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">)])</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"số cây tốt nhất:"</span><span class="p">,</span> <span class="n">m</span><span class="o">.</span><span class="n">best_iteration_</span><span class="p">,</span> <span class="s2">"| acc val:"</span><span class="p">,</span> <span class="n">m</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">Xva</span><span class="p">,</span> <span class="n">yva</span><span class="p">))</span>
+<span class="n">pi</span> <span class="o">=</span> <span class="n">permutation_importance</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">Xva</span><span class="p">,</span> <span class="n">yva</span><span class="p">,</span> <span class="n">n_repeats</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">pi</span><span class="o">.</span><span class="n">importances_mean</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">Xtr</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span><span class="o">.</span><span class="n">nlargest</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">barh</span><span class="p">();</span> <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</code></pre></div>
+
+</details></div></article><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p1.3:b">Tôi đã xong phần bài tập</label><button class="btn" type="button" data-goto="thuc-hanh">Sang thực hành <span class="arr">→</span></button></div></section><section class="panel" id="thuc-hanh" role="tabpanel" hidden><div class="prose"><h2>Cuộc thi Kaggle dạng bảng</h2>
+<p>Chọn <strong>Titanic</strong> (phân loại, nhỏ, dễ bắt đầu) hoặc <strong>House Prices</strong> (hồi quy, nhiều đặc trưng hơn). Mục tiêu là học quy trình thi đấu có kỷ luật, không phải leo hạng bằng mọi giá.</p>
+<p><strong>Các bước</strong></p>
+<ol>
+<li>Đọc dữ liệu, EDA nhanh: giá trị thiếu, phân bố biến mục tiêu, tương quan.</li>
+<li><strong>Baseline:</strong> random forest với xử lý tối thiểu. Nộp submission đầu tiên để có mốc.</li>
+<li>Feature engineering: ít nhất 3 đặc trưng mới có lý do rõ ràng (Titanic: chức danh từ tên, kích thước gia đình, khoang tàu từ số cabin).</li>
+<li>LightGBM hoặc XGBoost với cross-validation 5-fold. Dùng <strong>điểm CV</strong> để ra quyết định, không dùng bảng xếp hạng công khai.</li>
+<li>Tuning bằng Optuna 50 lượt.</li>
+<li>Ghi <strong>nhật ký thí nghiệm</strong>: mỗi dòng là một thay đổi, điểm CV, điểm public.</li>
+</ol>
+<p><strong>Nhật ký mẫu</strong></p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Thay đổi</th>
+<th>CV</th>
+<th>Public</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>RF baseline</td>
+<td>0.812</td>
+<td>0.775</td>
+</tr>
+<tr>
+<td>2</td>
+<td>+ chức danh, kích thước gia đình</td>
+<td>0.829</td>
+<td>0.787</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Xong khi</strong></p>
+<ul>
+<li>Có điểm công khai trên Kaggle vượt baseline của chính bạn.</li>
+<li>Nhật ký có ít nhất 5 thí nghiệm, kể cả những thay đổi làm điểm tệ đi.</li>
+<li>Notebook công khai trên Kaggle hoặc GitHub.</li>
+</ul>
+<details class="fold code">
+<summary>Code tham khảo</summary>
+<div class="hl"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span><span class="o">,</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span><span class="o">,</span><span class="w"> </span><span class="nn">lightgbm</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">lgb</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.model_selection</span><span class="w"> </span><span class="kn">import</span> <span class="n">StratifiedKFold</span><span class="p">,</span> <span class="n">cross_val_score</span>
+
+<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">"train.csv"</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">features</span><span class="p">(</span><span class="n">d</span><span class="p">):</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">d</span><span class="p">[</span><span class="s2">"Title"</span><span class="p">]</span> <span class="o">=</span> <span class="n">d</span><span class="p">[</span><span class="s2">"Name"</span><span class="p">]</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="sa">r</span><span class="s2">",\s*([^\.]+)\."</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span>
+        <span class="p">{</span><span class="s2">"Mlle"</span><span class="p">:</span> <span class="s2">"Miss"</span><span class="p">,</span> <span class="s2">"Ms"</span><span class="p">:</span> <span class="s2">"Miss"</span><span class="p">,</span> <span class="s2">"Mme"</span><span class="p">:</span> <span class="s2">"Mrs"</span><span class="p">})</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="k">lambda</span> <span class="n">s</span><span class="p">:</span> <span class="n">s</span><span class="o">.</span><span class="n">isin</span><span class="p">([</span><span class="s2">"Mr"</span><span class="p">,</span> <span class="s2">"Mrs"</span><span class="p">,</span> <span class="s2">"Miss"</span><span class="p">,</span> <span class="s2">"Master"</span><span class="p">]),</span> <span class="s2">"Rare"</span><span class="p">)</span>
+    <span class="n">d</span><span class="p">[</span><span class="s2">"FamilySize"</span><span class="p">]</span> <span class="o">=</span> <span class="n">d</span><span class="p">[</span><span class="s2">"SibSp"</span><span class="p">]</span> <span class="o">+</span> <span class="n">d</span><span class="p">[</span><span class="s2">"Parch"</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
+    <span class="n">d</span><span class="p">[</span><span class="s2">"Deck"</span><span class="p">]</span> <span class="o">=</span> <span class="n">d</span><span class="p">[</span><span class="s2">"Cabin"</span><span class="p">]</span><span class="o">.</span><span class="n">str</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="s2">"U"</span><span class="p">)</span>
+    <span class="n">d</span><span class="p">[</span><span class="s2">"Sex"</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="s2">"Sex"</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"female"</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">"Title"</span><span class="p">,</span> <span class="s2">"Deck"</span><span class="p">,</span> <span class="s2">"Embarked"</span><span class="p">]:</span>
+        <span class="n">d</span><span class="p">[</span><span class="n">c</span><span class="p">]</span> <span class="o">=</span> <span class="n">d</span><span class="p">[</span><span class="n">c</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">"category"</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">d</span><span class="p">[[</span><span class="s2">"Pclass"</span><span class="p">,</span> <span class="s2">"Sex"</span><span class="p">,</span> <span class="s2">"Age"</span><span class="p">,</span> <span class="s2">"Fare"</span><span class="p">,</span> <span class="s2">"FamilySize"</span><span class="p">,</span> <span class="s2">"Title"</span><span class="p">,</span> <span class="s2">"Deck"</span><span class="p">,</span> <span class="s2">"Embarked"</span><span class="p">]]</span>
+
+<span class="n">X</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">features</span><span class="p">(</span><span class="n">df</span><span class="p">),</span> <span class="n">df</span><span class="p">[</span><span class="s2">"Survived"</span><span class="p">]</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">lgb</span><span class="o">.</span><span class="n">LGBMClassifier</span><span class="p">(</span><span class="n">n_estimators</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span> <span class="n">learning_rate</span><span class="o">=</span><span class="mf">0.03</span><span class="p">,</span> <span class="n">num_leaves</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">cv</span> <span class="o">=</span> <span class="n">cross_val_score</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="n">StratifiedKFold</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span> <span class="n">scoring</span><span class="o">=</span><span class="s2">"accuracy"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"CV:"</span><span class="p">,</span> <span class="n">cv</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">4</span><span class="p">),</span> <span class="s2">"±"</span><span class="p">,</span> <span class="n">cv</span><span class="o">.</span><span class="n">std</span><span class="p">()</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">4</span><span class="p">))</span>
+</code></pre></div>
+
+</details></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p1.3:p">Tôi đã xong phần thực hành</label></div></section>
+      <div class="donewhen"><b>Xong bài khi</b>Có điểm Kaggle công khai, và notebook ghi lại 5 thí nghiệm với kết quả từng cái.</div>
       <nav class="pn" aria-label="Bài trước, bài sau"><a href="p1-2.html"><span class="dir">← Bài trước · P1.2</span><span class="tt">Đánh giá model đúng cách</span></a><a class="nx" href="p1-4.html"><span class="dir">Bài sau · P1.4 →</span><span class="tt">Học không giám sát và feature engineering</span></a></nav>
     </div>
     <aside class="aside">
       <div class="abox"><h4>Tiến độ bài này</h4><div class="ring"><svg viewBox="0 0 64 64" aria-hidden="true"><circle class="bg" cx="32" cy="32" r="28"/><circle class="fg" cx="32" cy="32" r="28" stroke-dasharray="176" stroke-dashoffset="176"/></svg><div><b id="ring-n">0/3</b><span id="ring-sub">phần đã xong</span></div></div></div>
+      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Cây quyết định</a></li><li><a href="#lt-2">Độ sâu và overfitting</a></li><li><a href="#lt-3">Bagging và random forest</a></li><li><a href="#lt-4">Gradient boosting</a></li><li><a href="#lt-5">Feature importance và tuning</a></li></ol></div>
       
       <div class="abox"><h4>Cùng giai đoạn</h4><ul><li><a href="p1-1.html">Hồi quy tuyến tính và logistic</a></li><li><a href="p1-2.html">Đánh giá model đúng cách</a></li><li><span class=cur>Cây quyết định và ensemble</span></li><li><a href="p1-4.html">Học không giám sát và feature engineering</a></li></ul></div>
     </aside>
@@ -43,16 +221,75 @@
 
 (function () {
   const mid = document.body.dataset.mid; let d = AIE.load();
+  const EXK = "aie-ex-" + mid;
+  let solved = {}; try { solved = JSON.parse(localStorage.getItem(EXK) || "{}") || {}; } catch (e) {}
+  const saveSolved = () => { try { localStorage.setItem(EXK, JSON.stringify(solved)); } catch (e) {} };
+  const tabs = [...document.querySelectorAll(".tab")], panels = [...document.querySelectorAll(".panel")];
   const boxes = [...document.querySelectorAll("input[data-key]")], ring = document.querySelector(".ring .fg"), rt = document.getElementById("ring-n");
-  const skipped = () => !!d[mid + ":skip"];
+  const toc = document.getElementById("toc-box");
+  function show(id, scroll) {
+    tabs.forEach((t) => t.setAttribute("aria-selected", String(t.dataset.tab === id)));
+    panels.forEach((p) => { const on = p.id === id; if (on && p.hidden) { p.classList.remove("enter"); void p.offsetWidth; p.classList.add("enter"); } p.hidden = !on; });
+    if (toc) toc.hidden = id !== "ly-thuyet";
+    if (scroll) document.querySelector(".tabs").scrollIntoView({ block: "start" });
+  }
+  tabs.forEach((t) => t.addEventListener("click", () => { history.replaceState(null, "", "#" + t.dataset.tab); show(t.dataset.tab, true); }));
+  document.querySelectorAll("[data-goto]").forEach((b) => b.addEventListener("click", () => { history.replaceState(null, "", "#" + b.dataset.goto); show(b.dataset.goto, true); }));
+  const start = ["ly-thuyet", "bai-tap", "thuc-hanh"].includes(location.hash.slice(1)) ? location.hash.slice(1) : "ly-thuyet";
+  show(start, false);
+  window.addEventListener("hashchange", () => { const h = location.hash.slice(1); if (["ly-thuyet", "bai-tap", "thuc-hanh"].includes(h)) show(h, true); });
+  document.querySelectorAll(".toc a").forEach((a) => a.addEventListener("click", () => show("ly-thuyet", false)));
+
   function render() {
     let n = 0;
-    boxes.forEach((b) => { const on = skipped() || !!d[b.dataset.key]; b.checked = on; b.disabled = skipped(); b.closest(".pblock").classList.toggle("done", on); if (on) n++; });
+    const skip = !!d[mid + ":skip"];
+    boxes.forEach((b) => { const on = skip || !!d[b.dataset.key]; b.checked = on; if (on) n++; });
+    const kmap = { t: "ly-thuyet", b: "bai-tap", p: "thuc-hanh" };
+    tabs.forEach((t) => { const k = Object.keys(kmap).find((x) => kmap[x] === t.dataset.tab); t.classList.toggle("is-done", skip || !!d[mid + ":" + k]); });
     ring.style.strokeDashoffset = String(176 * (1 - n / 3)); rt.textContent = n + "/3";
-    document.getElementById("ring-sub").textContent = skipped() ? "đã đánh dấu bỏ qua" : n === 3 ? "hoàn thành bài này" : "phần đã xong";
+    document.getElementById("ring-sub").textContent = n === 3 ? "hoàn thành bài này" : "phần đã xong";
   }
-  boxes.forEach((b) => b.addEventListener("change", () => { d = AIE.load(); if (b.checked) d[b.dataset.key] = true; else delete d[b.dataset.key]; AIE.save(d); render(); }));
+  boxes.forEach((b) => b.addEventListener("change", () => {
+    d = AIE.load(); if (b.checked) d[b.dataset.key] = true; else delete d[b.dataset.key]; AIE.save(d);
+    boxes.filter((x) => x.dataset.key === b.dataset.key).forEach((x) => (x.checked = b.checked)); render();
+  }));
   render();
+
+  /* answer boxes */
+  const parse = (s) => parseFloat(String(s).trim().replace(",", ".").replace("−", "-"));
+  const allAns = [...document.querySelectorAll(".ans")];
+  function score() {
+    const ok = allAns.filter((a) => solved[a.id]).length;
+    const el = document.getElementById("ex-score");
+    if (el) { el.querySelector("b").textContent = `${ok} / ${allAns.length}`; el.querySelector(".bar i").style.width = (allAns.length ? ok / allAns.length * 100 : 0) + "%"; }
+    document.querySelectorAll(".excard").forEach((c) => { const as = [...c.querySelectorAll(".ans")]; c.classList.toggle("solved", as.length > 0 && as.every((a) => solved[a.id])); });
+  }
+  allAns.forEach((box) => {
+    const inputs = [...box.querySelectorAll("input")], fb = box.querySelector(".ans-fb");
+    const mark = () => { box.classList.add("ok"); inputs.forEach((i) => { i.classList.add("ok"); if (!i.value) i.value = i.dataset.ans; }); fb.className = "ans-fb ok"; fb.textContent = "Chính xác."; };
+    if (solved[box.id]) mark();
+    const run = () => {
+      let all = true, empty = false;
+      inputs.forEach((i) => {
+        const v = parse(i.value);
+        if (i.value.trim() === "" || Number.isNaN(v)) { empty = true; all = false; i.classList.remove("ok", "bad"); return; }
+        const good = Math.abs(v - parseFloat(i.dataset.ans)) <= parseFloat(i.dataset.tol) + 1e-9;
+        i.classList.toggle("ok", good); i.classList.toggle("bad", !good); if (!good) all = false;
+      });
+      if (all) { solved[box.id] = true; saveSolved(); mark(); box.classList.remove("pop"); void box.offsetWidth; box.classList.add("pop"); score(); }
+      else { fb.className = "ans-fb bad"; fb.textContent = empty ? "Điền đủ các ô bằng số (dấu chấm hoặc phẩy đều được)." : "Ô màu cam chưa đúng. Xem lại bước đó, hoặc mở gợi ý."; }
+    };
+    box.querySelector(".btn-check").addEventListener("click", run);
+    inputs.forEach((i) => i.addEventListener("keydown", (e) => { if (e.key === "Enter") run(); }));
+  });
+  score();
+
+  /* highlight current theory section in the toc */
+  if (toc && "IntersectionObserver" in window) {
+    const links = [...toc.querySelectorAll("a")];
+    const io = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) links.forEach((a) => a.classList.toggle("on", a.getAttribute("href") === "#" + e.target.id)); }), { rootMargin: "-140px 0px -65% 0px" });
+    document.querySelectorAll("#ly-thuyet h2[id]").forEach((h) => io.observe(h));
+  }
 })();
 
 </script>

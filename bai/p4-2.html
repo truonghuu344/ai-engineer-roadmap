@@ -20,10 +20,10 @@
 
 <main class="container">
   <div class="crumbs"><a href="../bai-hoc.html">Bài học</a><span>/</span><a href="../bai-hoc.html#p4">P4 · LLM Engineering</a><span>/</span><span>P4.2</span></div>
-  <section class="lhero"><div class="code">P4.2</div><h1>Bài 5 · Embedding và RAG</h1><div class="lmeta"><span class="m">Giai đoạn P4 · LLM Engineering</span><span class="m">Tuần 18–23</span><span class="chip planned">Đề cương</span></div></section>
+  <section class="lhero"><div class="code">P4.2</div><h1>Bài 5 · Embedding và RAG</h1><div class="lmeta"><span class="m">Giai đoạn P4 · LLM Engineering</span><span class="m">Tuần 18–25</span><span class="chip planned">Đề cương</span></div></section>
   <div class="lgrid">
     <div>
-      <div class="goal"><b>Mục tiêu giai đoạn:</b> Nhóm kỹ năng được tuyển nhiều nhất: xây ứng dụng LLM chạy ổn định, đo được chất lượng.</div>
+      <div class="goal"><b>Mục tiêu giai đoạn:</b> Nhóm kỹ năng được tuyển nhiều nhất: ứng dụng LLM, RAG, agent và multi-agent chạy ổn định, an toàn và đo được chất lượng.</div>
       <div class="soon">Nội dung đầy đủ (trang lý thuyết tương tác và notebook tự chấm) đang được soạn và sẽ có khi bạn học tới bài này. Đề cương dưới đây là phạm vi chính xác của bài.</div>
       <section class="pblock reveal"><div class="pblock-head"><span class="num">1</span><h2>Lý thuyết<span style="display:block;font:400 13.5px var(--f-body);color:var(--muted);margin-top:4px">Những gì cần hiểu</span></h2><label class="tick" for="cb-t"><input type="checkbox" id="cb-t" data-key="p4.2:t">Xong</label></div><ol><li>Embedding model, chunking, metadata</li><li>Vector search (FAISS, pgvector, Qdrant), BM25, hybrid search</li><li>Reranker, query rewriting, trích dẫn nguồn</li><li>Khi nào RAG thua fine-tune và ngược lại</li></ol></section><section class="pblock reveal"><div class="pblock-head"><span class="num">2</span><h2>Bài tập<span style="display:block;font:400 13.5px var(--f-body);color:var(--muted);margin-top:4px">Tính tay và tự kiểm tra</span></h2><label class="tick" for="cb-b"><input type="checkbox" id="cb-b" data-key="p4.2:b">Xong</label></div><ol><li>Tính tay cosine similarity và xếp hạng 4 đoạn văn</li></ol></section><section class="pblock reveal"><div class="pblock-head"><span class="num">3</span><h2>Thực hành<span style="display:block;font:400 13.5px var(--f-body);color:var(--muted);margin-top:4px">Code và dự án</span></h2><label class="tick" for="cb-p"><input type="checkbox" id="cb-p" data-key="p4.2:p">Xong</label></div><ol><li>Lab 5: hỏi đáp trên bộ tài liệu thật, có trích dẫn đúng đoạn nguồn</li></ol></section>
       <div class="donewhen reveal"><b>Xong khi</b>Câu trả lời dẫn đúng nguồn, và hybrid search tốt hơn vector search thuần trên bộ câu hỏi của bạn.</div>
@@ -32,7 +32,7 @@
     <aside class="aside">
       <div class="abox"><h4>Tiến độ bài này</h4><div class="ring"><svg viewBox="0 0 64 64" aria-hidden="true"><circle class="bg" cx="32" cy="32" r="28"/><circle class="fg" cx="32" cy="32" r="28" stroke-dasharray="176" stroke-dashoffset="176"/></svg><div><b id="ring-n">0/3</b><span id="ring-sub">phần đã xong</span></div></div></div>
       
-      <div class="abox"><h4>Cùng giai đoạn</h4><ul><li><a href="p4-1.html">Bài 4 · Làm việc với LLM</a></li><li><span class=cur>Bài 5 · Embedding và RAG</span></li><li><a href="p4-3.html">Bài 6 · Đánh giá hệ thống AI</a></li><li><a href="p4-4.html">Bài 7 · Agent</a></li></ul></div>
+      <div class="abox"><h4>Cùng giai đoạn</h4><ul><li><a href="p4-1.html">Bài 4 · Làm việc với LLM</a></li><li><span class=cur>Bài 5 · Embedding và RAG</span></li><li><a href="p4-3.html">Bài 6 · Đánh giá hệ thống AI</a></li><li><a href="p4-4.html">Bài 7 · Agent</a></li><li><a href="p4-5.html">RAG nâng cao</a></li><li><a href="p4-6.html">Multi-agent</a></li><li><a href="p4-7.html">MCP và hệ sinh thái tool</a></li><li><a href="p4-8.html">Guardrails, an toàn và human-in-the-loop</a></li></ul></div>
     </aside>
   </div>
 </main>
