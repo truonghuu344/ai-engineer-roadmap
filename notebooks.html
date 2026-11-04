@@ -1,227 +1,38 @@
 <!doctype html>
-<html lang="vi">
+<html lang="vi" data-root="">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="description" content="Notebook thực hành có ô tự chấm cho lộ trình AI Engineer.">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232C47D1'/%3E%3Cpath d='M8 22 L14 10 L18 18 L24 8' stroke='white' stroke-width='3' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
-<title>Notebook thực hành</title>
+<title>Notebook thực hành · AI Engineer</title>
+<meta name="description" content="Notebook Colab có TODO và ô tự chấm cho lộ trình AI Engineer.">
+<meta property="og:title" content="Notebook thực hành · AI Engineer">
+<meta property="og:description" content="Notebook Colab có TODO và ô tự chấm cho lộ trình AI Engineer.">
+<meta name="theme-color" content="#F4F6FB">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23131A33'/%3E%3Cpath d='M9 22 L16 10 L23 19' stroke='%23E5E9FB' stroke-width='2' fill='none'/%3E%3Ccircle cx='9' cy='22' r='3' fill='%23E5E9FB'/%3E%3Ccircle cx='16' cy='10' r='3' fill='%23E5E9FB'/%3E%3Ccircle cx='23' cy='19' r='3' fill='%23FF9361'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
-<style>
-/* Layout (shared with the AI Engineer lessons): one wide column; summary strip → market data → timeline → phase ledger. Each module splits into three tracked parts: lý thuyết, bài tập, thực hành. */
-:root {
-  --paper: #F4F6FB;
-  --surface: #FFFFFF;
-  --ink: #131A33;
-  --muted: #59627F;
-  --line: #DCE1EE;
-  --accent: #2C47D1;
-  --accent-soft: #E5E9FB;
-  --hot: #D2501B;
-  --hot-soft: #FCE8DE;
-  --ok: #1D8350;
-  --ok-soft: #E1F3E9;
-  --side: #7A4BC2;
-  --side-soft: #EFE7FA;
-  --f-display: "Bricolage Grotesque", "Be Vietnam Pro", system-ui, sans-serif;
-  --f-body: "Be Vietnam Pro", system-ui, -apple-system, "Segoe UI", sans-serif;
-  --f-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
-}
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --paper: #0E1222; --surface: #161B30; --ink: #E5E8F4; --muted: #98A0BD; --line: #283052;
-    --accent: #93A6FF; --accent-soft: #1F2752; --hot: #FF9361; --hot-soft: #3A2419;
-    --ok: #52C98F; --ok-soft: #133022; --side: #C3A2F5; --side-soft: #2A1F45;
-    color-scheme: dark;
-  }
-}
-:root[data-theme="dark"] {
-  --paper: #0E1222; --surface: #161B30; --ink: #E5E8F4; --muted: #98A0BD; --line: #283052;
-  --accent: #93A6FF; --accent-soft: #1F2752; --hot: #FF9361; --hot-soft: #3A2419;
-  --ok: #52C98F; --ok-soft: #133022; --side: #C3A2F5; --side-soft: #2A1F45;
-  color-scheme: dark;
-}
-* { box-sizing: border-box; }
-body {
-  background: var(--paper); color: var(--ink); font-family: var(--f-body); font-size: 16px; line-height: 1.65;
-  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
-}
-.wrap { max-width: 1040px; margin: 0 auto; padding-block: 40px 96px; }
-h1, h2, h3 { font-family: var(--f-display); text-wrap: balance; line-height: 1.15; margin: 0; }
-h1 { font-size: clamp(36px, 6vw, 58px); font-weight: 800; letter-spacing: -.02em; margin-top: 10px; }
-h2 { font-size: clamp(24px, 3.4vw, 32px); font-weight: 800; letter-spacing: -.01em; }
-p { margin: 12px 0 0; }
-a { color: var(--accent); }
-.eyebrow { font-size: 13px; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); font-weight: 600; }
-.lede { font-size: 18.5px; color: var(--muted); max-width: 66ch; }
-.mono { font-family: var(--f-mono); font-size: .88em; }
-section.block { margin-top: 64px; }
-.sub { color: var(--muted); font-size: 15px; max-width: 70ch; }
-
-/* summary strip */
-.summary { margin-top: 28px; display: grid; grid-template-columns: 1.1fr 1fr 1.4fr 1fr; gap: 0; border: 1.5px solid var(--ink); border-radius: 10px; background: var(--surface); }
-.summary > div { padding: 16px 18px; min-width: 0; border-left: 1px solid var(--line); }
-.summary > div:first-child { border-left: 0; }
-.s-label { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
-.s-big { font-family: var(--f-display); font-size: 34px; font-weight: 800; line-height: 1.1; margin-top: 6px; font-variant-numeric: tabular-nums; }
-.s-text { margin-top: 6px; font-weight: 600; line-height: 1.4; }
-.s-small { font-size: 13.5px; color: var(--muted); margin-top: 4px; line-height: 1.45; }
-.meter { height: 6px; background: var(--line); border-radius: 3px; overflow: hidden; margin-top: 10px; }
-.meter i { display: block; height: 100%; width: 0; background: var(--ok); transition: width .4s; }
-@media (max-width: 820px) { .summary { grid-template-columns: 1fr 1fr; } .summary > div:nth-child(3) { border-left: 0; } .summary > div:nth-child(n+3) { border-top: 1px solid var(--line); } }
-@media (max-width: 460px) { .summary { grid-template-columns: minmax(0, 1fr); } .summary > div { border-left: 0; border-top: 1px solid var(--line); } .summary > div:first-child { border-top: 0; } }
-.sync { margin-top: 10px; font-size: 13px; color: var(--muted); }
-
-/* method */
-.method { margin-top: 20px; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; counter-reset: st; }
-.method div { border-top: 2px solid var(--ink); padding-top: 10px; font-size: 14px; line-height: 1.5; counter-increment: st; }
-.method b { display: block; font-family: var(--f-display); font-size: 17px; margin-bottom: 4px; }
-.method b::before { content: counter(st) " · "; font-family: var(--f-mono); font-size: 13px; color: var(--accent); }
-@media (max-width: 760px) { .method { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
-@media (max-width: 420px) { .method { grid-template-columns: minmax(0, 1fr); } }
-
-/* market bars */
-.market { margin-top: 22px; display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 28px; }
-@media (max-width: 760px) { .market { grid-template-columns: minmax(0, 1fr); } }
-.bars { display: grid; gap: 7px; }
-.bar-row { display: grid; grid-template-columns: 112px minmax(0, 1fr) 40px 52px; gap: 10px; align-items: center; font-size: 14px; }
-.bar-row .track { height: 14px; background: var(--line); border-radius: 2px; overflow: hidden; }
-.bar-row .track i { display: block; height: 100%; background: var(--accent); }
-.bar-row .pct { font-family: var(--f-mono); font-size: 13px; text-align: right; font-variant-numeric: tabular-nums; }
-.bar-row .ph { font-family: var(--f-mono); font-size: 12px; color: var(--muted); }
-.axis { display: grid; grid-template-columns: 112px minmax(0, 1fr) 40px 52px; gap: 10px; font-family: var(--f-mono); font-size: 11px; color: var(--muted); }
-.axis span:nth-child(2) { display: flex; justify-content: space-between; }
-.facts { display: grid; gap: 14px; align-content: start; }
-.fact { border-left: 3px solid var(--hot); padding: 2px 0 2px 14px; font-size: 14.5px; line-height: 1.5; }
-.fact b { font-family: var(--f-display); font-size: 24px; display: block; font-variant-numeric: tabular-nums; }
-.src { margin-top: 14px; font-size: 13px; color: var(--muted); }
-
-/* timeline */
-.gantt-wrap { margin-top: 20px; overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; }
-.gantt { min-width: 640px; display: grid; gap: 6px; }
-.g-row { display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 12px; align-items: center; font-size: 13.5px; }
-.g-row .g-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.g-row .g-name b { font-family: var(--f-mono); font-size: 12px; color: var(--muted); margin-right: 6px; font-weight: 600; }
-.g-track { position: relative; height: 20px; background-image: linear-gradient(90deg, var(--line) 1px, transparent 1px); background-size: calc(100% / 43 * 4) 100%; }
-.g-bar { position: absolute; top: 3px; height: 14px; border-radius: 3px; background: var(--accent); overflow: hidden; }
-.g-bar.side { background: var(--side); opacity: .85; }
-.g-bar i { position: absolute; inset: 0 auto 0 0; background: var(--ok); }
-.g-now { position: absolute; top: -4px; bottom: -4px; width: 2px; background: var(--hot); }
-.g-scale { display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 12px; font-family: var(--f-mono); font-size: 11px; color: var(--muted); }
-.g-scale div { position: relative; height: 16px; }
-.g-scale span { position: absolute; transform: translateX(-50%); }
-.legend { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 13px; color: var(--muted); }
-.legend i { display: inline-block; width: 12px; height: 12px; border-radius: 2px; vertical-align: -1px; margin-right: 6px; }
-
-/* filters */
-.filters { margin-top: 18px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
-button.b {
-  font: 500 14px/1 var(--f-body); color: var(--ink); background: var(--surface); border: 1px solid var(--line);
-  padding: 9px 14px; border-radius: 6px; cursor: pointer;
-}
-button.b:hover { border-color: var(--accent); }
-button.b.on { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
-button.b:focus-visible, summary:focus-visible, input:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-
-/* phases */
-.phases { margin-top: 18px; display: grid; gap: 14px; }
-details.phase { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; }
-details.phase[open] { border-color: var(--ink); }
-details.phase > summary {
-  list-style: none; cursor: pointer; padding: 16px 18px; display: grid;
-  grid-template-columns: 56px minmax(0, 1fr) auto; gap: 14px; align-items: center;
-}
-details.phase > summary::-webkit-details-marker { display: none; }
-.p-code { font-family: var(--f-mono); font-weight: 600; font-size: 15px; color: var(--accent); }
-.phase.side .p-code { color: var(--side); }
-.p-name { font-family: var(--f-display); font-size: 21px; font-weight: 600; line-height: 1.25; }
-.p-meta { font-size: 13.5px; color: var(--muted); margin-top: 2px; }
-.p-right { text-align: right; min-width: 92px; }
-.p-pct { font-family: var(--f-mono); font-size: 14px; font-variant-numeric: tabular-nums; }
-.p-right .meter { width: 92px; margin-top: 6px; }
-.chev { display: inline-block; transition: transform .2s; color: var(--muted); margin-left: 6px; }
-details[open] > summary .chev { transform: rotate(90deg); }
-@media (max-width: 560px) {
-  details.phase > summary { grid-template-columns: 40px minmax(0, 1fr); }
-  .p-right { grid-column: 2; text-align: left; display: flex; gap: 10px; align-items: center; }
-  .p-right .meter { margin-top: 0; }
-}
-.p-body { padding: 0 18px 18px; display: grid; gap: 14px; }
-.p-goal { font-size: 15px; padding-top: 2px; }
-.p-skip { font-size: 14px; color: var(--muted); background: var(--paper); border-radius: 6px; padding: 10px 14px; }
-
-.module { border-top: 1px solid var(--line); padding-top: 16px; display: grid; gap: 12px; }
-.m-head { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: baseline; }
-.m-id { font-family: var(--f-mono); font-size: 13px; color: var(--muted); }
-.m-title { font-weight: 700; font-size: 17px; }
-.chip { font-size: 12px; font-weight: 600; padding: 3px 8px; border-radius: 4px; letter-spacing: .02em; white-space: nowrap; }
-.chip.ready { background: var(--ok-soft); color: var(--ok); }
-.chip.now { background: var(--hot-soft); color: var(--hot); }
-.chip.planned { background: var(--paper); color: var(--muted); border: 1px solid var(--line); }
-.chip.needs { background: var(--side-soft); color: var(--side); }
-.chip.skipped { background: var(--paper); color: var(--muted); text-decoration: line-through; }
-.m-links { display: flex; flex-wrap: wrap; gap: 8px 16px; font-size: 14px; align-items: center; }
-.m-links .file { font-family: var(--f-mono); font-size: 12.5px; }
-.parts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
-@media (max-width: 760px) { .parts { grid-template-columns: minmax(0, 1fr); } }
-.part { border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; min-width: 0; background: var(--surface); }
-.part.done { border-color: var(--ok); background: var(--ok-soft); }
-.part label { display: flex; gap: 8px; align-items: center; font-weight: 600; font-size: 13px; letter-spacing: .06em; text-transform: uppercase; cursor: pointer; }
-.part label input { width: 17px; height: 17px; accent-color: var(--ok); margin: 0; }
-.part ul { margin: 8px 0 0; padding-left: 18px; font-size: 14px; line-height: 1.5; display: grid; gap: 4px; }
-.m-done { font-size: 14px; }
-.m-done b { font-weight: 600; }
-.m-actions { display: flex; gap: 8px; }
-.module.is-skipped .parts, .module.is-skipped .m-done { opacity: .45; }
-.next-flag { font-size: 12px; font-weight: 700; color: var(--surface); background: var(--hot); padding: 3px 8px; border-radius: 4px; }
-footer { margin-top: 64px; padding-top: 18px; border-top: 1px solid var(--line); font-size: 14px; color: var(--muted); }
-@media (prefers-reduced-motion: reduce) { .meter i, .chev { transition: none; } }
-</style>
-<style>
-body { margin: 0; }
-img { max-width: 100%; }
-[hidden] { display: none !important; }
-.sitenav { border-bottom: 1px solid var(--line); background: var(--paper); }
-.sitenav-in { max-width: 1080px; margin: 0 auto; display: flex; flex-wrap: wrap; gap: 4px 6px; align-items: center; padding-block: 10px; }
-.sitenav a { color: var(--muted); text-decoration: none; font: 500 14px/1 var(--f-body); padding: 8px 10px; border-radius: 6px; }
-.sitenav a:hover, .sitenav a:focus-visible { color: var(--ink); background: var(--accent-soft); outline: none; }
-.sitenav a[aria-current="page"] { color: var(--accent); background: var(--accent-soft); font-weight: 600; }
-.sitenav a.brand { font: 800 16px/1 var(--f-display); color: var(--ink); margin-right: 8px; padding-left: 0; }
-.sitenav a.brand:hover { background: none; }
-</style>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="assets/chrome.css">
+<link rel="stylesheet" href="assets/site.css">
 </head>
 <body>
-<nav class="sitenav" aria-label="Điều hướng"><div class="sitenav-in"><a class="brand" href="index.html">AI Engineer</a><a href="index.html">Lộ trình</a><a href="bai01.html">Bài 1</a><a href="diffusion-gd1.html">Diffusion GĐ1</a><a href="notebooks.html" aria-current="page">Notebook</a></div></nav>
-<style>
-.nblist { margin-top: 24px; display: grid; gap: 0; border-top: 1.5px solid var(--ink); }
-.nbrow { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 16px; align-items: center; padding: 16px 0; border-bottom: 1px solid var(--line); }
-@media (max-width: 560px) { .nbrow { grid-template-columns: minmax(0, 1fr); } }
-.nblinks { display: flex; flex-wrap: wrap; gap: 8px; }
-.b-link { font: 500 14px/1 var(--f-body); color: var(--ink); background: var(--surface); border: 1px solid var(--line); padding: 9px 14px; border-radius: 6px; text-decoration: none; }
-.b-link:hover { border-color: var(--accent); }
-.b-link.sol { color: var(--muted); }
-.steps { margin: 16px 0 0; padding-left: 22px; display: grid; gap: 6px; max-width: 70ch; }
-</style>
-<div class="wrap">
-  <div class="eyebrow">Tài liệu thực hành</div>
-  <h1>Notebook thực hành</h1>
-  <p class="lede">Mỗi notebook có hai bản: bản bài tập có <code class="mono">TODO</code> và ô ✅ tự chấm, và bản lời giải chỉ nên mở khi đã tự làm mà vẫn bí.</p>
-  <div class="nblist"><div class="nbrow"><div><div class="m-id">P2.1</div><div class="m-title">Bài 1 · Mạng nơ-ron học thế nào</div><div class="s-small">numpy + PyTorch, chạy trên CPU</div></div>
-    <div class="nblinks"><a class="b-link" href="notebooks/bai01_thuc_hanh.ipynb" download>Bài tập</a><a class="b-link sol" href="notebooks/bai01_thuc_hanh_LOI_GIAI.ipynb" download>Lời giải</a><a class="b-link" href="bai01.html">Lý thuyết</a></div></div><div class="nbrow"><div><div class="m-id">P2.2</div><div class="m-title">Lab 1 · Training loop CIFAR-10</div><div class="s-small">cần GPU (Colab T4), khoảng 10 phút train</div></div>
-    <div class="nblinks"><a class="b-link" href="notebooks/lab01_training_loop.ipynb" download>Bài tập</a><a class="b-link sol" href="notebooks/lab01_training_loop_LOI_GIAI.ipynb" download>Lời giải</a></div></div><div class="nbrow"><div><div class="m-id">P5.1</div><div class="m-title">Diffusion GĐ 1 · DDPM trên điểm 2D</div><div class="s-small">chạy trên CPU, train khoảng 30 giây</div></div>
-    <div class="nblinks"><a class="b-link" href="notebooks/diffusion_gd1_thuc_hanh.ipynb" download>Bài tập</a><a class="b-link sol" href="notebooks/diffusion_gd1_thuc_hanh_LOI_GIAI.ipynb" download>Lời giải</a><a class="b-link" href="diffusion-gd1.html">Lý thuyết</a></div></div></div>
-  <section class="block">
-    <h2>Cách mở notebook</h2>
-    <ol class="steps">
-      <li>Bấm <b>Bài tập</b> để tải file <code class="mono">.ipynb</code> về máy.</li>
-      <li>Vào <a href="https://colab.research.google.com" target="_blank" rel="noopener">colab.research.google.com</a>, chọn <i>File → Upload notebook</i> rồi chọn file vừa tải.</li>
-      <li>Notebook cần GPU thì vào <i>Runtime → Change runtime type → T4 GPU</i>.</li>
-      <li>Chạy từ trên xuống, viết code vào chỗ <code class="mono">TODO</code>, rồi chạy ô ✅ ngay sau để chấm.</li>
-    </ol>
+<header class="sh"><div class="sh-in"><a class="sh-brand" href="index.html"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="var(--ink)"/><circle cx="9" cy="22" r="2.6" fill="var(--accent-soft)"/><circle cx="16" cy="10" r="2.6" fill="var(--accent-soft)"/><circle cx="23" cy="19" r="2.6" fill="#FF9361"/><path d="M9 22 L16 10 L23 19" stroke="var(--accent-soft)" stroke-width="1.8" fill="none"/></svg><span>AI Engineer<small>lộ trình tự học</small></span></a><nav class="sh-nav" id="sh-nav" aria-label="Chính"><a href="index.html">Trang chủ</a><a href="bai-hoc.html">Bài học</a><a href="lo-trinh.html">Lộ trình</a><a href="notebooks.html" aria-current="page">Notebook</a><a class="sh-cta-m" href="bai01.html" data-next-lesson>Học tiếp →</a></nav><a class="sh-cta" href="bai01.html" data-next-lesson>Học tiếp <span class="arr">→</span></a><button class="sh-burger" type="button" aria-expanded="false" aria-controls="sh-nav">Menu</button></div></header>
+
+<main class="container">
+  <section class="page-hero"><div class="eyebrow">Thực hành</div><h1>Notebook thực hành</h1>
+    <p class="lede">Mỗi notebook có bản bài tập với TODO và ô ✅ tự chấm, và bản lời giải chỉ nên mở khi đã tự làm mà vẫn bí.</p></section>
+  <div class="cat-grid" style="margin-top:32px"><div class="lcard reveal" style="cursor:default"><div class="top"><span class="code">P2.1 · Deep Learning nền tảng</span><span class="chip ready"><span class="dot"></span>Sẵn sàng</span></div><h3>Bài 1 · Mạng nơ-ron học thế nào</h3><div class="sum">numpy + PyTorch, chạy trên CPU</div><div style="display:grid;gap:8px;margin-top:6px"><a class="dl" href="notebooks/bai01_thuc_hanh.ipynb" download><span class="ext">IPYNB</span><span>Bài tập<span style="display:block;font:400 12px var(--f-mono);color:var(--muted)">bai01_thuc_hanh.ipynb</span></span></a><a class="dl" href="notebooks/bai01_thuc_hanh_LOI_GIAI.ipynb" download><span class="ext">IPYNB</span><span>Lời giải<span style="display:block;font:400 12px var(--f-mono);color:var(--muted)">bai01_thuc_hanh_LOI_GIAI.ipynb</span></span></a></div><div class="bot"><a href="bai01.html">Trang bài →</a><span></span></div></div><div class="lcard reveal" style="cursor:default"><div class="top"><span class="code">P2.2 · Deep Learning nền tảng</span><span class="chip ready"><span class="dot"></span>Sẵn sàng</span></div><h3>Bài 2 · Train mạng thật</h3><div class="sum">cần GPU (Colab T4), khoảng 10 phút train</div><div style="display:grid;gap:8px;margin-top:6px"><a class="dl" href="notebooks/lab01_training_loop.ipynb" download><span class="ext">IPYNB</span><span>Bài tập<span style="display:block;font:400 12px var(--f-mono);color:var(--muted)">lab01_training_loop.ipynb</span></span></a><a class="dl" href="notebooks/lab01_training_loop_LOI_GIAI.ipynb" download><span class="ext">IPYNB</span><span>Lời giải<span style="display:block;font:400 12px var(--f-mono);color:var(--muted)">lab01_training_loop_LOI_GIAI.ipynb</span></span></a></div><div class="bot"><a href="bai/p2-2.html">Trang bài →</a><span></span></div></div><div class="lcard reveal" style="cursor:default"><div class="top"><span class="code">P5.1 · Dự án Diffusion: tạo ảnh từ con số 0</span><span class="chip ready"><span class="dot"></span>Sẵn sàng</span></div><h3>GĐ 1 · Diffusion tạo ảnh thế nào</h3><div class="sum">chạy trên CPU, train khoảng 30 giây</div><div style="display:grid;gap:8px;margin-top:6px"><a class="dl" href="notebooks/diffusion_gd1_thuc_hanh.ipynb" download><span class="ext">IPYNB</span><span>Bài tập<span style="display:block;font:400 12px var(--f-mono);color:var(--muted)">diffusion_gd1_thuc_hanh.ipynb</span></span></a><a class="dl" href="notebooks/diffusion_gd1_thuc_hanh_LOI_GIAI.ipynb" download><span class="ext">IPYNB</span><span>Lời giải<span style="display:block;font:400 12px var(--f-mono);color:var(--muted)">diffusion_gd1_thuc_hanh_LOI_GIAI.ipynb</span></span></a></div><div class="bot"><a href="diffusion-gd1.html">Trang bài →</a><span></span></div></div></div>
+  <section class="section">
+    <div class="sec-head"><div class="eyebrow">Hướng dẫn</div><h2>Mở notebook trên Colab</h2></div>
+    <div class="trio">
+      <div class="trio-card reveal"><h3 style="margin-top:0">1 · Tải về</h3><p>Bấm <b>Bài tập</b> để tải file <code>.ipynb</code> về máy.</p></div>
+      <div class="trio-card reveal"><h3 style="margin-top:0">2 · Mở trên Colab</h3><p>Vào <a href="https://colab.research.google.com" target="_blank" rel="noopener">colab.research.google.com</a> → File → Upload notebook. Bài cần GPU thì chọn Runtime → T4 GPU.</p></div>
+      <div class="trio-card reveal"><h3 style="margin-top:0">3 · Làm và tự chấm</h3><p>Chạy từ trên xuống, viết code vào chỗ <code>TODO</code>, chạy ô ✅ ngay sau đó. Thấy ✅ là xong phần đó.</p></div>
+    </div>
   </section>
-  <footer>Các notebook mới sẽ được thêm vào đây theo lộ trình.</footer>
-</div>
+</main>
+<footer class="sf"><div class="sf-in"><div><a class="sh-brand" href="index.html" style="margin:0"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="var(--ink)"/><circle cx="9" cy="22" r="2.6" fill="var(--accent-soft)"/><circle cx="16" cy="10" r="2.6" fill="var(--accent-soft)"/><circle cx="23" cy="19" r="2.6" fill="#FF9361"/><path d="M9 22 L16 10 L23 19" stroke="var(--accent-soft)" stroke-width="1.8" fill="none"/></svg><span>AI Engineer<small>lộ trình tự học</small></span></a><p>Lộ trình tự học AI Engineer bằng tiếng Việt: lý thuyết tương tác, bài tập tính tay và notebook có ô tự chấm.</p></div><div><h4>Học</h4><ul><li><a href="bai-hoc.html">Tất cả bài học</a></li><li><a href="lo-trinh.html">Lộ trình và tiến độ</a></li><li><a href="notebooks.html">Notebook thực hành</a></li></ul></div><div><h4>Đã có nội dung</h4><ul><li><a href="bai01.html">Bài 1 · Mạng nơ-ron</a></li><li><a href="bai/p2-2.html">Lab 1 · CIFAR-10</a></li><li><a href="diffusion-gd1.html">Diffusion GĐ 1</a></li></ul></div><div><h4>Dự án</h4><ul><li><a href="https://github.com/truonghuu344/ai-engineer-roadmap" target="_blank" rel="noopener">Mã nguồn trên GitHub</a></li><li><a href="bai-hoc.html#p5">Dự án Diffusion</a></li><li><a href="bai-hoc.html#p10">Portfolio và đi làm</a></li></ul></div></div><div class="sf-bottom"><span>© 2026 Vũ Hữu Trường · soạn cùng Claude</span><span>Tiến độ lưu trên trình duyệt của bạn</span></div></footer>
+<script src="assets/data.js"></script>
+<script src="assets/chrome.js"></script>
 </body>
 </html>

@@ -1,0 +1,432 @@
+<!doctype html>
+<html lang="vi" data-root="">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Lộ trình và tiến độ · AI Engineer</title>
+<meta name="description" content="Lộ trình AI Engineer 11 giai đoạn, 42 bài với checklist tiến độ, dòng thời gian và dữ liệu tuyển dụng 2026.">
+<meta property="og:title" content="Lộ trình và tiến độ · AI Engineer">
+<meta property="og:description" content="Lộ trình AI Engineer 11 giai đoạn, 42 bài với checklist tiến độ, dòng thời gian và dữ liệu tuyển dụng 2026.">
+<meta name="theme-color" content="#F4F6FB">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23131A33'/%3E%3Cpath d='M9 22 L16 10 L23 19' stroke='%23E5E9FB' stroke-width='2' fill='none'/%3E%3Ccircle cx='9' cy='22' r='3' fill='%23E5E9FB'/%3E%3Ccircle cx='16' cy='10' r='3' fill='%23E5E9FB'/%3E%3Ccircle cx='23' cy='19' r='3' fill='%23FF9361'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="assets/chrome.css">
+<style>
+/* Layout (shared with the AI Engineer lessons): one wide column; summary strip → market data → timeline → phase ledger. Each module splits into three tracked parts: lý thuyết, bài tập, thực hành. */
+:root {
+  --paper: #F4F6FB;
+  --surface: #FFFFFF;
+  --ink: #131A33;
+  --muted: #59627F;
+  --line: #DCE1EE;
+  --accent: #2C47D1;
+  --accent-soft: #E5E9FB;
+  --hot: #D2501B;
+  --hot-soft: #FCE8DE;
+  --ok: #1D8350;
+  --ok-soft: #E1F3E9;
+  --side: #7A4BC2;
+  --side-soft: #EFE7FA;
+  --f-display: "Bricolage Grotesque", "Be Vietnam Pro", system-ui, sans-serif;
+  --f-body: "Be Vietnam Pro", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--paper); color: var(--ink); font-family: var(--f-body); font-size: 16px; line-height: 1.65;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.wrap { max-width: 1040px; margin: 0 auto; padding-block: 40px 0; }
+h1, h2, h3 { font-family: var(--f-display); text-wrap: balance; line-height: 1.15; margin: 0; }
+h1 { font-size: clamp(36px, 6vw, 58px); font-weight: 800; letter-spacing: -.02em; margin-top: 10px; }
+h2 { font-size: clamp(24px, 3.4vw, 32px); font-weight: 800; letter-spacing: -.01em; }
+p { margin: 12px 0 0; }
+a { color: var(--accent); }
+.eyebrow { font-size: 13px; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); font-weight: 600; }
+.lede { font-size: 18.5px; color: var(--muted); max-width: 66ch; }
+.mono { font-family: var(--f-mono); font-size: .88em; }
+section.block { margin-top: 64px; }
+.sub { color: var(--muted); font-size: 15px; max-width: 70ch; }
+
+/* summary strip */
+.summary { margin-top: 28px; display: grid; grid-template-columns: 1.1fr 1fr 1.4fr 1fr; gap: 0; border: 1.5px solid var(--ink); border-radius: 10px; background: var(--surface); }
+.summary > div { padding: 16px 18px; min-width: 0; border-left: 1px solid var(--line); }
+.summary > div:first-child { border-left: 0; }
+.s-label { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+.s-big { font-family: var(--f-display); font-size: 34px; font-weight: 800; line-height: 1.1; margin-top: 6px; font-variant-numeric: tabular-nums; }
+.s-text { margin-top: 6px; font-weight: 600; line-height: 1.4; }
+.s-small { font-size: 13.5px; color: var(--muted); margin-top: 4px; line-height: 1.45; }
+.meter { height: 6px; background: var(--line); border-radius: 3px; overflow: hidden; margin-top: 10px; }
+.meter i { display: block; height: 100%; width: 0; background: var(--ok); transition: width .4s; }
+@media (max-width: 820px) { .summary { grid-template-columns: 1fr 1fr; } .summary > div:nth-child(3) { border-left: 0; } .summary > div:nth-child(n+3) { border-top: 1px solid var(--line); } }
+@media (max-width: 460px) { .summary { grid-template-columns: minmax(0, 1fr); } .summary > div { border-left: 0; border-top: 1px solid var(--line); } .summary > div:first-child { border-top: 0; } }
+.sync { margin-top: 10px; font-size: 13px; color: var(--muted); }
+
+/* method */
+.method { margin-top: 20px; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; counter-reset: st; }
+.method div { border-top: 2px solid var(--ink); padding-top: 10px; font-size: 14px; line-height: 1.5; counter-increment: st; }
+.method b { display: block; font-family: var(--f-display); font-size: 17px; margin-bottom: 4px; }
+.method b::before { content: counter(st) " · "; font-family: var(--f-mono); font-size: 13px; color: var(--accent); }
+@media (max-width: 760px) { .method { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
+@media (max-width: 420px) { .method { grid-template-columns: minmax(0, 1fr); } }
+
+/* market bars */
+.market { margin-top: 22px; display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 28px; }
+@media (max-width: 760px) { .market { grid-template-columns: minmax(0, 1fr); } }
+.bars { display: grid; gap: 7px; }
+.bar-row { display: grid; grid-template-columns: 112px minmax(0, 1fr) 40px 52px; gap: 10px; align-items: center; font-size: 14px; }
+.bar-row .track { height: 14px; background: var(--line); border-radius: 2px; overflow: hidden; }
+.bar-row .track i { display: block; height: 100%; background: var(--accent); }
+.bar-row .pct { font-family: var(--f-mono); font-size: 13px; text-align: right; font-variant-numeric: tabular-nums; }
+.bar-row .ph { font-family: var(--f-mono); font-size: 12px; color: var(--muted); }
+.axis { display: grid; grid-template-columns: 112px minmax(0, 1fr) 40px 52px; gap: 10px; font-family: var(--f-mono); font-size: 11px; color: var(--muted); }
+.axis span:nth-child(2) { display: flex; justify-content: space-between; }
+.facts { display: grid; gap: 14px; align-content: start; }
+.fact { border-left: 3px solid var(--hot); padding: 2px 0 2px 14px; font-size: 14.5px; line-height: 1.5; }
+.fact b { font-family: var(--f-display); font-size: 24px; display: block; font-variant-numeric: tabular-nums; }
+.src { margin-top: 14px; font-size: 13px; color: var(--muted); }
+
+/* timeline */
+.gantt-wrap { margin-top: 20px; overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; }
+.gantt { min-width: 640px; display: grid; gap: 6px; }
+.g-row { display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 12px; align-items: center; font-size: 13.5px; }
+.g-row .g-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.g-row .g-name b { font-family: var(--f-mono); font-size: 12px; color: var(--muted); margin-right: 6px; font-weight: 600; }
+.g-track { position: relative; height: 20px; background-image: linear-gradient(90deg, var(--line) 1px, transparent 1px); background-size: calc(100% / 43 * 4) 100%; }
+.g-bar { position: absolute; top: 3px; height: 14px; border-radius: 3px; background: var(--accent); overflow: hidden; }
+.g-bar.side { background: var(--side); opacity: .85; }
+.g-bar i { position: absolute; inset: 0 auto 0 0; background: var(--ok); }
+.g-now { position: absolute; top: -4px; bottom: -4px; width: 2px; background: var(--hot); }
+.g-scale { display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 12px; font-family: var(--f-mono); font-size: 11px; color: var(--muted); }
+.g-scale div { position: relative; height: 16px; }
+.g-scale span { position: absolute; transform: translateX(-50%); }
+.legend { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 13px; color: var(--muted); }
+.legend i { display: inline-block; width: 12px; height: 12px; border-radius: 2px; vertical-align: -1px; margin-right: 6px; }
+
+/* filters */
+.filters { margin-top: 18px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+button.b {
+  font: 500 14px/1 var(--f-body); color: var(--ink); background: var(--surface); border: 1px solid var(--line);
+  padding: 9px 14px; border-radius: 6px; cursor: pointer;
+}
+button.b:hover { border-color: var(--accent); }
+button.b.on { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+button.b:focus-visible, summary:focus-visible, input:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* phases */
+.phases { margin-top: 18px; display: grid; gap: 14px; }
+details.phase { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; }
+details.phase[open] { border-color: var(--ink); }
+details.phase > summary {
+  list-style: none; cursor: pointer; padding: 16px 18px; display: grid;
+  grid-template-columns: 56px minmax(0, 1fr) auto; gap: 14px; align-items: center;
+}
+details.phase > summary::-webkit-details-marker { display: none; }
+.p-code { font-family: var(--f-mono); font-weight: 600; font-size: 15px; color: var(--accent); }
+.phase.side .p-code { color: var(--side); }
+.p-name { font-family: var(--f-display); font-size: 21px; font-weight: 600; line-height: 1.25; }
+.p-meta { font-size: 13.5px; color: var(--muted); margin-top: 2px; }
+.p-right { text-align: right; min-width: 92px; }
+.p-pct { font-family: var(--f-mono); font-size: 14px; font-variant-numeric: tabular-nums; }
+.p-right .meter { width: 92px; margin-top: 6px; }
+.chev { display: inline-block; transition: transform .2s; color: var(--muted); margin-left: 6px; }
+details[open] > summary .chev { transform: rotate(90deg); }
+@media (max-width: 560px) {
+  details.phase > summary { grid-template-columns: 40px minmax(0, 1fr); }
+  .p-right { grid-column: 2; text-align: left; display: flex; gap: 10px; align-items: center; }
+  .p-right .meter { margin-top: 0; }
+}
+.p-body { padding: 0 18px 18px; display: grid; gap: 14px; }
+.p-goal { font-size: 15px; padding-top: 2px; }
+.p-skip { font-size: 14px; color: var(--muted); background: var(--paper); border-radius: 6px; padding: 10px 14px; }
+
+.module { border-top: 1px solid var(--line); padding-top: 16px; display: grid; gap: 12px; }
+.m-head { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: baseline; }
+.m-id { font-family: var(--f-mono); font-size: 13px; color: var(--muted); }
+.m-title { font-weight: 700; font-size: 17px; }
+.chip { font-size: 12px; font-weight: 600; padding: 3px 8px; border-radius: 4px; letter-spacing: .02em; white-space: nowrap; }
+.chip.ready { background: var(--ok-soft); color: var(--ok); }
+.chip.now { background: var(--hot-soft); color: var(--hot); }
+.chip.planned { background: var(--paper); color: var(--muted); border: 1px solid var(--line); }
+.chip.needs { background: var(--side-soft); color: var(--side); }
+.chip.skipped { background: var(--paper); color: var(--muted); text-decoration: line-through; }
+.m-links { display: flex; flex-wrap: wrap; gap: 8px 16px; font-size: 14px; align-items: center; }
+.m-links .file { font-family: var(--f-mono); font-size: 12.5px; }
+.parts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+@media (max-width: 760px) { .parts { grid-template-columns: minmax(0, 1fr); } }
+.part { border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; min-width: 0; background: var(--surface); }
+.part.done { border-color: var(--ok); background: var(--ok-soft); }
+.part label { display: flex; gap: 8px; align-items: center; font-weight: 600; font-size: 13px; letter-spacing: .06em; text-transform: uppercase; cursor: pointer; }
+.part label input { width: 17px; height: 17px; accent-color: var(--ok); margin: 0; }
+.part ul { margin: 8px 0 0; padding-left: 18px; font-size: 14px; line-height: 1.5; display: grid; gap: 4px; }
+.m-done { font-size: 14px; }
+.m-done b { font-weight: 600; }
+.m-actions { display: flex; gap: 8px; }
+.module.is-skipped .parts, .module.is-skipped .m-done { opacity: .45; }
+.next-flag { font-size: 12px; font-weight: 700; color: var(--surface); background: var(--hot); padding: 3px 8px; border-radius: 4px; }
+footer { margin-top: 64px; padding-top: 18px; border-top: 1px solid var(--line); font-size: 14px; color: var(--muted); }
+@media (prefers-reduced-motion: reduce) { .meter i, .chev { transition: none; } }
+</style>
+<style>body{margin:0}.sf a.sh-brand span{font-family:var(--f-display)}</style>
+</head>
+<body>
+<header class="sh"><div class="sh-in"><a class="sh-brand" href="index.html"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="var(--ink)"/><circle cx="9" cy="22" r="2.6" fill="var(--accent-soft)"/><circle cx="16" cy="10" r="2.6" fill="var(--accent-soft)"/><circle cx="23" cy="19" r="2.6" fill="#FF9361"/><path d="M9 22 L16 10 L23 19" stroke="var(--accent-soft)" stroke-width="1.8" fill="none"/></svg><span>AI Engineer<small>lộ trình tự học</small></span></a><nav class="sh-nav" id="sh-nav" aria-label="Chính"><a href="index.html">Trang chủ</a><a href="bai-hoc.html">Bài học</a><a href="lo-trinh.html" aria-current="page">Lộ trình</a><a href="notebooks.html">Notebook</a><a class="sh-cta-m" href="bai01.html" data-next-lesson>Học tiếp →</a></nav><a class="sh-cta" href="bai01.html" data-next-lesson>Học tiếp <span class="arr">→</span></a><button class="sh-burger" type="button" aria-expanded="false" aria-controls="sh-nav">Menu</button></div></header>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Lộ trình của Trường · từ cơ bản đến nâng cao</div>
+    <h1>Lộ trình AI Engineer</h1>
+    <p class="lede">11 giai đoạn, 42 bài. Bài nào cũng có ba phần: lý thuyết, bài tập và thực hành, kèm tiêu chí rõ ràng để biết khi nào là xong. Tích vào từng phần khi làm xong; tiến độ được lưu trên trình duyệt và đồng bộ với các trang bài học.</p>
+    <div class="summary">
+      <div><div class="s-label">Tiến độ</div><div class="s-big" id="sumPct">0%</div><div class="meter"><i id="sumBar"></i></div><div class="s-small" id="sumParts">0 / 0 phần</div></div>
+      <div><div class="s-label">Đang ở</div><div class="s-text" id="sumNow">P2 · Deep Learning nền tảng</div><div class="s-small">song song: dự án Diffusion</div></div>
+      <div><div class="s-label">Việc tiếp theo</div><div class="s-text" id="sumNext">Đang tải…</div><div class="s-small" id="sumNextPart"></div></div>
+      <div><div class="s-label">Thời lượng</div><div class="s-big">43<span style="font-size:18px"> tuần</span></div><div class="s-small">khoảng 20 giờ mỗi tuần</div></div>
+    </div>
+    <div class="sync" id="sync">Tiến độ được lưu trên trình duyệt này.</div>
+  </header>
+
+  <section class="block">
+    <h2>Cách học mỗi bài</h2>
+    <div class="method">
+      <div><b>Lý thuyết</b>Trang tương tác Claude soạn: giải thích, demo kéo-thả, công thức.</div>
+      <div><b>Bài tập</b>Tính tay và câu hỏi tự kiểm tra ngay trong trang, có chấm tự động.</div>
+      <div><b>Thực hành</b>Notebook có TODO và ô ✅ tự chấm, so kết quả với PyTorch.</div>
+      <div><b>Lab hoặc dự án</b>Bài toán lớn hơn, đưa lên GitHub với README.</div>
+      <div><b>Nộp bài</b>Gửi kết quả và câu trả lời cho Claude chấm, rồi nhận bài sau.</div>
+    </div>
+    <p class="sub">Tài liệu được soạn dần: bài có nhãn "Claude soạn khi tới" sẽ được làm khi bạn sắp học tới, để bám sát chỗ bạn đang mạnh hay yếu.</p>
+  </section>
+
+  <section class="block">
+    <h2>Nhà tuyển dụng cần gì</h2>
+    <p class="sub">Tỉ lệ tin tuyển dụng AI Engineer nhắc tới từng kỹ năng, phân tích 3.449 tin đang mở (tháng 5/2026). Cột phải là giai đoạn trong lộ trình dạy kỹ năng đó.</p>
+    <div class="market">
+      <div>
+        <div class="bars" id="bars"></div>
+        <div class="axis" style="margin-top:6px"><span></span><span><span>0%</span><span>25%</span><span>50%</span><span>75%</span></span><span></span><span></span></div>
+      </div>
+      <div class="facts">
+        <div class="fact"><b>6%</b>tin tuyển dụng dành cho entry-level. Phần lớn nhà tuyển dụng muốn ứng viên đã ship ít nhất một dự án LLM hoặc ML.</div>
+        <div class="fact"><b>27%</b>tin có gắn nhãn remote (một tin có thể gắn nhiều nhãn). Ở một mẫu khác gồm 903 tin tại Mỹ, chỉ 5,9% là remote hoàn toàn.</div>
+        <div class="fact"><b>Điều này nghĩa là</b>Dự án đã ship, có số đo và chạy ổn định (API, CI/CD, giám sát) quan trọng hơn chứng chỉ. Vì vậy P4, P8 và P10 được dồn nhiều thời gian.</div>
+      </div>
+    </div>
+    <div class="src">Nguồn: <a href="https://dev.to/gnana_6392e836fd500a957dc/ai-engineer-skills-companies-want-in-2026-3449-posting-analysis-5f9l" target="_blank" rel="noopener">AI Engineer Skills Companies Want in 2026 (DEV Community)</a> · <a href="https://365datascience.com/career-advice/career-guides/ai-engineer-job-outlook-2025/" target="_blank" rel="noopener">AI Engineer Job Outlook (365 Data Science)</a>. Số liệu chủ yếu từ tin tuyển dụng ở Mỹ và Ấn Độ.</div>
+  </section>
+
+  <section class="block">
+    <h2>Dòng thời gian</h2>
+    <p class="sub">Tuần tính từ lúc bắt đầu P0. Bạn đang ở khoảng tuần 8 vì đã có nền Python và ML cổ điển; P0, P1 có thể làm nhanh để lấp chỗ hổng. Hai dải tím chạy song song với dải chính.</p>
+    <div class="gantt-wrap"><div class="gantt" id="gantt"></div></div>
+    <div class="legend"><span><i style="background:var(--accent)"></i>giai đoạn chính</span><span><i style="background:var(--side)"></i>chạy song song</span><span><i style="background:var(--ok)"></i>phần đã xong</span><span><i style="background:var(--hot);width:3px"></i>vị trí hiện tại</span></div>
+  </section>
+
+  <section class="block" id="ledger">
+    <h2>Chi tiết từng giai đoạn</h2>
+    <div class="filters" role="group" aria-label="Lọc bài">
+      <button class="b on" data-filter="all" id="f-all">Tất cả</button>
+      <button class="b" data-filter="todo" id="f-todo">Chưa xong</button>
+      <button class="b" data-filter="ready" id="f-ready">Đã có tài liệu</button>
+      <button class="b" id="expandAll">Mở hết</button>
+      <button class="b" id="collapseAll">Thu gọn</button>
+    </div>
+    <div class="phases" id="phases"></div>
+  </section>
+
+  <footer>Mỗi bài có trang riêng với đề cương, checklist và notebook. Tiến độ tích ở đây và ở trang bài là một.</footer>
+</div>
+
+<script src="assets/data.js"></script>
+<script src="assets/chrome.js"></script>
+<script>
+(function () {
+  "use strict";
+  const MARKET = [
+    ["Python", 71, "P0"], ["LLMs", 66, "P4"], ["RAG", 40, "P4"], ["Machine Learning", 38, "P1–P2"], ["AWS", 37, "P8"],
+    ["Monitoring", 31, "P8"], ["LangChain", 25, "P4"], ["CI/CD", 24, "P8"], ["PyTorch", 23, "P2–P3"], ["SQL", 19, "P8"],
+    ["Vector DB", 18, "P4"], ["Docker", 18, "P8"],
+  ];
+  const PARTS = [["t", "Lý thuyết"], ["b", "Bài tập"], ["p", "Thực hành"]];
+  const ORDER = ["p0", "p1", "p2", "p5", "p3", "p4", "p6", "p7", "p8", "p9", "p10"];
+  const NOW_WEEK = 8;
+  const LKEY = "ai-eng-roadmap-cache-v1";
+  let done = {};
+  try { const c = JSON.parse(localStorage.getItem(LKEY) || "null"); if (c && typeof c === "object") done = c; } catch (e) {}
+  let filter = "all";
+  const allModules = [];
+  PHASES.forEach((ph) => ph.modules.forEach((m) => allModules.push({ ph, m })));
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+  /* ---------- market bars ---------- */
+  document.getElementById("bars").innerHTML = MARKET.map(([n, v, ph]) =>
+    `<div class="bar-row"><span>${n}</span><span class="track"><i style="width:${v / 75 * 100}%"></i></span><span class="pct">${v}%</span><span class="ph">${ph}</span></div>`).join("");
+
+  /* ---------- progress helpers ---------- */
+  const isSkipped = (m) => !!done[m.id + ":skip"];
+  const partDone = (m, k) => isSkipped(m) || !!done[m.id + ":" + k];
+  function phaseStats(ph) {
+    let d = 0, n = 0;
+    ph.modules.forEach((m) => PARTS.forEach(([k]) => { n++; if (partDone(m, k)) d++; }));
+    return { d, n };
+  }
+  function nextStep() {
+    for (const pid of ORDER) {
+      const ph = PHASES.find((p) => p.id === pid);
+      for (const m of ph.modules) {
+        if (isSkipped(m)) continue;
+        const k = PARTS.find(([k]) => !done[m.id + ":" + k]);
+        if (k) return { ph, m, part: k[1] };
+      }
+    }
+    return null;
+  }
+  function firstFocus() {
+    // Start pointing from P2 (where the learner is) unless earlier phases have been started.
+    const started = (pid) => PHASES.find((p) => p.id === pid).modules.some((m) => PARTS.some(([k]) => done[m.id + ":" + k]) || isSkipped(m));
+    if (started("p0") || started("p1")) return nextStep();
+    for (const pid of ORDER.slice(2)) {
+      const ph = PHASES.find((p) => p.id === pid);
+      for (const m of ph.modules) {
+        if (isSkipped(m)) continue;
+        const k = PARTS.find(([k]) => !done[m.id + ":" + k]);
+        if (k) return { ph, m, part: k[1] };
+      }
+    }
+    return nextStep();
+  }
+
+  /* ---------- render ---------- */
+  const openState = { p2: true, p5: true };
+  function renderSummary() {
+    let d = 0, n = 0;
+    PHASES.forEach((ph) => { const s = phaseStats(ph); d += s.d; n += s.n; });
+    const pct = n ? Math.round(d / n * 100) : 0;
+    document.getElementById("sumPct").textContent = pct + "%";
+    document.getElementById("sumBar").style.width = pct + "%";
+    document.getElementById("sumParts").textContent = `${d} / ${n} phần đã xong`;
+    const nx = firstFocus();
+    document.getElementById("sumNext").textContent = nx ? nx.m.title : "Hoàn thành lộ trình";
+    document.getElementById("sumNextPart").textContent = nx ? `${nx.part} · ${nx.ph.id.toUpperCase()} ${nx.ph.name}` : "";
+    return nx;
+  }
+  function renderGantt() {
+    const W = 43, rows = ORDER.map((pid) => PHASES.find((p) => p.id === pid));
+    const pos = (w) => ((w - 1) / W) * 100;
+    let html = rows.map((ph) => {
+      const s = phaseStats(ph), [a, b] = ph.weeks, left = pos(a), width = ((b - a + 1) / W) * 100;
+      return `<div class="g-row"><div class="g-name"><b>${ph.id.toUpperCase()}</b>${esc(ph.name)}</div><div class="g-track">
+        <div class="g-bar ${ph.track === "side" ? "side" : ""}" style="left:${left}%;width:${width}%" title="Tuần ${a}–${b}"><i style="width:${s.n ? s.d / s.n * 100 : 0}%"></i></div>
+        <div class="g-now" style="left:${pos(NOW_WEEK)}%"></div></div></div>`;
+    }).join("");
+    html += `<div class="g-scale"><div></div><div>${[1, 5, 9, 13, 17, 21, 25, 29, 33, 37, 41].map((w) => `<span style="left:${pos(w)}%">${w === 1 ? "tuần 1" : w}</span>`).join("")}</div></div>`;
+    document.getElementById("gantt").innerHTML = html;
+  }
+  function moduleVisible(m) {
+    if (filter === "ready") return m.status === "ready" || m.status === "now";
+    if (filter === "todo") return !PARTS.every(([k]) => partDone(m, k));
+    return true;
+  }
+  function renderPhases(nx) {
+    const host = document.getElementById("phases");
+    host.querySelectorAll("details.phase").forEach((d) => (openState[d.dataset.id] = d.open));
+    host.innerHTML = ORDER.map((pid) => {
+      const ph = PHASES.find((p) => p.id === pid), s = phaseStats(ph), pct = s.n ? Math.round(s.d / s.n * 100) : 0;
+      const mods = ph.modules.filter(moduleVisible);
+      if (!mods.length && filter !== "all") return "";
+      const body = mods.map((m) => {
+        const chip = m.status === "ready" ? `<span class="chip ready">Tài liệu đã có</span>` : m.status === "now" ? `<span class="chip now">Đang học · tài liệu đã có</span>` : `<span class="chip planned">Claude soạn khi tới</span>`;
+        const needs = m.needs ? `<span class="chip needs">cần học xong ${esc(m.needs)}</span>` : "";
+        const sk = isSkipped(m) ? `<span class="chip skipped">đã bỏ qua</span>` : "";
+        const isNext = nx && nx.m.id === m.id ? `<span class="next-flag">Việc tiếp theo</span>` : "";
+        const links = `<div class="m-links"><a href="bai/${m.id.replace(".", "-")}.html">Trang bài →</a>${m.link ? `<a href="${m.link}">Vào bài học đầy đủ →</a>` : ""}${m.files ? `<a class="file" href="notebooks/${m.files.split(" ")[0]}" download>tải notebook: ${esc(m.files)}</a>` : ""}</div>`;
+        const parts = PARTS.map(([k, label]) => {
+          const id = `cb-${m.id.replace(".", "-")}-${k}`, on = partDone(m, k), items = m[k] || [];
+          return `<div class="part ${on ? "done" : ""}"><label for="${id}"><input type="checkbox" id="${id}" data-key="${m.id}:${k}" ${on ? "checked" : ""} ${isSkipped(m) ? "disabled" : ""}>${label}</label>
+            <ul>${items.map((x) => `<li>${esc(x)}</li>`).join("")}</ul></div>`;
+        }).join("");
+        const skipBtn = ph.skip ? `<div class="m-actions"><button class="b" data-skip="${m.id}" id="skip-${m.id.replace(".", "-")}">${isSkipped(m) ? "Học lại bài này" : "Bỏ qua, đã biết"}</button></div>` : "";
+        return `<div class="module ${isSkipped(m) ? "is-skipped" : ""}" id="m-${m.id.replace(".", "-")}">
+          <div class="m-head"><span class="m-id">${m.id.toUpperCase()}</span><span class="m-title">${esc(m.title)}</span>${chip}${needs}${sk}${isNext}</div>
+          ${links}<div class="parts">${parts}</div>
+          <div class="m-done"><b>Xong khi:</b> ${esc(m.done)}</div>${skipBtn}</div>`;
+      }).join("");
+      const open = filter !== "all" ? true : !!openState[ph.id];
+      return `<details class="phase ${ph.track === "side" ? "side" : ""}" data-id="${ph.id}" ${open ? "open" : ""}>
+        <summary><span class="p-code">${ph.id.toUpperCase()}</span>
+          <span><span class="p-name">${esc(ph.name)}</span><div class="p-meta">Tuần ${ph.weeks[0]}–${ph.weeks[1]} · ${ph.modules.length} bài${ph.track === "side" ? " · chạy song song" : ""}</div></span>
+          <span class="p-right"><span class="p-pct">${pct}%<span class="chev" aria-hidden="true">›</span></span><div class="meter"><i style="width:${pct}%"></i></div></span></summary>
+        <div class="p-body"><div class="p-goal"><b>Mục tiêu:</b> ${esc(ph.goal)}</div>${ph.skip ? `<div class="p-skip">${esc(ph.skip)}</div>` : ""}${body}</div></details>`;
+    }).join("");
+  }
+  function renderAll() { const nx = renderSummary(); renderGantt(); renderPhases(nx); }
+
+  /* ---------- persistence ---------- */
+  const syncEl = document.getElementById("sync");
+  let ref = null, writing = Promise.resolve(), pendingTimer = null, readOnly = false, gotServer = false;
+  function cacheLocal() { try { localStorage.setItem(LKEY, JSON.stringify(done)); } catch (e) {} }
+  function scheduleSave() {
+    cacheLocal();
+    if (!ref || readOnly) return;
+    clearTimeout(pendingTimer);
+    pendingTimer = setTimeout(() => {
+      const body = { done: Object.assign({}, done), updatedAt: new Date().toISOString() };
+      writing = writing.then(() => ref.set(body)).then(() => { syncEl.textContent = "Đã lưu tiến độ vào tài khoản."; })
+        .catch((e) => {
+          if (e && e.code === "invalid_argument") { readOnly = true; syncEl.textContent = "Bạn đang xem ở chế độ chỉ đọc: thay đổi không được lưu."; }
+          else syncEl.textContent = "Chưa lưu được tiến độ (lỗi kết nối). Thay đổi vẫn giữ trên trình duyệt này.";
+        });
+    }, 600);
+  }
+  document.getElementById("phases").addEventListener("change", (e) => {
+    const cb = e.target.closest("input[data-key]"); if (!cb) return;
+    if (cb.checked) done[cb.dataset.key] = true; else delete done[cb.dataset.key];
+    renderAll(); scheduleSave();
+    const again = document.getElementById(cb.id); if (again) again.focus();
+  });
+  document.getElementById("phases").addEventListener("click", (e) => {
+    const b = e.target.closest("button[data-skip]"); if (!b) return;
+    const k = b.dataset.skip + ":skip";
+    if (done[k]) delete done[k]; else done[k] = true;
+    renderAll(); scheduleSave();
+    const again = document.getElementById(b.id); if (again) again.focus();
+  });
+  document.querySelectorAll("[data-filter]").forEach((b) => b.addEventListener("click", () => {
+    filter = b.dataset.filter;
+    document.querySelectorAll("[data-filter]").forEach((x) => x.classList.toggle("on", x === b));
+    renderPhases(firstFocus());
+  }));
+  document.getElementById("expandAll").addEventListener("click", () => { PHASES.forEach((p) => (openState[p.id] = true)); document.querySelectorAll("details.phase").forEach((d) => (d.open = true)); });
+  document.getElementById("collapseAll").addEventListener("click", () => { PHASES.forEach((p) => (openState[p.id] = false)); document.querySelectorAll("details.phase").forEach((d) => (d.open = false)); });
+
+  renderAll();
+
+  (async () => {
+    const use = window.claude && window.claude.use ? window.claude.use.bind(window.claude) : null;
+    const db = use ? await use("db") : null;
+    if (!db) { syncEl.textContent = "Tiến độ được lưu trên trình duyệt này và dùng chung với các trang bài học."; return; }
+    ref = db.doc("progress/main");
+    const timer = setTimeout(() => { if (!gotServer) syncEl.textContent = "Chưa kết nối được nơi lưu tiến độ. Đang dùng bản lưu trên trình duyệt."; }, 10000);
+    ref.onSnapshot((snap) => {
+      if (!snap.metadata.fromCache) { gotServer = true; clearTimeout(timer); }
+      if (snap.exists) {
+        const d = snap.data().done;
+        if (d && typeof d === "object" && !snap.metadata.hasPendingWrites) { done = Object.assign({}, d); cacheLocal(); renderAll(); }
+        if (!snap.metadata.fromCache) syncEl.textContent = "Tiến độ được lưu vào tài khoản và đồng bộ giữa các thiết bị.";
+      } else if (!snap.metadata.fromCache) {
+        syncEl.textContent = "Tiến độ sẽ được lưu vào tài khoản khi bạn tích ô đầu tiên.";
+        if (Object.keys(done).length) scheduleSave();
+      }
+    }, (e) => { clearTimeout(timer); syncEl.textContent = "Không đọc được tiến độ đã lưu. Thay đổi giữ trên trình duyệt này."; });
+    try {
+      const user = use ? await use("user") : null;
+      const can = user && user.can ? await user.can("data.write") : null;
+      if (can === false) { readOnly = true; syncEl.textContent = "Bạn đang xem ở chế độ chỉ đọc."; }
+    } catch (e) {}
+  })();
+})();
+</script>
+<footer class="sf"><div class="sf-in"><div><a class="sh-brand" href="index.html" style="margin:0"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="var(--ink)"/><circle cx="9" cy="22" r="2.6" fill="var(--accent-soft)"/><circle cx="16" cy="10" r="2.6" fill="var(--accent-soft)"/><circle cx="23" cy="19" r="2.6" fill="#FF9361"/><path d="M9 22 L16 10 L23 19" stroke="var(--accent-soft)" stroke-width="1.8" fill="none"/></svg><span>AI Engineer<small>lộ trình tự học</small></span></a><p>Lộ trình tự học AI Engineer bằng tiếng Việt: lý thuyết tương tác, bài tập tính tay và notebook có ô tự chấm.</p></div><div><h4>Học</h4><ul><li><a href="bai-hoc.html">Tất cả bài học</a></li><li><a href="lo-trinh.html">Lộ trình và tiến độ</a></li><li><a href="notebooks.html">Notebook thực hành</a></li></ul></div><div><h4>Đã có nội dung</h4><ul><li><a href="bai01.html">Bài 1 · Mạng nơ-ron</a></li><li><a href="bai/p2-2.html">Lab 1 · CIFAR-10</a></li><li><a href="diffusion-gd1.html">Diffusion GĐ 1</a></li></ul></div><div><h4>Dự án</h4><ul><li><a href="https://github.com/truonghuu344/ai-engineer-roadmap" target="_blank" rel="noopener">Mã nguồn trên GitHub</a></li><li><a href="bai-hoc.html#p5">Dự án Diffusion</a></li><li><a href="bai-hoc.html#p10">Portfolio và đi làm</a></li></ul></div></div><div class="sf-bottom"><span>© 2026 Vũ Hữu Trường · soạn cùng Claude</span><span>Tiến độ lưu trên trình duyệt của bạn</span></div></footer>
+</body>
+</html>

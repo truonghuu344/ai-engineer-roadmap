@@ -1,28 +1,27 @@
-# Lộ trình AI Engineer
+# AI Engineer · Lộ trình tự học
 
-Website tĩnh gồm lộ trình học AI Engineer (11 giai đoạn, 42 bài), các trang lý thuyết tương tác và notebook thực hành có ô tự chấm.
+Website tự học AI Engineer bằng tiếng Việt: 11 giai đoạn, 42 bài. Mỗi bài có lý thuyết, bài tập và thực hành.
 
-| File | Nội dung |
+**Xem trực tuyến:** https://truonghuu344.github.io/ai-engineer-roadmap/
+
+## Cấu trúc
+
+| Đường dẫn | Nội dung |
 |---|---|
-| `index.html` | Lộ trình, checklist tiến độ (lưu trong trình duyệt) |
-| `bai01.html` | Bài 1 · Mạng nơ-ron học thế nào |
-| `diffusion-gd1.html` | Dự án Diffusion · Giai đoạn 1 |
-| `notebooks.html` | Danh sách notebook để tải |
-| `notebooks/` | Các file `.ipynb` (bài tập và lời giải) |
+| `index.html` | Trang chủ |
+| `bai-hoc.html` | Danh mục 42 bài, tìm kiếm và lọc |
+| `bai/*.html` | Trang từng bài: đề cương lý thuyết, bài tập, thực hành, checklist |
+| `bai01.html`, `diffusion-gd1.html` | Bài có nội dung đầy đủ: lý thuyết tương tác, bài tính tay, kiểm tra |
+| `lo-trinh.html` | Lộ trình, dòng thời gian, tiến độ |
+| `notebooks.html`, `notebooks/` | Notebook Colab có ô tự chấm (bài tập và lời giải) |
+| `assets/` | CSS, JS dùng chung và dữ liệu lộ trình (`data.js`) |
 
-## Mở trên máy
+## Chạy trên máy
 
-Giải nén rồi mở `index.html` bằng Chrome, Edge hoặc Firefox. Không cần cài gì thêm. Font chữ tải từ Google Fonts nên cần có mạng để hiển thị đúng font; không có mạng trang vẫn chạy bằng font hệ thống.
+Mở `index.html` bằng trình duyệt. Không cần cài đặt hay build.
 
-Khi mở trực tiếp từ máy (đường dẫn `file://`), một số trình duyệt mở notebook thay vì tải về. Khi đó lấy file trong thư mục `notebooks/`. Trên GitHub Pages nút tải hoạt động bình thường.
+## Thêm hoặc sửa bài
 
-## Đưa lên mạng bằng GitHub Pages (miễn phí)
+Toàn bộ danh sách bài nằm trong `assets/data.js`. Các trang trong `bai/` được tạo từ file này.
 
-1. Tạo repo mới trên GitHub, ví dụ `ai-engineer-roadmap`.
-2. Tải toàn bộ file trong thư mục này lên repo (kéo thả vào trang repo, hoặc `git add . && git commit -m "site" && git push`).
-3. Vào **Settings → Pages**, phần *Build and deployment* chọn **Deploy from a branch**, branch `main`, thư mục `/ (root)`, bấm **Save**.
-4. Sau khoảng 1 phút, website có địa chỉ `https://<tên-github>.github.io/ai-engineer-roadmap/`.
-
-## Lưu ý về tiến độ
-
-Tiến độ (các ô đã tích, bài tính tay đã giải, điểm kiểm tra) lưu trong `localStorage` của trình duyệt: mỗi trình duyệt, mỗi máy có tiến độ riêng, và xóa dữ liệu trình duyệt sẽ mất tiến độ.
+Tiến độ học lưu trong `localStorage` của trình duyệt, dùng chung giữa trang lộ trình và các trang bài.

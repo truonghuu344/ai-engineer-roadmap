@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="vi" data-root="../">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>P1.2 · Đánh giá model đúng cách · AI Engineer</title>
+<meta name="description" content="Đánh giá model đúng cách: Train/val/test, cross-validation, data leakage; Overfitting, underfitting, bias–variance; Metric: accuracy, precision, recall, F1, ROC-AUC, PR-AUC, MAE, RMSE; confusion matrix">
+<meta property="og:title" content="P1.2 · Đánh giá model đúng cách · AI Engineer">
+<meta property="og:description" content="Đánh giá model đúng cách: Train/val/test, cross-validation, data leakage; Overfitting, underfitting, bias–variance; Metric: accuracy, precision, recall, F1, ROC-AUC, PR-AUC, MAE, RMSE; confusion matrix">
+<meta name="theme-color" content="#F4F6FB">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23131A33'/%3E%3Cpath d='M9 22 L16 10 L23 19' stroke='%23E5E9FB' stroke-width='2' fill='none'/%3E%3Ccircle cx='9' cy='22' r='3' fill='%23E5E9FB'/%3E%3Ccircle cx='16' cy='10' r='3' fill='%23E5E9FB'/%3E%3Ccircle cx='23' cy='19' r='3' fill='%23FF9361'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../assets/chrome.css">
+<link rel="stylesheet" href="../assets/site.css">
+</head>
+<body data-mid="p1.2">
+<header class="sh"><div class="sh-in"><a class="sh-brand" href="../index.html"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="var(--ink)"/><circle cx="9" cy="22" r="2.6" fill="var(--accent-soft)"/><circle cx="16" cy="10" r="2.6" fill="var(--accent-soft)"/><circle cx="23" cy="19" r="2.6" fill="#FF9361"/><path d="M9 22 L16 10 L23 19" stroke="var(--accent-soft)" stroke-width="1.8" fill="none"/></svg><span>AI Engineer<small>lộ trình tự học</small></span></a><nav class="sh-nav" id="sh-nav" aria-label="Chính"><a href="../index.html">Trang chủ</a><a href="../bai-hoc.html" aria-current="page">Bài học</a><a href="../lo-trinh.html">Lộ trình</a><a href="../notebooks.html">Notebook</a><a class="sh-cta-m" href="../bai01.html" data-next-lesson>Học tiếp →</a></nav><a class="sh-cta" href="../bai01.html" data-next-lesson>Học tiếp <span class="arr">→</span></a><button class="sh-burger" type="button" aria-expanded="false" aria-controls="sh-nav">Menu</button></div></header>
+
+<main class="container">
+  <div class="crumbs"><a href="../bai-hoc.html">Bài học</a><span>/</span><a href="../bai-hoc.html#p1">P1 · Machine Learning cổ điển</a><span>/</span><span>P1.2</span></div>
+  <section class="lhero"><div class="code">P1.2</div><h1>Đánh giá model đúng cách</h1><div class="lmeta"><span class="m">Giai đoạn P1 · Machine Learning cổ điển</span><span class="m">Tuần 4–7</span><span class="chip planned">Đề cương</span></div></section>
+  <div class="lgrid">
+    <div>
+      <div class="goal"><b>Mục tiêu giai đoạn:</b> Hiểu vòng đời một bài toán ML: dữ liệu → model → đánh giá → cải thiện. Nhiều câu hỏi phỏng vấn nằm ở đây.</div>
+      <div class="soon">Nội dung đầy đủ (trang lý thuyết tương tác và notebook tự chấm) đang được soạn và sẽ có khi bạn học tới bài này. Đề cương dưới đây là phạm vi chính xác của bài.</div>
+      <section class="pblock reveal"><div class="pblock-head"><span class="num">1</span><h2>Lý thuyết<span style="display:block;font:400 13.5px var(--f-body);color:var(--muted);margin-top:4px">Những gì cần hiểu</span></h2><label class="tick" for="cb-t"><input type="checkbox" id="cb-t" data-key="p1.2:t">Xong</label></div><ol><li>Train/val/test, cross-validation, data leakage</li><li>Overfitting, underfitting, bias–variance</li><li>Metric: accuracy, precision, recall, F1, ROC-AUC, PR-AUC, MAE, RMSE; confusion matrix</li><li>Chọn metric theo bài toán và dữ liệu mất cân bằng</li></ol></section><section class="pblock reveal"><div class="pblock-head"><span class="num">2</span><h2>Bài tập<span style="display:block;font:400 13.5px var(--f-body);color:var(--muted);margin-top:4px">Tính tay và tự kiểm tra</span></h2><label class="tick" for="cb-b"><input type="checkbox" id="cb-b" data-key="p1.2:b">Xong</label></div><ol><li>Tính tay mọi metric từ một confusion matrix</li><li>Tìm lỗi leakage trong 5 đoạn code cho sẵn</li></ol></section><section class="pblock reveal"><div class="pblock-head"><span class="num">3</span><h2>Thực hành<span style="display:block;font:400 13.5px var(--f-body);color:var(--muted);margin-top:4px">Code và dự án</span></h2><label class="tick" for="cb-p"><input type="checkbox" id="cb-p" data-key="p1.2:p">Xong</label></div><ol><li>Báo cáo đánh giá đầy đủ cho model ở 1.1: biểu đồ ROC, PR, learning curve</li></ol></section>
+      <div class="donewhen reveal"><b>Xong khi</b>Báo cáo trả lời được: model sai ở đâu, vì sao, và nên cải thiện gì tiếp.</div>
+      <nav class="pn" aria-label="Bài trước, bài sau"><a href="p1-1.html"><span class="dir">← Bài trước · P1.1</span><span class="tt">Hồi quy tuyến tính và logistic</span></a><a class="nx" href="p1-3.html"><span class="dir">Bài sau · P1.3 →</span><span class="tt">Cây quyết định và ensemble</span></a></nav>
+    </div>
+    <aside class="aside">
+      <div class="abox"><h4>Tiến độ bài này</h4><div class="ring"><svg viewBox="0 0 64 64" aria-hidden="true"><circle class="bg" cx="32" cy="32" r="28"/><circle class="fg" cx="32" cy="32" r="28" stroke-dasharray="176" stroke-dashoffset="176"/></svg><div><b id="ring-n">0/3</b><span id="ring-sub">phần đã xong</span></div></div></div>
+      
+      <div class="abox"><h4>Cùng giai đoạn</h4><ul><li><a href="p1-1.html">Hồi quy tuyến tính và logistic</a></li><li><span class=cur>Đánh giá model đúng cách</span></li><li><a href="p1-3.html">Cây quyết định và ensemble</a></li><li><a href="p1-4.html">Học không giám sát và feature engineering</a></li></ul></div>
+    </aside>
+  </div>
+</main>
+<footer class="sf"><div class="sf-in"><div><a class="sh-brand" href="../index.html" style="margin:0"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="var(--ink)"/><circle cx="9" cy="22" r="2.6" fill="var(--accent-soft)"/><circle cx="16" cy="10" r="2.6" fill="var(--accent-soft)"/><circle cx="23" cy="19" r="2.6" fill="#FF9361"/><path d="M9 22 L16 10 L23 19" stroke="var(--accent-soft)" stroke-width="1.8" fill="none"/></svg><span>AI Engineer<small>lộ trình tự học</small></span></a><p>Lộ trình tự học AI Engineer bằng tiếng Việt: lý thuyết tương tác, bài tập tính tay và notebook có ô tự chấm.</p></div><div><h4>Học</h4><ul><li><a href="../bai-hoc.html">Tất cả bài học</a></li><li><a href="../lo-trinh.html">Lộ trình và tiến độ</a></li><li><a href="../notebooks.html">Notebook thực hành</a></li></ul></div><div><h4>Đã có nội dung</h4><ul><li><a href="../bai01.html">Bài 1 · Mạng nơ-ron</a></li><li><a href="../bai/p2-2.html">Lab 1 · CIFAR-10</a></li><li><a href="../diffusion-gd1.html">Diffusion GĐ 1</a></li></ul></div><div><h4>Dự án</h4><ul><li><a href="https://github.com/truonghuu344/ai-engineer-roadmap" target="_blank" rel="noopener">Mã nguồn trên GitHub</a></li><li><a href="../bai-hoc.html#p5">Dự án Diffusion</a></li><li><a href="../bai-hoc.html#p10">Portfolio và đi làm</a></li></ul></div></div><div class="sf-bottom"><span>© 2026 Vũ Hữu Trường · soạn cùng Claude</span><span>Tiến độ lưu trên trình duyệt của bạn</span></div></footer>
+<script src="../assets/data.js"></script>
+<script src="../assets/chrome.js"></script>
+<script>
+
+(function () {
+  const mid = document.body.dataset.mid; let d = AIE.load();
+  const boxes = [...document.querySelectorAll("input[data-key]")], ring = document.querySelector(".ring .fg"), rt = document.getElementById("ring-n");
+  const skipped = () => !!d[mid + ":skip"];
+  function render() {
+    let n = 0;
+    boxes.forEach((b) => { const on = skipped() || !!d[b.dataset.key]; b.checked = on; b.disabled = skipped(); b.closest(".pblock").classList.toggle("done", on); if (on) n++; });
+    ring.style.strokeDashoffset = String(176 * (1 - n / 3)); rt.textContent = n + "/3";
+    document.getElementById("ring-sub").textContent = skipped() ? "đã đánh dấu bỏ qua" : n === 3 ? "hoàn thành bài này" : "phần đã xong";
+  }
+  boxes.forEach((b) => b.addEventListener("change", () => { d = AIE.load(); if (b.checked) d[b.dataset.key] = true; else delete d[b.dataset.key]; AIE.save(d); render(); }));
+  render();
+})();
+
+</script>
+</body>
+</html>

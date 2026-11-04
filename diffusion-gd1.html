@@ -1,14 +1,18 @@
 <!doctype html>
-<html lang="vi">
+<html lang="vi" data-root="">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="description" content="Dự án Diffusion giai đoạn 1: thêm nhiễu, dự đoán nhiễu, train và sampling DDPM.">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232C47D1'/%3E%3Cpath d='M8 22 L14 10 L18 18 L24 8' stroke='white' stroke-width='3' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
-<title>Diffusion tạo ảnh thế nào</title>
+<title>Diffusion GĐ 1 · Diffusion tạo ảnh thế nào · AI Engineer</title>
+<meta name="description" content="Dự án Diffusion giai đoạn 1: thêm nhiễu, dự đoán nhiễu, train và sampling DDPM, có demo chạy đúng công thức.">
+<meta property="og:title" content="Diffusion GĐ 1 · Diffusion tạo ảnh thế nào · AI Engineer">
+<meta property="og:description" content="Dự án Diffusion giai đoạn 1: thêm nhiễu, dự đoán nhiễu, train và sampling DDPM, có demo chạy đúng công thức.">
+<meta name="theme-color" content="#F4F6FB">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23131A33'/%3E%3Cpath d='M9 22 L16 10 L23 19' stroke='%23E5E9FB' stroke-width='2' fill='none'/%3E%3Ccircle cx='9' cy='22' r='3' fill='%23E5E9FB'/%3E%3Ccircle cx='16' cy='10' r='3' fill='%23E5E9FB'/%3E%3Ccircle cx='23' cy='19' r='3' fill='%23FF9361'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="assets/chrome.css">
 <style>
 /* Layout (shared with the AI Engineer lessons): lab-notebook lesson — sticky progress rail on the left, one reading column; each section ends with a hand-calculation check and a pointer to the notebook part that drills it. */
 :root {
@@ -30,20 +34,6 @@
   --f-display: "Bricolage Grotesque", "Be Vietnam Pro", system-ui, sans-serif;
   --f-body: "Be Vietnam Pro", system-ui, -apple-system, "Segoe UI", sans-serif;
   --f-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
-}
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --paper: #0E1222; --surface: #161B30; --ink: #E5E8F4; --muted: #98A0BD; --line: #283052; --grid: #1B2140;
-    --accent: #93A6FF; --accent-soft: #1F2752; --hot: #FF9361; --hot-soft: #3A2419;
-    --ok: #52C98F; --ok-soft: #133022; --bad: #FF7B70; --bad-soft: #3A1A18; --code-bg: #1A2038;
-    color-scheme: dark;
-  }
-}
-:root[data-theme="dark"] {
-  --paper: #0E1222; --surface: #161B30; --ink: #E5E8F4; --muted: #98A0BD; --line: #283052; --grid: #1B2140;
-  --accent: #93A6FF; --accent-soft: #1F2752; --hot: #FF9361; --hot-soft: #3A2419;
-  --ok: #52C98F; --ok-soft: #133022; --bad: #FF7B70; --bad-soft: #3A1A18; --code-bg: #1A2038;
-  color-scheme: dark;
 }
 
 * { box-sizing: border-box; }
@@ -72,7 +62,7 @@ body {
 }
 
 /* rail */
-.rail { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 32px); align-self: start; }
+.rail { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 96px); align-self: start; }
 .rail-label { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
 .rail ol { list-style: none; margin: 14px 0 20px; padding: 0; display: grid; gap: 2px; }
 .rail a {
@@ -105,7 +95,7 @@ strong { font-weight: 600; }
 .howto b { display: block; font-family: var(--f-display); font-size: 17px; margin-bottom: 4px; }
 @media (max-width: 560px) { .howto { grid-template-columns: minmax(0, 1fr); } }
 
-section.lesson { margin-top: 88px; scroll-margin-top: 24px; }
+section.lesson { margin-top: 88px; scroll-margin-top: 84px; }
 .sec-head { display: grid; grid-template-columns: auto 1fr; gap: 16px; align-items: baseline; }
 .sec-num { font-family: var(--f-mono); font-size: 15px; color: var(--accent); font-weight: 600; }
 .why { margin-top: 10px; color: var(--muted); font-size: 15px; }
@@ -275,21 +265,10 @@ ol.algo { margin: 18px 0 0; padding: 14px 18px 14px 44px; background: var(--surf
 ol.algo li::marker { font-family: var(--f-mono); color: var(--accent); font-weight: 600; }
 button.b:disabled { opacity: .5; cursor: progress; }
 </style>
-<style>
-body { margin: 0; }
-img { max-width: 100%; }
-[hidden] { display: none !important; }
-.sitenav { border-bottom: 1px solid var(--line); background: var(--paper); }
-.sitenav-in { max-width: 1080px; margin: 0 auto; display: flex; flex-wrap: wrap; gap: 4px 6px; align-items: center; padding-block: 10px; }
-.sitenav a { color: var(--muted); text-decoration: none; font: 500 14px/1 var(--f-body); padding: 8px 10px; border-radius: 6px; }
-.sitenav a:hover, .sitenav a:focus-visible { color: var(--ink); background: var(--accent-soft); outline: none; }
-.sitenav a[aria-current="page"] { color: var(--accent); background: var(--accent-soft); font-weight: 600; }
-.sitenav a.brand { font: 800 16px/1 var(--f-display); color: var(--ink); margin-right: 8px; padding-left: 0; }
-.sitenav a.brand:hover { background: none; }
-</style>
+<style>body{margin:0}.sf a.sh-brand span{font-family:var(--f-display)}</style>
 </head>
 <body>
-<nav class="sitenav" aria-label="Điều hướng"><div class="sitenav-in"><a class="brand" href="index.html">AI Engineer</a><a href="index.html">Lộ trình</a><a href="bai01.html">Bài 1</a><a href="diffusion-gd1.html" aria-current="page">Diffusion GĐ1</a><a href="notebooks.html">Notebook</a></div></nav>
+<header class="sh"><div class="sh-in"><a class="sh-brand" href="index.html"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="var(--ink)"/><circle cx="9" cy="22" r="2.6" fill="var(--accent-soft)"/><circle cx="16" cy="10" r="2.6" fill="var(--accent-soft)"/><circle cx="23" cy="19" r="2.6" fill="#FF9361"/><path d="M9 22 L16 10 L23 19" stroke="var(--accent-soft)" stroke-width="1.8" fill="none"/></svg><span>AI Engineer<small>lộ trình tự học</small></span></a><nav class="sh-nav" id="sh-nav" aria-label="Chính"><a href="index.html">Trang chủ</a><a href="bai-hoc.html" aria-current="page">Bài học</a><a href="lo-trinh.html">Lộ trình</a><a href="notebooks.html">Notebook</a><a class="sh-cta-m" href="bai01.html" data-next-lesson>Học tiếp →</a></nav><a class="sh-cta" href="bai01.html" data-next-lesson>Học tiếp <span class="arr">→</span></a><button class="sh-burger" type="button" aria-expanded="false" aria-controls="sh-nav">Menu</button></div></header>
 <div class="shell">
   <nav class="rail" aria-label="Mục lục">
     <div class="rail-label">GĐ 1 · Mục lục</div>
@@ -841,5 +820,8 @@ emb(t) (N, 32) ┘
   updateProgress();
 })();
 </script>
+<footer class="sf"><div class="sf-in"><div><a class="sh-brand" href="index.html" style="margin:0"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="var(--ink)"/><circle cx="9" cy="22" r="2.6" fill="var(--accent-soft)"/><circle cx="16" cy="10" r="2.6" fill="var(--accent-soft)"/><circle cx="23" cy="19" r="2.6" fill="#FF9361"/><path d="M9 22 L16 10 L23 19" stroke="var(--accent-soft)" stroke-width="1.8" fill="none"/></svg><span>AI Engineer<small>lộ trình tự học</small></span></a><p>Lộ trình tự học AI Engineer bằng tiếng Việt: lý thuyết tương tác, bài tập tính tay và notebook có ô tự chấm.</p></div><div><h4>Học</h4><ul><li><a href="bai-hoc.html">Tất cả bài học</a></li><li><a href="lo-trinh.html">Lộ trình và tiến độ</a></li><li><a href="notebooks.html">Notebook thực hành</a></li></ul></div><div><h4>Đã có nội dung</h4><ul><li><a href="bai01.html">Bài 1 · Mạng nơ-ron</a></li><li><a href="bai/p2-2.html">Lab 1 · CIFAR-10</a></li><li><a href="diffusion-gd1.html">Diffusion GĐ 1</a></li></ul></div><div><h4>Dự án</h4><ul><li><a href="https://github.com/truonghuu344/ai-engineer-roadmap" target="_blank" rel="noopener">Mã nguồn trên GitHub</a></li><li><a href="bai-hoc.html#p5">Dự án Diffusion</a></li><li><a href="bai-hoc.html#p10">Portfolio và đi làm</a></li></ul></div></div><div class="sf-bottom"><span>© 2026 Vũ Hữu Trường · soạn cùng Claude</span><span>Tiến độ lưu trên trình duyệt của bạn</span></div></footer>
+<script src="assets/data.js"></script>
+<script src="assets/chrome.js"></script>
 </body>
 </html>
