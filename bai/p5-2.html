@@ -24,41 +24,296 @@
   <section class="lhero side"><div class="code">P5.2</div><h1>GĐ 2 · Diffusion cho ảnh</h1><div class="lmeta"><span class="m">Giai đoạn P5 · Dự án Diffusion: tạo ảnh từ con số 0</span><span class="m">Tuần 10–30</span><span class="chip ready"><span class="dot"></span>Có nội dung đầy đủ</span><span class="chip side">cần học xong Bài 2</span></div>
     <div class="intro"><p>Giai đoạn 1 khử nhiễu điểm 2D bằng một MLP. Với ảnh, thuật toán giữ nguyên, nhưng mạng khử nhiễu phải hiểu cấu trúc không gian của ảnh: đó là <strong>U-Net</strong>. Bài này cũng giới thiệu <strong>DDIM</strong>, cách sinh ảnh với 50 bước thay vì 1000, cùng hai mẹo giúp train ổn định: lịch nhiễu cosine và EMA trọng số. Phần thực hành, bạn train DDPM sinh ảnh quần áo Fashion-MNIST.</p></div></section>
   
-  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">4 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
+  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">6 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
   <div class="lgrid" style="margin-top:22px">
-    <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">Vì sao U-Net</h2>
-<p>Mạng khử nhiễu nhận ảnh nhiễu và trả về ảnh nhiễu <strong>cùng kích thước</strong>. Nó cần cả bức tranh toàn cục (đây là áo hay giày) lẫn chi tiết từng pixel (đường may). U-Net làm được cả hai:</p>
-<div class="hl"><pre><span></span><code>28×28 ──conv──▶ 28×28 ─────────────────────────────▶ (nối) ──conv──▶ 28×28 ε̂
-          ↓ downsample                                     ↑ upsample
-        14×14 ──conv──▶ 14×14 ───────────────▶ (nối) ──conv──▶ 14×14
-                  ↓                                  ↑
-                 7×7 ──conv + self-attention──▶ 7×7
-</code></pre></div>
-
+    <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">Vì sao cần U-Net</h2>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>MLP ở GĐ1 nhận 2 con số. Một ảnh 32×32 có 1024 pixel, và pixel nào cũng liên quan tới hàng xóm của nó. Duỗi ảnh thành vector rồi đưa vào MLP thì mất hết thông tin "pixel nào nằm cạnh pixel nào", và số tham số bùng nổ. U-Net là kiến trúc chuẩn cho mọi model diffusion ảnh (DDPM, Stable Diffusion 1.x/2.x, SDXL), nên đọc được nó là đọc được phần lõi của các hệ thống đó.</p>
+</div>
+<p>Mạng khử nhiễu nhận ảnh nhiễu và trả về nhiễu dự đoán <strong>cùng kích thước</strong>. Nó cần hai loại thông tin cùng lúc:</p>
 <ul>
-<li><strong>Nhánh xuống (encoder):</strong> giảm kích thước, tăng số kênh, nhìn ngày càng rộng.</li>
-<li><strong>Nhánh lên (decoder):</strong> phóng to trở lại kích thước gốc.</li>
-<li><strong>Skip connection:</strong> nối đặc trưng chi tiết từ nhánh xuống sang nhánh lên cùng độ phân giải, để không mất chi tiết khi phóng to.</li>
-<li><strong>Self-attention</strong> ở độ phân giải thấp giúp các vùng xa nhau trong ảnh "nói chuyện" với nhau.</li>
+<li><strong>Toàn cục:</strong> đây là áo hay giày, dáng tổng thể thế nào. Cần "nhìn" cả ảnh.</li>
+<li><strong>Cục bộ:</strong> đường viền, đường may ở từng pixel. Cần độ phân giải đầy đủ.</li>
 </ul>
+<p>U-Net đáp ứng cả hai bằng hình chữ U:</p>
+<figure class="fig"><img src="../assets/fig/p5-2-unet.svg" alt="U-Net cấu hình như phần thực hành (khoảng 4 triệu tham số). Nhánh xuống thu nhỏ ảnh và tăng số kênh; đáy chữ U có self-attention; nhánh lên phóng to lại; skip connection mang chi tiết từ trái sang phải." loading="lazy"><figcaption>U-Net cấu hình như phần thực hành (khoảng 4 triệu tham số). Nhánh xuống thu nhỏ ảnh và tăng số kênh; đáy chữ U có self-attention; nhánh lên phóng to lại; skip connection mang chi tiết từ trái sang phải.</figcaption></figure>
+
+<table>
+<thead>
+<tr>
+<th>Thành phần</th>
+<th>Làm gì</th>
+<th>Vì sao cần</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Nhánh xuống (encoder)</td>
+<td>conv + giảm kích thước một nửa mỗi mức, tăng số kênh</td>
+<td>mỗi mức nhìn vùng rộng gấp đôi; ở 8×8, một ô "thấy" gần cả ảnh</td>
+</tr>
+<tr>
+<td>Đáy chữ U</td>
+<td>ResBlock + self-attention</td>
+<td>attention cho mọi vùng nói chuyện với nhau (tay áo trái với tay áo phải)</td>
+</tr>
+<tr>
+<td>Nhánh lên (decoder)</td>
+<td>phóng to gấp đôi mỗi mức, giảm số kênh</td>
+<td>trả về đúng kích thước ảnh gốc</td>
+</tr>
+<tr>
+<td>Skip connection</td>
+<td>nối (concat) đặc trưng nhánh xuống vào nhánh lên cùng mức</td>
+<td>chi tiết sắc nét bị mất khi thu nhỏ được "chuyển thẳng" sang</td>
+</tr>
+</tbody>
+</table>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>Đi theo kích thước một batch 4 ảnh xám qua U-Net ở phần thực hành (đã chạy với <code>diffusers</code> 0.42):</p>
+<ol>
+<li>Vào: (4, 1, 32, 32).</li>
+<li>Mức 1: 32 kênh ở 32×32, rồi thu nhỏ: (4, 32, 16, 16).</li>
+<li>Mức 2: 64 kênh ở 16×16, rồi thu nhỏ: (4, 64, 8, 8).</li>
+<li>Mức 3 (đáy, có attention): (4, 128, 8, 8).</li>
+<li>Nhánh lên đi ngược lại, nối skip ở mỗi mức, ra: (4, 1, 32, 32), đúng shape đầu vào.</li>
+</ol>
+<p>Đây là lý do Fashion-MNIST 28×28 được đệm thành 32×32: 32 chia đôi nhiều lần vẫn chẵn, còn 28 → 14 → 7 thì không chia tiếp được.</p>
+</div>
+<div class="box pitfall">
+<div class="box-h">Lỗi hay gặp</div>
+<p><strong>Quên skip connection</strong> (hoặc tự viết U-Net mà nối sai mức) thì model vẫn train được, loss vẫn giảm, nhưng ảnh sinh ra mờ, mất chi tiết: đúng dáng áo nhưng không có viền sắc. Khi ảnh sinh "đúng hình nhưng nhòe", kiểm tra skip connection đầu tiên.</p>
+</div>
 <h2 id="lt-2">Đưa bước t vào U-Net</h2>
-<p>Time embedding sin/cos (như GĐ1) đi qua một MLP nhỏ, rồi trong mỗi ResBlock được chiếu thành một vector bằng số kênh và <strong>cộng vào</strong> feature map (broadcast lên mọi pixel). Nhờ vậy mọi lớp đều biết đang khử nhiễu ở mức nào.</p>
-<p>Thư viện <code>diffusers</code> có sẵn <code>UNet2DModel</code> cấu hình được. Trong thực hành bạn dùng nó cho mạng, còn lịch nhiễu, vòng train và vòng sinh thì tự viết.</p>
-<h2 id="lt-3">DDIM: sinh nhanh</h2>
-<p>DDPM cần đi lần lượt 1000 bước vì mỗi bước chỉ gỡ một chút nhiễu và thêm nhiễu mới. <strong>DDIM</strong> dùng cùng model đã train, nhưng thay quy tắc cập nhật bằng một bước <strong>tất định</strong> có thể nhảy cóc qua nhiều t:</p>
-<div class="hl"><pre><span></span><code>x̂₀ = (xₜ − √(1−ᾱₜ)·ε̂) / √ᾱₜ                 đoán ảnh sạch
-x_s = √ᾱ_s · x̂₀ + √(1−ᾱ_s) · ε̂               "thêm lại" đúng lượng nhiễu của bước s &lt; t
+<p>Như GĐ1, model phải biết đang ở bước t nào. Cách làm trong U-Net:</p>
+<ol>
+<li>t → vector sin/cos (time embedding, như GĐ1).</li>
+<li>Qua một MLP nhỏ (2 lớp Linear + SiLU) thành vector đặc trưng thời gian.</li>
+<li>Trong <strong>mỗi</strong> ResBlock, vector này được chiếu bằng một lớp Linear thành vector có độ dài bằng số kênh của block, rồi <strong>cộng vào</strong> feature map. Một số kênh × 1 × 1 cộng lên mọi pixel (broadcast).</li>
+</ol>
+<p>Nhờ vậy mọi lớp đều biết mức nhiễu hiện tại: ở t lớn, các lớp tập trung vào dáng tổng thể; ở t nhỏ, tập trung vào chi tiết.</p>
+<p>Thư viện <code>diffusers</code> có sẵn <code>UNet2DModel</code>:</p>
+<div class="hl"><pre><span></span><code><span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">diffusers</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">UNet2DModel</span>
+<span class="tk-n">model</span> <span class="tk-o">=</span> <span class="tk-n">UNet2DModel</span><span class="tk-p">(</span><span class="tk-n">sample_size</span><span class="tk-o">=</span><span class="tk-mi">32</span><span class="tk-p">,</span> <span class="tk-n">in_channels</span><span class="tk-o">=</span><span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-n">out_channels</span><span class="tk-o">=</span><span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-n">layers_per_block</span><span class="tk-o">=</span><span class="tk-mi">2</span><span class="tk-p">,</span>
+                    <span class="tk-n">block_out_channels</span><span class="tk-o">=</span><span class="tk-p">(</span><span class="tk-mi">32</span><span class="tk-p">,</span> <span class="tk-mi">64</span><span class="tk-p">,</span> <span class="tk-mi">128</span><span class="tk-p">),</span>
+                    <span class="tk-n">down_block_types</span><span class="tk-o">=</span><span class="tk-p">(</span><span class="tk-s2">"DownBlock2D"</span><span class="tk-p">,</span> <span class="tk-s2">"AttnDownBlock2D"</span><span class="tk-p">,</span> <span class="tk-s2">"AttnDownBlock2D"</span><span class="tk-p">),</span>
+                    <span class="tk-n">up_block_types</span><span class="tk-o">=</span><span class="tk-p">(</span><span class="tk-s2">"AttnUpBlock2D"</span><span class="tk-p">,</span> <span class="tk-s2">"AttnUpBlock2D"</span><span class="tk-p">,</span> <span class="tk-s2">"UpBlock2D"</span><span class="tk-p">))</span>
+<span class="tk-n">eps_hat</span> <span class="tk-o">=</span> <span class="tk-n">model</span><span class="tk-p">(</span><span class="tk-n">x_t</span><span class="tk-p">,</span> <span class="tk-n">t</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">sample</span>          <span class="tk-c1"># x_t: (B,1,32,32), t: (B,) số nguyên -&gt; (B,1,32,32)</span>
 </code></pre></div>
 
-<p>Với 50 bước DDIM, chất lượng gần bằng 1000 bước DDPM, nhanh hơn 20 lần. Vì tất định, <strong>cùng nhiễu ban đầu luôn cho cùng ảnh</strong>, và nội suy giữa hai nhiễu ban đầu cho ra các ảnh chuyển dần mượt mà.</p>
-<h2 id="lt-4">Lịch nhiễu cosine và EMA</h2>
+<p>Trong thực hành, bạn dùng nó cho mạng; lịch nhiễu, vòng train và vòng sinh thì tự viết, y hệt GĐ1.</p>
+<h2 id="lt-3">DDIM: sinh nhanh gấp 20 lần</h2>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>DDPM cần 1000 lần gọi U-Net cho một ảnh. Nếu mỗi lần mất 35 ms cho một batch, sinh một batch mất 35 giây; một app có 100 người dùng cùng lúc thì không chạy nổi. DDIM giảm còn 50 lần gọi (khoảng 1.75 giây) mà <strong>không cần train lại</strong>.</p>
+</div>
+<p>DDPM đi lần lượt từng bước vì mỗi bước gỡ một chút nhiễu rồi thêm nhiễu mới ngẫu nhiên. <strong>DDIM</strong> (Song và cộng sự, 2020) dùng cùng model đã train, nhưng thay quy tắc cập nhật bằng hai bước <strong>tất định</strong>, cho phép nhảy cóc từ t xuống một bước s nhỏ hơn bất kỳ:</p>
+<div class="hl"><pre><span></span><code>x̂₀ = (xₜ − √(1−ᾱₜ)·ε̂) / √ᾱₜ                 1. đoán ảnh sạch từ nhiễu dự đoán
+x_s = √ᾱ_s · x̂₀ + √(1−ᾱ_s) · ε̂               2. "thêm lại" đúng lượng nhiễu của bước s
+</code></pre></div>
+
+<p>Ý tưởng: ở mỗi bước, đoán ảnh sạch, rồi đặt nó trở lại mức nhiễu thấp hơn, <strong>dùng lại chính nhiễu đã đoán</strong> thay vì nhiễu mới. Khi bước sau đoán lại, x̂₀ được tinh chỉnh dần.</p>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>Một bước DDIM nhảy từ t có ᾱₜ = 0.36 xuống s có ᾱ_s = 0.64. Ảnh hiện tại xₜ = 1.0 (một pixel), model đoán ε̂ = 0.25.</p>
+<ol>
+<li>√ᾱₜ = 0.6, √(1 − ᾱₜ) = 0.8.</li>
+<li>x̂₀ = (1.0 − 0.8 · 0.25) / 0.6 = 0.8 / 0.6 ≈ <strong>1.333</strong>.</li>
+<li>√ᾱ_s = 0.8, √(1 − ᾱ_s) = 0.6.</li>
+<li>x_s = 0.8 · 1.333 + 0.6 · 0.25 ≈ 1.067 + 0.15 = <strong>1.217</strong>.</li>
+</ol>
+<p>Không có số ngẫu nhiên nào: chạy lại với cùng xₜ luôn ra 1.217.</p>
+</div>
+<h3>Chọn các bước nhảy</h3>
+<p>Với 50 bước DDIM, chọn 50 giá trị t cách đều trong 999 … 0 (ví dụ 999, 979, 958, …, 0) và nhảy lần lượt. Ở bước cuối, trả về luôn x̂₀.</p>
+<div class="hl"><pre><span></span><code><span class="tk-nd">@torch</span><span class="tk-o">.</span><span class="tk-n">no_grad</span><span class="tk-p">()</span>
+<span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">sample_ddim</span><span class="tk-p">(</span><span class="tk-n">model</span><span class="tk-p">,</span> <span class="tk-n">n</span><span class="tk-p">,</span> <span class="tk-n">steps</span><span class="tk-o">=</span><span class="tk-mi">50</span><span class="tk-p">):</span>
+    <span class="tk-n">x</span> <span class="tk-o">=</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">randn</span><span class="tk-p">(</span><span class="tk-n">n</span><span class="tk-p">,</span> <span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-mi">32</span><span class="tk-p">,</span> <span class="tk-mi">32</span><span class="tk-p">)</span>
+    <span class="tk-n">ts</span> <span class="tk-o">=</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">linspace</span><span class="tk-p">(</span><span class="tk-n">T</span> <span class="tk-o">-</span> <span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-mi">0</span><span class="tk-p">,</span> <span class="tk-n">steps</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">round</span><span class="tk-p">()</span><span class="tk-o">.</span><span class="tk-n">long</span><span class="tk-p">()</span><span class="tk-o">.</span><span class="tk-n">tolist</span><span class="tk-p">()</span>
+    <span class="tk-k">for</span> <span class="tk-n">i</span><span class="tk-p">,</span> <span class="tk-n">t</span> <span class="tk-ow">in</span> <span class="tk-nb">enumerate</span><span class="tk-p">(</span><span class="tk-n">ts</span><span class="tk-p">):</span>
+        <span class="tk-n">eps</span> <span class="tk-o">=</span> <span class="tk-n">model</span><span class="tk-p">(</span><span class="tk-n">x</span><span class="tk-p">,</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">full</span><span class="tk-p">((</span><span class="tk-n">n</span><span class="tk-p">,),</span> <span class="tk-n">t</span><span class="tk-p">))</span><span class="tk-o">.</span><span class="tk-n">sample</span>
+        <span class="tk-n">ab</span> <span class="tk-o">=</span> <span class="tk-n">alpha_bars</span><span class="tk-p">[</span><span class="tk-n">t</span><span class="tk-p">]</span>
+        <span class="tk-n">x0</span> <span class="tk-o">=</span> <span class="tk-p">(</span><span class="tk-n">x</span> <span class="tk-o">-</span> <span class="tk-p">(</span><span class="tk-mi">1</span> <span class="tk-o">-</span> <span class="tk-n">ab</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">sqrt</span><span class="tk-p">()</span> <span class="tk-o">*</span> <span class="tk-n">eps</span><span class="tk-p">)</span> <span class="tk-o">/</span> <span class="tk-n">ab</span><span class="tk-o">.</span><span class="tk-n">sqrt</span><span class="tk-p">()</span>
+        <span class="tk-k">if</span> <span class="tk-n">i</span> <span class="tk-o">==</span> <span class="tk-nb">len</span><span class="tk-p">(</span><span class="tk-n">ts</span><span class="tk-p">)</span> <span class="tk-o">-</span> <span class="tk-mi">1</span><span class="tk-p">:</span>
+            <span class="tk-k">return</span> <span class="tk-n">x0</span><span class="tk-o">.</span><span class="tk-n">clamp</span><span class="tk-p">(</span><span class="tk-o">-</span><span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-mi">1</span><span class="tk-p">)</span>
+        <span class="tk-n">ab_s</span> <span class="tk-o">=</span> <span class="tk-n">alpha_bars</span><span class="tk-p">[</span><span class="tk-n">ts</span><span class="tk-p">[</span><span class="tk-n">i</span> <span class="tk-o">+</span> <span class="tk-mi">1</span><span class="tk-p">]]</span>
+        <span class="tk-n">x</span> <span class="tk-o">=</span> <span class="tk-n">ab_s</span><span class="tk-o">.</span><span class="tk-n">sqrt</span><span class="tk-p">()</span> <span class="tk-o">*</span> <span class="tk-n">x0</span> <span class="tk-o">+</span> <span class="tk-p">(</span><span class="tk-mi">1</span> <span class="tk-o">-</span> <span class="tk-n">ab_s</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">sqrt</span><span class="tk-p">()</span> <span class="tk-o">*</span> <span class="tk-n">eps</span>
+</code></pre></div>
+
+<h3>Bao nhiêu bước là đủ</h3>
+<p>Thí nghiệm trên xoắn ốc 2D (model MLP từ GĐ1 train kỹ hơn), đo khoảng cách trung bình từ 2000 điểm sinh ra tới xoắn ốc gần nhất:</p>
+<figure class="fig"><img src="../assets/fig/p5-2-steps.svg" alt="Chất lượng tăng nhanh tới khoảng 20–50 bước rồi gần như đi ngang: 1000 bước không tốt hơn 50 bước. Với 10 bước, nhiều điểm còn rơi vào giữa xoắn ốc. Tham số η (eta) nối hai thế giới: η = 0 là DDIM, η = 1 thêm nhiễu mới như DDPM." loading="lazy"><figcaption>Chất lượng tăng nhanh tới khoảng 20–50 bước rồi gần như đi ngang: 1000 bước không tốt hơn 50 bước. Với 10 bước, nhiều điểm còn rơi vào giữa xoắn ốc. Tham số η (eta) nối hai thế giới: η = 0 là DDIM, η = 1 thêm nhiễu mới như DDPM.</figcaption></figure>
+
+<p>Trên dữ liệu 2D đơn giản này, hai cách gần như bằng nhau. Với ảnh thật, bài báo DDIM cho thấy khi ít bước (10–20), bản tất định tốt hơn rõ rệt bản ngẫu nhiên. Đó là lý do DDIM và các sampler tất định nhanh hơn (DPM-Solver, Euler) là mặc định trong các thư viện hiện nay.</p>
+<h3>Hai tính chất hữu ích của sampler tất định</h3>
 <ul>
-<li><strong>Lịch tuyến tính</strong> phá ảnh nhỏ quá nhanh: nhiều bước cuối gần như toàn nhiễu, phí công train. <strong>Lịch cosine</strong> đặt ᾱₜ = cos²(π/2 · (t/T + s)/(1 + s)) (chuẩn hóa để ᾱ₀ = 1), cho nhiễu tăng đều hơn và chất lượng tốt hơn với ảnh nhỏ.</li>
-<li><strong>EMA (exponential moving average):</strong> giữ một bản sao trọng số cập nhật chậm <code>w_ema ← 0.999·w_ema + 0.001·w</code>. Sinh ảnh bằng bản EMA cho kết quả mượt và ổn định hơn hẳn trọng số đang train. Gần như mọi model diffusion đều dùng EMA.</li>
+<li><strong>Cùng nhiễu ban đầu → cùng ảnh.</strong> Lưu seed là tái tạo lại được ảnh, sửa prompt một chút mà giữ seed thì bố cục gần như giữ nguyên (P5.4).</li>
+<li><strong>Nội suy mượt.</strong> Trộn dần hai nhiễu ban đầu z₁ và z₂ (dùng nội suy cầu "slerp" để giữ độ lớn của nhiễu) rồi sinh bằng DDIM, ta được dãy ảnh chuyển dần từ chiếc áo này sang chiếc áo khác.</li>
 </ul>
+<div class="box pitfall">
+<div class="box-h">Lỗi hay gặp</div>
+<p><strong>Nội suy tuyến tính giữa hai nhiễu.</strong> (z₁ + z₂)/2 có độ lớn nhỏ hơn nhiễu chuẩn khoảng √2 lần (hai vector ngẫu nhiên gần vuông góc nhau), model chưa từng thấy nhiễu "yếu" như vậy và sinh ra ảnh xám nhạt. Dùng slerp.</p>
+</div>
+<h2 id="lt-4">Lịch nhiễu cosine</h2>
+<p>Lịch tuyến tính phá ảnh quá nhanh: hệ số tín hiệu √ᾱ đã dưới 0.1 từ bước 674. Hơn 300 bước cuối gần như toàn nhiễu, model mất công học những bước không giúp gì.</p>
+<p><strong>Lịch cosine</strong> (Nichol &amp; Dhariwal, 2021) định nghĩa thẳng ᾱ theo t:</p>
+<div class="hl"><pre><span></span><code>ᾱₜ = f(t) / f(0),     f(t) = cos²( π/2 · (t/T + s) / (1 + s) ),     s = 0.008
+</code></pre></div>
+
+<figure class="fig"><img src="../assets/fig/p5-2-cosine.svg" alt="Lịch cosine giữ tín hiệu lâu hơn và giảm đều: √ᾱ dưới 0.1 chỉ từ bước 936." loading="lazy"><figcaption>Lịch cosine giữ tín hiệu lâu hơn và giảm đều: √ᾱ dưới 0.1 chỉ từ bước 936.</figcaption></figure>
+
+<table>
+<thead>
+<tr>
+<th>t</th>
+<th>√ᾱ tuyến tính</th>
+<th>√ᾱ cosine</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>250</td>
+<td>0.72</td>
+<td>0.92</td>
+</tr>
+<tr>
+<td>500</td>
+<td>0.28</td>
+<td>0.70</td>
+</tr>
+<tr>
+<td>750</td>
+<td>0.06</td>
+<td>0.38</td>
+</tr>
+</tbody>
+</table>
+<p>Với ảnh nhỏ (32×32, 64×64), lịch cosine cho ảnh đẹp hơn rõ. Ảnh lớn thì ngược lại cần nhiều nhiễu hơn (ảnh lớn có nhiều pixel dư thừa, nhiễu ít thì vẫn "đoán được" ảnh), nên các model lớn chỉnh lịch theo độ phân giải.</p>
+<h2 id="lt-5">EMA trọng số</h2>
+<p>Trong lúc train, trọng số dao động theo từng batch: batch nhiều áo thì nghiêng về áo, batch nhiều giày thì nghiêng về giày. <strong>EMA</strong> (exponential moving average, trung bình trượt hàm mũ) giữ một bản sao trọng số cập nhật chậm:</p>
+<div class="hl"><pre><span></span><code>w_ema ← decay · w_ema + (1 − decay) · w          decay thường 0.999 hoặc 0.9999
+</code></pre></div>
+
+<figure class="fig"><img src="../assets/fig/p5-2-ema.svg" alt="Mô phỏng một trọng số: bản đang train (xanh) dao động mạnh theo từng batch; bản EMA (cam) mượt, đi theo xu hướng chung. Ảnh được sinh bằng bản EMA." loading="lazy"><figcaption>Mô phỏng một trọng số: bản đang train (xanh) dao động mạnh theo từng batch; bản EMA (cam) mượt, đi theo xu hướng chung. Ảnh được sinh bằng bản EMA.</figcaption></figure>
+
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>decay = 0.99, w_ema hiện tại 0.5, trọng số vừa cập nhật w = 1.5.</p>
+<p>w_ema mới = 0.99 · 0.5 + 0.01 · 1.5 = 0.495 + 0.015 = <strong>0.51</strong>.</p>
+<p>Mỗi bước, khoảng cách từ w_ema tới w chỉ còn 99%. Sau ln 0.5 / ln 0.99 ≈ 69 bước khoảng cách còn một nửa: EMA với decay 0.99 "nhớ" khoảng 100 bước gần nhất; decay 0.999 nhớ khoảng 1000 bước.</p>
+</div>
+<div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">copy</span>
+<span class="tk-n">ema</span> <span class="tk-o">=</span> <span class="tk-n">copy</span><span class="tk-o">.</span><span class="tk-n">deepcopy</span><span class="tk-p">(</span><span class="tk-n">model</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">eval</span><span class="tk-p">()</span><span class="tk-o">.</span><span class="tk-n">requires_grad_</span><span class="tk-p">(</span><span class="tk-kc">False</span><span class="tk-p">)</span>
+
+<span class="tk-nd">@torch</span><span class="tk-o">.</span><span class="tk-n">no_grad</span><span class="tk-p">()</span>
+<span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">update_ema</span><span class="tk-p">(</span><span class="tk-n">ema</span><span class="tk-p">,</span> <span class="tk-n">model</span><span class="tk-p">,</span> <span class="tk-n">decay</span><span class="tk-o">=</span><span class="tk-mf">0.999</span><span class="tk-p">):</span>
+    <span class="tk-k">for</span> <span class="tk-n">pe</span><span class="tk-p">,</span> <span class="tk-n">p</span> <span class="tk-ow">in</span> <span class="tk-nb">zip</span><span class="tk-p">(</span><span class="tk-n">ema</span><span class="tk-o">.</span><span class="tk-n">parameters</span><span class="tk-p">(),</span> <span class="tk-n">model</span><span class="tk-o">.</span><span class="tk-n">parameters</span><span class="tk-p">()):</span>
+        <span class="tk-n">pe</span><span class="tk-o">.</span><span class="tk-n">mul_</span><span class="tk-p">(</span><span class="tk-n">decay</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">add_</span><span class="tk-p">(</span><span class="tk-n">p</span><span class="tk-p">,</span> <span class="tk-n">alpha</span><span class="tk-o">=</span><span class="tk-mi">1</span> <span class="tk-o">-</span> <span class="tk-n">decay</span><span class="tk-p">)</span>
+<span class="tk-c1"># gọi update_ema(ema, model) sau mỗi opt.step(); sinh ảnh bằng ema, không phải model</span>
+</code></pre></div>
+
+<div class="box pitfall">
+<div class="box-h">Lỗi hay gặp</div>
+<p><strong>Sinh ảnh bằng EMA quá sớm.</strong> Với decay 0.999, sau 200 bước đầu bản EMA vẫn chủ yếu là trọng số khởi tạo ngẫu nhiên, ảnh sinh ra toàn nhiễu dù model đang train đã khá. Trong 1–2 epoch đầu, so sánh cả hai bản, hoặc dùng decay tăng dần (một số thư viện có sẵn "EMA warmup").</p>
+</div>
 <div class="keep">
 <p><strong>Ghi nhớ:</strong> train một lần, sinh bằng nhiều cách. DDPM, DDIM và các sampler sau này đều dùng chung một model đoán nhiễu.</p>
-</div></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p5.2:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 4</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Kích thước qua U-Net</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Ảnh Fashion-MNIST 28×28 được đệm thành 32×32. U-Net có 3 mức, giảm một nửa kích thước giữa các mức.</p>
+</div>
+<div class="box check">
+<div class="box-h">Tự kiểm tra nhanh</div>
+<p>Mỗi lần gọi U-Net mất 35 ms cho một batch.</p>
+<div class="ans" id="p5-2-t-b144-a1">
+<div class="ans-fields"><label>Sinh một batch bằng DDPM 1000 bước (giây)<input inputmode="decimal" data-ans="35.0" data-tol="0.001" autocomplete="off"></label><label>Bằng DDIM 50 bước (giây)<input inputmode="decimal" data-ans="1.75" data-tol="0.001" autocomplete="off"></label><label>DDIM từ xₜ = 1, ᾱₜ = 0.36, ε̂ = 0.25. Đoán x̂₀ (2 chữ số thập phân)<input inputmode="decimal" data-ans="1.33" data-tol="0.01" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div>
+<div aria-live="polite" class="ans-fb"></div>
+</div>
+</div>
+<h2 id="lt-6">Tóm tắt bài và thuật ngữ</h2>
+<table>
+<thead>
+<tr>
+<th>Chủ đề</th>
+<th>Ý chính</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>U-Net</td>
+<td>nhánh xuống (toàn cục) + nhánh lên (chi tiết) + skip connection; attention ở độ phân giải thấp</td>
+</tr>
+<tr>
+<td>Đưa t vào</td>
+<td>embedding sin/cos → MLP → cộng vào mọi ResBlock</td>
+</tr>
+<tr>
+<td>DDIM</td>
+<td>đoán x̂₀ rồi đặt lại ở mức nhiễu thấp hơn bằng chính ε̂; tất định; 50 bước ≈ 1000 bước DDPM</td>
+</tr>
+<tr>
+<td>Lịch cosine</td>
+<td>giữ tín hiệu lâu hơn, không phí các bước cuối</td>
+</tr>
+<tr>
+<td>EMA</td>
+<td>trung bình trượt của trọng số, dùng để sinh ảnh</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Thuật ngữ</th>
+<th>Nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>U-Net</td>
+<td>mạng hình chữ U: thu nhỏ rồi phóng to, có skip connection</td>
+</tr>
+<tr>
+<td>encoder / decoder</td>
+<td>nhánh xuống / nhánh lên</td>
+</tr>
+<tr>
+<td>skip connection</td>
+<td>nối đặc trưng giữa hai nhánh cùng độ phân giải</td>
+</tr>
+<tr>
+<td>ResBlock</td>
+<td>khối conv có đường tắt cộng đầu vào vào đầu ra</td>
+</tr>
+<tr>
+<td>self-attention</td>
+<td>mọi vị trí trong feature map nhìn nhau</td>
+</tr>
+<tr>
+<td>DDIM</td>
+<td>Denoising Diffusion Implicit Models, sampler tất định</td>
+</tr>
+<tr>
+<td>sampler / scheduler</td>
+<td>quy tắc cập nhật xₜ khi sinh</td>
+</tr>
+<tr>
+<td>η (eta)</td>
+<td>lượng nhiễu mới mỗi bước: 0 là DDIM, 1 giống DDPM</td>
+</tr>
+<tr>
+<td>slerp</td>
+<td>nội suy cầu, giữ độ lớn vector</td>
+</tr>
+<tr>
+<td>cosine schedule</td>
+<td>lịch nhiễu định nghĩa ᾱ bằng hàm cos²</td>
+</tr>
+<tr>
+<td>EMA</td>
+<td>trung bình trượt hàm mũ của trọng số</td>
+</tr>
+</tbody>
+</table></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p5.2:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 4</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Kích thước qua U-Net</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Ảnh Fashion-MNIST 28×28 được đệm thành 32×32. U-Net có 3 mức, giảm một nửa kích thước giữa các mức.</p>
 <div class="ans" id="p5-2-e1-a1"><div class="ans-fields"><label>Kích thước ở mức thấp nhất<input inputmode="decimal" data-ans="8.0" data-tol="0.0" autocomplete="off"></label><label>Số kênh đầu ra của U-Net (ảnh xám)<input inputmode="decimal" data-ans="1.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
 
 <details class="fold solution">
@@ -168,7 +423,7 @@ x_s = √ᾱ_s · x̂₀ + √(1−ᾱ_s) · ε̂               "thêm lại" đ
     </div>
     <aside class="aside">
       <div class="abox"><h4>Tiến độ bài này</h4><div class="ring"><svg viewBox="0 0 64 64" aria-hidden="true"><circle class="bg" cx="32" cy="32" r="28"/><circle class="fg" cx="32" cy="32" r="28" stroke-dasharray="176" stroke-dashoffset="176"/></svg><div><b id="ring-n">0/3</b><span id="ring-sub">phần đã xong</span></div></div></div>
-      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Vì sao U-Net</a></li><li><a href="#lt-2">Đưa bước t vào U-Net</a></li><li><a href="#lt-3">DDIM: sinh nhanh</a></li><li><a href="#lt-4">Lịch nhiễu cosine và EMA</a></li></ol></div>
+      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Vì sao cần U-Net</a></li><li><a href="#lt-2">Đưa bước t vào U-Net</a></li><li><a href="#lt-3">DDIM: sinh nhanh gấp 20 lần</a></li><li><a href="#lt-4">Lịch nhiễu cosine</a></li><li><a href="#lt-5">EMA trọng số</a></li><li><a href="#lt-6">Tóm tắt bài và thuật ngữ</a></li></ol></div>
       
       <div class="abox"><h4>Cùng giai đoạn</h4><ul><li><a href="p5-1.html">GĐ 1 · Diffusion tạo ảnh thế nào</a></li><li><span class=cur>GĐ 2 · Diffusion cho ảnh</span></li><li><a href="p5-3.html">GĐ 3 · Điều khiển bằng chữ</a></li><li><a href="p5-4.html">GĐ 4 · Latent diffusion và Stable Diffusion</a></li><li><a href="p5-5.html">GĐ 5 · Fine-tune LoRA</a></li><li><a href="p5-6.html">GĐ 6 · Đánh giá và rectified flow</a></li><li><a href="p5-7.html">GĐ 7 · Đóng gói sản phẩm</a></li></ul></div>
     </aside>

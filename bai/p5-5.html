@@ -22,25 +22,102 @@
 <main class="container">
   <div class="crumbs"><a href="../bai-hoc.html">Bài học</a><span>/</span><a href="../bai-hoc.html#p5">P5 · Dự án Diffusion: tạo ảnh từ con số 0</a><span>/</span><span>P5.5</span></div>
   <section class="lhero side"><div class="code">P5.5</div><h1>GĐ 5 · Fine-tune LoRA</h1><div class="lmeta"><span class="m">Giai đoạn P5 · Dự án Diffusion: tạo ảnh từ con số 0</span><span class="m">Tuần 10–30</span><span class="chip ready"><span class="dot"></span>Có nội dung đầy đủ</span></div>
-    <div class="intro"><p>Fine-tune toàn bộ Stable Diffusion cần GPU lớn và tạo ra file vài GB cho mỗi phong cách. <strong>LoRA</strong> chỉ train thêm vài triệu tham số nhỏ gắn vào model đóng băng, chạy được trên Colab T4 và cho file vài MB. Đây là cách cộng đồng tạo hàng trăm nghìn phong cách và nhân vật riêng. Phần thực hành, bạn train một LoRA phong cách riêng cho ứng dụng tạo ảnh của mình.</p></div></section>
+    <div class="intro"><p>Fine-tune toàn bộ Stable Diffusion cần GPU lớn và tạo ra file vài GB cho mỗi phong cách. <strong>LoRA</strong> chỉ train thêm vài trăm nghìn tới vài triệu tham số nhỏ gắn vào model đóng băng, chạy được trên Colab T4 và cho file vài MB. Đây là cách cộng đồng tạo hàng trăm nghìn phong cách và nhân vật riêng. Bài này giải thích vì sao LoRA hiệu quả (kèm thí nghiệm thật), cách chuẩn bị dữ liệu, và cách phát hiện học thuộc. Phần thực hành, bạn train một LoRA phong cách riêng cho ứng dụng tạo ảnh của mình.</p></div></section>
   
-  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">5 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
+  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">7 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
   <div class="lgrid" style="margin-top:22px">
-    <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">Ý tưởng hạng thấp</h2>
-<p>Fine-tune thay đổi ma trận trọng số W (d_out × d_in) thành W + ΔW. Quan sát thực nghiệm: ΔW cần thiết để thích nghi với một tác vụ mới thường có <strong>hạng thấp</strong>, tức là biểu diễn được bằng tích hai ma trận mỏng:</p>
+    <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">Vì sao không fine-tune toàn bộ</h2>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>"Tạo ảnh sản phẩm theo phong cách thương hiệu của shop" là yêu cầu điển hình của khách hàng thuê freelancer AI. LoRA là công cụ chuẩn cho việc này: rẻ, nhanh, file nhỏ dễ giao, và cũng là kỹ thuật bạn sẽ dùng lại cho LLM ở P6.1.</p>
+</div>
+<p>Fine-tune toàn bộ U-Net của SD 1.5 nghĩa là cập nhật 859,5 triệu tham số. Với optimizer Adam, mỗi tham số cần thêm 2 trạng thái (momentum và variance) và gradient, nên bộ nhớ train dễ vượt 12–16 GB, quá sức GPU miễn phí. Mỗi phong cách lại cho ra một bản model đầy đủ khoảng 1,7 GB (fp16). Mười khách hàng, mười phong cách là 17 GB chỉ để lưu.</p>
+<h2 id="lt-2">Ý tưởng hạng thấp</h2>
+<p>Fine-tune thay ma trận trọng số W (kích thước d_out × d_in) bằng W + ΔW. Quan sát thực nghiệm (Hu và cộng sự, 2021): ΔW cần để thích nghi với một tác vụ mới thường có <strong>hạng thấp</strong>, tức là gần như biểu diễn được bằng tích hai ma trận mỏng:</p>
 <div class="hl"><pre><span></span><code>ΔW = B · A        B: d_out × r,   A: r × d_in,   r rất nhỏ (4, 8, 16)
 h = W·x + (α/r) · B·A·x
 </code></pre></div>
 
-<ul>
-<li>W đóng băng, chỉ train A và B. Số tham số train: r·(d_in + d_out) thay vì d_in·d_out.</li>
-<li><strong>B khởi tạo bằng 0</strong>, nên lúc đầu ΔW = 0 và model y hệt bản gốc; việc train bắt đầu từ đúng điểm xuất phát.</li>
-<li><strong>α/r</strong> là hệ số co giãn. Khi dùng, có thể chỉnh độ mạnh của LoRA (ví dụ 0.7) mà không train lại.</li>
-<li>Sau khi train có thể <strong>gộp</strong> BA vào W, nên lúc chạy không chậm hơn chút nào.</li>
-</ul>
-<h2 id="lt-2">LoRA cho Stable Diffusion</h2>
-<p>LoRA thường được gắn vào các ma trận chiếu Q, K, V, O của <strong>attention</strong> trong U-Net (cả self-attention và cross-attention), đôi khi cả text encoder. Cross-attention là nơi chữ nối với ảnh, nên LoRA ở đây học rất hiệu quả "từ này nghĩa là phong cách này".</p>
-<h2 id="lt-3">DreamBooth và style LoRA</h2>
+<figure class="fig"><img src="../assets/fig/p5-5-lora.svg" alt="W lớn đóng băng; chỉ hai ma trận mỏng B và A được train." loading="lazy"><figcaption>W lớn đóng băng; chỉ hai ma trận mỏng B và A được train.</figcaption></figure>
+
+<table>
+<thead>
+<tr>
+<th>Chi tiết</th>
+<th>Lý do</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>W đóng băng, chỉ train A và B</td>
+<td>số tham số train là r·(d_in + d_out) thay vì d_in·d_out</td>
+</tr>
+<tr>
+<td><strong>B khởi tạo bằng 0</strong></td>
+<td>lúc đầu ΔW = 0, model y hệt bản gốc; train bắt đầu từ đúng điểm xuất phát</td>
+</tr>
+<tr>
+<td>A khởi tạo ngẫu nhiên nhỏ</td>
+<td>nếu cả hai bằng 0 thì gradient của cả hai đều bằng 0, không học được</td>
+</tr>
+<tr>
+<td>hệ số α/r</td>
+<td>giữ độ lớn cập nhật ổn định khi đổi r; khi dùng còn nhân thêm "scale" để chỉnh độ mạnh</td>
+</tr>
+<tr>
+<td>gộp được</td>
+<td>sau khi train, W' = W + (α/r)·B·A: chạy không chậm hơn model gốc</td>
+</tr>
+</tbody>
+</table>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>Một ma trận chiếu 320×320 trong U-Net (mức độ phân giải cao nhất), LoRA rank 4:</p>
+<ol>
+<li>W có 320 · 320 = <strong>102.400</strong> tham số.</li>
+<li>LoRA có 4 · (320 + 320) = <strong>2.560</strong> tham số, tức 2,5%.</li>
+</ol>
+<p>Gắn LoRA rank 4 vào mọi ma trận Q, K, V, O của attention trong U-Net SD 1.5 (đã đếm bằng <code>diffusers</code>): tổng <strong>797.184</strong> tham số, khoảng 1,6 MB ở fp16, so với 1,72 GB của U-Net. Nhỏ hơn khoảng 1000 lần.</p>
+</div>
+<h3>Thí nghiệm: ΔW có thật sự hạng thấp</h3>
+<p>Lấy model diffusion đã train trên xoắn ốc (P5.2, MLP 4 lớp, 141 nghìn tham số), fine-tune sang dữ liệu mới hình "hai trăng khuyết" bằng hai cách, cùng 3000 bước:</p>
+<ol>
+<li><strong>Fine-tune toàn bộ:</strong> cập nhật mọi tham số. Sau đó phân tích ΔW của lớp giữa (256×256) bằng SVD.</li>
+<li><strong>LoRA</strong> rank 1, 2, 4, 8, 16 gắn vào cả 4 lớp Linear, lớp gốc đóng băng.</li>
+</ol>
+<figure class="fig"><img src="../assets/fig/p5-5-rank.svg" alt="Trái: chỉ 8 hướng (trên 256) đã chứa 86% &quot;năng lượng&quot; của ΔW. Phải: loss trên dữ liệu mới. Không fine-tune: 0.400. Fine-tune toàn bộ 141 nghìn tham số: 0.188. LoRA rank 4 chỉ 6,3 nghìn tham số: 0.187." loading="lazy"><figcaption>Trái: chỉ 8 hướng (trên 256) đã chứa 86% &quot;năng lượng&quot; của ΔW. Phải: loss trên dữ liệu mới. Không fine-tune: 0.400. Fine-tune toàn bộ 141 nghìn tham số: 0.188. LoRA rank 4 chỉ 6,3 nghìn tham số: 0.187.</figcaption></figure>
+
+<p>Kết quả cho thấy đúng giả thuyết của LoRA: thay đổi cần thiết tập trung vào vài hướng, nên train vài hướng đó là đủ. Thậm chí rank 1 (1,6 nghìn tham số) đã đạt 0.190.</p>
+<div class="hl"><pre><span></span><code><span class="tk-k">class</span><span class="tk-w"> </span><span class="tk-nc">LoRALinear</span><span class="tk-p">(</span><span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">Module</span><span class="tk-p">):</span>
+    <span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-fm">__init__</span><span class="tk-p">(</span><span class="tk-bp">self</span><span class="tk-p">,</span> <span class="tk-n">base</span><span class="tk-p">,</span> <span class="tk-n">r</span><span class="tk-o">=</span><span class="tk-mi">8</span><span class="tk-p">,</span> <span class="tk-n">alpha</span><span class="tk-o">=</span><span class="tk-mi">16</span><span class="tk-p">):</span>
+        <span class="tk-nb">super</span><span class="tk-p">()</span><span class="tk-o">.</span><span class="tk-fm">__init__</span><span class="tk-p">()</span>
+        <span class="tk-bp">self</span><span class="tk-o">.</span><span class="tk-n">base</span> <span class="tk-o">=</span> <span class="tk-n">base</span><span class="tk-o">.</span><span class="tk-n">requires_grad_</span><span class="tk-p">(</span><span class="tk-kc">False</span><span class="tk-p">)</span>                       <span class="tk-c1"># đóng băng W</span>
+        <span class="tk-bp">self</span><span class="tk-o">.</span><span class="tk-n">A</span> <span class="tk-o">=</span> <span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">Parameter</span><span class="tk-p">(</span><span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">randn</span><span class="tk-p">(</span><span class="tk-n">r</span><span class="tk-p">,</span> <span class="tk-n">base</span><span class="tk-o">.</span><span class="tk-n">in_features</span><span class="tk-p">)</span> <span class="tk-o">*</span> <span class="tk-mf">0.01</span><span class="tk-p">)</span>
+        <span class="tk-bp">self</span><span class="tk-o">.</span><span class="tk-n">B</span> <span class="tk-o">=</span> <span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">Parameter</span><span class="tk-p">(</span><span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">zeros</span><span class="tk-p">(</span><span class="tk-n">base</span><span class="tk-o">.</span><span class="tk-n">out_features</span><span class="tk-p">,</span> <span class="tk-n">r</span><span class="tk-p">))</span>     <span class="tk-c1"># B = 0: ban đầu không đổi gì</span>
+        <span class="tk-bp">self</span><span class="tk-o">.</span><span class="tk-n">scale</span> <span class="tk-o">=</span> <span class="tk-n">alpha</span> <span class="tk-o">/</span> <span class="tk-n">r</span>
+    <span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">forward</span><span class="tk-p">(</span><span class="tk-bp">self</span><span class="tk-p">,</span> <span class="tk-n">x</span><span class="tk-p">):</span>
+        <span class="tk-k">return</span> <span class="tk-bp">self</span><span class="tk-o">.</span><span class="tk-n">base</span><span class="tk-p">(</span><span class="tk-n">x</span><span class="tk-p">)</span> <span class="tk-o">+</span> <span class="tk-bp">self</span><span class="tk-o">.</span><span class="tk-n">scale</span> <span class="tk-o">*</span> <span class="tk-p">(</span><span class="tk-n">x</span> <span class="tk-o">@</span> <span class="tk-bp">self</span><span class="tk-o">.</span><span class="tk-n">A</span><span class="tk-o">.</span><span class="tk-n">T</span> <span class="tk-o">@</span> <span class="tk-bp">self</span><span class="tk-o">.</span><span class="tk-n">B</span><span class="tk-o">.</span><span class="tk-n">T</span><span class="tk-p">)</span>
+</code></pre></div>
+
+<p>(Đây là đúng lớp dùng trong thí nghiệm. Bài tập code yêu cầu thêm hàm <code>merge()</code> và kiểm tra.)</p>
+<div class="box pitfall">
+<div class="box-h">Lỗi hay gặp</div>
+<p><strong>Rank càng cao càng tốt?</strong> Không. Ở thí nghiệm trên, rank 16 không tốt hơn rank 4. Rank cao tăng khả năng học thuộc khi dữ liệu ít (20–50 ảnh). Bắt đầu với rank 4–8 cho phong cách, 16–32 cho đối tượng phức tạp, chỉ tăng khi thấy LoRA "không học nổi".</p>
+</div>
+<h2 id="lt-3">LoRA cho Stable Diffusion</h2>
+<p>LoRA thường được gắn vào các ma trận chiếu Q, K, V và đầu ra O của <strong>attention</strong> trong U-Net (trong <code>diffusers</code> là <code>to_q</code>, <code>to_k</code>, <code>to_v</code>, <code>to_out.0</code>), cả self-attention lẫn cross-attention. Đôi khi gắn thêm vào text encoder để model hiểu từ kích hoạt tốt hơn.</p>
+<p>Cross-attention là nơi chữ nối với ảnh (P5.3), nên LoRA ở đây học rất hiệu quả "từ này nghĩa là phong cách này". Self-attention điều khiển bố cục và kết cấu.</p>
+<h3>Độ mạnh khi dùng</h3>
+<p>Khi sinh ảnh, hệ số <code>scale</code> nhân thêm vào phần LoRA:</p>
+<div class="hl"><pre><span></span><code>h = W·x + scale · (α/r) · B·A·x
+</code></pre></div>
+
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>LoRA train với α = 8, r = 4, nên α/r = 2. Khi sinh với scale 0.5, phần LoRA được nhân 0.5 · 2 = 1. Với scale 0: model gốc. Với scale 1.0: đúng như lúc train. Scale 0.6–0.8 thường cho phong cách rõ mà vẫn giữ khả năng làm theo prompt của model gốc.</p>
+</div>
+<p>Trong <code>diffusers</code>: <code>pipe.load_lora_weights("thu_muc_lora")</code>, rồi truyền <code>cross_attention_kwargs={"scale": 0.7}</code> khi gọi pipeline. Có thể nạp nhiều LoRA và trộn (một LoRA phong cách + một LoRA đối tượng), mỗi cái một độ mạnh.</p>
+<h2 id="lt-4">DreamBooth và style LoRA</h2>
 <table>
 <thead>
 <tr>
@@ -57,7 +134,7 @@ h = W·x + (α/r) · B·A·x
 </tr>
 <tr>
 <td>Dữ liệu</td>
-<td>5–20 ảnh của đối tượng, nhiều góc</td>
+<td>5–20 ảnh của đối tượng, nhiều góc, nhiều bối cảnh</td>
 <td>20–100 ảnh cùng phong cách, nội dung đa dạng</td>
 </tr>
 <tr>
@@ -72,22 +149,180 @@ h = W·x + (α/r) · B·A·x
 </tr>
 </tbody>
 </table>
-<p><strong>Prior preservation</strong> trong DreamBooth: sinh thêm ảnh lớp chung bằng model gốc ("a photo of chair") và train kèm, để model không quên "ghế" nói chung.</p>
-<h2 id="lt-4">Dữ liệu và chú thích</h2>
+<p><strong>Vì sao dùng từ hiếm như "sks".</strong> Từ đó gần như không mang nghĩa gì với model, nên LoRA có thể gán nghĩa mới ("chiếc ghế cụ thể này") mà không phá nghĩa của từ thông dụng. Dùng "my chair" thì LoRA phải sửa nghĩa của "my" và "chair", ảnh hưởng mọi prompt có hai từ đó.</p>
+<p><strong>Prior preservation</strong> trong DreamBooth: dùng model gốc sinh thêm 100–200 ảnh lớp chung ("a photo of chair"), train kèm với ảnh của bạn. Loss trên ảnh lớp chung giữ cho model không quên "ghế" nói chung là gì.</p>
+<h2 id="lt-5">Dữ liệu và chú thích</h2>
+<p>Đây là phần quyết định chất lượng LoRA nhiều nhất, hơn mọi siêu tham số.</p>
+<p><strong>Nguyên tắc:</strong> ảnh phải <strong>đa dạng</strong> ở những gì bạn <strong>không</strong> muốn model học (nền, góc chụp, loại đồ vật, ánh sáng), và <strong>nhất quán</strong> ở những gì bạn muốn (phong cách, hoặc chính đối tượng).</p>
+<p><strong>Chú thích:</strong> với style LoRA, mô tả <strong>nội dung</strong> ảnh rồi thêm từ kích hoạt. Model gán mọi thứ <strong>không được mô tả</strong> vào từ kích hoạt.</p>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>Hai cách chú thích cùng một ảnh sản phẩm (đèn gốm trên nền trắng, bóng đổ mềm):</p>
+<table>
+<thead>
+<tr>
+<th>Chú thích</th>
+<th>Model học được gì từ "tthstyle"</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>"tthstyle"</td>
+<td>cả đèn gốm, nền trắng, bóng mềm: sinh "a sofa, tthstyle" có thể ra một cái đèn</td>
+</tr>
+<tr>
+<td>"a ceramic table lamp, tthstyle"</td>
+<td>phần không được mô tả: nền trắng, bóng mềm, ánh sáng studio (đúng thứ bạn muốn)</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>Chuẩn bị ảnh:</strong></p>
 <ul>
-<li>Ảnh <strong>đa dạng</strong> về những gì bạn <strong>không</strong> muốn model học (nền, góc, ánh sáng), <strong>nhất quán</strong> về những gì bạn muốn (phong cách, đối tượng).</li>
-<li>Cắt về 512×512 (SD 1.5), bỏ ảnh mờ, có chữ hoặc watermark.</li>
-<li>Với style LoRA: chú thích mô tả <strong>nội dung</strong> ảnh ("a chair by a window") cộng từ kích hoạt. Thứ không được mô tả sẽ bị gán vào từ kích hoạt.</li>
+<li>Cắt về 512×512 (SD 1.5) hoặc 1024 (SDXL), đối tượng chính nằm trọn trong khung.</li>
+<li>Bỏ ảnh mờ, ảnh có chữ, logo hoặc watermark (model sẽ học sinh ra chữ nhòe).</li>
+<li>Bỏ ảnh trùng lặp: một ảnh xuất hiện 5 lần thì được học như 5 ảnh, tăng nguy cơ bị chép lại.</li>
 </ul>
-<h2 id="lt-5">Overfitting, học thuộc và bản quyền</h2>
-<ul>
-<li>Dấu hiệu overfit: mọi ảnh sinh ra giống hệt ảnh train, prompt khác không đổi được bố cục. Giảm số bước, learning rate, hoặc rank; thêm ảnh đa dạng.</li>
-<li>Theo dõi bằng cách sinh ảnh mẫu với <strong>prompt chưa từng thấy</strong> sau mỗi vài trăm bước.</li>
-<li>Chỉ train trên ảnh bạn có quyền dùng. Tạo LoRA bắt chước phong cách của một họa sĩ còn sống hoặc khuôn mặt người thật có rủi ro pháp lý và đạo đức; dùng ảnh của chính bạn hoặc ảnh có giấy phép rõ ràng.</li>
-</ul>
+<h3>Số bước train</h3>
+<p>Số bước = (số ảnh / batch size) × số epoch.</p>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>30 ảnh, batch size 1, 25 epoch → 30 × 25 = <strong>750 bước</strong>, mỗi ảnh được nhìn 25 lần. Với learning rate 1e-4 và rank 8, đây là mức hợp lý cho style LoRA. Lưu checkpoint mỗi 250 bước để chọn bản tốt nhất thay vì chỉ lấy bản cuối.</p>
+</div>
+<h2 id="lt-6">Overfitting, học thuộc và bản quyền</h2>
+<table>
+<thead>
+<tr>
+<th>Dấu hiệu</th>
+<th>Nguyên nhân thường gặp</th>
+<th>Sửa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Mọi ảnh giống ảnh train, đổi prompt không đổi bố cục</td>
+<td>train quá lâu, rank cao, ít ảnh</td>
+<td>giảm số bước hoặc lr, lấy checkpoint sớm hơn</td>
+</tr>
+<tr>
+<td>Đối tượng lạ xuất hiện trong mọi ảnh</td>
+<td>dữ liệu một loại, chú thích thiếu</td>
+<td>thêm ảnh đa dạng, chú thích nội dung</td>
+</tr>
+<tr>
+<td>Phong cách mờ nhạt</td>
+<td>train chưa đủ, scale thấp</td>
+<td>thêm bước, tăng scale khi dùng</td>
+</tr>
+<tr>
+<td>Màu cháy, ảnh vỡ</td>
+<td>lr quá cao</td>
+<td>giảm lr (1e-4 → 5e-5)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Theo dõi trong lúc train:</strong> sau mỗi vài trăm bước, sinh ảnh với <strong>prompt chưa từng thấy</strong> và cùng seed. Loss của diffusion dao động rất mạnh (do t ngẫu nhiên) nên gần như vô dụng để phát hiện overfit; nhìn ảnh mẫu mới là cách đáng tin.</p>
+<p><strong>Kiểm tra học thuộc sau khi train:</strong> với mỗi ảnh sinh ra, tính embedding CLIP và tìm ảnh train gần nhất. Độ tương đồng cosine rất cao (trên khoảng 0.95) là dấu hiệu chép lại, cần xem bằng mắt.</p>
+<div class="box pitfall">
+<div class="box-h">Lỗi hay gặp</div>
+<p><strong>Bản quyền và quyền hình ảnh.</strong> Chỉ train trên ảnh bạn có quyền dùng: ảnh tự chụp, ảnh khách hàng cung cấp kèm cam kết quyền, ảnh có giấy phép rõ ràng. LoRA bắt chước phong cách của một họa sĩ còn sống hoặc khuôn mặt người thật có rủi ro pháp lý và đạo đức. Ghi nguồn dữ liệu vào model card khi giao cho khách.</p>
+</div>
 <div class="keep">
 <p><strong>Ghi nhớ:</strong> LoRA giỏi dạy model một <strong>khái niệm hẹp</strong> với ít dữ liệu. Muốn model giỏi hẳn một miền mới (ảnh y tế), cần nhiều dữ liệu và fine-tune sâu hơn.</p>
-</div></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p5.5:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 3</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Đếm tham số LoRA</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Một ma trận chiếu 768×768, LoRA rank 8.</p>
+</div>
+<div class="box check">
+<div class="box-h">Tự kiểm tra nhanh</div>
+<p>Ma trận 320×320, LoRA rank 4, α = 8.</p>
+<div class="ans" id="p5-5-t-b125-a1">
+<div class="ans-fields"><label>Số tham số LoRA<input inputmode="decimal" data-ans="2560.0" data-tol="0.0" autocomplete="off"></label><label>Hệ số α/r<input inputmode="decimal" data-ans="2.0" data-tol="0.0" autocomplete="off"></label><label>30 ảnh, batch 1, 25 epoch: số bước<input inputmode="decimal" data-ans="750.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div>
+<div aria-live="polite" class="ans-fb"></div>
+</div>
+</div>
+<h2 id="lt-7">Tóm tắt bài và thuật ngữ</h2>
+<table>
+<thead>
+<tr>
+<th>Chủ đề</th>
+<th>Ý chính</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Vì sao LoRA</td>
+<td>ΔW gần như hạng thấp; train A, B mỏng, W đóng băng</td>
+</tr>
+<tr>
+<td>Khởi tạo</td>
+<td>B = 0 nên bắt đầu đúng bằng model gốc</td>
+</tr>
+<tr>
+<td>Gắn ở đâu</td>
+<td>Q, K, V, O của attention trong U-Net (đôi khi text encoder)</td>
+</tr>
+<tr>
+<td>Dùng</td>
+<td><code>load_lora_weights</code>, độ mạnh qua <code>scale</code>, trộn được nhiều LoRA</td>
+</tr>
+<tr>
+<td>DreamBooth / style</td>
+<td>đối tượng cụ thể với từ hiếm / phong cách với chú thích nội dung</td>
+</tr>
+<tr>
+<td>Dữ liệu</td>
+<td>đa dạng thứ không muốn học, nhất quán thứ muốn học</td>
+</tr>
+<tr>
+<td>Overfit</td>
+<td>theo dõi bằng ảnh mẫu với prompt mới; kiểm tra học thuộc bằng CLIP</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Thuật ngữ</th>
+<th>Nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>LoRA</td>
+<td>Low-Rank Adaptation, thêm ΔW = B·A hạng thấp</td>
+</tr>
+<tr>
+<td>rank (r)</td>
+<td>số cột của B / số hàng của A</td>
+</tr>
+<tr>
+<td>α (alpha)</td>
+<td>hệ số co giãn, phần LoRA nhân α/r</td>
+</tr>
+<tr>
+<td>merge</td>
+<td>gộp B·A vào W sau khi train</td>
+</tr>
+<tr>
+<td>SVD</td>
+<td>phân tích giá trị suy biến, tìm các hướng chính của ma trận</td>
+</tr>
+<tr>
+<td>DreamBooth</td>
+<td>fine-tune dạy model một đối tượng cụ thể</td>
+</tr>
+<tr>
+<td>trigger word</td>
+<td>từ kích hoạt LoRA trong prompt</td>
+</tr>
+<tr>
+<td>prior preservation</td>
+<td>train kèm ảnh lớp chung để model không quên</td>
+</tr>
+<tr>
+<td>overfitting / memorization</td>
+<td>học thuộc dữ liệu train</td>
+</tr>
+</tbody>
+</table></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p5.5:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 3</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Đếm tham số LoRA</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Một ma trận chiếu 768×768, LoRA rank 8.</p>
 <div class="ans" id="p5-5-e1-a1"><div class="ans-fields"><label>Tham số LoRA<input inputmode="decimal" data-ans="12288.0" data-tol="0.0" autocomplete="off"></label><label>Tham số của W<input inputmode="decimal" data-ans="589824.0" data-tol="0.0" autocomplete="off"></label><label>Tỉ lệ LoRA / W<input inputmode="decimal" data-ans="0.0208" data-tol="0.0005" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
 
 <details class="fold solution">
@@ -187,7 +422,7 @@ h = W·x + (α/r) · B·A·x
     </div>
     <aside class="aside">
       <div class="abox"><h4>Tiến độ bài này</h4><div class="ring"><svg viewBox="0 0 64 64" aria-hidden="true"><circle class="bg" cx="32" cy="32" r="28"/><circle class="fg" cx="32" cy="32" r="28" stroke-dasharray="176" stroke-dashoffset="176"/></svg><div><b id="ring-n">0/3</b><span id="ring-sub">phần đã xong</span></div></div></div>
-      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Ý tưởng hạng thấp</a></li><li><a href="#lt-2">LoRA cho Stable Diffusion</a></li><li><a href="#lt-3">DreamBooth và style LoRA</a></li><li><a href="#lt-4">Dữ liệu và chú thích</a></li><li><a href="#lt-5">Overfitting, học thuộc và bản quyền</a></li></ol></div>
+      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Vì sao không fine-tune toàn bộ</a></li><li><a href="#lt-2">Ý tưởng hạng thấp</a></li><li><a href="#lt-3">LoRA cho Stable Diffusion</a></li><li><a href="#lt-4">DreamBooth và style LoRA</a></li><li><a href="#lt-5">Dữ liệu và chú thích</a></li><li><a href="#lt-6">Overfitting, học thuộc và bản quyền</a></li><li><a href="#lt-7">Tóm tắt bài và thuật ngữ</a></li></ol></div>
       
       <div class="abox"><h4>Cùng giai đoạn</h4><ul><li><a href="p5-1.html">GĐ 1 · Diffusion tạo ảnh thế nào</a></li><li><a href="p5-2.html">GĐ 2 · Diffusion cho ảnh</a></li><li><a href="p5-3.html">GĐ 3 · Điều khiển bằng chữ</a></li><li><a href="p5-4.html">GĐ 4 · Latent diffusion và Stable Diffusion</a></li><li><span class=cur>GĐ 5 · Fine-tune LoRA</span></li><li><a href="p5-6.html">GĐ 6 · Đánh giá và rectified flow</a></li><li><a href="p5-7.html">GĐ 7 · Đóng gói sản phẩm</a></li></ul></div>
     </aside>

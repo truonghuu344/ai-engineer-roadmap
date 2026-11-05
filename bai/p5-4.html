@@ -22,19 +22,48 @@
 <main class="container">
   <div class="crumbs"><a href="../bai-hoc.html">Bài học</a><span>/</span><a href="../bai-hoc.html#p5">P5 · Dự án Diffusion: tạo ảnh từ con số 0</a><span>/</span><span>P5.4</span></div>
   <section class="lhero side"><div class="code">P5.4</div><h1>GĐ 4 · Latent diffusion và Stable Diffusion</h1><div class="lmeta"><span class="m">Giai đoạn P5 · Dự án Diffusion: tạo ảnh từ con số 0</span><span class="m">Tuần 10–30</span><span class="chip ready"><span class="dot"></span>Có nội dung đầy đủ</span></div>
-    <div class="intro"><p>Khử nhiễu trực tiếp trên ảnh 512×512×3 thì mỗi bước U-Net phải xử lý gần 800 nghìn con số: quá chậm và tốn bộ nhớ. <strong>Latent diffusion</strong>, nền tảng của Stable Diffusion, nén ảnh vào một không gian nhỏ hơn 48 lần bằng <strong>VAE</strong>, khử nhiễu ở đó, rồi giải nén ra ảnh. Bài này mổ xẻ từng thành phần của Stable Diffusion, và phần thực hành bạn tự viết vòng lặp sinh ảnh thay cho hàm <code>pipeline()</code> một dòng.</p></div></section>
+    <div class="intro"><p>Khử nhiễu trực tiếp trên ảnh 512×512×3 thì mỗi bước U-Net phải xử lý gần 800 nghìn con số: quá chậm và tốn bộ nhớ. <strong>Latent diffusion</strong>, nền tảng của Stable Diffusion, nén ảnh vào một không gian nhỏ hơn 48 lần bằng <strong>VAE</strong>, khử nhiễu ở đó, rồi giải nén ra ảnh. Bài này mổ xẻ từng thành phần của Stable Diffusion (kích thước đã đếm bằng <code>diffusers</code>), và phần thực hành bạn tự viết vòng lặp sinh ảnh thay cho hàm <code>pipeline()</code> một dòng.</p></div></section>
   
-  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">5 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
+  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">7 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
   <div class="lgrid" style="margin-top:22px">
-    <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">VAE: nén ảnh vào không gian latent</h2>
-<p><strong>Autoencoder</strong> gồm encoder nén ảnh thành vector nhỏ và decoder dựng lại ảnh. <strong>VAE</strong> (variational autoencoder) thêm ràng buộc để không gian latent trơn tru, lấy mẫu được.</p>
+    <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">Vì sao không khử nhiễu thẳng trên pixel</h2>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Khách hàng không hỏi "DDPM là gì" mà hỏi "vì sao sinh ảnh mất 5 giây, GPU 8 GB có chạy được không, ảnh 1024 có được không". Trả lời được cần hiểu ảnh đi qua những thành phần nào, mỗi thành phần tốn bao nhiêu. Đây cũng là bài nền cho LoRA (P5.5) và app tạo ảnh (P5.7).</p>
+</div>
+<p>Ảnh 512×512 màu có 512 · 512 · 3 = 786.432 con số. Phần lớn trong số đó là chi tiết vi mô (nhiễu hạt, biến thiên màu nhỏ) mà mắt người gần như không thấy. Khử nhiễu trên pixel bắt U-Net tốn công cho những chi tiết đó ở <strong>mọi</strong> bước.</p>
+<p>Chi phí còn tệ hơn với attention: số phần tử ma trận self-attention tăng theo bình phương số vị trí. Ở độ phân giải 512×512 là 262.144 vị trí, ma trận attention có khoảng 68,7 tỉ phần tử, không GPU nào chứa nổi. Ở 64×64 chỉ là 4096 vị trí, khoảng 16,8 triệu phần tử.</p>
+<p>Ý tưởng <strong>latent diffusion</strong> (Rombach và cộng sự, 2022): tách hai việc.</p>
+<ol>
+<li>Một <strong>autoencoder</strong> học nén ảnh thành biểu diễn nhỏ (latent) và giải nén lại, giữ cấu trúc có nghĩa, bỏ chi tiết vi mô. Train <strong>một lần</strong>, rồi đóng băng.</li>
+<li>Diffusion chỉ học trên latent nhỏ gọn.</li>
+</ol>
+<h2 id="lt-2">VAE: nén ảnh vào không gian latent</h2>
+<p><strong>Autoencoder</strong> gồm encoder nén ảnh và decoder dựng lại ảnh, train để ảnh dựng lại giống ảnh gốc. <strong>VAE</strong> (variational autoencoder) thêm một ràng buộc nhỏ (KL) để latent không có những vùng "trống" kỳ quặc, nhờ đó latent trơn tru và thêm nhiễu vào vẫn có nghĩa.</p>
 <p>Với Stable Diffusion 1.5:</p>
-<div class="hl"><pre><span></span><code>ảnh 512×512×3  ──encoder──▶  latent 64×64×4  ──decoder──▶  ảnh 512×512×3
-                (giảm 8 lần mỗi chiều)
+<div class="hl"><pre><span></span><code>ảnh 512×512×3  ──encoder──▶  latent 4×64×64  ──decoder──▶  ảnh 512×512×3
+             (giảm 8 lần mỗi chiều cạnh, 4 kênh)
 </code></pre></div>
 
-<p>VAE được train <strong>riêng và trước</strong>, rồi đóng băng. Nó học giữ lại cấu trúc có nghĩa và bỏ chi tiết pixel mà mắt người khó thấy. Diffusion chỉ cần học trên latent nhỏ gọn. Latent được nhân với một hệ số (<code>vae.config.scaling_factor</code>, khoảng 0.18 với SD 1.5) để có phương sai gần 1, đúng giả định của lịch nhiễu.</p>
-<h2 id="lt-2">Bốn thành phần của Stable Diffusion</h2>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>Ảnh 1024×1024 (SDXL):</p>
+<ol>
+<li>Latent: 1024 / 8 = 128 mỗi cạnh, 4 kênh → 128 · 128 · 4 = <strong>65.536</strong> số.</li>
+<li>Ảnh: 1024 · 1024 · 3 = 3.145.728 số.</li>
+<li>Tỉ lệ: 3.145.728 / 65.536 = <strong>48</strong>. Tỉ lệ này luôn là 48 với VAE giảm 8 lần mỗi cạnh và 4 kênh: (8 · 8 · 3) / 4.</li>
+</ol>
+</div>
+<p>VAE không chỉ là phép nén thông thường như JPEG: latent mang ý nghĩa "vùng này là cạnh gỗ, vùng kia là nền sáng", nên U-Net làm việc với khái niệm, không phải pixel lẻ.</p>
+<h3>Scaling factor</h3>
+<p>Latent ra từ VAE có phương sai khoảng 30, không phải 1. Lịch nhiễu giả định dữ liệu có phương sai khoảng 1 (P5.1), nên latent được nhân với <code>vae.config.scaling_factor</code> = 0.18215 trước khi đưa vào diffusion, và chia lại trước khi giải mã.</p>
+<div class="box pitfall">
+<div class="box-h">Lỗi hay gặp</div>
+<p><strong>Quên chia scaling factor khi decode</strong> (hoặc quên nhân khi encode ở img2img) cho ảnh toàn màu bệt, tương phản cực mạnh hoặc xám đặc. Đây là lỗi phổ biến nhất khi tự viết vòng lặp. SDXL dùng hệ số khác (0.13025): luôn đọc từ <code>vae.config</code>, đừng chép cứng.</p>
+</div>
+<h2 id="lt-3">Năm thành phần của Stable Diffusion</h2>
+<figure class="fig"><img src="../assets/fig/p5-4-pipeline.svg" alt="Luồng dữ liệu khi sinh một ảnh. Phần trong khung đứt nét lặp 20–50 lần; mọi thứ khác chỉ chạy một lần." loading="lazy"><figcaption>Luồng dữ liệu khi sinh một ảnh. Phần trong khung đứt nét lặp 20–50 lần; mọi thứ khác chỉ chạy một lần.</figcaption></figure>
+
 <table>
 <thead>
 <tr>
@@ -47,60 +76,227 @@
 <tr>
 <td>Tokenizer</td>
 <td>prompt → tối đa 77 token id</td>
-<td>CLIP tokenizer</td>
+<td>CLIP tokenizer (BPE)</td>
 </tr>
 <tr>
 <td>Text encoder</td>
 <td>token id → 77 vector ngữ nghĩa</td>
-<td>CLIP ViT-L/14, 768 chiều</td>
+<td>CLIP ViT-L/14 phần văn bản, khoảng 123 triệu tham số, 768 chiều</td>
 </tr>
 <tr>
 <td>U-Net</td>
-<td>đoán nhiễu trên latent, nhận văn bản qua cross-attention</td>
-<td>khoảng 860 triệu tham số</td>
+<td>đoán nhiễu trên latent, đọc văn bản qua cross-attention</td>
+<td>859,5 triệu tham số, kênh 320/640/1280/1280</td>
 </tr>
 <tr>
 <td>Scheduler</td>
 <td>quy tắc cập nhật latent mỗi bước</td>
-<td>DDPM, DDIM, DPM-Solver, Euler…</td>
+<td>DDIM, DPM-Solver++, Euler… (không có tham số học)</td>
 </tr>
 <tr>
-<td>VAE decoder</td>
-<td>latent → ảnh</td>
-<td></td>
+<td>VAE</td>
+<td>encoder (img2img) và decoder</td>
+<td>83,65 triệu tham số</td>
 </tr>
 </tbody>
 </table>
-<p>Khi sinh ảnh với guidance, U-Net chạy cho cả prompt và prompt rỗng (hoặc negative prompt) ở mỗi bước, gộp bằng CFG (GĐ3).</p>
-<h2 id="lt-3">Vòng lặp sinh ảnh, từng dòng</h2>
-<div class="hl"><pre><span></span><code>1. Mã hóa prompt và prompt rỗng → hai chuỗi 77×768
-2. Lấy latent nhiễu z ~ N(0, I) shape (1, 4, 64, 64) từ seed
-3. scheduler.set_timesteps(30)
-4. Với mỗi t:
-     đầu vào = [z, z] (nhân đôi cho CFG), scheduler.scale_model_input
-     ε_u, ε_c = U-Net(đầu vào, t, [rỗng, prompt])
-     ε = ε_u + w·(ε_c − ε_u)
-     z = scheduler.step(ε, t, z)
-5. ảnh = VAE.decode(z / scaling_factor)
+<p>U-Net chiếm phần lớn tham số và phần lớn thời gian, vì nó chạy 20–50 lần (nhân đôi với CFG), còn text encoder và VAE decoder chỉ chạy một lần.</p>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>Bộ nhớ trọng số ở fp16 (2 byte mỗi tham số), tính cả ba thành phần có tham số:</p>
+<p>(859,5 + 123 + 83,65) triệu ≈ 1066 triệu tham số × 2 byte ≈ <strong>2,13 GB</strong>.</p>
+<p>Cộng thêm bộ nhớ cho activation lúc chạy (phụ thuộc kích thước ảnh và batch), SD 1.5 chạy thoải mái trên GPU 6–8 GB ở fp16, kể cả T4 miễn phí của Colab.</p>
+</div>
+<h2 id="lt-4">Vòng lặp sinh ảnh, từng dòng</h2>
+<p>Gọi <code>pipe(prompt)</code> là một dòng, nhưng bên trong là đúng những gì bạn đã viết ở GĐ1–3. Tự viết lại giúp bạn sửa được khi có lỗi và thêm được tính năng mà pipeline không có sẵn.</p>
+<div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">torch</span>
+<span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">diffusers</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">StableDiffusionPipeline</span><span class="tk-p">,</span> <span class="tk-n">DPMSolverMultistepScheduler</span>
+<span class="tk-n">dev</span> <span class="tk-o">=</span> <span class="tk-s2">"cuda"</span>
+<span class="tk-n">pipe</span> <span class="tk-o">=</span> <span class="tk-n">StableDiffusionPipeline</span><span class="tk-o">.</span><span class="tk-n">from_pretrained</span><span class="tk-p">(</span><span class="tk-s2">"stable-diffusion-v1-5/stable-diffusion-v1-5"</span><span class="tk-p">,</span>
+                                               <span class="tk-n">torch_dtype</span><span class="tk-o">=</span><span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">float16</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">to</span><span class="tk-p">(</span><span class="tk-n">dev</span><span class="tk-p">)</span>
+<span class="tk-n">tok</span><span class="tk-p">,</span> <span class="tk-n">te</span><span class="tk-p">,</span> <span class="tk-n">unet</span><span class="tk-p">,</span> <span class="tk-n">vae</span> <span class="tk-o">=</span> <span class="tk-n">pipe</span><span class="tk-o">.</span><span class="tk-n">tokenizer</span><span class="tk-p">,</span> <span class="tk-n">pipe</span><span class="tk-o">.</span><span class="tk-n">text_encoder</span><span class="tk-p">,</span> <span class="tk-n">pipe</span><span class="tk-o">.</span><span class="tk-n">unet</span><span class="tk-p">,</span> <span class="tk-n">pipe</span><span class="tk-o">.</span><span class="tk-n">vae</span>
+<span class="tk-n">sched</span> <span class="tk-o">=</span> <span class="tk-n">DPMSolverMultistepScheduler</span><span class="tk-o">.</span><span class="tk-n">from_config</span><span class="tk-p">(</span><span class="tk-n">pipe</span><span class="tk-o">.</span><span class="tk-n">scheduler</span><span class="tk-o">.</span><span class="tk-n">config</span><span class="tk-p">)</span>
+
+<span class="tk-nd">@torch</span><span class="tk-o">.</span><span class="tk-n">no_grad</span><span class="tk-p">()</span>
+<span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">encode</span><span class="tk-p">(</span><span class="tk-n">texts</span><span class="tk-p">):</span>
+    <span class="tk-n">ids</span> <span class="tk-o">=</span> <span class="tk-n">tok</span><span class="tk-p">(</span><span class="tk-n">texts</span><span class="tk-p">,</span> <span class="tk-n">padding</span><span class="tk-o">=</span><span class="tk-s2">"max_length"</span><span class="tk-p">,</span> <span class="tk-n">max_length</span><span class="tk-o">=</span><span class="tk-n">tok</span><span class="tk-o">.</span><span class="tk-n">model_max_length</span><span class="tk-p">,</span>
+              <span class="tk-n">truncation</span><span class="tk-o">=</span><span class="tk-kc">True</span><span class="tk-p">,</span> <span class="tk-n">return_tensors</span><span class="tk-o">=</span><span class="tk-s2">"pt"</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">input_ids</span><span class="tk-o">.</span><span class="tk-n">to</span><span class="tk-p">(</span><span class="tk-n">dev</span><span class="tk-p">)</span>
+    <span class="tk-k">return</span> <span class="tk-n">te</span><span class="tk-p">(</span><span class="tk-n">ids</span><span class="tk-p">)[</span><span class="tk-mi">0</span><span class="tk-p">]</span>                                            <span class="tk-c1"># (B, 77, 768)</span>
+
+<span class="tk-nd">@torch</span><span class="tk-o">.</span><span class="tk-n">no_grad</span><span class="tk-p">()</span>
+<span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">generate</span><span class="tk-p">(</span><span class="tk-n">prompt</span><span class="tk-p">,</span> <span class="tk-n">negative</span><span class="tk-o">=</span><span class="tk-s2">""</span><span class="tk-p">,</span> <span class="tk-n">steps</span><span class="tk-o">=</span><span class="tk-mi">30</span><span class="tk-p">,</span> <span class="tk-n">w</span><span class="tk-o">=</span><span class="tk-mf">7.5</span><span class="tk-p">,</span> <span class="tk-n">seed</span><span class="tk-o">=</span><span class="tk-mi">42</span><span class="tk-p">,</span> <span class="tk-n">h</span><span class="tk-o">=</span><span class="tk-mi">512</span><span class="tk-p">,</span> <span class="tk-n">wd</span><span class="tk-o">=</span><span class="tk-mi">512</span><span class="tk-p">):</span>
+    <span class="tk-n">emb</span> <span class="tk-o">=</span> <span class="tk-n">encode</span><span class="tk-p">([</span><span class="tk-n">negative</span><span class="tk-p">,</span> <span class="tk-n">prompt</span><span class="tk-p">])</span>                             <span class="tk-c1"># 1. nhánh không điều kiện + có điều kiện</span>
+    <span class="tk-n">g</span> <span class="tk-o">=</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">Generator</span><span class="tk-p">(</span><span class="tk-n">dev</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">manual_seed</span><span class="tk-p">(</span><span class="tk-n">seed</span><span class="tk-p">)</span>                   <span class="tk-c1"># 2. nhiễu ban đầu từ seed</span>
+    <span class="tk-n">z</span> <span class="tk-o">=</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">randn</span><span class="tk-p">(</span><span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-mi">4</span><span class="tk-p">,</span> <span class="tk-n">h</span> <span class="tk-o">//</span> <span class="tk-mi">8</span><span class="tk-p">,</span> <span class="tk-n">wd</span> <span class="tk-o">//</span> <span class="tk-mi">8</span><span class="tk-p">,</span> <span class="tk-n">generator</span><span class="tk-o">=</span><span class="tk-n">g</span><span class="tk-p">,</span> <span class="tk-n">device</span><span class="tk-o">=</span><span class="tk-n">dev</span><span class="tk-p">,</span> <span class="tk-n">dtype</span><span class="tk-o">=</span><span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">float16</span><span class="tk-p">)</span>
+    <span class="tk-n">sched</span><span class="tk-o">.</span><span class="tk-n">set_timesteps</span><span class="tk-p">(</span><span class="tk-n">steps</span><span class="tk-p">)</span>                                   <span class="tk-c1"># 3. chọn các bước (999, 966, 932, ...)</span>
+    <span class="tk-n">z</span> <span class="tk-o">=</span> <span class="tk-n">z</span> <span class="tk-o">*</span> <span class="tk-n">sched</span><span class="tk-o">.</span><span class="tk-n">init_noise_sigma</span>
+    <span class="tk-k">for</span> <span class="tk-n">t</span> <span class="tk-ow">in</span> <span class="tk-n">sched</span><span class="tk-o">.</span><span class="tk-n">timesteps</span><span class="tk-p">:</span>                                    <span class="tk-c1"># 4. lặp</span>
+        <span class="tk-n">inp</span> <span class="tk-o">=</span> <span class="tk-n">sched</span><span class="tk-o">.</span><span class="tk-n">scale_model_input</span><span class="tk-p">(</span><span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">cat</span><span class="tk-p">([</span><span class="tk-n">z</span><span class="tk-p">,</span> <span class="tk-n">z</span><span class="tk-p">]),</span> <span class="tk-n">t</span><span class="tk-p">)</span>
+        <span class="tk-n">eps_u</span><span class="tk-p">,</span> <span class="tk-n">eps_c</span> <span class="tk-o">=</span> <span class="tk-n">unet</span><span class="tk-p">(</span><span class="tk-n">inp</span><span class="tk-p">,</span> <span class="tk-n">t</span><span class="tk-p">,</span> <span class="tk-n">encoder_hidden_states</span><span class="tk-o">=</span><span class="tk-n">emb</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">sample</span><span class="tk-o">.</span><span class="tk-n">chunk</span><span class="tk-p">(</span><span class="tk-mi">2</span><span class="tk-p">)</span>
+        <span class="tk-n">eps</span> <span class="tk-o">=</span> <span class="tk-n">eps_u</span> <span class="tk-o">+</span> <span class="tk-n">w</span> <span class="tk-o">*</span> <span class="tk-p">(</span><span class="tk-n">eps_c</span> <span class="tk-o">-</span> <span class="tk-n">eps_u</span><span class="tk-p">)</span>                        <span class="tk-c1">#    CFG</span>
+        <span class="tk-n">z</span> <span class="tk-o">=</span> <span class="tk-n">sched</span><span class="tk-o">.</span><span class="tk-n">step</span><span class="tk-p">(</span><span class="tk-n">eps</span><span class="tk-p">,</span> <span class="tk-n">t</span><span class="tk-p">,</span> <span class="tk-n">z</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">prev_sample</span>                    <span class="tk-c1">#    scheduler cập nhật latent</span>
+    <span class="tk-n">img</span> <span class="tk-o">=</span> <span class="tk-n">vae</span><span class="tk-o">.</span><span class="tk-n">decode</span><span class="tk-p">(</span><span class="tk-n">z</span> <span class="tk-o">/</span> <span class="tk-n">vae</span><span class="tk-o">.</span><span class="tk-n">config</span><span class="tk-o">.</span><span class="tk-n">scaling_factor</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">sample</span>       <span class="tk-c1"># 5. giải mã</span>
+    <span class="tk-n">img</span> <span class="tk-o">=</span> <span class="tk-p">((</span><span class="tk-n">img</span><span class="tk-o">.</span><span class="tk-n">clamp</span><span class="tk-p">(</span><span class="tk-o">-</span><span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-mi">1</span><span class="tk-p">)</span> <span class="tk-o">+</span> <span class="tk-mi">1</span><span class="tk-p">)</span> <span class="tk-o">/</span> <span class="tk-mi">2</span><span class="tk-p">)[</span><span class="tk-mi">0</span><span class="tk-p">]</span><span class="tk-o">.</span><span class="tk-n">permute</span><span class="tk-p">(</span><span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-mi">2</span><span class="tk-p">,</span> <span class="tk-mi">0</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">float</span><span class="tk-p">()</span><span class="tk-o">.</span><span class="tk-n">cpu</span><span class="tk-p">()</span><span class="tk-o">.</span><span class="tk-n">numpy</span><span class="tk-p">()</span>
+    <span class="tk-k">return</span> <span class="tk-p">(</span><span class="tk-n">img</span> <span class="tk-o">*</span> <span class="tk-mi">255</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">round</span><span class="tk-p">()</span><span class="tk-o">.</span><span class="tk-n">astype</span><span class="tk-p">(</span><span class="tk-s2">"uint8"</span><span class="tk-p">)</span>                   <span class="tk-c1"># (512, 512, 3)</span>
 </code></pre></div>
 
-<p>Bạn đã viết mọi mảnh này ở GĐ1–3. Stable Diffusion chỉ là ghép lại ở quy mô lớn.</p>
-<h2 id="lt-4">Scheduler và các tham số người dùng chỉnh</h2>
-<ul>
-<li><strong>Số bước:</strong> sampler hiện đại như DPM-Solver++ cho ảnh tốt ở 20–30 bước.</li>
-<li><strong>Guidance scale:</strong> 7–7.5 là mặc định phổ biến với SD 1.5.</li>
-<li><strong>Seed:</strong> quyết định nhiễu ban đầu. Cùng seed, prompt, scheduler và số bước thì ra cùng ảnh.</li>
-<li><strong>Độ phân giải:</strong> SD 1.5 train ở 512×512; sinh ở kích thước khác xa dễ bị lặp vật thể.</li>
-</ul>
-<h2 id="lt-5">Các biến thể dựa trên cùng cơ chế</h2>
-<ul>
-<li><strong>img2img:</strong> thay vì bắt đầu từ nhiễu thuần, mã hóa một ảnh có sẵn, thêm nhiễu tới bước t ở giữa (độ mạnh <code>strength</code>), rồi khử nhiễu từ đó.</li>
-<li><strong>Inpainting:</strong> chỉ khử nhiễu vùng bị che, giữ nguyên phần còn lại.</li>
-<li><strong>ControlNet:</strong> thêm một mạng phụ đưa điều kiện không gian (đường viền, tư thế, độ sâu) vào U-Net.</li>
-</ul>
+<p>Các lời gọi <code>set_timesteps</code>, <code>scale_model_input</code>, <code>step(...).prev_sample</code>, <code>vae.decode(...).sample</code> đã chạy thử với <code>diffusers</code> 0.42 (dùng U-Net và VAE nhỏ khởi tạo ngẫu nhiên để kiểm tra API và shape). Với 30 bước, DPM-Solver chọn các bước 999, 966, 932, 899, …</p>
+<details class="fold deep">
+<summary>Đào sâu thêm</summary>
+<p><strong><code>scale_model_input</code> và <code>init_noise_sigma</code> để làm gì?</strong> Một số scheduler (Euler, các bản "Karras") làm việc với latent có độ lớn khác ở mỗi bước, nên phải co giãn đầu vào cho đúng thang đo U-Net đã được train. Với DDIM và DPM-Solver hai hàm này gần như không làm gì, nhưng luôn gọi chúng để đổi scheduler mà không phải sửa vòng lặp.</p>
+</details>
+<h2 id="lt-5">Các tham số người dùng chỉnh</h2>
+<table>
+<thead>
+<tr>
+<th>Tham số</th>
+<th>Ảnh hưởng</th>
+<th>Giá trị thường dùng</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Số bước</td>
+<td>nhiều hơn thì chi tiết hơn tới một mức, chậm tuyến tính</td>
+<td>20–30 với DPM-Solver++, 50 với DDIM</td>
+</tr>
+<tr>
+<td>Guidance scale</td>
+<td>bám prompt vs đa dạng (P5.3)</td>
+<td>7–7.5 với SD 1.5</td>
+</tr>
+<tr>
+<td>Seed</td>
+<td>quyết định nhiễu ban đầu, tức bố cục</td>
+<td>lưu lại để tái tạo ảnh</td>
+</tr>
+<tr>
+<td>Kích thước</td>
+<td>SD 1.5 train ở 512×512</td>
+<td>giữ gần 512, bội số của 8</td>
+</tr>
+<tr>
+<td>Scheduler</td>
+<td>tốc độ hội tụ và "chất" ảnh</td>
+<td>DPM-Solver++ là lựa chọn an toàn</td>
+</tr>
+</tbody>
+</table>
+<div class="box pitfall">
+<div class="box-h">Lỗi hay gặp</div>
+<p><strong>Sinh ảnh 1024×1024 bằng SD 1.5.</strong> Model chỉ thấy ảnh 512 khi train; ở 1024, mỗi vùng 512 trông như "một ảnh riêng", nên thường ra hai cái ghế, hai cửa sổ, người có hai đầu. Muốn ảnh lớn: dùng model train ở độ phân giải đó (SDXL ở 1024), hoặc sinh ở 512 rồi phóng to bằng img2img/upscaler.</p>
+</div>
+<p><strong>Seed và tính tái tạo.</strong> Cùng seed, prompt, scheduler, số bước, kích thước, guidance và cùng phần cứng thì ra cùng ảnh. Đổi một chữ trong prompt mà giữ seed thì bố cục thường gần giống, nên seed là công cụ để so sánh công bằng (ví dụ so model gốc với model có LoRA ở P5.6).</p>
+<h2 id="lt-6">Các biến thể dựa trên cùng cơ chế</h2>
+<h3>img2img</h3>
+<p>Thay vì bắt đầu từ nhiễu thuần:</p>
+<ol>
+<li>Mã hóa ảnh có sẵn bằng VAE encoder, nhân scaling factor.</li>
+<li>Thêm nhiễu tới bước t = strength × 1000 bằng công thức nhảy thẳng (P5.1).</li>
+<li>Khử nhiễu từ bước đó, chỉ chạy khoảng strength × số bước.</li>
+</ol>
+<figure class="fig"><img src="../assets/fig/p5-4-strength.svg" alt="Với lịch nhiễu của SD (scaled linear), strength 0.3 giữ hệ số tín hiệu 0.77 (bố cục và màu gần nguyên vẹn); 0.75 chỉ còn 0.24 (chỉ còn bố cục mờ). Ngay cả strength 1.0 vẫn sót 0.07: một nhược điểm đã biết của lịch nhiễu này." loading="lazy"><figcaption>Với lịch nhiễu của SD (scaled linear), strength 0.3 giữ hệ số tín hiệu 0.77 (bố cục và màu gần nguyên vẹn); 0.75 chỉ còn 0.24 (chỉ còn bố cục mờ). Ngay cả strength 1.0 vẫn sót 0.07: một nhược điểm đã biết của lịch nhiễu này.</figcaption></figure>
+
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>img2img với 30 bước, strength 0.5: chỉ chạy 15 bước khử nhiễu cuối, nên <strong>nhanh gấp đôi</strong> sinh từ đầu. Hệ số tín hiệu ở điểm bắt đầu khoảng 0.53: ảnh gốc vẫn chiếm phần đáng kể, kết quả giữ bố cục, đổi chất liệu và chi tiết theo prompt.</p>
+</div>
+<h3>Inpainting</h3>
+<p>Chỉ sửa vùng bị che (mask). Ở mỗi bước, phần ngoài mask được thay bằng ảnh gốc đã thêm nhiễu đúng mức t, nên khi khử nhiễu xong, vùng ngoài giữ nguyên và vùng trong hòa hợp với nó. Model inpainting chuyên dụng còn nhận mask và ảnh gốc làm kênh đầu vào thêm (9 kênh thay vì 4), cho kết quả liền mạch hơn.</p>
+<h3>ControlNet</h3>
+<p>Thêm một bản sao phần encoder của U-Net, nhận điều kiện không gian (đường viền Canny, tư thế người, bản đồ độ sâu), và cộng đặc trưng của nó vào U-Net gốc qua các lớp conv khởi tạo bằng 0 (ban đầu không ảnh hưởng gì, học dần). U-Net gốc đóng băng. Rất hữu ích cho ảnh sản phẩm: giữ đúng dáng ghế từ ảnh chụp, đổi chất liệu và bối cảnh theo prompt.</p>
 <div class="keep">
 <p><strong>Ghi nhớ:</strong> latent diffusion = VAE (nén) + diffusion trên latent + điều kiện văn bản qua cross-attention. Hiểu ba mảnh này là hiểu hầu hết model tạo ảnh hiện nay.</p>
-</div></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p5.4:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 3</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Kích thước latent</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Ảnh 512×512×3, VAE giảm 8 lần mỗi chiều, latent có 4 kênh.</p>
+</div>
+<div class="box check">
+<div class="box-h">Tự kiểm tra nhanh</div>
+<p>SDXL sinh ảnh 1024×768 với VAE giảm 8 lần mỗi cạnh, 4 kênh latent.</p>
+<div class="ans" id="p5-4-t-b129-a1">
+<div class="ans-fields"><label>Chiều cao latent (ảnh cao 1024)<input inputmode="decimal" data-ans="128.0" data-tol="0.0" autocomplete="off"></label><label>Số phần tử latent<input inputmode="decimal" data-ans="49152.0" data-tol="0.0" autocomplete="off"></label><label>img2img 40 bước, strength 0.25: số bước khử nhiễu thực chạy<input inputmode="decimal" data-ans="10.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div>
+<div aria-live="polite" class="ans-fb"></div>
+</div>
+</div>
+<h2 id="lt-7">Tóm tắt bài và thuật ngữ</h2>
+<table>
+<thead>
+<tr>
+<th>Chủ đề</th>
+<th>Ý chính</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Vì sao latent</td>
+<td>pixel quá nhiều, attention bùng nổ bình phương; latent nhỏ hơn 48 lần</td>
+</tr>
+<tr>
+<td>VAE</td>
+<td>nén 8 lần mỗi cạnh, 4 kênh; nhân/chia scaling factor</td>
+</tr>
+<tr>
+<td>Năm thành phần</td>
+<td>tokenizer, text encoder, U-Net (nặng nhất), scheduler, VAE</td>
+</tr>
+<tr>
+<td>Vòng lặp</td>
+<td>encode prompt → nhiễu từ seed → lặp U-Net + CFG + scheduler → VAE decode</td>
+</tr>
+<tr>
+<td>Tham số</td>
+<td>số bước, guidance, seed, kích thước, scheduler</td>
+</tr>
+<tr>
+<td>Biến thể</td>
+<td>img2img (strength), inpainting (mask), ControlNet (điều kiện không gian)</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Thuật ngữ</th>
+<th>Nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>latent diffusion</td>
+<td>diffusion trên biểu diễn nén thay vì pixel</td>
+</tr>
+<tr>
+<td>VAE</td>
+<td>variational autoencoder: encoder + decoder có ràng buộc KL</td>
+</tr>
+<tr>
+<td>latent</td>
+<td>biểu diễn nén của ảnh (4×64×64 với SD 1.5)</td>
+</tr>
+<tr>
+<td>scaling factor</td>
+<td>hệ số đưa latent về phương sai khoảng 1</td>
+</tr>
+<tr>
+<td>pipeline</td>
+<td>bộ ghép sẵn các thành phần trong <code>diffusers</code></td>
+</tr>
+<tr>
+<td>scheduler</td>
+<td>quy tắc cập nhật latent mỗi bước</td>
+</tr>
+<tr>
+<td>img2img / strength</td>
+<td>sinh từ ảnh có sẵn / mức nhiễu hóa ảnh gốc</td>
+</tr>
+<tr>
+<td>inpainting / mask</td>
+<td>sửa một vùng / vùng cần sửa</td>
+</tr>
+<tr>
+<td>ControlNet</td>
+<td>mạng phụ đưa điều kiện không gian vào U-Net</td>
+</tr>
+</tbody>
+</table></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p5.4:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 3</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Kích thước latent</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Ảnh 512×512×3, VAE giảm 8 lần mỗi chiều, latent có 4 kênh.</p>
 <div class="ans" id="p5-4-e1-a1"><div class="ans-fields"><label>Cạnh của latent<input inputmode="decimal" data-ans="64.0" data-tol="0.0" autocomplete="off"></label><label>Số phần tử latent<input inputmode="decimal" data-ans="16384.0" data-tol="0.0" autocomplete="off"></label><label>Ảnh gốc lớn gấp bao nhiêu lần latent<input inputmode="decimal" data-ans="48.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
 
 <details class="fold solution">
@@ -192,7 +388,7 @@
     </div>
     <aside class="aside">
       <div class="abox"><h4>Tiến độ bài này</h4><div class="ring"><svg viewBox="0 0 64 64" aria-hidden="true"><circle class="bg" cx="32" cy="32" r="28"/><circle class="fg" cx="32" cy="32" r="28" stroke-dasharray="176" stroke-dashoffset="176"/></svg><div><b id="ring-n">0/3</b><span id="ring-sub">phần đã xong</span></div></div></div>
-      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">VAE: nén ảnh vào không gian latent</a></li><li><a href="#lt-2">Bốn thành phần của Stable Diffusion</a></li><li><a href="#lt-3">Vòng lặp sinh ảnh, từng dòng</a></li><li><a href="#lt-4">Scheduler và các tham số người dùng chỉnh</a></li><li><a href="#lt-5">Các biến thể dựa trên cùng cơ chế</a></li></ol></div>
+      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Vì sao không khử nhiễu thẳng trên pixel</a></li><li><a href="#lt-2">VAE: nén ảnh vào không gian latent</a></li><li><a href="#lt-3">Năm thành phần của Stable Diffusion</a></li><li><a href="#lt-4">Vòng lặp sinh ảnh, từng dòng</a></li><li><a href="#lt-5">Các tham số người dùng chỉnh</a></li><li><a href="#lt-6">Các biến thể dựa trên cùng cơ chế</a></li><li><a href="#lt-7">Tóm tắt bài và thuật ngữ</a></li></ol></div>
       
       <div class="abox"><h4>Cùng giai đoạn</h4><ul><li><a href="p5-1.html">GĐ 1 · Diffusion tạo ảnh thế nào</a></li><li><a href="p5-2.html">GĐ 2 · Diffusion cho ảnh</a></li><li><a href="p5-3.html">GĐ 3 · Điều khiển bằng chữ</a></li><li><span class=cur>GĐ 4 · Latent diffusion và Stable Diffusion</span></li><li><a href="p5-5.html">GĐ 5 · Fine-tune LoRA</a></li><li><a href="p5-6.html">GĐ 6 · Đánh giá và rectified flow</a></li><li><a href="p5-7.html">GĐ 7 · Đóng gói sản phẩm</a></li></ul></div>
     </aside>

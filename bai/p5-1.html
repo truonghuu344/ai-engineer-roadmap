@@ -22,29 +22,365 @@
 <main class="container">
   <div class="crumbs"><a href="../bai-hoc.html">Bài học</a><span>/</span><a href="../bai-hoc.html#p5">P5 · Dự án Diffusion: tạo ảnh từ con số 0</a><span>/</span><span>P5.1</span></div>
   <section class="lhero side"><div class="code">P5.1</div><h1>GĐ 1 · Diffusion tạo ảnh thế nào</h1><div class="lmeta"><span class="m">Giai đoạn P5 · Dự án Diffusion: tạo ảnh từ con số 0</span><span class="m">Tuần 10–30</span><span class="chip ready"><span class="dot"></span>Có nội dung đầy đủ</span></div>
-    <div class="intro"><p>Giai đoạn mở đầu của dự án làm lại đồ án tạo ảnh. Trang lý thuyết tương tác đầy đủ (demo kéo t để xem xoắn ốc tan thành nhiễu, demo sinh 400 điểm từ nhiễu, 7 bài tính tay, bài kiểm tra 9 câu) nằm ở nút <strong>Vào bài học</strong> phía trên. Trang này tóm tắt ý chính, có bộ bài tập mới và hướng dẫn thực hành.</p></div></section>
+    <div class="intro"><p>Giai đoạn mở đầu của dự án làm lại đồ án tạo ảnh. Trang lý thuyết tương tác (demo kéo t để xem xoắn ốc tan thành nhiễu, demo sinh 400 điểm từ nhiễu, bài kiểm tra 9 câu) nằm ở nút <strong>Vào bài học</strong> phía trên. Trang này giải thích đầy đủ từng công thức kèm ví dụ số, code PyTorch đã chạy thử, rồi tới bài tập và notebook thực hành.</p></div></section>
   <div class="full-cta"><div><b>Bài này đã có nội dung đầy đủ</b><p>Trang lý thuyết tương tác, bài tính tay và bài kiểm tra cuối bài.</p></div><a class="btn primary" href="../diffusion-gd1.html">Vào bài học <span class="arr">→</span></a></div>
-  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">4 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
+  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">6 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
   <div class="lgrid" style="margin-top:22px">
-    <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">Ý tưởng</h2>
-<p>Thêm nhiễu vào dữ liệu thì dễ và không cần học. Diffusion model học cách <strong>gỡ nhiễu</strong>: bắt đầu từ nhiễu thuần, gỡ dần qua khoảng 1000 bước để ra dữ liệu mới.</p>
-<h2 id="lt-2">Forward process</h2>
-<p>Lịch nhiễu βₜ tăng từ 0.0001 tới 0.02. Đặt αₜ = 1 − βₜ, ᾱₜ = α₁·…·αₜ. Có thể nhảy thẳng tới bước t:</p>
-<div class="hl"><pre><span></span><code>xₜ = √ᾱₜ · x₀ + √(1 − ᾱₜ) · ε,    ε ~ N(0, I)
+    <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">Ý tưởng: học cách gỡ nhiễu</h2>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Diffusion là nền tảng của Stable Diffusion, Midjourney, Sora, Flux. Hiểu nó trên dữ liệu 2D nhỏ (chạy CPU 30 giây) là cách nhanh nhất để đọc hiểu code và bài báo về tạo ảnh, và để giải thích được trong phỏng vấn chứ không chỉ gọi thư viện.</p>
+</div>
+<p>Nhỏ một giọt mực vào cốc nước: mực loang dần cho tới khi cả cốc một màu đục đều. Quá trình này dễ, tự nhiên xảy ra. Đi ngược lại (từ cốc nước đục tách ra giọt mực ban đầu) thì khó. Diffusion model làm đúng điều khó đó, nhưng chia nhỏ thành rất nhiều bước:</p>
+<ol>
+<li><strong>Forward (thêm nhiễu):</strong> lấy dữ liệu thật x₀, thêm một chút nhiễu Gauss, lặp lại 1000 lần. Kết quả x₁₀₀₀ là nhiễu thuần, không còn dấu vết dữ liệu. Bước này là công thức cố định, không cần học.</li>
+<li><strong>Reverse (gỡ nhiễu):</strong> train một mạng nơ-ron gỡ <strong>một chút</strong> nhiễu ở mỗi bước. Mỗi bước gỡ nhỏ là bài toán dễ, gần như tuyến tính.</li>
+<li><strong>Sinh dữ liệu mới:</strong> bốc một mẫu nhiễu ngẫu nhiên, cho mạng gỡ nhiễu 1000 lần, ra một mẫu trông như dữ liệu thật.</li>
+</ol>
+<figure class="fig"><img src="../assets/fig/p5-1-forward.svg" alt="Forward process trên 600 điểm hình xoắn ốc với lịch nhiễu tuyến tính. Tới t ≈ 150 xoắn ốc đã nhòe, tới t = 1000 chỉ còn đám mây Gauss tròn." loading="lazy"><figcaption>Forward process trên 600 điểm hình xoắn ốc với lịch nhiễu tuyến tính. Tới t ≈ 150 xoắn ốc đã nhòe, tới t = 1000 chỉ còn đám mây Gauss tròn.</figcaption></figure>
+
+<p>Vì sao không gỡ một lần cho xong? Từ nhiễu thuần nhảy thẳng tới ảnh là bài toán có vô số đáp án (nhiễu nào cũng có thể thành ảnh nào), mạng sẽ học ra trung bình mờ nhòe của tất cả. Chia nhỏ thành nhiều bước thì mỗi bước chỉ cần một chỉnh sửa nhỏ, mạng học được chính xác.</p>
+<h2 id="lt-2">Lịch nhiễu và forward process</h2>
+<p>Ở mỗi bước t, ta trộn dữ liệu bước trước với nhiễu mới theo tỉ lệ βₜ (beta):</p>
+<div class="hl"><pre><span></span><code>xₜ = √(1 − βₜ) · xₜ₋₁ + √βₜ · εₜ,     εₜ ~ N(0, I)
 </code></pre></div>
 
-<p>Hai hệ số có bình phương cộng lại bằng 1, nên độ lớn tổng thể của dữ liệu giữ nguyên trong khi tín hiệu yếu dần.</p>
-<h2 id="lt-3">Model và loss</h2>
-<p>Model ε_θ(xₜ, t) đoán nhiễu đã thêm vào. Loss chỉ là MSE: <code>‖ε − ε_θ(xₜ, t)‖²</code>. Đoán được nhiễu thì khôi phục được dữ liệu: <code>x̂₀ = (xₜ − √(1−ᾱₜ)·ε̂) / √ᾱₜ</code>.</p>
-<h2 id="lt-4">Sampling</h2>
-<p>Từ x_T ~ N(0, I), đi ngược từng bước:</p>
-<div class="hl"><pre><span></span><code>xₜ₋₁ = (xₜ − βₜ/√(1 − ᾱₜ) · ε̂) / √αₜ + σₜ·z
+<p><strong>Lịch nhiễu</strong> (noise schedule) là dãy β₁ … β₁₀₀₀. Bài báo DDPM gốc dùng lịch tuyến tính: β tăng đều từ 0.0001 tới 0.02. Đầu quá trình thêm rất ít nhiễu (để giữ chi tiết), cuối quá trình thêm nhiều hơn.</p>
+<p>Đặt hai ký hiệu dùng xuyên suốt:</p>
+<table>
+<thead>
+<tr>
+<th>Ký hiệu</th>
+<th>Định nghĩa</th>
+<th>Ý nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>αₜ</td>
+<td>1 − βₜ</td>
+<td>phần tín hiệu giữ lại ở bước t</td>
+</tr>
+<tr>
+<td>ᾱₜ (alpha bar)</td>
+<td>α₁ · α₂ · … · αₜ</td>
+<td>phần tín hiệu còn lại sau t bước, tính từ x₀</td>
+</tr>
+</tbody>
+</table>
+<h3>Nhảy thẳng tới bước t</h3>
+<p>Điều làm diffusion train nhanh: <strong>không cần chạy lần lượt t bước</strong> để có xₜ. Có công thức đóng:</p>
+<div class="hl"><pre><span></span><code>xₜ = √ᾱₜ · x₀ + √(1 − ᾱₜ) · ε,     ε ~ N(0, I)
 </code></pre></div>
 
-<p>Nhiễu mới σₜ·z ở mỗi bước giữ cho các mẫu đa dạng; bỏ nó đi thì mọi mẫu sụp về vài điểm.</p>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>Lấy β₁ = 0.1, β₂ = 0.2, dữ liệu x₀ = 2, rút được nhiễu ε = −0.5.</p>
+<ol>
+<li>α₁ = 0.9, α₂ = 0.8, nên ᾱ₂ = 0.9 · 0.8 = <strong>0.72</strong>.</li>
+<li>Hệ số tín hiệu √0.72 ≈ 0.849; hệ số nhiễu √0.28 ≈ 0.529.</li>
+<li>x₂ = 0.849 · 2 + 0.529 · (−0.5) ≈ 1.697 − 0.265 = <strong>1.43</strong>.</li>
+</ol>
+<p>Ngược lại, biết x₂ = 1.43 và biết đúng ε = −0.5 thì khôi phục được x₀ = (1.43 + 0.265) / 0.849 ≈ 2. Đây là lý do model chỉ cần đoán <strong>nhiễu</strong>.</p>
+</div>
+<details class="fold deep">
+<summary>Đào sâu thêm</summary>
+<p><strong>Vì sao nhảy thẳng được.</strong> Viết hai bước liên tiếp:</p>
+<p>x₁ = √α₁ · x₀ + √β₁ · ε₁
+x₂ = √α₂ · x₁ + √β₂ · ε₂ = √(α₁α₂) · x₀ + √α₂·√β₁ · ε₁ + √β₂ · ε₂</p>
+<p>Hai nhiễu Gauss độc lập cộng lại vẫn là Gauss, phương sai cộng lại: α₂β₁ + β₂ = α₂(1 − α₁) + (1 − α₂) = 1 − α₁α₂ = 1 − ᾱ₂. Nên x₂ = √ᾱ₂ · x₀ + √(1 − ᾱ₂) · ε với một ε chuẩn duy nhất. Với số ở ví dụ: 0.8 · 0.1 + 0.2 = 0.28 = 1 − 0.72. Quy nạp cho mọi t.</p>
+</details>
+<h3>Hai hệ số tín hiệu và nhiễu</h3>
+<p>Bình phương hai hệ số luôn cộng lại bằng 1: ᾱₜ + (1 − ᾱₜ) = 1. Nếu dữ liệu đã chuẩn hóa về phương sai 1 thì xₜ cũng có phương sai 1 ở mọi bước: độ lớn không phình ra hay co lại, chỉ có <strong>tỉ lệ</strong> tín hiệu/nhiễu thay đổi. Vì thế dữ liệu cần chuẩn hóa trước (ảnh được đưa về khoảng [−1, 1]).</p>
+<figure class="fig"><img src="../assets/fig/p5-1-schedule.svg" alt="Với lịch tuyến tính, tín hiệu và nhiễu cân bằng ở khoảng bước 259. Sau bước 600, tín hiệu gần như biến mất: nhiều bước cuối gần như lãng phí, lý do lịch cosine ra đời (P5.2)." loading="lazy"><figcaption>Với lịch tuyến tính, tín hiệu và nhiễu cân bằng ở khoảng bước 259. Sau bước 600, tín hiệu gần như biến mất: nhiều bước cuối gần như lãng phí, lý do lịch cosine ra đời (P5.2).</figcaption></figure>
+
+<table>
+<thead>
+<tr>
+<th>t</th>
+<th>ᾱₜ</th>
+<th>√ᾱₜ (tín hiệu)</th>
+<th>√(1 − ᾱₜ) (nhiễu)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>0.9999</td>
+<td>1.000</td>
+<td>0.010</td>
+</tr>
+<tr>
+<td>250</td>
+<td>0.524</td>
+<td>0.724</td>
+<td>0.690</td>
+</tr>
+<tr>
+<td>500</td>
+<td>0.079</td>
+<td>0.280</td>
+<td>0.960</td>
+</tr>
+<tr>
+<td>750</td>
+<td>0.003</td>
+<td>0.058</td>
+<td>0.998</td>
+</tr>
+<tr>
+<td>1000</td>
+<td>≈ 0</td>
+<td>0.006</td>
+<td>1.000</td>
+</tr>
+</tbody>
+</table>
+<h3>Code</h3>
+<div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">torch</span><span class="tk-o">,</span><span class="tk-w"> </span><span class="tk-nn">math</span>
+<span class="tk-n">T</span> <span class="tk-o">=</span> <span class="tk-mi">1000</span>
+<span class="tk-n">betas</span> <span class="tk-o">=</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">linspace</span><span class="tk-p">(</span><span class="tk-mf">1e-4</span><span class="tk-p">,</span> <span class="tk-mf">0.02</span><span class="tk-p">,</span> <span class="tk-n">T</span><span class="tk-p">)</span>
+<span class="tk-n">alphas</span> <span class="tk-o">=</span> <span class="tk-mi">1</span> <span class="tk-o">-</span> <span class="tk-n">betas</span>
+<span class="tk-n">alpha_bars</span> <span class="tk-o">=</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">cumprod</span><span class="tk-p">(</span><span class="tk-n">alphas</span><span class="tk-p">,</span> <span class="tk-n">dim</span><span class="tk-o">=</span><span class="tk-mi">0</span><span class="tk-p">)</span>     <span class="tk-c1"># tích lũy: ᾱ₁, ᾱ₂, ..., ᾱ₁₀₀₀</span>
+
+<span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">q_sample</span><span class="tk-p">(</span><span class="tk-n">x0</span><span class="tk-p">,</span> <span class="tk-n">t</span><span class="tk-p">,</span> <span class="tk-n">eps</span><span class="tk-p">):</span>
+    <span class="tk-n">ab</span> <span class="tk-o">=</span> <span class="tk-n">alpha_bars</span><span class="tk-p">[</span><span class="tk-n">t</span><span class="tk-p">]</span><span class="tk-o">.</span><span class="tk-n">unsqueeze</span><span class="tk-p">(</span><span class="tk-mi">1</span><span class="tk-p">)</span>            <span class="tk-c1"># (B,) -&gt; (B,1) để nhân với x0 có shape (B,2)</span>
+    <span class="tk-k">return</span> <span class="tk-n">ab</span><span class="tk-o">.</span><span class="tk-n">sqrt</span><span class="tk-p">()</span> <span class="tk-o">*</span> <span class="tk-n">x0</span> <span class="tk-o">+</span> <span class="tk-p">(</span><span class="tk-mi">1</span> <span class="tk-o">-</span> <span class="tk-n">ab</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">sqrt</span><span class="tk-p">()</span> <span class="tk-o">*</span> <span class="tk-n">eps</span>
+</code></pre></div>
+
+<div class="box pitfall">
+<div class="box-h">Lỗi hay gặp</div>
+<p><strong>Lệch chỉ số t.</strong> Trong toán, t chạy từ 1 tới 1000; trong code, tensor đánh số từ 0 tới 999. <code>alpha_bars[t]</code> với t lấy từ <code>torch.randint(0, T, ...)</code> là đúng. Lẫn hai cách đếm sẽ tạo lỗi lệch một bước rất khó phát hiện vì model vẫn train được, chỉ kém hơn.</p>
+</div>
+<h2 id="lt-3">Model và hàm loss</h2>
+<p>Model ε_θ(xₜ, t) nhận dữ liệu đã nhiễu xₜ và số bước t, đoán nhiễu ε đã được thêm vào. Loss là sai số bình phương trung bình (MSE) giữa nhiễu thật và nhiễu đoán:</p>
+<div class="hl"><pre><span></span><code>L = ‖ε − ε_θ(xₜ, t)‖²
+</code></pre></div>
+
+<p>Thuật toán train (Algorithm 1 trong bài báo DDPM), lặp đi lặp lại:</p>
+<ol>
+<li>Lấy một batch dữ liệu thật x₀.</li>
+<li>Chọn ngẫu nhiên t cho từng mẫu, đều trong 1 … 1000.</li>
+<li>Rút nhiễu ε, tạo xₜ bằng công thức nhảy thẳng.</li>
+<li>Model đoán ε̂ = ε_θ(xₜ, t), tính MSE, cập nhật trọng số.</li>
+</ol>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>Một batch nhỏ có 3 giá trị nhiễu thật ε = [0.5, −1.0, 0.3]; model đoán ε̂ = [0.4, −0.7, 0.3].</p>
+<ul>
+<li>Sai số: [0.1, −0.3, 0]</li>
+<li>Bình phương: [0.01, 0.09, 0]</li>
+<li>MSE = 0.10 / 3 ≈ <strong>0.033</strong></li>
+</ul>
+</div>
+<h3>Đưa bước t vào mạng</h3>
+<p>Cùng một xₜ, cách gỡ nhiễu ở t = 10 (gỡ rất ít) khác hẳn ở t = 900 (gỡ rất nhiều), nên model phải biết t. Đưa thẳng số t vào mạng không tốt (một số duy nhất, độ lớn tới 1000). Cách chuẩn là <strong>time embedding sin/cos</strong>, giống positional encoding của Transformer (P3.1): biến t thành vector gồm sin và cos ở nhiều tần số.</p>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>Embedding 4 chiều, tần số [1, 0.01]:</p>
+<table>
+<thead>
+<tr>
+<th>t</th>
+<th>sin(t)</th>
+<th>sin(0.01t)</th>
+<th>cos(t)</th>
+<th>cos(0.01t)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>3</td>
+<td>0.141</td>
+<td>0.030</td>
+<td>−0.990</td>
+<td>1.000</td>
+</tr>
+<tr>
+<td>4</td>
+<td>−0.757</td>
+<td>0.040</td>
+<td>−0.654</td>
+<td>0.999</td>
+</tr>
+</tbody>
+</table>
+<p>Tần số cao (cột 1, 3) đổi mạnh giữa hai bước liền kề, giúp phân biệt chi tiết; tần số thấp (cột 2, 4) đổi chậm, mã hóa "đang ở đầu hay cuối quá trình". Thực tế dùng 32–128 chiều.</p>
+</div>
+<h3>Code train hoàn chỉnh</h3>
+<div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">torch.nn</span><span class="tk-w"> </span><span class="tk-k">as</span><span class="tk-w"> </span><span class="tk-nn">nn</span>
+
+<span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">time_emb</span><span class="tk-p">(</span><span class="tk-n">t</span><span class="tk-p">,</span> <span class="tk-n">dim</span><span class="tk-o">=</span><span class="tk-mi">32</span><span class="tk-p">):</span>
+    <span class="tk-n">half</span> <span class="tk-o">=</span> <span class="tk-n">dim</span> <span class="tk-o">//</span> <span class="tk-mi">2</span>
+    <span class="tk-n">freqs</span> <span class="tk-o">=</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">exp</span><span class="tk-p">(</span><span class="tk-o">-</span><span class="tk-n">math</span><span class="tk-o">.</span><span class="tk-n">log</span><span class="tk-p">(</span><span class="tk-mi">10000</span><span class="tk-p">)</span> <span class="tk-o">*</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">arange</span><span class="tk-p">(</span><span class="tk-n">half</span><span class="tk-p">)</span> <span class="tk-o">/</span> <span class="tk-n">half</span><span class="tk-p">)</span>
+    <span class="tk-n">ang</span> <span class="tk-o">=</span> <span class="tk-n">t</span><span class="tk-o">.</span><span class="tk-n">float</span><span class="tk-p">()</span><span class="tk-o">.</span><span class="tk-n">unsqueeze</span><span class="tk-p">(</span><span class="tk-mi">1</span><span class="tk-p">)</span> <span class="tk-o">*</span> <span class="tk-n">freqs</span><span class="tk-o">.</span><span class="tk-n">unsqueeze</span><span class="tk-p">(</span><span class="tk-mi">0</span><span class="tk-p">)</span>          <span class="tk-c1"># (B, half)</span>
+    <span class="tk-k">return</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">cat</span><span class="tk-p">([</span><span class="tk-n">ang</span><span class="tk-o">.</span><span class="tk-n">sin</span><span class="tk-p">(),</span> <span class="tk-n">ang</span><span class="tk-o">.</span><span class="tk-n">cos</span><span class="tk-p">()],</span> <span class="tk-n">dim</span><span class="tk-o">=</span><span class="tk-mi">1</span><span class="tk-p">)</span>             <span class="tk-c1"># (B, dim)</span>
+
+<span class="tk-k">class</span><span class="tk-w"> </span><span class="tk-nc">Denoiser</span><span class="tk-p">(</span><span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">Module</span><span class="tk-p">):</span>
+    <span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-fm">__init__</span><span class="tk-p">(</span><span class="tk-bp">self</span><span class="tk-p">,</span> <span class="tk-n">h</span><span class="tk-o">=</span><span class="tk-mi">128</span><span class="tk-p">):</span>
+        <span class="tk-nb">super</span><span class="tk-p">()</span><span class="tk-o">.</span><span class="tk-fm">__init__</span><span class="tk-p">()</span>
+        <span class="tk-bp">self</span><span class="tk-o">.</span><span class="tk-n">net</span> <span class="tk-o">=</span> <span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">Sequential</span><span class="tk-p">(</span><span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">Linear</span><span class="tk-p">(</span><span class="tk-mi">2</span> <span class="tk-o">+</span> <span class="tk-mi">32</span><span class="tk-p">,</span> <span class="tk-n">h</span><span class="tk-p">),</span> <span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">SiLU</span><span class="tk-p">(),</span> <span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">Linear</span><span class="tk-p">(</span><span class="tk-n">h</span><span class="tk-p">,</span> <span class="tk-n">h</span><span class="tk-p">),</span> <span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">SiLU</span><span class="tk-p">(),</span>
+                                 <span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">Linear</span><span class="tk-p">(</span><span class="tk-n">h</span><span class="tk-p">,</span> <span class="tk-n">h</span><span class="tk-p">),</span> <span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">SiLU</span><span class="tk-p">(),</span> <span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">Linear</span><span class="tk-p">(</span><span class="tk-n">h</span><span class="tk-p">,</span> <span class="tk-mi">2</span><span class="tk-p">))</span>
+    <span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">forward</span><span class="tk-p">(</span><span class="tk-bp">self</span><span class="tk-p">,</span> <span class="tk-n">x</span><span class="tk-p">,</span> <span class="tk-n">t</span><span class="tk-p">):</span>
+        <span class="tk-k">return</span> <span class="tk-bp">self</span><span class="tk-o">.</span><span class="tk-n">net</span><span class="tk-p">(</span><span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">cat</span><span class="tk-p">([</span><span class="tk-n">x</span><span class="tk-p">,</span> <span class="tk-n">time_emb</span><span class="tk-p">(</span><span class="tk-n">t</span><span class="tk-p">)],</span> <span class="tk-n">dim</span><span class="tk-o">=</span><span class="tk-mi">1</span><span class="tk-p">))</span>     <span class="tk-c1"># ghép xₜ với embedding của t</span>
+
+<span class="tk-n">s</span> <span class="tk-o">=</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">rand</span><span class="tk-p">(</span><span class="tk-mi">4000</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">sqrt</span><span class="tk-p">()</span> <span class="tk-o">*</span> <span class="tk-mi">3</span> <span class="tk-o">*</span> <span class="tk-n">math</span><span class="tk-o">.</span><span class="tk-n">pi</span>                       <span class="tk-c1"># 4000 điểm trên xoắn ốc</span>
+<span class="tk-n">data</span> <span class="tk-o">=</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">stack</span><span class="tk-p">([</span><span class="tk-n">s</span> <span class="tk-o">*</span> <span class="tk-n">s</span><span class="tk-o">.</span><span class="tk-n">cos</span><span class="tk-p">(),</span> <span class="tk-n">s</span> <span class="tk-o">*</span> <span class="tk-n">s</span><span class="tk-o">.</span><span class="tk-n">sin</span><span class="tk-p">()],</span> <span class="tk-mi">1</span><span class="tk-p">)</span> <span class="tk-o">/</span> <span class="tk-mi">5</span>
+
+<span class="tk-n">model</span> <span class="tk-o">=</span> <span class="tk-n">Denoiser</span><span class="tk-p">();</span> <span class="tk-n">opt</span> <span class="tk-o">=</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">optim</span><span class="tk-o">.</span><span class="tk-n">Adam</span><span class="tk-p">(</span><span class="tk-n">model</span><span class="tk-o">.</span><span class="tk-n">parameters</span><span class="tk-p">(),</span> <span class="tk-n">lr</span><span class="tk-o">=</span><span class="tk-mf">1e-3</span><span class="tk-p">)</span>
+<span class="tk-k">for</span> <span class="tk-n">step</span> <span class="tk-ow">in</span> <span class="tk-nb">range</span><span class="tk-p">(</span><span class="tk-mi">3000</span><span class="tk-p">):</span>
+    <span class="tk-n">x0</span> <span class="tk-o">=</span> <span class="tk-n">data</span><span class="tk-p">[</span><span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">randint</span><span class="tk-p">(</span><span class="tk-mi">0</span><span class="tk-p">,</span> <span class="tk-nb">len</span><span class="tk-p">(</span><span class="tk-n">data</span><span class="tk-p">),</span> <span class="tk-p">(</span><span class="tk-mi">256</span><span class="tk-p">,))]</span>
+    <span class="tk-n">t</span> <span class="tk-o">=</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">randint</span><span class="tk-p">(</span><span class="tk-mi">0</span><span class="tk-p">,</span> <span class="tk-n">T</span><span class="tk-p">,</span> <span class="tk-p">(</span><span class="tk-mi">256</span><span class="tk-p">,))</span>
+    <span class="tk-n">eps</span> <span class="tk-o">=</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">randn_like</span><span class="tk-p">(</span><span class="tk-n">x0</span><span class="tk-p">)</span>
+    <span class="tk-n">loss</span> <span class="tk-o">=</span> <span class="tk-p">((</span><span class="tk-n">model</span><span class="tk-p">(</span><span class="tk-n">q_sample</span><span class="tk-p">(</span><span class="tk-n">x0</span><span class="tk-p">,</span> <span class="tk-n">t</span><span class="tk-p">,</span> <span class="tk-n">eps</span><span class="tk-p">),</span> <span class="tk-n">t</span><span class="tk-p">)</span> <span class="tk-o">-</span> <span class="tk-n">eps</span><span class="tk-p">)</span> <span class="tk-o">**</span> <span class="tk-mi">2</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">mean</span><span class="tk-p">()</span>
+    <span class="tk-n">opt</span><span class="tk-o">.</span><span class="tk-n">zero_grad</span><span class="tk-p">();</span> <span class="tk-n">loss</span><span class="tk-o">.</span><span class="tk-n">backward</span><span class="tk-p">();</span> <span class="tk-n">opt</span><span class="tk-o">.</span><span class="tk-n">step</span><span class="tk-p">()</span>
+</code></pre></div>
+
+<p>Chạy thử trên CPU (khoảng 8 giây): loss bắt đầu ở 1.06 (model đoán bừa, gần bằng phương sai của nhiễu chuẩn) và giảm còn khoảng 0.23. Loss không về gần 0 là bình thường: ở các bước t nhỏ, nhiễu thêm vào bé hơn cả chi tiết của dữ liệu, không ai đoán được.</p>
+<details class="fold deep">
+<summary>Đào sâu thêm</summary>
+<p><strong>Vì sao đoán nhiễu thay vì đoán thẳng x₀?</strong> Hai cách tương đương về toán học (biết một thì suy ra cái kia bằng công thức khôi phục). Nhưng nhiễu ε luôn có phương sai 1 ở mọi t, nên mục tiêu của mạng có độ lớn ổn định; còn x₀ phải đoán từ xₜ gần như toàn nhiễu ở t lớn, sai số rất lớn và lệch thang đo giữa các t. Ho và cộng sự (2020) thấy đoán ε cho ảnh đẹp hơn. Các model mới hơn dùng biến thể "v-prediction" hoặc flow matching (P5.6), cùng ý tưởng giữ mục tiêu có thang đo ổn định.</p>
+</details>
+<h2 id="lt-4">Sinh dữ liệu: đi ngược từng bước</h2>
+<p>Sau khi train, sinh mẫu mới (Algorithm 2) bằng cách bắt đầu từ nhiễu thuần x₁₀₀₀ ~ N(0, I) rồi đi ngược t = 1000, 999, …, 1:</p>
+<div class="hl"><pre><span></span><code>xₜ₋₁ = ( xₜ − βₜ / √(1 − ᾱₜ) · ε̂ ) / √αₜ  +  σₜ · z,     z ~ N(0, I),  σₜ = √βₜ
+</code></pre></div>
+
+<p>Đọc công thức theo hai phần:</p>
+<ul>
+<li><strong>Phần trong ngoặc:</strong> trừ đi một phần nhỏ nhiễu model đoán được, rồi chia √αₜ để bù lại phần tín hiệu đã bị co ở bước forward.</li>
+<li><strong>σₜ · z:</strong> thêm lại một chút nhiễu <strong>mới</strong>. Nghe ngược đời, nhưng chính phần này giữ cho các mẫu đa dạng (ở bước cuối t = 1 thì không thêm).</li>
+</ul>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>Ở một bước có βₜ = 0.02, ᾱₜ = 0.5, xₜ = 0.9, model đoán ε̂ = 0.4, rút được z = 0.5.</p>
+<ol>
+<li>βₜ / √(1 − ᾱₜ) = 0.02 / 0.707 ≈ 0.0283; nhân ε̂: 0.0283 · 0.4 ≈ 0.0113.</li>
+<li>Trong ngoặc: 0.9 − 0.0113 = 0.8887; chia √0.98 ≈ 0.990: <strong>0.8977</strong>.</li>
+<li>σₜ · z = √0.02 · 0.5 ≈ 0.0707.</li>
+<li>xₜ₋₁ ≈ 0.8977 + 0.0707 ≈ <strong>0.968</strong>.</li>
+</ol>
+<p>Mỗi bước chỉ dịch chuyển một chút; 1000 bước như thế cộng lại mới biến nhiễu thành dữ liệu.</p>
+</div>
+<div class="hl"><pre><span></span><code><span class="tk-nd">@torch</span><span class="tk-o">.</span><span class="tk-n">no_grad</span><span class="tk-p">()</span>
+<span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">sample</span><span class="tk-p">(</span><span class="tk-n">model</span><span class="tk-p">,</span> <span class="tk-n">n</span><span class="tk-o">=</span><span class="tk-mi">400</span><span class="tk-p">):</span>
+    <span class="tk-n">x</span> <span class="tk-o">=</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">randn</span><span class="tk-p">(</span><span class="tk-n">n</span><span class="tk-p">,</span> <span class="tk-mi">2</span><span class="tk-p">)</span>                                    <span class="tk-c1"># x₁₀₀₀: nhiễu thuần</span>
+    <span class="tk-k">for</span> <span class="tk-n">t</span> <span class="tk-ow">in</span> <span class="tk-nb">reversed</span><span class="tk-p">(</span><span class="tk-nb">range</span><span class="tk-p">(</span><span class="tk-n">T</span><span class="tk-p">)):</span>                             <span class="tk-c1"># 999, 998, ..., 0</span>
+        <span class="tk-n">eps_hat</span> <span class="tk-o">=</span> <span class="tk-n">model</span><span class="tk-p">(</span><span class="tk-n">x</span><span class="tk-p">,</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">full</span><span class="tk-p">((</span><span class="tk-n">n</span><span class="tk-p">,),</span> <span class="tk-n">t</span><span class="tk-p">))</span>
+        <span class="tk-n">x</span> <span class="tk-o">=</span> <span class="tk-p">(</span><span class="tk-n">x</span> <span class="tk-o">-</span> <span class="tk-n">betas</span><span class="tk-p">[</span><span class="tk-n">t</span><span class="tk-p">]</span> <span class="tk-o">/</span> <span class="tk-p">(</span><span class="tk-mi">1</span> <span class="tk-o">-</span> <span class="tk-n">alpha_bars</span><span class="tk-p">[</span><span class="tk-n">t</span><span class="tk-p">])</span><span class="tk-o">.</span><span class="tk-n">sqrt</span><span class="tk-p">()</span> <span class="tk-o">*</span> <span class="tk-n">eps_hat</span><span class="tk-p">)</span> <span class="tk-o">/</span> <span class="tk-n">alphas</span><span class="tk-p">[</span><span class="tk-n">t</span><span class="tk-p">]</span><span class="tk-o">.</span><span class="tk-n">sqrt</span><span class="tk-p">()</span>
+        <span class="tk-k">if</span> <span class="tk-n">t</span> <span class="tk-o">&gt;</span> <span class="tk-mi">0</span><span class="tk-p">:</span>
+            <span class="tk-n">x</span> <span class="tk-o">=</span> <span class="tk-n">x</span> <span class="tk-o">+</span> <span class="tk-n">betas</span><span class="tk-p">[</span><span class="tk-n">t</span><span class="tk-p">]</span><span class="tk-o">.</span><span class="tk-n">sqrt</span><span class="tk-p">()</span> <span class="tk-o">*</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">randn_like</span><span class="tk-p">(</span><span class="tk-n">x</span><span class="tk-p">)</span>    <span class="tk-c1"># nhiễu mới, trừ bước cuối</span>
+    <span class="tk-k">return</span> <span class="tk-n">x</span>
+</code></pre></div>
+
+<div class="box pitfall">
+<div class="box-h">Lỗi hay gặp</div>
+<p><strong>Bỏ σₜ · z để "sạch" hơn.</strong> Không thêm nhiễu mới thì mỗi bước chỉ trượt về phía trung bình model dự đoán; với DDPM, các mẫu sụp về vài điểm và mất đa dạng (thí nghiệm ở phần F của notebook). Muốn sinh tất định (không nhiễu mới) thì phải dùng công thức khác hẳn là DDIM (P5.2).</p>
+</div>
+<div class="box pitfall">
+<div class="box-h">Lỗi hay gặp</div>
+<p><strong>Quên <code>@torch.no_grad()</code> và <code>model.eval()</code>.</strong> Sinh 1000 bước mà vẫn lưu đồ thị tính gradient thì bộ nhớ tăng dần và tràn. Với model có dropout hoặc batchnorm, quên <code>eval()</code> làm mẫu sinh ra kém đi.</p>
+</div>
+<h2 id="lt-5">Vì sao model tạo được dữ liệu mới</h2>
+<p>Một câu hỏi tinh tế: nếu model gỡ nhiễu <strong>hoàn hảo</strong> trên tập train, nó sẽ sinh ra gì?</p>
+<p>Với tập train hữu hạn, có thể tính đúng bộ khử nhiễu tối ưu: x̂₀ là trung bình có trọng số của các điểm train, điểm nào gần xₜ (sau khi co theo √ᾱₜ) thì trọng số lớn hơn. Chạy sampling với bộ khử nhiễu này:</p>
+<figure class="fig"><img src="../assets/fig/p5-1-memorize.svg" alt="40 mẫu sinh bằng bộ khử nhiễu tối ưu trên tập train chỉ có 3 điểm (−1.5, 0.5, 1.5). Ban đầu đường đi lang thang; khoảng từ bước 300 trở về, mỗi đường bị hút vào một điểm train. Mọi mẫu cuối cùng trùng đúng một trong 3 điểm: chép lại dữ liệu, không tạo gì mới." loading="lazy"><figcaption>40 mẫu sinh bằng bộ khử nhiễu tối ưu trên tập train chỉ có 3 điểm (−1.5, 0.5, 1.5). Ban đầu đường đi lang thang; khoảng từ bước 300 trở về, mỗi đường bị hút vào một điểm train. Mọi mẫu cuối cùng trùng đúng một trong 3 điểm: chép lại dữ liệu, không tạo gì mới.</figcaption></figure>
+
+<p>Vậy bộ khử nhiễu "hoàn hảo" chỉ học thuộc. Mạng nơ-ron tạo được dữ liệu mới <strong>chính vì</strong> nó không đạt tới tối ưu đó: với kiến trúc và số bước train có hạn, nó học được một hàm trơn, khái quát hình dạng chung (xoắn ốc liền mạch) thay vì nhớ từng điểm. Đây cũng là nguồn gốc của rủi ro học thuộc ảnh train khi tập dữ liệu nhỏ hoặc có ảnh trùng lặp nhiều lần (P5.5).</p>
 <div class="keep">
 <p><strong>Ghi nhớ:</strong> bộ khử nhiễu tối ưu tuyệt đối trên tập train hữu hạn chỉ chép lại dữ liệu train. Mạng nơ-ron tạo được dữ liệu mới chính vì nó không đạt tới tối ưu đó.</p>
-</div></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p5.1:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 4</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>ᾱ với β hằng số</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>β = 0.2 ở mọi bước. x₀ = 1, nhiễu rút được ε = 1.</p>
+</div>
+<div class="box check">
+<div class="box-h">Tự kiểm tra nhanh</div>
+<p>Lịch nhiễu hằng số β = 0.1 ở mọi bước.</p>
+<div class="ans" id="p5-1-t-b175-a1">
+<div class="ans-fields"><label>ᾱ₃<input inputmode="decimal" data-ans="0.729" data-tol="0.001" autocomplete="off"></label><label>Hệ số tín hiệu √ᾱ₃ (2 chữ số thập phân)<input inputmode="decimal" data-ans="0.85" data-tol="0.01" autocomplete="off"></label><label>Batch nhiễu thật [1, −1], model đoán [0.6, −0.8]. MSE<input inputmode="decimal" data-ans="0.1" data-tol="0.001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div>
+<div aria-live="polite" class="ans-fb"></div>
+</div>
+</div>
+<h2 id="lt-6">Tóm tắt bài và thuật ngữ</h2>
+<table>
+<thead>
+<tr>
+<th>Bước</th>
+<th>Công thức</th>
+<th>Ghi chú</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Lịch nhiễu</td>
+<td>βₜ tuyến tính 0.0001 → 0.02; αₜ = 1 − βₜ; ᾱₜ = tích các α</td>
+<td>cố định, không học</td>
+</tr>
+<tr>
+<td>Forward nhảy thẳng</td>
+<td>xₜ = √ᾱₜ·x₀ + √(1−ᾱₜ)·ε</td>
+<td>train không cần chạy tuần tự</td>
+</tr>
+<tr>
+<td>Loss</td>
+<td>‖ε − ε_θ(xₜ, t)‖²</td>
+<td>t chọn ngẫu nhiên đều</td>
+</tr>
+<tr>
+<td>Khôi phục</td>
+<td>x̂₀ = (xₜ − √(1−ᾱₜ)·ε̂) / √ᾱₜ</td>
+<td>đoán nhiễu = đoán dữ liệu</td>
+</tr>
+<tr>
+<td>Sampling</td>
+<td>xₜ₋₁ = (xₜ − βₜ/√(1−ᾱₜ)·ε̂)/√αₜ + σₜz</td>
+<td>1000 lần gọi model</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Thuật ngữ</th>
+<th>Nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>diffusion model</td>
+<td>model sinh dữ liệu bằng cách gỡ nhiễu dần</td>
+</tr>
+<tr>
+<td>DDPM</td>
+<td>Denoising Diffusion Probabilistic Models (Ho và cộng sự, 2020)</td>
+</tr>
+<tr>
+<td>forward / reverse process</td>
+<td>quá trình thêm nhiễu / gỡ nhiễu</td>
+</tr>
+<tr>
+<td>noise schedule (β)</td>
+<td>lượng nhiễu thêm ở mỗi bước</td>
+</tr>
+<tr>
+<td>ᾱₜ (alpha bar)</td>
+<td>phần tín hiệu còn lại sau t bước</td>
+</tr>
+<tr>
+<td>ε-prediction</td>
+<td>model đoán nhiễu thay vì đoán dữ liệu</td>
+</tr>
+<tr>
+<td>time embedding</td>
+<td>vector sin/cos mã hóa bước t</td>
+</tr>
+<tr>
+<td>sampling</td>
+<td>sinh mẫu mới từ nhiễu</td>
+</tr>
+<tr>
+<td>memorization</td>
+<td>model chép lại dữ liệu train</td>
+</tr>
+</tbody>
+</table></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p5.1:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 4</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>ᾱ với β hằng số</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>β = 0.2 ở mọi bước. x₀ = 1, nhiễu rút được ε = 1.</p>
 <div class="ans" id="p5-1-e1-a1"><div class="ans-fields"><label>ᾱ₂<input inputmode="decimal" data-ans="0.64" data-tol="0.001" autocomplete="off"></label><label>x₂<input inputmode="decimal" data-ans="1.4" data-tol="0.001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
 
 <details class="fold solution">
@@ -118,7 +454,7 @@
     </div>
     <aside class="aside">
       <div class="abox"><h4>Tiến độ bài này</h4><div class="ring"><svg viewBox="0 0 64 64" aria-hidden="true"><circle class="bg" cx="32" cy="32" r="28"/><circle class="fg" cx="32" cy="32" r="28" stroke-dasharray="176" stroke-dashoffset="176"/></svg><div><b id="ring-n">0/3</b><span id="ring-sub">phần đã xong</span></div></div></div>
-      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Ý tưởng</a></li><li><a href="#lt-2">Forward process</a></li><li><a href="#lt-3">Model và loss</a></li><li><a href="#lt-4">Sampling</a></li></ol></div>
+      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Ý tưởng: học cách gỡ nhiễu</a></li><li><a href="#lt-2">Lịch nhiễu và forward process</a></li><li><a href="#lt-3">Model và hàm loss</a></li><li><a href="#lt-4">Sinh dữ liệu: đi ngược từng bước</a></li><li><a href="#lt-5">Vì sao model tạo được dữ liệu mới</a></li><li><a href="#lt-6">Tóm tắt bài và thuật ngữ</a></li></ol></div>
       <div class="abox"><h4>Notebook</h4><div style="display:grid;gap:8px"><a class="dl" href="../notebooks/diffusion_gd1_thuc_hanh.ipynb" download><span class="ext">IPYNB</span><span>Bài tập<span style="display:block;font:400 12px var(--f-mono);color:var(--muted)">diffusion_gd1_thuc_hanh.ipynb</span></span></a><a class="dl" href="../notebooks/diffusion_gd1_thuc_hanh_LOI_GIAI.ipynb" download><span class="ext">IPYNB</span><span>Lời giải<span style="display:block;font:400 12px var(--f-mono);color:var(--muted)">diffusion_gd1_thuc_hanh_LOI_GIAI.ipynb</span></span></a></div></div>
       <div class="abox"><h4>Cùng giai đoạn</h4><ul><li><span class=cur>GĐ 1 · Diffusion tạo ảnh thế nào</span></li><li><a href="p5-2.html">GĐ 2 · Diffusion cho ảnh</a></li><li><a href="p5-3.html">GĐ 3 · Điều khiển bằng chữ</a></li><li><a href="p5-4.html">GĐ 4 · Latent diffusion và Stable Diffusion</a></li><li><a href="p5-5.html">GĐ 5 · Fine-tune LoRA</a></li><li><a href="p5-6.html">GĐ 6 · Đánh giá và rectified flow</a></li><li><a href="p5-7.html">GĐ 7 · Đóng gói sản phẩm</a></li></ul></div>
     </aside>

@@ -22,39 +22,331 @@
 <main class="container">
   <div class="crumbs"><a href="../bai-hoc.html">Bài học</a><span>/</span><a href="../bai-hoc.html#p5">P5 · Dự án Diffusion: tạo ảnh từ con số 0</a><span>/</span><span>P5.3</span></div>
   <section class="lhero side"><div class="code">P5.3</div><h1>GĐ 3 · Điều khiển bằng chữ</h1><div class="lmeta"><span class="m">Giai đoạn P5 · Dự án Diffusion: tạo ảnh từ con số 0</span><span class="m">Tuần 10–30</span><span class="chip ready"><span class="dot"></span>Có nội dung đầy đủ</span><span class="chip side">cần học xong Bài 3</span></div>
-    <div class="intro"><p>Model ở GĐ2 sinh ảnh ngẫu nhiên: áo hay giày là do may rủi. Đồ án tạo ảnh của bạn cần <strong>điều khiển</strong>: "vẽ một chiếc túi", rồi "một chiếc ghế gỗ màu trắng". Bài này đi từ điều kiện theo lớp, tới kỹ thuật <strong>classifier-free guidance</strong> mà mọi model tạo ảnh đều dùng, rồi tới cách đưa câu mô tả vào model qua <strong>CLIP</strong> và <strong>cross-attention</strong>.</p></div></section>
+    <div class="intro"><p>Model ở GĐ2 sinh ảnh ngẫu nhiên: áo hay giày là do may rủi. Đồ án tạo ảnh của bạn cần <strong>điều khiển</strong>: "vẽ một chiếc túi", rồi "một chiếc ghế gỗ màu trắng". Bài này đi từ điều kiện theo lớp, tới kỹ thuật <strong>classifier-free guidance</strong> mà mọi model tạo ảnh đều dùng (có thí nghiệm thật trên dữ liệu 2D), rồi tới cách đưa câu mô tả vào model qua <strong>CLIP</strong> và <strong>cross-attention</strong>.</p></div></section>
   
-  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">5 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
+  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">6 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
   <div class="lgrid" style="margin-top:22px">
     <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">Điều kiện theo lớp</h2>
-<p>Thêm nhãn lớp y làm đầu vào thứ ba: model thành ε_θ(xₜ, t, y). Cách đơn giản nhất: một bảng embedding cho các lớp, <strong>cộng</strong> vector của lớp vào time embedding. Mọi ResBlock nhận được "đang ở bước t và đang vẽ lớp y".</p>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Mọi sản phẩm tạo ảnh đều là "sinh có điều kiện": theo prompt, theo ảnh mẫu, theo bản phác. Cơ chế cơ bản nhất (thêm điều kiện + guidance) giống nhau ở mọi model, từ Fashion-MNIST 10 lớp tới Stable Diffusion. Tham số <code>guidance_scale</code> mà khách hàng hỏi "chỉnh bao nhiêu" chính là phần lý thuyết của bài này.</p>
+</div>
+<p>Thêm nhãn lớp y làm đầu vào thứ ba: model thành ε_θ(xₜ, t, y). Cách đơn giản nhất:</p>
+<ol>
+<li>Tạo một bảng embedding cho các lớp (<code>nn.Embedding(số_lớp + 1, d)</code>), dư một chỗ cho <strong>nhãn rỗng ∅</strong> (giải thích ở phần sau).</li>
+<li><strong>Cộng</strong> vector của lớp vào time embedding. Mọi ResBlock nhận được thông tin "đang ở bước t và đang vẽ lớp y".</li>
+</ol>
 <p>Loss không đổi: vẫn là MSE giữa nhiễu thật và nhiễu đoán, chỉ là model được biết thêm y.</p>
+<div class="hl"><pre><span></span><code><span class="tk-k">class</span><span class="tk-w"> </span><span class="tk-nc">CondDenoiser</span><span class="tk-p">(</span><span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">Module</span><span class="tk-p">):</span>
+    <span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-fm">__init__</span><span class="tk-p">(</span><span class="tk-bp">self</span><span class="tk-p">,</span> <span class="tk-n">n_cls</span><span class="tk-o">=</span><span class="tk-mi">3</span><span class="tk-p">,</span> <span class="tk-n">h</span><span class="tk-o">=</span><span class="tk-mi">256</span><span class="tk-p">):</span>
+        <span class="tk-nb">super</span><span class="tk-p">()</span><span class="tk-o">.</span><span class="tk-fm">__init__</span><span class="tk-p">()</span>
+        <span class="tk-bp">self</span><span class="tk-o">.</span><span class="tk-n">lab</span> <span class="tk-o">=</span> <span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">Embedding</span><span class="tk-p">(</span><span class="tk-n">n_cls</span> <span class="tk-o">+</span> <span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-mi">32</span><span class="tk-p">)</span>          <span class="tk-c1"># chỉ số n_cls là nhãn rỗng ∅</span>
+        <span class="tk-bp">self</span><span class="tk-o">.</span><span class="tk-n">net</span> <span class="tk-o">=</span> <span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">Sequential</span><span class="tk-p">(</span><span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">Linear</span><span class="tk-p">(</span><span class="tk-mi">2</span> <span class="tk-o">+</span> <span class="tk-mi">32</span><span class="tk-p">,</span> <span class="tk-n">h</span><span class="tk-p">),</span> <span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">SiLU</span><span class="tk-p">(),</span> <span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">Linear</span><span class="tk-p">(</span><span class="tk-n">h</span><span class="tk-p">,</span> <span class="tk-n">h</span><span class="tk-p">),</span> <span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">SiLU</span><span class="tk-p">(),</span>
+                                 <span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">Linear</span><span class="tk-p">(</span><span class="tk-n">h</span><span class="tk-p">,</span> <span class="tk-n">h</span><span class="tk-p">),</span> <span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">SiLU</span><span class="tk-p">(),</span> <span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">Linear</span><span class="tk-p">(</span><span class="tk-n">h</span><span class="tk-p">,</span> <span class="tk-mi">2</span><span class="tk-p">))</span>
+    <span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">forward</span><span class="tk-p">(</span><span class="tk-bp">self</span><span class="tk-p">,</span> <span class="tk-n">x</span><span class="tk-p">,</span> <span class="tk-n">t</span><span class="tk-p">,</span> <span class="tk-n">y</span><span class="tk-p">):</span>
+        <span class="tk-k">return</span> <span class="tk-bp">self</span><span class="tk-o">.</span><span class="tk-n">net</span><span class="tk-p">(</span><span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">cat</span><span class="tk-p">([</span><span class="tk-n">x</span><span class="tk-p">,</span> <span class="tk-n">time_emb</span><span class="tk-p">(</span><span class="tk-n">t</span><span class="tk-p">)</span> <span class="tk-o">+</span> <span class="tk-bp">self</span><span class="tk-o">.</span><span class="tk-n">lab</span><span class="tk-p">(</span><span class="tk-n">y</span><span class="tk-p">)],</span> <span class="tk-mi">1</span><span class="tk-p">))</span>   <span class="tk-c1"># cộng nhãn vào thời gian</span>
+</code></pre></div>
+
 <h2 id="lt-2">Classifier-free guidance (CFG)</h2>
-<p>Chỉ thêm điều kiện thì ảnh thường "mờ nhạt", không bám sát lớp. CFG làm model <strong>phóng đại</strong> sự khác biệt mà điều kiện tạo ra:</p>
-<div class="hl"><pre><span></span><code>Khi train: với xác suất 10%, thay y bằng nhãn rỗng ∅ → model học cả ε(xₜ, t, y) lẫn ε(xₜ, t, ∅)
-Khi sinh:  ε̂ = ε(xₜ, t, ∅) + w · ( ε(xₜ, t, y) − ε(xₜ, t, ∅) )
+<p>Chỉ thêm điều kiện thì ảnh thường "nhạt": đúng lớp nhưng không rõ nét, đôi khi lạc sang lớp khác. CFG (Ho &amp; Salimans, 2022) làm model <strong>phóng đại</strong> sự khác biệt mà điều kiện tạo ra.</p>
+<h3>Khi train: thỉnh thoảng giấu nhãn</h3>
+<p>Với xác suất 10%, thay y bằng ∅. Một model duy nhất học cả hai chế độ: có điều kiện ε(xₜ, t, y) và không điều kiện ε(xₜ, t, ∅).</p>
+<div class="hl"><pre><span></span><code><span class="tk-n">y</span> <span class="tk-o">=</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">where</span><span class="tk-p">(</span><span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">rand</span><span class="tk-p">(</span><span class="tk-nb">len</span><span class="tk-p">(</span><span class="tk-n">y</span><span class="tk-p">))</span> <span class="tk-o">&lt;</span> <span class="tk-mf">0.1</span><span class="tk-p">,</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">full_like</span><span class="tk-p">(</span><span class="tk-n">y</span><span class="tk-p">,</span> <span class="tk-n">NULL_ID</span><span class="tk-p">),</span> <span class="tk-n">y</span><span class="tk-p">)</span>   <span class="tk-c1"># 10% bỏ nhãn</span>
 </code></pre></div>
 
+<h3>Khi sinh: ngoại suy theo hướng điều kiện</h3>
+<div class="hl"><pre><span></span><code>ε̂ = ε(xₜ, t, ∅) + w · ( ε(xₜ, t, y) − ε(xₜ, t, ∅) )
+</code></pre></div>
+
+<p>Hiệu ε(y) − ε(∅) là "hướng mà điều kiện muốn kéo ảnh đi". Nhân với w &gt; 1 nghĩa là đi xa hơn theo hướng đó.</p>
+<figure class="fig"><img src="../assets/fig/p5-3-cfgvec.svg" alt="Với w = 1, ε̂ chính là dự đoán có điều kiện. Với w = 3, đi tiếp theo cùng hướng, xa gấp ba lần tính từ dự đoán không điều kiện." loading="lazy"><figcaption>Với w = 1, ε̂ chính là dự đoán có điều kiện. Với w = 3, đi tiếp theo cùng hướng, xa gấp ba lần tính từ dự đoán không điều kiện.</figcaption></figure>
+
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>Tại một pixel, model đoán ε(xₜ, t, ∅) = −0.1 và ε(xₜ, t, y) = 0.3. Hướng điều kiện: 0.3 − (−0.1) = 0.4.</p>
+<table>
+<thead>
+<tr>
+<th>w</th>
+<th>ε̂ = −0.1 + w · 0.4</th>
+<th>Ý nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>−0.1</td>
+<td>bỏ qua điều kiện</td>
+</tr>
+<tr>
+<td>1</td>
+<td>0.3</td>
+<td>điều kiện bình thường</td>
+</tr>
+<tr>
+<td>2</td>
+<td>0.7</td>
+<td>bám đề mạnh hơn</td>
+</tr>
+<tr>
+<td>5</td>
+<td>1.9</td>
+<td>rất mạnh, có thể vượt ra ngoài vùng dữ liệu</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Mỗi bước sinh cần <strong>hai</strong> lần chạy model (có điều kiện và không). Thực tế gộp thành một batch đôi để chạy một lần trên GPU, nên chi phí tăng gần gấp đôi.</p>
+<div class="hl"><pre><span></span><code><span class="tk-n">e_cond</span><span class="tk-p">,</span> <span class="tk-n">e_uncond</span> <span class="tk-o">=</span> <span class="tk-n">model</span><span class="tk-p">(</span><span class="tk-n">x</span><span class="tk-p">,</span> <span class="tk-n">t</span><span class="tk-p">,</span> <span class="tk-n">y</span><span class="tk-p">),</span> <span class="tk-n">model</span><span class="tk-p">(</span><span class="tk-n">x</span><span class="tk-p">,</span> <span class="tk-n">t</span><span class="tk-p">,</span> <span class="tk-n">y_null</span><span class="tk-p">)</span>
+<span class="tk-n">eps</span> <span class="tk-o">=</span> <span class="tk-n">e_uncond</span> <span class="tk-o">+</span> <span class="tk-n">w</span> <span class="tk-o">*</span> <span class="tk-p">(</span><span class="tk-n">e_cond</span> <span class="tk-o">-</span> <span class="tk-n">e_uncond</span><span class="tk-p">)</span>
+</code></pre></div>
+
+<h3>Thí nghiệm: w thay đổi gì</h3>
+<p>Train một model có điều kiện trên dữ liệu 2D gồm 3 lớp chồng lấn nhau (3 đám Gauss tâm cách đều trên vòng tròn bán kính 1, độ lệch chuẩn 0.55), bỏ nhãn 10%, rồi sinh 1500 điểm cho lớp 0 bằng DDIM 50 bước với các w khác nhau (code ở trên, chạy khoảng 45 giây trên CPU):</p>
+<figure class="fig"><img src="../assets/fig/p5-3-cfg2d.svg" alt="Chấm đen là điểm sinh cho lớp 0; chấm mờ là dữ liệu thật của 3 lớp. &quot;Đúng lớp&quot; là tỉ lệ điểm gần tâm lớp 0 nhất; &quot;độ trải&quot; là độ lệch chuẩn của các điểm." loading="lazy"><figcaption>Chấm đen là điểm sinh cho lớp 0; chấm mờ là dữ liệu thật của 3 lớp. &quot;Đúng lớp&quot; là tỉ lệ điểm gần tâm lớp 0 nhất; &quot;độ trải&quot; là độ lệch chuẩn của các điểm.</figcaption></figure>
+
+<table>
+<thead>
+<tr>
+<th>w</th>
+<th>Đúng lớp</th>
+<th>Độ trải</th>
+<th>Hoành độ trung bình</th>
+<th>Vượt ra ngoài vùng dữ liệu</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>dữ liệu thật</td>
+<td>90%</td>
+<td>0.55</td>
+<td>1.00</td>
+<td>gần 0%</td>
+</tr>
+<tr>
+<td>0</td>
+<td>33%</td>
+<td>0.88</td>
+<td>−0.01</td>
+<td>0.1%</td>
+</tr>
+<tr>
+<td>1</td>
+<td>92%</td>
+<td>0.53</td>
+<td>0.99</td>
+<td>0.4%</td>
+</tr>
+<tr>
+<td>3</td>
+<td>100%</td>
+<td>0.44</td>
+<td>1.69</td>
+<td>2.8%</td>
+</tr>
+<tr>
+<td>7</td>
+<td>100%</td>
+<td>1.31</td>
+<td>2.95</td>
+<td><strong>39%</strong></td>
+</tr>
+</tbody>
+</table>
+<p>Đọc bảng:</p>
 <ul>
-<li>w = 0: bỏ qua điều kiện. w = 1: điều kiện bình thường. w &gt; 1 (thường 3–8): bám đề mạnh hơn, ảnh rõ nét và đúng lớp hơn, nhưng <strong>kém đa dạng</strong>, và w quá lớn làm màu bão hòa, ảnh "cháy".</li>
-<li>Mỗi bước sinh cần <strong>hai</strong> lần chạy model (có điều kiện và không), thường gộp thành một batch đôi.</li>
+<li><strong>w = 0</strong> sinh như model không điều kiện: điểm rải khắp 3 lớp, chỉ 1/3 đúng.</li>
+<li><strong>w = 1</strong> khớp phân phối thật (đúng lớp 92% so với 90% của dữ liệu thật, độ trải 0.53 so với 0.55).</li>
+<li><strong>w = 3</strong> "đúng lớp" tuyệt đối nhưng các điểm co cụm lại (kém đa dạng) và bị đẩy về phía xa các lớp khác: model sinh ra phiên bản "điển hình quá mức" của lớp 0.</li>
+<li><strong>w = 7</strong> đẩy quá đà: 39% điểm nằm ngoài vùng có dữ liệu thật. Với ảnh, hiện tượng này là màu bão hòa, tương phản gắt, ảnh "cháy".</li>
 </ul>
-<p>Tham số <code>guidance_scale</code> bạn chỉnh trong Stable Diffusion chính là w.</p>
+<div class="keep">
+<p><strong>Ghi nhớ:</strong> guidance mua độ bám đề bằng độ đa dạng. Với ảnh thật, w trong khoảng 3–8 thường là điểm cân bằng; tham số <code>guidance_scale</code> trong Stable Diffusion chính là w (mặc định 7.5).</p>
+</div>
+<details class="fold deep">
+<summary>Đào sâu thêm</summary>
+<p><strong>Vì sao gọi là "classifier-free".</strong> Cách làm trước đó (classifier guidance, Dhariwal &amp; Nichol 2021) train thêm một bộ phân loại trên ảnh nhiễu, rồi dùng gradient của nó để kéo ảnh về lớp mong muốn. CFG đạt hiệu quả tương tự mà không cần bộ phân loại riêng: hiệu ε(y) − ε(∅) tỉ lệ với gradient của log p(y | xₜ) theo xₜ, tức chính là "bộ phân loại ngầm" mà model đã học.</p>
+</details>
 <h2 id="lt-3">CLIP: nối chữ với ảnh</h2>
-<p><strong>CLIP</strong> gồm một encoder ảnh và một encoder văn bản, train trên hàng trăm triệu cặp (ảnh, chú thích) bằng <strong>học tương phản</strong>: trong một batch N cặp, kéo embedding của các cặp đúng lại gần nhau, đẩy N² − N cặp sai ra xa.</p>
-<p>Kết quả là một không gian chung: câu "một chiếc ghế gỗ" nằm gần ảnh ghế gỗ. Stable Diffusion dùng <strong>encoder văn bản</strong> của CLIP để biến prompt thành chuỗi vector: mỗi token một vector (với SD 1.5 là 77 token × 768 chiều).</p>
-<h2 id="lt-4">Cross-attention: đưa chuỗi văn bản vào U-Net</h2>
-<p>Một vector lớp cộng vào là đủ cho 10 lớp, nhưng không đủ cho câu "ghế gỗ màu trắng bên cửa sổ". <strong>Cross-attention</strong> (Bài 3) cho mỗi vị trí trong ảnh tự chọn phần nào của câu để chú ý:</p>
-<div class="hl"><pre><span></span><code>Query  = từ feature map của ảnh   (mỗi pixel ở độ phân giải thấp là một query)
-Key, Value = từ embedding văn bản  (mỗi token là một key/value)
-</code></pre></div>
+<p>Nhãn lớp chỉ có 10 giá trị. Prompt là câu tự do, cần một cách biến chữ thành vector <strong>mang nghĩa hình ảnh</strong>. CLIP (OpenAI, 2021) làm việc này.</p>
+<p>CLIP gồm hai encoder:</p>
+<ul>
+<li><strong>Encoder ảnh</strong> (ViT hoặc ResNet): ảnh → vector.</li>
+<li><strong>Encoder văn bản</strong> (Transformer): câu → vector.</li>
+</ul>
+<p>Hai encoder được train cùng nhau trên khoảng 400 triệu cặp (ảnh, chú thích) lấy từ internet, bằng <strong>học tương phản</strong> (contrastive learning):</p>
+<ol>
+<li>Lấy batch N cặp. Tính N ảnh → N vector, N câu → N vector, chuẩn hóa về độ dài 1.</li>
+<li>Tính ma trận N × N độ tương đồng cosine giữa mọi ảnh và mọi câu.</li>
+<li>Đường chéo là N cặp đúng; N² − N ô còn lại là cặp sai.</li>
+<li>Loss: với mỗi ảnh, cross-entropy chọn đúng câu của nó trong N câu (và ngược lại với mỗi câu).</li>
+</ol>
+<figure class="fig"><img src="../assets/fig/p5-3-clip.svg" alt="Batch 4 cặp sau khi train: đường chéo (cặp đúng) có độ tương đồng cao nhất ở mỗi hàng. &quot;Ảnh ghế gỗ&quot; cũng khá gần &quot;sofa xám&quot; (cùng là đồ ngồi) hơn &quot;đèn bàn&quot;." loading="lazy"><figcaption>Batch 4 cặp sau khi train: đường chéo (cặp đúng) có độ tương đồng cao nhất ở mỗi hàng. &quot;Ảnh ghế gỗ&quot; cũng khá gần &quot;sofa xám&quot; (cùng là đồ ngồi) hơn &quot;đèn bàn&quot;.</figcaption></figure>
 
-<p>Vùng đang vẽ chân ghế chú ý vào từ "gỗ", vùng nền chú ý vào "cửa sổ". Các lớp cross-attention được chèn vào nhiều mức của U-Net, xen kẽ với self-attention.</p>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>Hàng "ảnh ghế gỗ" có độ tương đồng [0.31, 0.12, 0.18, 0.14]. CLIP nhân với một hệ số nhiệt độ (học được, ở đây lấy 10) rồi softmax:</p>
+<ol>
+<li>Logit: [3.1, 1.2, 1.8, 1.4].</li>
+<li>Softmax: xác suất chọn đúng "ghế gỗ" ≈ e^3.1 / (e^3.1 + e^1.2 + e^1.8 + e^1.4) ≈ <strong>0.62</strong>.</li>
+<li>Loss của hàng này: −ln 0.62 ≈ <strong>0.47</strong>, so với ln 4 ≈ 1.39 nếu model đoán đều.</li>
+</ol>
+</div>
+<p>Kết quả là một <strong>không gian chung</strong>: câu "một chiếc ghế gỗ" nằm gần ảnh ghế gỗ. Stable Diffusion dùng <strong>encoder văn bản</strong> của CLIP, nhưng không lấy một vector cho cả câu mà lấy <strong>chuỗi vector, mỗi token một vector</strong>: với SD 1.5 là 77 token × 768 chiều (câu ngắn được đệm, câu dài bị cắt).</p>
+<div class="box pitfall">
+<div class="box-h">Lỗi hay gặp</div>
+<p><strong>Prompt dài hơn 77 token bị cắt mất phần sau</strong> mà không báo lỗi. Mô tả chi tiết ở cuối prompt dài sẽ không có tác dụng. Đặt ý quan trọng lên đầu, và kiểm tra số token bằng tokenizer của CLIP (P5.4).</p>
+</div>
+<h2 id="lt-4">Cross-attention: đưa chuỗi văn bản vào U-Net</h2>
+<p>Cộng một vector vào time embedding là đủ cho 10 lớp, nhưng không đủ cho câu "ghế gỗ màu trắng bên cửa sổ": thông tin về <strong>vị trí</strong> (ghế ở đâu, cửa sổ ở đâu) và <strong>thuộc tính</strong> (gỗ, trắng) cần được phân cho đúng vùng ảnh. <strong>Cross-attention</strong> (P3.1) làm việc này: mỗi vị trí trong ảnh tự chọn phần nào của câu để chú ý.</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Lấy từ</th>
+<th>Shape (mức 32×32 của U-Net SD 1.5, 640 kênh)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Query (Q)</td>
+<td>feature map của ảnh, mỗi vị trí một query</td>
+<td>1024 × 640</td>
+</tr>
+<tr>
+<td>Key (K)</td>
+<td>embedding văn bản qua ma trận W_k (768 × 640)</td>
+<td>77 × 640</td>
+</tr>
+<tr>
+<td>Value (V)</td>
+<td>embedding văn bản qua ma trận W_v</td>
+<td>77 × 640</td>
+</tr>
+<tr>
+<td>Attention</td>
+<td>softmax(QKᵀ / √d)</td>
+<td>1024 × 77</td>
+</tr>
+<tr>
+<td>Đầu ra</td>
+<td>Attention · V, cộng vào feature map</td>
+<td>1024 × 640</td>
+</tr>
+</tbody>
+</table>
+<p>Mỗi hàng của ma trận attention 1024 × 77 cho biết một vị trí ảnh "đọc" token nào. Vùng đang vẽ chân ghế chú ý nhiều vào "ghế", "gỗ"; vùng nền chú ý vào "cửa sổ". Các lớp cross-attention được chèn vào nhiều mức của U-Net, xen kẽ với self-attention.</p>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>Ở mức 32×32: 1024 query × 77 key = 78.848 phần tử attention. Self-attention ở cùng mức là 1024 × 1024 = 1.048.576 phần tử, lớn gấp hơn 13 lần. Cross-attention rẻ hơn vì số token văn bản cố định và nhỏ.</p>
+</div>
+<p>Vì attention map cho biết token nào ảnh hưởng vùng nào, các kỹ thuật chỉnh sửa ảnh như Prompt-to-Prompt sửa trực tiếp các map này (ví dụ đổi "gỗ" thành "kim loại" mà giữ nguyên bố cục).</p>
 <div class="keep">
 <p><strong>Ghi nhớ:</strong> prompt điều khiển ảnh qua cross-attention, còn guidance scale quyết định model nghe prompt "mạnh" tới đâu.</p>
 </div>
 <h2 id="lt-5">Negative prompt</h2>
-<p>Trong CFG, thay nhánh không điều kiện ε(xₜ, t, ∅) bằng ε(xₜ, t, câu phủ định), ví dụ "mờ, méo, chữ ký". Công thức đẩy ảnh <strong>ra xa</strong> câu phủ định và <strong>lại gần</strong> prompt. Đó là cách negative prompt hoạt động.</p></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p5.3:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 4</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Một bước CFG</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Tại một pixel, ε(xₜ, t, ∅) = 0.2 và ε(xₜ, t, y) = 0.5.</p>
+<p>Trong CFG, nhánh không điều kiện ε(xₜ, t, ∅) đóng vai "điểm xuất phát". Thay nó bằng ε(xₜ, t, c_neg) với c_neg là câu phủ định, ví dụ "mờ, méo, chữ ký, watermark":</p>
+<div class="hl"><pre><span></span><code>ε̂ = ε(xₜ, t, c_neg) + w · ( ε(xₜ, t, c) − ε(xₜ, t, c_neg) )
+</code></pre></div>
+
+<p>Hướng ngoại suy bây giờ là "từ câu phủ định sang prompt": ảnh bị đẩy <strong>ra xa</strong> đặc điểm phủ định và <strong>lại gần</strong> prompt. Không tốn thêm chi phí (vẫn hai lần chạy model mỗi bước).</p>
+<div class="box pitfall">
+<div class="box-h">Lỗi hay gặp</div>
+<p><strong>Negative prompt dài dằng dặc copy từ mạng</strong> ("ugly, bad anatomy, extra fingers, …" 50 từ) thường không giúp gì với model mới, và có thể làm ảnh đơn điệu. Bắt đầu không có negative prompt, chỉ thêm khi thấy lỗi cụ thể lặp lại (chữ ký, watermark, nền lộn xộn), và so sánh bằng cùng seed.</p>
+</div>
+<div class="box check">
+<div class="box-h">Tự kiểm tra nhanh</div>
+<p>Tại một pixel: ε(xₜ, t, ∅) = −0.1, ε(xₜ, t, y) = 0.3.</p>
+<div class="ans" id="p5-3-t-b135-a1">
+<div class="ans-fields"><label>ε̂ với w = 2<input inputmode="decimal" data-ans="0.7" data-tol="0.001" autocomplete="off"></label><label>Batch CLIP 4 cặp: loss nếu đoán đều (2 chữ số thập phân)<input inputmode="decimal" data-ans="1.39" data-tol="0.01" autocomplete="off"></label><label>Số phần tử attention ở mức 16×16 với 77 token<input inputmode="decimal" data-ans="19712.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div>
+<div aria-live="polite" class="ans-fb"></div>
+</div>
+</div>
+<h2 id="lt-6">Tóm tắt bài và thuật ngữ</h2>
+<table>
+<thead>
+<tr>
+<th>Chủ đề</th>
+<th>Ý chính</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Điều kiện theo lớp</td>
+<td>embedding nhãn cộng vào time embedding; loss không đổi</td>
+</tr>
+<tr>
+<td>CFG khi train</td>
+<td>10% thay nhãn bằng ∅, một model học cả hai chế độ</td>
+</tr>
+<tr>
+<td>CFG khi sinh</td>
+<td>ε̂ = ε(∅) + w·(ε(y) − ε(∅)); 2 lần chạy model mỗi bước</td>
+</tr>
+<tr>
+<td>Chọn w</td>
+<td>1 khớp phân phối; 3–8 bám đề, kém đa dạng; quá lớn thì "cháy"</td>
+</tr>
+<tr>
+<td>CLIP</td>
+<td>học tương phản trên cặp ảnh–chú thích; SD dùng encoder văn bản, 77 token</td>
+</tr>
+<tr>
+<td>Cross-attention</td>
+<td>Q từ ảnh, K/V từ văn bản; mỗi vùng ảnh chọn token để đọc</td>
+</tr>
+<tr>
+<td>Negative prompt</td>
+<td>thay nhánh ∅ bằng câu phủ định</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Thuật ngữ</th>
+<th>Nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>conditioning</td>
+<td>đưa điều kiện (nhãn, câu, ảnh) vào model</td>
+</tr>
+<tr>
+<td>classifier-free guidance (CFG)</td>
+<td>ngoại suy giữa dự đoán có và không có điều kiện</td>
+</tr>
+<tr>
+<td>guidance scale (w)</td>
+<td>mức ngoại suy</td>
+</tr>
+<tr>
+<td>null label / null prompt (∅)</td>
+<td>điều kiện rỗng</td>
+</tr>
+<tr>
+<td>CLIP</td>
+<td>Contrastive Language-Image Pre-training</td>
+</tr>
+<tr>
+<td>contrastive learning</td>
+<td>kéo cặp đúng lại gần, đẩy cặp sai ra xa</td>
+</tr>
+<tr>
+<td>temperature</td>
+<td>hệ số nhân trước softmax, điều chỉnh độ "sắc"</td>
+</tr>
+<tr>
+<td>cross-attention</td>
+<td>attention với Q từ một nguồn, K/V từ nguồn khác</td>
+</tr>
+<tr>
+<td>negative prompt</td>
+<td>câu mô tả điều không muốn có trong ảnh</td>
+</tr>
+</tbody>
+</table></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p5.3:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 4</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Một bước CFG</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Tại một pixel, ε(xₜ, t, ∅) = 0.2 và ε(xₜ, t, y) = 0.5.</p>
 <div class="ans" id="p5-3-e1-a1"><div class="ans-fields"><label>ε̂ với w = 1<input inputmode="decimal" data-ans="0.5" data-tol="0.001" autocomplete="off"></label><label>ε̂ với w = 3<input inputmode="decimal" data-ans="1.1" data-tol="0.001" autocomplete="off"></label><label>ε̂ với w = 0<input inputmode="decimal" data-ans="0.2" data-tol="0.001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
 
 <details class="fold solution">
@@ -134,7 +426,7 @@ Key, Value = từ embedding văn bản  (mỗi token là một key/value)
     </div>
     <aside class="aside">
       <div class="abox"><h4>Tiến độ bài này</h4><div class="ring"><svg viewBox="0 0 64 64" aria-hidden="true"><circle class="bg" cx="32" cy="32" r="28"/><circle class="fg" cx="32" cy="32" r="28" stroke-dasharray="176" stroke-dashoffset="176"/></svg><div><b id="ring-n">0/3</b><span id="ring-sub">phần đã xong</span></div></div></div>
-      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Điều kiện theo lớp</a></li><li><a href="#lt-2">Classifier-free guidance (CFG)</a></li><li><a href="#lt-3">CLIP: nối chữ với ảnh</a></li><li><a href="#lt-4">Cross-attention: đưa chuỗi văn bản vào U-Net</a></li><li><a href="#lt-5">Negative prompt</a></li></ol></div>
+      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Điều kiện theo lớp</a></li><li><a href="#lt-2">Classifier-free guidance (CFG)</a></li><li><a href="#lt-3">CLIP: nối chữ với ảnh</a></li><li><a href="#lt-4">Cross-attention: đưa chuỗi văn bản vào U-Net</a></li><li><a href="#lt-5">Negative prompt</a></li><li><a href="#lt-6">Tóm tắt bài và thuật ngữ</a></li></ol></div>
       
       <div class="abox"><h4>Cùng giai đoạn</h4><ul><li><a href="p5-1.html">GĐ 1 · Diffusion tạo ảnh thế nào</a></li><li><a href="p5-2.html">GĐ 2 · Diffusion cho ảnh</a></li><li><span class=cur>GĐ 3 · Điều khiển bằng chữ</span></li><li><a href="p5-4.html">GĐ 4 · Latent diffusion và Stable Diffusion</a></li><li><a href="p5-5.html">GĐ 5 · Fine-tune LoRA</a></li><li><a href="p5-6.html">GĐ 6 · Đánh giá và rectified flow</a></li><li><a href="p5-7.html">GĐ 7 · Đóng gói sản phẩm</a></li></ul></div>
     </aside>

@@ -22,44 +22,244 @@
 <main class="container">
   <div class="crumbs"><a href="../bai-hoc.html">Bài học</a><span>/</span><a href="../bai-hoc.html#p5">P5 · Dự án Diffusion: tạo ảnh từ con số 0</a><span>/</span><span>P5.6</span></div>
   <section class="lhero side"><div class="code">P5.6</div><h1>GĐ 6 · Đánh giá và rectified flow</h1><div class="lmeta"><span class="m">Giai đoạn P5 · Dự án Diffusion: tạo ảnh từ con số 0</span><span class="m">Tuần 10–30</span><span class="chip ready"><span class="dot"></span>Có nội dung đầy đủ</span></div>
-    <div class="intro"><p>"Ảnh đẹp hơn" là cảm nhận. Để so sánh model gốc với model có LoRA, hay so hai sampler, cần con số: <strong>CLIP score</strong> đo ảnh có bám prompt không, <strong>FID</strong> đo ảnh có giống ảnh thật về phân phối không, và đánh giá bằng người cho những gì máy không đo được. Nửa sau của bài giới thiệu <strong>rectified flow / flow matching</strong>, cách FLUX (model mà đồ án cũ của bạn gọi qua API) sinh ảnh tốt chỉ với vài bước.</p></div></section>
+    <div class="intro"><p>"Ảnh đẹp hơn" là cảm nhận. Để so sánh model gốc với model có LoRA, hay so hai sampler, cần con số: <strong>CLIP score</strong> đo ảnh có bám prompt không, <strong>FID</strong> đo ảnh có giống ảnh thật về phân phối không, và đánh giá bằng người cho những gì máy không đo được. Nửa sau của bài giới thiệu <strong>rectified flow / flow matching</strong>, cách FLUX (model mà đồ án cũ của bạn gọi qua API) sinh ảnh tốt chỉ với vài bước, kèm thí nghiệm so với diffusion trên dữ liệu 2D.</p></div></section>
   
-  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">4 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">6 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
+  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">6 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">6 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
   <div class="lgrid" style="margin-top:22px">
-    <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">CLIP score: ảnh có bám prompt không</h2>
-<p>Mã hóa ảnh và prompt bằng CLIP, tính cosine giữa hai embedding:</p>
+    <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">Vì sao cần đo</h2>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Khi giao một LoRA cho khách, câu "trông đẹp hơn" không đủ. Báo cáo "CLIP score tăng từ 27,8 lên 29,3, người chấm chọn bản LoRA 64% số lần" thì thuyết phục, và cho phép bạn biết thay đổi nào thực sự có ích. Đây cũng là cùng tư duy eval như với LLM (P4.3), áp dụng cho ảnh.</p>
+</div>
+<p>Mỗi cách đo trả lời một câu hỏi khác nhau:</p>
+<table>
+<thead>
+<tr>
+<th>Câu hỏi</th>
+<th>Thước đo</th>
+<th>Cần</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Ảnh có đúng nội dung prompt không?</td>
+<td>CLIP score</td>
+<td>ảnh + prompt</td>
+</tr>
+<tr>
+<td>Tập ảnh sinh có giống ảnh thật (chất lượng và đa dạng)?</td>
+<td>FID, KID</td>
+<td>nhiều ảnh sinh + nhiều ảnh thật</td>
+</tr>
+<tr>
+<td>Ảnh có dùng được cho mục đích cụ thể không?</td>
+<td>đánh giá bằng người</td>
+<td>người chấm, tiêu chí rõ</td>
+</tr>
+</tbody>
+</table>
+<h2 id="lt-2">CLIP score: ảnh có bám prompt không</h2>
+<p>Mã hóa ảnh và prompt bằng CLIP (P5.3), tính cosine giữa hai embedding:</p>
 <div class="hl"><pre><span></span><code>CLIP score = 100 · max(cos(E_ảnh, E_prompt), 0)
 </code></pre></div>
 
-<p>Điểm cao nghĩa là ảnh khớp mô tả. Hạn chế: CLIP yếu ở <strong>đếm số lượng</strong>, <strong>vị trí</strong> ("ghế bên trái bàn"), và <strong>chữ trong ảnh</strong>; CLIP score cũng không nói gì về độ đẹp hay lỗi giải phẫu.</p>
-<h2 id="lt-2">FID: ảnh có giống ảnh thật không</h2>
-<p>Đưa ảnh thật và ảnh sinh qua mạng Inception, lấy vector đặc trưng 2048 chiều, xấp xỉ mỗi tập bằng một phân phối Gaussian (trung bình μ, hiệp phương sai Σ), rồi đo khoảng cách:</p>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>Ảnh sinh từ prompt "a rattan armchair on white background" có cosine với prompt là 0.27, nên CLIP score = 27. Cùng ảnh đó so với prompt "a red sports car" có cosine 0.12, CLIP score = 12. Điểm tuyệt đối ít ý nghĩa; điểm có ích khi <strong>so sánh</strong> hai model trên cùng bộ prompt, cùng model CLIP dùng để đo.</p>
+</div>
+<p>Cách dùng đúng: chuẩn bị 100–500 prompt đại diện cho trường hợp sử dụng, sinh một ảnh mỗi prompt cho mỗi model (cùng seed), lấy trung bình CLIP score.</p>
+<p><strong>Hạn chế đã biết của CLIP:</strong></p>
+<ul>
+<li>Yếu ở <strong>đếm số lượng</strong> ("ba chiếc ghế" và "hai chiếc ghế" gần như cùng điểm).</li>
+<li>Yếu ở <strong>quan hệ vị trí</strong> ("ghế bên trái bàn" và "ghế bên phải bàn").</li>
+<li>Yếu ở <strong>chữ trong ảnh</strong>, và không nói gì về độ đẹp hay lỗi hình học (bàn tay sáu ngón vẫn điểm cao).</li>
+<li>Có thể bị "hack": model được tối ưu thẳng theo CLIP score sinh ảnh kỳ quặc nhưng điểm cao.</li>
+</ul>
+<h2 id="lt-3">FID: ảnh có giống ảnh thật không</h2>
+<p><strong>FID</strong> (Fréchet Inception Distance) so sánh <strong>hai tập ảnh</strong>, không chấm từng ảnh:</p>
+<ol>
+<li>Đưa tất cả ảnh thật và ảnh sinh qua mạng Inception-v3, lấy vector đặc trưng 2048 chiều ở lớp áp chót.</li>
+<li>Xấp xỉ mỗi tập bằng một phân phối Gauss: trung bình μ và ma trận hiệp phương sai Σ.</li>
+<li>Tính khoảng cách Fréchet giữa hai Gauss:</li>
+</ol>
 <div class="hl"><pre><span></span><code>FID = ‖μ_thật − μ_sinh‖² + Tr(Σ_thật + Σ_sinh − 2·(Σ_thật Σ_sinh)^½)
 </code></pre></div>
 
-<ul>
-<li><strong>Thấp hơn là tốt hơn.</strong> Đo cả chất lượng lẫn độ đa dạng: model sinh 1000 ảnh giống hệt nhau sẽ có FID tệ dù từng ảnh đẹp.</li>
-<li>Cần <strong>nhiều ảnh</strong> (thường 5.000–50.000) để ước lượng Σ ổn định. Với vài trăm ảnh, FID bị lệch và dao động; dùng <strong>KID</strong> thay thế khi tập nhỏ.</li>
-<li>Chỉ so FID khi cùng tập ảnh thật, cùng số ảnh, cùng cách tiền xử lý.</li>
-</ul>
-<h2 id="lt-3">Đánh giá bằng người</h2>
-<p>Máy không đo được "ảnh này có dùng được cho trang bán hàng không". Cách làm có hệ thống:</p>
-<ul>
-<li><strong>So sánh cặp (A/B):</strong> cho người xem hai ảnh cùng prompt, hỏi ảnh nào tốt hơn theo một tiêu chí cụ thể. Đổi ngẫu nhiên vị trí trái/phải. Báo cáo tỉ lệ thắng.</li>
-<li><strong>Tiêu chí rõ ràng:</strong> bám prompt, chất lượng hình ảnh, đúng phong cách. Hỏi từng tiêu chí riêng.</li>
-<li><strong>Mù:</strong> người chấm không biết ảnh nào của model nào.</li>
-</ul>
-<h2 id="lt-4">Rectified flow và flow matching</h2>
-<p>Diffusion đi từ nhiễu tới ảnh theo một đường cong qua 1000 bước. <strong>Flow matching</strong> định nghĩa đường đi <strong>thẳng</strong> giữa ảnh x₀ và nhiễu ε:</p>
-<div class="hl"><pre><span></span><code>xₜ = (1 − t) · x₀ + t · ε,        t ∈ [0, 1]
-vận tốc dọc đường: v = dxₜ/dt = ε − x₀
+<p>Phần đầu đo <strong>lệch trung bình</strong> (ảnh sinh "trung bình" có giống ảnh thật "trung bình" không); phần sau đo <strong>lệch độ trải</strong> (đa dạng nhiều hay ít hơn ảnh thật).</p>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>Trường hợp 1 chiều cho dễ tính: ảnh thật có μ = 0.5, phương sai 1; ảnh sinh có μ = 0.2, phương sai 0.25.</p>
+<ol>
+<li>Lệch trung bình: (0.5 − 0.2)² = 0.09.</li>
+<li>Lệch độ trải: 1 + 0.25 − 2·√(1 · 0.25) = 1.25 − 1 = 0.25.</li>
+<li>FID = 0.09 + 0.25 = <strong>0.34</strong>. Phần lớn đến từ việc ảnh sinh kém đa dạng (phương sai chỉ 1/4).</li>
+</ol>
+</div>
+<h3>Thí nghiệm: FID bắt được điều mà "từng ảnh đẹp" bỏ sót</h3>
+<p>Dùng đúng công thức trên ở 2 chiều (bỏ bước Inception, dùng thẳng tọa độ điểm), so tập xoắn ốc với bốn tập "sinh". Đồng thời đo <strong>khoảng cách trung bình</strong> từ mỗi điểm sinh tới điểm thật gần nhất, tương tự "từng ảnh có đẹp không".</p>
+<figure class="fig"><img src="../assets/fig/p5-6-fid.svg" alt="Tập chỉ chép 5 điểm thật có khoảng cách trung bình 0 (từng điểm &quot;hoàn hảo&quot;) nhưng Fréchet 0.269, gấp 100 lần mức sàn. Tập chỉ có nửa xoắn ốc cũng hoàn hảo từng điểm nhưng Fréchet 0.98. FID phạt việc thiếu đa dạng." loading="lazy"><figcaption>Tập chỉ chép 5 điểm thật có khoảng cách trung bình 0 (từng điểm &quot;hoàn hảo&quot;) nhưng Fréchet 0.269, gấp 100 lần mức sàn. Tập chỉ có nửa xoắn ốc cũng hoàn hảo từng điểm nhưng Fréchet 0.98. FID phạt việc thiếu đa dạng.</figcaption></figure>
+
+<p>Chú ý ô đầu: so hai mẫu thật khác nhau, mỗi mẫu 2000 điểm, Fréchet vẫn là 0.003 chứ không phải 0. Đó là <strong>sai số do số mẫu hữu hạn</strong>. Với ảnh, vector 2048 chiều cần ước lượng ma trận Σ có hơn 2 triệu phần tử, nên sai số này lớn hơn nhiều.</p>
+<div class="hl"><pre><span></span><code><span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">frechet</span><span class="tk-p">(</span><span class="tk-n">a</span><span class="tk-p">,</span> <span class="tk-n">b</span><span class="tk-p">):</span>                         <span class="tk-c1"># a, b: (N, d) đặc trưng của hai tập</span>
+    <span class="tk-n">ma</span><span class="tk-p">,</span> <span class="tk-n">mb</span> <span class="tk-o">=</span> <span class="tk-n">a</span><span class="tk-o">.</span><span class="tk-n">mean</span><span class="tk-p">(</span><span class="tk-mi">0</span><span class="tk-p">),</span> <span class="tk-n">b</span><span class="tk-o">.</span><span class="tk-n">mean</span><span class="tk-p">(</span><span class="tk-mi">0</span><span class="tk-p">)</span>
+    <span class="tk-n">ca</span><span class="tk-p">,</span> <span class="tk-n">cb</span> <span class="tk-o">=</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">cov</span><span class="tk-p">(</span><span class="tk-n">a</span><span class="tk-o">.</span><span class="tk-n">T</span><span class="tk-p">),</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">cov</span><span class="tk-p">(</span><span class="tk-n">b</span><span class="tk-o">.</span><span class="tk-n">T</span><span class="tk-p">)</span>
+    <span class="tk-n">tr_sqrt</span> <span class="tk-o">=</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">linalg</span><span class="tk-o">.</span><span class="tk-n">eigvals</span><span class="tk-p">(</span><span class="tk-n">ca</span> <span class="tk-o">@</span> <span class="tk-n">cb</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">real</span><span class="tk-o">.</span><span class="tk-n">clamp</span><span class="tk-p">(</span><span class="tk-nb">min</span><span class="tk-o">=</span><span class="tk-mi">0</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">sqrt</span><span class="tk-p">()</span><span class="tk-o">.</span><span class="tk-n">sum</span><span class="tk-p">()</span>   <span class="tk-c1"># Tr((Σa Σb)^½)</span>
+    <span class="tk-k">return</span> <span class="tk-p">((</span><span class="tk-n">ma</span> <span class="tk-o">-</span> <span class="tk-n">mb</span><span class="tk-p">)</span> <span class="tk-o">**</span> <span class="tk-mi">2</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">sum</span><span class="tk-p">()</span> <span class="tk-o">+</span> <span class="tk-n">ca</span><span class="tk-o">.</span><span class="tk-n">trace</span><span class="tk-p">()</span> <span class="tk-o">+</span> <span class="tk-n">cb</span><span class="tk-o">.</span><span class="tk-n">trace</span><span class="tk-p">()</span> <span class="tk-o">-</span> <span class="tk-mi">2</span> <span class="tk-o">*</span> <span class="tk-n">tr_sqrt</span>
 </code></pre></div>
 
-<p>Model v_θ(xₜ, t) học đoán vận tốc bằng MSE: <code>‖(ε − x₀) − v_θ(xₜ, t)‖²</code>. Sinh ảnh: bắt đầu từ x₁ = ε, đi ngược theo vận tốc bằng phương pháp Euler: <code>x_{t−Δ} = xₜ − Δ·v_θ(xₜ, t)</code>.</p>
-<p>Vì đường đi gần thẳng, mỗi bước Euler đi xa được, nên cần ít bước hơn diffusion cổ điển. <strong>Rectified flow</strong> còn "nắn thẳng" thêm bằng cách train lại trên các cặp (nhiễu, ảnh) do chính model sinh ra. Stable Diffusion 3 và FLUX dùng flow matching với Transformer (<strong>DiT</strong>, MMDiT) thay U-Net; FLUX.1-schnell sinh ảnh tốt chỉ với khoảng 4 bước.</p>
+<p>Với ảnh thật, dùng thư viện đã chuẩn hóa (<code>torchmetrics</code> có <code>FrechetInceptionDistance</code>, hoặc <code>clean-fid</code>) để kết quả so được với bài báo, vì cách resize ảnh và phiên bản Inception làm FID lệch đáng kể.</p>
+<div class="box pitfall">
+<div class="box-h">Lỗi hay gặp</div>
+<p><strong>So FID tính trên vài trăm ảnh.</strong> FID cần thường 5.000–50.000 ảnh. Với 500 ảnh, FID lệch lên cao và dao động mạnh giữa các lần chạy; chênh 2–3 điểm có thể chỉ là nhiễu. Với tập nhỏ dùng <strong>KID</strong> (Kernel Inception Distance, không thiên lệch theo số mẫu), và chỉ so khi cùng tập ảnh thật, cùng số ảnh, cùng cách tiền xử lý.</p>
+</div>
+<h2 id="lt-4">Đánh giá bằng người</h2>
+<p>Máy không đo được "ảnh này có dùng được cho trang bán hàng không". Đánh giá bằng người có hệ thống gồm:</p>
+<ul>
+<li><strong>So sánh cặp (A/B):</strong> hiện hai ảnh cùng prompt, hỏi ảnh nào tốt hơn theo <strong>một tiêu chí cụ thể</strong>. So cặp dễ và nhất quán hơn chấm điểm 1–10.</li>
+<li><strong>Mù và ngẫu nhiên:</strong> người chấm không biết ảnh nào của model nào; vị trí trái/phải đổi ngẫu nhiên (người có xu hướng chọn ảnh bên trái).</li>
+<li><strong>Tách tiêu chí:</strong> bám prompt, chất lượng hình ảnh, đúng phong cách, hỏi riêng từng cái. Một model có thể thắng ở phong cách nhưng thua ở bám prompt.</li>
+<li><strong>Cho phép "ngang nhau"</strong>, tính hòa là nửa thắng.</li>
+</ul>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>120 lượt so sánh model gốc với model + LoRA, tiêu chí "đúng phong cách ảnh sản phẩm của shop": LoRA thắng 70, hòa 14, thua 36.</p>
+<ol>
+<li>Tỉ lệ thắng = (70 + 14/2) / 120 = 77 / 120 ≈ <strong>0.64</strong>.</li>
+<li>Sai số chuẩn ≈ √(0.64 · 0.36 / 120) ≈ 0.044.</li>
+<li>Khoảng tin cậy 95% ≈ 0.64 ± 1.96 · 0.044 = <strong>[0.56, 0.73]</strong>: nằm hẳn trên 0.5, nên LoRA tốt hơn thật chứ không phải may rủi.</li>
+</ol>
+<p>Nếu chỉ có 20 lượt với cùng tỉ lệ, khoảng tin cậy rộng tới khoảng ±0.21, chưa kết luận được.</p>
+</div>
+<h2 id="lt-5">Flow matching: đường đi thẳng</h2>
+<p>Diffusion định nghĩa xₜ = √ᾱₜ·x₀ + √(1−ᾱₜ)·ε. Với một cặp cố định (x₀, ε), khi t chạy từ 0 tới T, điểm xₜ vạch một <strong>đường cong</strong> (hai hệ số có bình phương cộng lại bằng 1 nên đường đi là một cung). <strong>Flow matching</strong> (Lipman và cộng sự, 2022; Liu và cộng sự với rectified flow) chọn đường <strong>thẳng</strong> nối dữ liệu và nhiễu:</p>
+<div class="hl"><pre><span></span><code>xₜ = (1 − t) · x₀ + t · ε,        t ∈ [0, 1]      (t = 0: dữ liệu, t = 1: nhiễu)
+vận tốc dọc đường:  v = dxₜ/dt = ε − x₀           (hằng số, vì đường thẳng)
+</code></pre></div>
+
+<figure class="fig"><img src="../assets/fig/p5-6-paths.svg" alt="Cùng 7 cặp (điểm dữ liệu ●, nhiễu ×). Trái: đường nội suy của diffusion là cung cong. Phải: flow matching nối thẳng." loading="lazy"><figcaption>Cùng 7 cặp (điểm dữ liệu ●, nhiễu ×). Trái: đường nội suy của diffusion là cung cong. Phải: flow matching nối thẳng.</figcaption></figure>
+
+<h3>Train và sinh</h3>
+<ul>
+<li><strong>Train:</strong> model v_θ(xₜ, t) đoán vận tốc, loss MSE: ‖(ε − x₀) − v_θ(xₜ, t)‖². t lấy <strong>liên tục</strong> đều trong [0, 1].</li>
+<li><strong>Sinh:</strong> bắt đầu từ x₁ = ε ~ N(0, I), đi ngược theo vận tốc bằng phương pháp Euler: x_{t−Δ} = xₜ − Δ · v_θ(xₜ, t).</li>
+</ul>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>Dữ liệu x₀ = −1, nhiễu ε = 1.5.</p>
+<ol>
+<li>Tại t = 0.4: xₜ = 0.6 · (−1) + 0.4 · 1.5 = −0.6 + 0.6 = <strong>0</strong>.</li>
+<li>Vận tốc v = ε − x₀ = 1.5 − (−1) = <strong>2.5</strong>, giống nhau tại mọi t.</li>
+<li>Từ xₜ = 0 ở t = 0.4, một bước Euler Δ = 0.4 về t = 0: 0 − 0.4 · 2.5 = −1 = x₀.</li>
+</ol>
+<p>Với một cặp duy nhất, đi một bước là tới. Vấn đề: khi sinh, model không biết x₀ là gì; nó chỉ học được <strong>vận tốc trung bình</strong> trên mọi cặp đi qua điểm xₜ. Các đường thẳng cắt nhau (hình phải), nên vận tốc trung bình làm đường đi thật cong nhẹ, và cần vài bước thay vì một.</p>
+</div>
+<h3>Thí nghiệm: ít bước</h3>
+<p>Train một model flow matching cùng kiến trúc MLP với model DDIM ở P5.2 (cùng dữ liệu xoắn ốc, cùng số bước train), rồi so khoảng cách Fréchet theo số bước sinh:</p>
+<figure class="fig"><img src="../assets/fig/p5-6-steps.svg" alt="Ở 4 bước, flow matching đạt Fréchet 0.056, DDIM 0.74 (tệ hơn 13 lần, các điểm dồn cục). Ở 8 bước: 0.010 so với 0.059. Từ khoảng 50 bước, hai cách ngang nhau và chạm mức sàn. Flow 1 bước sụp về giữa: từng điểm vẫn gần dữ liệu (khoảng cách TB 0.039) nhưng mất hết đa dạng." loading="lazy"><figcaption>Ở 4 bước, flow matching đạt Fréchet 0.056, DDIM 0.74 (tệ hơn 13 lần, các điểm dồn cục). Ở 8 bước: 0.010 so với 0.059. Từ khoảng 50 bước, hai cách ngang nhau và chạm mức sàn. Flow 1 bước sụp về giữa: từng điểm vẫn gần dữ liệu (khoảng cách TB 0.039) nhưng mất hết đa dạng.</figcaption></figure>
+
+<p>Điểm lợi của flow matching là <strong>chất lượng khi ít bước</strong>, đúng thứ quyết định chi phí và độ trễ của một app tạo ảnh.</p>
+<h3>Rectified flow và các model hiện đại</h3>
+<ul>
+<li><strong>Reflow (nắn thẳng):</strong> dùng chính model đã train sinh các cặp (nhiễu, ảnh) ghép đôi, rồi train lại trên các cặp này. Vì cặp đã ghép theo đường đi của model, các đường ít cắt nhau hơn, nên đường đi thẳng hơn và cần ít bước hơn nữa.</li>
+<li><strong>Chưng cất (distillation):</strong> train một model "học trò" đi một bước bằng nhiều bước của model "thầy". FLUX.1-schnell sinh ảnh tốt với khoảng 4 bước nhờ kết hợp flow matching và chưng cất.</li>
+<li><strong>Kiến trúc:</strong> Stable Diffusion 3 và FLUX dùng flow matching với <strong>Transformer</strong> (DiT, MMDiT) thay U-Net: ảnh latent được cắt thành patch như ViT (P7.1), xử lý chung với token văn bản.</li>
+</ul>
+<details class="fold deep">
+<summary>Đào sâu thêm</summary>
+<p><strong>Diffusion và flow matching thực ra rất gần nhau.</strong> Cả hai đều nội suy giữa dữ liệu và nhiễu Gauss; chỉ khác hệ số (√ᾱ, √(1−ᾱ) so với 1−t, t) và đại lượng model đoán (ε so với v = ε − x₀). Biết một thì đổi sang cái kia bằng phép tính đại số; một model diffusion đoán ε có thể chạy với sampler kiểu flow và ngược lại. Lý do flow matching thắng ở ít bước là đường nội suy thẳng làm trường vận tốc đơn giản hơn, dễ tích phân bằng vài bước lớn.</p>
+</details>
 <div class="keep">
 <p><strong>Ghi nhớ:</strong> diffusion và flow matching là hai cách tham số hóa cùng một ý tưởng: học cách biến nhiễu thành dữ liệu. Khác nhau ở đường đi (cong hay thẳng) và đại lượng model đoán (nhiễu hay vận tốc).</p>
-</div></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p5.6:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 4</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>CLIP score</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Cosine giữa embedding ảnh và prompt là 0.31.</p>
+</div>
+<div class="box check">
+<div class="box-h">Tự kiểm tra nhanh</div>
+<div class="ans" id="p5-6-t-b115-a1">
+<div class="ans-fields"><label>Cosine ảnh–prompt 0.27. CLIP score<input inputmode="decimal" data-ans="27.0" data-tol="0.001" autocomplete="off"></label><label>FID 1 chiều: thật μ = 0.5, phương sai 1; sinh μ = 0.2, phương sai 0.25<input inputmode="decimal" data-ans="0.34" data-tol="0.001" autocomplete="off"></label><label>Flow matching: x₀ = −1, ε = 1.5. Vận tốc v<input inputmode="decimal" data-ans="2.5" data-tol="0.001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div>
+<div aria-live="polite" class="ans-fb"></div>
+</div>
+</div>
+<h2 id="lt-6">Tóm tắt bài và thuật ngữ</h2>
+<table>
+<thead>
+<tr>
+<th>Thước đo</th>
+<th>Đo gì</th>
+<th>Lưu ý</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CLIP score</td>
+<td>ảnh bám prompt</td>
+<td>yếu ở đếm, vị trí, chữ; chỉ dùng để so sánh</td>
+</tr>
+<tr>
+<td>FID</td>
+<td>chất lượng + đa dạng so với ảnh thật</td>
+<td>cần hàng nghìn ảnh; thấp là tốt</td>
+</tr>
+<tr>
+<td>KID</td>
+<td>như FID</td>
+<td>dùng cho tập nhỏ</td>
+</tr>
+<tr>
+<td>Người chấm A/B</td>
+<td>điều máy không đo được</td>
+<td>mù, ngẫu nhiên vị trí, tách tiêu chí, có khoảng tin cậy</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Thuật ngữ</th>
+<th>Nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CLIP score</td>
+<td>100 × cosine giữa embedding ảnh và prompt</td>
+</tr>
+<tr>
+<td>FID</td>
+<td>khoảng cách Fréchet giữa đặc trưng Inception của hai tập ảnh</td>
+</tr>
+<tr>
+<td>KID</td>
+<td>Kernel Inception Distance</td>
+</tr>
+<tr>
+<td>win rate</td>
+<td>tỉ lệ thắng trong so sánh cặp</td>
+</tr>
+<tr>
+<td>confidence interval</td>
+<td>khoảng tin cậy</td>
+</tr>
+<tr>
+<td>flow matching</td>
+<td>học trường vận tốc dọc đường nội suy thẳng</td>
+</tr>
+<tr>
+<td>rectified flow / reflow</td>
+<td>nắn thẳng đường đi bằng train lại trên cặp model tự sinh</td>
+</tr>
+<tr>
+<td>Euler method</td>
+<td>tích phân từng bước x ← x − Δ·v</td>
+</tr>
+<tr>
+<td>distillation</td>
+<td>chưng cất nhiều bước thành ít bước</td>
+</tr>
+<tr>
+<td>DiT / MMDiT</td>
+<td>Transformer làm mạng khử nhiễu thay U-Net</td>
+</tr>
+</tbody>
+</table></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p5.6:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 4</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>CLIP score</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Cosine giữa embedding ảnh và prompt là 0.31.</p>
 <div class="ans" id="p5-6-e1-a1"><div class="ans-fields"><label>CLIP score<input inputmode="decimal" data-ans="31.0" data-tol="0.001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
 
 <details class="fold solution">
@@ -196,7 +396,7 @@ vận tốc dọc đường: v = dxₜ/dt = ε − x₀
     </div>
     <aside class="aside">
       <div class="abox"><h4>Tiến độ bài này</h4><div class="ring"><svg viewBox="0 0 64 64" aria-hidden="true"><circle class="bg" cx="32" cy="32" r="28"/><circle class="fg" cx="32" cy="32" r="28" stroke-dasharray="176" stroke-dashoffset="176"/></svg><div><b id="ring-n">0/3</b><span id="ring-sub">phần đã xong</span></div></div></div>
-      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">CLIP score: ảnh có bám prompt không</a></li><li><a href="#lt-2">FID: ảnh có giống ảnh thật không</a></li><li><a href="#lt-3">Đánh giá bằng người</a></li><li><a href="#lt-4">Rectified flow và flow matching</a></li></ol></div>
+      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Vì sao cần đo</a></li><li><a href="#lt-2">CLIP score: ảnh có bám prompt không</a></li><li><a href="#lt-3">FID: ảnh có giống ảnh thật không</a></li><li><a href="#lt-4">Đánh giá bằng người</a></li><li><a href="#lt-5">Flow matching: đường đi thẳng</a></li><li><a href="#lt-6">Tóm tắt bài và thuật ngữ</a></li></ol></div>
       
       <div class="abox"><h4>Cùng giai đoạn</h4><ul><li><a href="p5-1.html">GĐ 1 · Diffusion tạo ảnh thế nào</a></li><li><a href="p5-2.html">GĐ 2 · Diffusion cho ảnh</a></li><li><a href="p5-3.html">GĐ 3 · Điều khiển bằng chữ</a></li><li><a href="p5-4.html">GĐ 4 · Latent diffusion và Stable Diffusion</a></li><li><a href="p5-5.html">GĐ 5 · Fine-tune LoRA</a></li><li><span class=cur>GĐ 6 · Đánh giá và rectified flow</span></li><li><a href="p5-7.html">GĐ 7 · Đóng gói sản phẩm</a></li></ul></div>
     </aside>

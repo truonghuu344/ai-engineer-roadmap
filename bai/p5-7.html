@@ -22,24 +22,129 @@
 <main class="container">
   <div class="crumbs"><a href="../bai-hoc.html">Bài học</a><span>/</span><a href="../bai-hoc.html#p5">P5 · Dự án Diffusion: tạo ảnh từ con số 0</a><span>/</span><span>P5.7</span></div>
   <section class="lhero side"><div class="code">P5.7</div><h1>GĐ 7 · Đóng gói sản phẩm</h1><div class="lmeta"><span class="m">Giai đoạn P5 · Dự án Diffusion: tạo ảnh từ con số 0</span><span class="m">Tuần 10–30</span><span class="chip ready"><span class="dot"></span>Có nội dung đầy đủ</span></div>
-    <div class="intro"><p>Giai đoạn cuối của dự án: biến mọi thứ đã làm thành một <strong>sản phẩm</strong> người khác mở link là dùng được, và một <strong>README</strong> khiến nhà tuyển dụng hiểu bạn đã làm gì trong 2 phút. Đây là phiên bản làm lại của đồ án tạo ảnh, nhưng lần này chạy model và LoRA của chính bạn, có số đo chất lượng thật.</p></div></section>
+    <div class="intro"><p>Giai đoạn cuối của dự án: biến mọi thứ đã làm thành một <strong>sản phẩm</strong> người khác mở link là dùng được, và một <strong>README</strong> khiến nhà tuyển dụng hiểu bạn đã làm gì trong 2 phút. Đây là phiên bản làm lại của đồ án tạo ảnh, nhưng lần này chạy model và LoRA của chính bạn, có số đo chất lượng thật. Bài này đi qua kiến trúc app, hàng đợi (có mô phỏng thời gian chờ), chi phí, deploy, an toàn và cách viết README.</p></div></section>
   
-  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">5 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
+  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">8 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
   <div class="lgrid" style="margin-top:22px">
     <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">Kiến trúc một app tạo ảnh</h2>
-<div class="hl"><pre><span></span><code>Người dùng ──▶ Giao diện (Gradio) ──▶ Hàng đợi ──▶ Worker GPU: pipeline + LoRA ──▶ Ảnh
-                    │                                        │
-                    └── kiểm tra đầu vào, giới hạn tần suất   └── log: prompt, seed, thời gian, lỗi
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Nhà tuyển dụng và khách hàng freelance hiếm khi chạy notebook của bạn. Họ mở link. Một app chạy được, có giới hạn hợp lý và README rõ ràng cho thấy bạn làm được sản phẩm, không chỉ thí nghiệm, và đó là điều phân biệt "AI Engineer" với "người học AI".</p>
+</div>
+<figure class="fig"><img src="../assets/fig/p5-7-arch.svg" alt="Bốn khối của một app tạo ảnh. Mỗi khối có một việc kiểm soát riêng." loading="lazy"><figcaption>Bốn khối của một app tạo ảnh. Mỗi khối có một việc kiểm soát riêng.</figcaption></figure>
+
+<table>
+<thead>
+<tr>
+<th>Khối</th>
+<th>Việc chính</th>
+<th>Vì sao</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Giao diện</td>
+<td>nhận prompt và tham số, kiểm tra hợp lệ</td>
+<td>chặn yêu cầu vô lý trước khi tốn GPU</td>
+</tr>
+<tr>
+<td>Hàng đợi</td>
+<td>xếp thứ tự, báo vị trí, từ chối khi đầy</td>
+<td>GPU chỉ sinh hiệu quả một hoặc vài ảnh cùng lúc</td>
+</tr>
+<tr>
+<td>Worker GPU</td>
+<td>chạy pipeline + LoRA đã nạp sẵn</td>
+<td>nạp model mất hàng chục giây, chỉ làm một lần</td>
+</tr>
+<tr>
+<td>Log</td>
+<td>ghi prompt, seed, thời gian sinh, lỗi</td>
+<td>tái tạo ảnh khi người dùng phàn nàn, tìm điểm nghẽn</td>
+</tr>
+</tbody>
+</table>
+<div class="box pitfall">
+<div class="box-h">Lỗi hay gặp</div>
+<p><strong>Nạp model bên trong hàm xử lý.</strong> Viết <code>pipe = StableDiffusionPipeline.from_pretrained(...)</code> trong hàm <code>generate()</code> thì mỗi yêu cầu mất thêm 10–30 giây và bộ nhớ GPU tăng dần tới tràn. Nạp một lần ở cấp module (khi app khởi động), hàm xử lý chỉ dùng lại.</p>
+</div>
+<h2 id="lt-2">Hàng đợi và thời gian chờ</h2>
+<p>Một GPU sinh tuần tự. Nếu mỗi ảnh mất S giây, công suất tối đa là 3600 / S ảnh mỗi giờ.</p>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>Mỗi ảnh 3 giây, 6 người bấm "Sinh" cùng lúc:</p>
+<ol>
+<li>Người đầu nhận ảnh sau 3 giây.</li>
+<li>Người thứ 6 chờ 5 × 3 = <strong>15 giây</strong> mới bắt đầu, nhận ảnh sau <strong>18 giây</strong>.</li>
+<li>Công suất: 3600 / 3 = <strong>1200 ảnh/giờ</strong>, tức 20 ảnh/phút.</li>
+</ol>
+</div>
+<p>Điều không hiển nhiên: thời gian chờ không tăng đều theo số người dùng. Khi yêu cầu đến <strong>ngẫu nhiên</strong> (đúng với người dùng thật), có lúc nhiều yêu cầu dồn một chỗ, và thời gian chờ bùng nổ khi GPU gần hết công suất.</p>
+<figure class="fig"><img src="../assets/fig/p5-7-queue.svg" alt="Mô phỏng 40.000 yêu cầu đến ngẫu nhiên, mỗi ảnh 3 giây. Bận 60%: chờ trung bình 2,3 giây, 95% người chờ dưới 9 giây. Bận 90%: trung bình 14 giây, 95% dưới 43 giây. Bận 95%: 95% dưới 76 giây." loading="lazy"><figcaption>Mô phỏng 40.000 yêu cầu đến ngẫu nhiên, mỗi ảnh 3 giây. Bận 60%: chờ trung bình 2,3 giây, 95% người chờ dưới 9 giây. Bận 90%: trung bình 14 giây, 95% dưới 43 giây. Bận 95%: 95% dưới 76 giây.</figcaption></figure>
+
+<p>Quy tắc thực tế: giữ GPU bận dưới khoảng 70% vào giờ cao điểm. Muốn chạy gần 100% công suất mà vẫn nhanh thì phải giảm thời gian mỗi ảnh (ít bước hơn, sampler nhanh hơn, model chưng cất) hoặc thêm GPU.</p>
+<details class="fold deep">
+<summary>Đào sâu thêm</summary>
+<p><strong>Công thức hàng đợi.</strong> Với yêu cầu đến ngẫu nhiên (Poisson) và thời gian phục vụ cố định S, thời gian chờ trung bình là W = ρ·S / (2·(1 − ρ)), với ρ là mức bận (mô hình M/D/1). Với S = 3 giây: ρ = 0.6 cho W = 2,25 giây; ρ = 0.9 cho W = 13,5 giây. Mô phỏng ở trên cho 2,3 và 14,1, khớp lý thuyết. Mẫu số (1 − ρ) là lý do đường cong dựng đứng khi ρ tiến tới 1.</p>
+</details>
+<h3>Giới hạn để bảo vệ hàng đợi</h3>
+<ul>
+<li><strong>Độ dài hàng đợi tối đa:</strong> khi đầy, từ chối lịch sự ("Đang nhiều người dùng, thử lại sau 1 phút") tốt hơn để người dùng chờ 5 phút rồi lỗi timeout.</li>
+<li><strong>Một yêu cầu đang chờ mỗi người:</strong> chặn một người bấm 20 lần chiếm hết hàng.</li>
+<li><strong>Giới hạn tham số:</strong> số bước, kích thước ảnh, số ảnh mỗi lần. Một yêu cầu 100 bước ở 1024×1024 có thể tốn bằng 15 yêu cầu bình thường.</li>
+</ul>
+<h2 id="lt-3">Chi phí mỗi ảnh</h2>
+<p>GPU thuê theo giờ tính tiền cả khi rảnh. Chi phí mỗi ảnh = giá GPU mỗi giờ / số ảnh thực sự sinh được mỗi giờ.</p>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>Giả sử thuê GPU giá ví dụ 1,1 USD/giờ, mỗi ảnh 3 giây.</p>
+<table>
+<thead>
+<tr>
+<th>Mức bận</th>
+<th>Ảnh mỗi giờ</th>
+<th>Chi phí mỗi ảnh</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>100%</td>
+<td>1200</td>
+<td>1,1 / 1200 ≈ 0,00092 USD</td>
+</tr>
+<tr>
+<td>25%</td>
+<td>300</td>
+<td>1,1 / 300 ≈ 0,0037 USD</td>
+</tr>
+</tbody>
+</table>
+<p>GPU bận 25% thì mỗi ảnh đắt gấp 4. Với app portfolio ít người dùng, chọn dịch vụ tắt GPU khi không có yêu cầu (Hugging Face ZeroGPU, serverless GPU tính theo giây) thay vì thuê máy chạy cả ngày.</p>
+</div>
+<p>Mâu thuẫn cần cân bằng: bận cao thì rẻ nhưng chờ lâu (hình hàng đợi), bận thấp thì nhanh nhưng đắt. Đây là câu hỏi khách hàng sẽ hỏi, và giờ bạn trả lời được bằng số.</p>
+<h2 id="lt-4">Gradio</h2>
+<p>Gradio dựng giao diện web cho hàm Python trong vài chục dòng: ô nhập, thanh trượt, ảnh đầu ra, ví dụ mẫu, hàng đợi tích hợp.</p>
+<div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">gradio</span><span class="tk-w"> </span><span class="tk-k">as</span><span class="tk-w"> </span><span class="tk-nn">gr</span>
+
+<span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">generate</span><span class="tk-p">(</span><span class="tk-n">prompt</span><span class="tk-p">,</span> <span class="tk-n">steps</span><span class="tk-p">,</span> <span class="tk-n">seed</span><span class="tk-p">):</span>
+    <span class="tk-c1"># gọi pipeline đã nạp sẵn ở cấp module; trả về ảnh PIL</span>
+    <span class="tk-k">return</span> <span class="tk-n">pipe</span><span class="tk-p">(</span><span class="tk-n">prompt</span><span class="tk-p">,</span> <span class="tk-n">num_inference_steps</span><span class="tk-o">=</span><span class="tk-nb">int</span><span class="tk-p">(</span><span class="tk-n">steps</span><span class="tk-p">),</span>
+                <span class="tk-n">generator</span><span class="tk-o">=</span><span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">Generator</span><span class="tk-p">(</span><span class="tk-s2">"cuda"</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">manual_seed</span><span class="tk-p">(</span><span class="tk-nb">int</span><span class="tk-p">(</span><span class="tk-n">seed</span><span class="tk-p">)))</span><span class="tk-o">.</span><span class="tk-n">images</span><span class="tk-p">[</span><span class="tk-mi">0</span><span class="tk-p">]</span>
+
+<span class="tk-n">demo</span> <span class="tk-o">=</span> <span class="tk-n">gr</span><span class="tk-o">.</span><span class="tk-n">Interface</span><span class="tk-p">(</span><span class="tk-n">fn</span><span class="tk-o">=</span><span class="tk-n">generate</span><span class="tk-p">,</span>
+                    <span class="tk-n">inputs</span><span class="tk-o">=</span><span class="tk-p">[</span><span class="tk-n">gr</span><span class="tk-o">.</span><span class="tk-n">Textbox</span><span class="tk-p">(</span><span class="tk-n">label</span><span class="tk-o">=</span><span class="tk-s2">"Mô tả"</span><span class="tk-p">),</span> <span class="tk-n">gr</span><span class="tk-o">.</span><span class="tk-n">Slider</span><span class="tk-p">(</span><span class="tk-mi">10</span><span class="tk-p">,</span> <span class="tk-mi">40</span><span class="tk-p">,</span> <span class="tk-n">value</span><span class="tk-o">=</span><span class="tk-mi">25</span><span class="tk-p">,</span> <span class="tk-n">step</span><span class="tk-o">=</span><span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-n">label</span><span class="tk-o">=</span><span class="tk-s2">"Số bước"</span><span class="tk-p">),</span>
+                            <span class="tk-n">gr</span><span class="tk-o">.</span><span class="tk-n">Number</span><span class="tk-p">(</span><span class="tk-n">value</span><span class="tk-o">=</span><span class="tk-mi">0</span><span class="tk-p">,</span> <span class="tk-n">label</span><span class="tk-o">=</span><span class="tk-s2">"Seed"</span><span class="tk-p">)],</span>
+                    <span class="tk-n">outputs</span><span class="tk-o">=</span><span class="tk-n">gr</span><span class="tk-o">.</span><span class="tk-n">Image</span><span class="tk-p">(</span><span class="tk-n">label</span><span class="tk-o">=</span><span class="tk-s2">"Ảnh"</span><span class="tk-p">))</span>
+<span class="tk-n">demo</span><span class="tk-o">.</span><span class="tk-n">queue</span><span class="tk-p">(</span><span class="tk-n">max_size</span><span class="tk-o">=</span><span class="tk-mi">20</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">launch</span><span class="tk-p">()</span>
 </code></pre></div>
 
 <ul>
-<li><strong>Nạp model một lần</strong> khi khởi động, không nạp lại mỗi yêu cầu (nạp SD mất hàng chục giây).</li>
-<li><strong>Hàng đợi:</strong> một GPU chỉ sinh hiệu quả một (hoặc vài) ảnh cùng lúc. Hàng đợi giữ thứ tự, báo vị trí cho người dùng, và giới hạn độ dài để không quá tải.</li>
-<li><strong>Giới hạn tài nguyên:</strong> chặn số bước quá lớn, độ phân giải quá lớn, prompt quá dài.</li>
+<li><code>gr.Interface</code> đủ cho demo một hàm. Bài tập code dùng <code>gr.Blocks</code> để bố trí tự do hơn (nhiều cột, nút, ví dụ mẫu).</li>
+<li><code>queue(max_size=20)</code> bật hàng đợi có giới hạn; người dùng thấy vị trí của mình trong hàng.</li>
+<li><code>launch(share=True)</code> tạo link công khai tạm thời (hữu ích trên Colab).</li>
 </ul>
-<h2 id="lt-2">Gradio</h2>
-<p>Gradio dựng giao diện web cho hàm Python trong vài chục dòng: ô nhập, thanh trượt, ảnh đầu ra, ví dụ mẫu, hàng đợi tích hợp. Phù hợp để demo model; khi cần sản phẩm thật nhiều người dùng, tách thành API (FastAPI, P8) và frontend riêng.</p>
-<h2 id="lt-3">Deploy</h2>
+<p>Gradio phù hợp để demo và công cụ nội bộ. Khi cần sản phẩm thật với nhiều người dùng, đăng nhập, thanh toán, tách thành API (FastAPI, P8.1) và frontend riêng.</p>
+<h2 id="lt-5">Deploy</h2>
 <table>
 <thead>
 <tr>
@@ -62,19 +167,24 @@
 <tr>
 <td>VPS/cloud GPU + Docker</td>
 <td>toàn quyền</td>
-<td>tự lo bảo trì, chi phí</td>
+<td>tự lo bảo trì, bảo mật, chi phí</td>
 </tr>
 </tbody>
 </table>
-<p>Với portfolio: Space có GPU cho buổi demo, còn README luôn có ảnh kết quả và video ngắn để người xem hiểu được kể cả khi Space đang tắt.</p>
-<h2 id="lt-4">An toàn và giấy phép</h2>
+<p>Với portfolio: Space có GPU cho buổi demo, còn README luôn có ảnh kết quả và video ngắn để người xem hiểu được kể cả khi Space đang tắt. Đẩy LoRA lên Hugging Face Hub kèm <strong>model card</strong>: model nền, dữ liệu train (nguồn, quyền dùng), từ kích hoạt, độ mạnh khuyên dùng, ví dụ ảnh, hạn chế.</p>
+<h2 id="lt-6">An toàn và giấy phép</h2>
 <ul>
-<li><strong>Giấy phép model:</strong> SD 1.5 dùng giấy phép CreativeML OpenRAIL-M, cho phép dùng thương mại nhưng có danh sách cách dùng bị cấm. Đọc giấy phép của model nền và mọi LoRA bạn dùng.</li>
-<li><strong>Lọc nội dung:</strong> dùng bộ lọc an toàn cho đầu ra, và lọc prompt rõ ràng vi phạm.</li>
-<li><strong>Không tạo ảnh người thật</strong> khi không có sự đồng ý, không bắt chước thương hiệu.</li>
-<li>Ghi rõ trong README: model nền, dữ liệu LoRA (của bạn, có quyền dùng), giới hạn đã biết.</li>
+<li><strong>Giấy phép model:</strong> SD 1.5 dùng giấy phép CreativeML OpenRAIL-M, cho phép dùng thương mại nhưng có danh sách cách dùng bị cấm. Mỗi model nền và mỗi LoRA có giấy phép riêng; đọc trước khi dùng cho khách.</li>
+<li><strong>Lọc đầu vào:</strong> chặn prompt rõ ràng vi phạm chính sách (danh sách từ khóa + phân loại bằng model nhỏ, như guardrails ở P4.8).</li>
+<li><strong>Lọc đầu ra:</strong> bộ lọc an toàn trên ảnh sinh ra; ảnh bị chặn thì trả thông báo, không trả ảnh.</li>
+<li><strong>Không tạo ảnh người thật</strong> khi không có sự đồng ý, không bắt chước logo hay thương hiệu.</li>
+<li><strong>Ghi rõ trong README:</strong> model nền, dữ liệu LoRA (của bạn, có quyền dùng), giới hạn đã biết.</li>
 </ul>
-<h2 id="lt-5">README cho CV</h2>
+<div class="box pitfall">
+<div class="box-h">Lỗi hay gặp</div>
+<p><strong>Log prompt mà không nghĩ tới quyền riêng tư.</strong> Prompt có thể chứa tên người, mô tả nhạy cảm. Log để gỡ lỗi là cần, nhưng ghi rõ trong trang app rằng prompt được lưu, giới hạn thời gian lưu, và không đẩy log lên repo công khai.</p>
+</div>
+<h2 id="lt-7">README cho CV</h2>
 <p>Người đọc README là nhà tuyển dụng có 2 phút. Cấu trúc:</p>
 <ol>
 <li><strong>Một câu:</strong> app làm gì, khác gì.</li>
@@ -84,9 +194,121 @@
 <li><strong>Cách chạy:</strong> vài lệnh.</li>
 <li><strong>Hạn chế và việc tiếp theo:</strong> trung thực, cho thấy bạn hiểu giới hạn.</li>
 </ol>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>So hai câu mở đầu README:</p>
+<table>
+<thead>
+<tr>
+<th>Yếu</th>
+<th>Tốt</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>"Dự án tạo ảnh sử dụng AI và Stable Diffusion với nhiều tính năng."</td>
+<td>"Sinh ảnh sản phẩm nội thất nền trắng theo phong cách thống nhất của một shop, từ mô tả tiếng Anh. LoRA tự train trên 25 ảnh; người chấm chọn bản LoRA 64% số lần so với model gốc."</td>
+</tr>
+</tbody>
+</table>
+<p>Câu tốt nói rõ <strong>ai dùng, làm gì, đo được gì</strong>. Câu yếu đúng với hàng nghìn repo khác. (Số liệu trong ví dụ là minh họa; dùng số đo thật của bạn.)</p>
+</div>
 <div class="keep">
 <p><strong>Ghi nhớ:</strong> dự án portfolio được đánh giá qua README và demo, không phải qua số dòng code. Một app nhỏ chạy được, có số đo, hơn một hệ thống lớn không ai chạy thử được.</p>
-</div></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p5.7:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 2</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Hàng đợi</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Mỗi ảnh mất 4 giây, có 1 GPU xử lý tuần tự, 10 người gửi yêu cầu cùng lúc.</p>
+</div>
+<div class="box check">
+<div class="box-h">Tự kiểm tra nhanh</div>
+<p>Mỗi ảnh mất 3 giây trên một GPU.</p>
+<div class="ans" id="p5-7-t-b104-a1">
+<div class="ans-fields"><label>Công suất tối đa (ảnh mỗi giờ)<input inputmode="decimal" data-ans="1200.0" data-tol="0.0" autocomplete="off"></label><label>6 người gửi cùng lúc: người thứ 6 nhận ảnh sau bao nhiêu giây<input inputmode="decimal" data-ans="18.0" data-tol="0.0" autocomplete="off"></label><label>GPU 1,1 USD/giờ, bận 25%: chi phí mỗi ảnh (USD, 4 chữ số thập phân)<input inputmode="decimal" data-ans="0.0037" data-tol="0.0001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div>
+<div aria-live="polite" class="ans-fb"></div>
+</div>
+</div>
+<h2 id="lt-8">Tóm tắt bài và thuật ngữ</h2>
+<table>
+<thead>
+<tr>
+<th>Chủ đề</th>
+<th>Ý chính</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Kiến trúc</td>
+<td>giao diện kiểm tra → hàng đợi → worker GPU nạp model một lần → log</td>
+</tr>
+<tr>
+<td>Hàng đợi</td>
+<td>chờ bùng nổ khi bận gần 100%; giữ dưới khoảng 70% giờ cao điểm</td>
+</tr>
+<tr>
+<td>Chi phí</td>
+<td>giá giờ / số ảnh thực sinh; GPU rảnh vẫn tốn tiền</td>
+</tr>
+<tr>
+<td>Gradio</td>
+<td>Interface cho demo nhanh, Blocks cho bố cục; <code>queue(max_size)</code></td>
+</tr>
+<tr>
+<td>Deploy</td>
+<td>Space có GPU cho demo, video và ảnh trong README cho lúc Space tắt</td>
+</tr>
+<tr>
+<td>An toàn</td>
+<td>giấy phép model, lọc vào/ra, không người thật, model card</td>
+</tr>
+<tr>
+<td>README</td>
+<td>một câu, demo, số đo, phần tự viết, cách chạy, hạn chế</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Thuật ngữ</th>
+<th>Nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>worker</td>
+<td>tiến trình chạy model xử lý yêu cầu</td>
+</tr>
+<tr>
+<td>queue</td>
+<td>hàng đợi yêu cầu</td>
+</tr>
+<tr>
+<td>throughput</td>
+<td>thông lượng, số ảnh mỗi đơn vị thời gian</td>
+</tr>
+<tr>
+<td>latency</td>
+<td>độ trễ, thời gian từ lúc gửi tới lúc nhận</td>
+</tr>
+<tr>
+<td>utilization (ρ)</td>
+<td>mức bận của GPU</td>
+</tr>
+<tr>
+<td>p95</td>
+<td>95% yêu cầu nhanh hơn mức này</td>
+</tr>
+<tr>
+<td>Hugging Face Space</td>
+<td>dịch vụ host demo của Hugging Face</td>
+</tr>
+<tr>
+<td>model card</td>
+<td>tài liệu mô tả model, dữ liệu, cách dùng, hạn chế</td>
+</tr>
+<tr>
+<td>OpenRAIL-M</td>
+<td>loại giấy phép model có danh sách cách dùng bị cấm</td>
+</tr>
+</tbody>
+</table></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p5.7:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 2</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Hàng đợi</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Mỗi ảnh mất 4 giây, có 1 GPU xử lý tuần tự, 10 người gửi yêu cầu cùng lúc.</p>
 <div class="ans" id="p5-7-e1-a1"><div class="ans-fields"><label>Người thứ 10 chờ bao lâu trước khi bắt đầu (s)<input inputmode="decimal" data-ans="36.0" data-tol="0.0" autocomplete="off"></label><label>Người thứ 10 nhận ảnh sau (s)<input inputmode="decimal" data-ans="40.0" data-tol="0.0" autocomplete="off"></label><label>Thông lượng tối đa (ảnh mỗi giờ)<input inputmode="decimal" data-ans="900.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
 
 <details class="fold solution">
@@ -173,7 +395,7 @@ Sinh ảnh sản phẩm nền trắng phong cách thống nhất từ mô tả t
     </div>
     <aside class="aside">
       <div class="abox"><h4>Tiến độ bài này</h4><div class="ring"><svg viewBox="0 0 64 64" aria-hidden="true"><circle class="bg" cx="32" cy="32" r="28"/><circle class="fg" cx="32" cy="32" r="28" stroke-dasharray="176" stroke-dashoffset="176"/></svg><div><b id="ring-n">0/3</b><span id="ring-sub">phần đã xong</span></div></div></div>
-      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Kiến trúc một app tạo ảnh</a></li><li><a href="#lt-2">Gradio</a></li><li><a href="#lt-3">Deploy</a></li><li><a href="#lt-4">An toàn và giấy phép</a></li><li><a href="#lt-5">README cho CV</a></li></ol></div>
+      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Kiến trúc một app tạo ảnh</a></li><li><a href="#lt-2">Hàng đợi và thời gian chờ</a></li><li><a href="#lt-3">Chi phí mỗi ảnh</a></li><li><a href="#lt-4">Gradio</a></li><li><a href="#lt-5">Deploy</a></li><li><a href="#lt-6">An toàn và giấy phép</a></li><li><a href="#lt-7">README cho CV</a></li><li><a href="#lt-8">Tóm tắt bài và thuật ngữ</a></li></ol></div>
       
       <div class="abox"><h4>Cùng giai đoạn</h4><ul><li><a href="p5-1.html">GĐ 1 · Diffusion tạo ảnh thế nào</a></li><li><a href="p5-2.html">GĐ 2 · Diffusion cho ảnh</a></li><li><a href="p5-3.html">GĐ 3 · Điều khiển bằng chữ</a></li><li><a href="p5-4.html">GĐ 4 · Latent diffusion và Stable Diffusion</a></li><li><a href="p5-5.html">GĐ 5 · Fine-tune LoRA</a></li><li><a href="p5-6.html">GĐ 6 · Đánh giá và rectified flow</a></li><li><span class=cur>GĐ 7 · Đóng gói sản phẩm</span></li></ul></div>
     </aside>
