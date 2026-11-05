@@ -22,11 +22,17 @@
 <main class="container">
   <div class="crumbs"><a href="../bai-hoc.html">Bài học</a><span>/</span><a href="../bai-hoc.html#p10">P10 · Portfolio và đi làm</a><span>/</span><span>P10.1</span></div>
   <section class="lhero side"><div class="code">P10.1</div><h1>3 dự án chủ lực</h1><div class="lmeta"><span class="m">Giai đoạn P10 · Portfolio và đi làm</span><span class="m">Tuần 24–45</span><span class="chip ready"><span class="dot"></span>Có nội dung đầy đủ</span></div>
-    <div class="intro"><p>Nhà tuyển dụng và khách hàng freelance không chấm điểm số bài bạn đã học, họ nhìn <strong>bằng chứng</strong>: dự án chạy được, có số đo, giải quyết vấn đề thật. Phân tích tin tuyển dụng cho thấy phần lớn nhà tuyển dụng muốn ứng viên đã ship ít nhất một dự án LLM hoặc ML. Bài này giúp bạn chọn, làm và trình bày <strong>3 dự án chủ lực</strong> từ những gì đã làm trong lộ trình.</p></div></section>
+    <div class="intro"><p>Nhà tuyển dụng và khách hàng freelance không chấm điểm số bài bạn đã học, họ nhìn <strong>bằng chứng</strong>: dự án chạy được, có số đo, giải quyết vấn đề thật. Phân tích tin tuyển dụng cho thấy phần lớn nhà tuyển dụng muốn ứng viên đã ship ít nhất một dự án LLM hoặc ML. Bài này giúp bạn chọn, làm và trình bày <strong>3 dự án chủ lực</strong> từ những gì đã làm trong lộ trình, với tiêu chí chấm cụ thể và ví dụ trước/sau.</p></div></section>
   
-  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">4 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">4 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
+  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">6 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">4 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
   <div class="lgrid" style="margin-top:22px">
-    <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">Thế nào là dự án portfolio tốt</h2>
+    <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">Vì sao dự án quan trọng hơn chứng chỉ</h2>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Người tuyển dụng không kiểm chứng được "đã học khóa X", nhưng kiểm chứng được một repo có README rõ, demo chạy, bảng kết quả. Với freelance, khách gần như chỉ nhìn portfolio và đánh giá. Ba dự án tốt là thứ biến 9 phần trước của lộ trình thành cơ hội việc làm.</p>
+</div>
+<p>Người xem portfolio thường dành rất ít thời gian cho mỗi dự án. Trong khoảng đó, họ cần thấy được: dự án giải quyết vấn đề gì, chạy thật không, tốt tới mức nào, và <strong>bạn</strong> đã làm phần nào.</p>
+<h2 id="lt-2">Thế nào là dự án portfolio tốt</h2>
 <table>
 <thead>
 <tr>
@@ -63,15 +69,21 @@
 </tr>
 </tbody>
 </table>
-<p>Ba dự án sâu tốt hơn mười dự án làm theo tutorial.</p>
-<h2 id="lt-2">Ba dự án chủ lực từ lộ trình</h2>
+<p>Ba dự án sâu tốt hơn mười dự án làm theo tutorial. Dự án theo tutorial (phân loại chó mèo, chatbot PDF cơ bản) có hàng nghìn bản giống hệt trên GitHub, nên không phân biệt được bạn với ai.</p>
+<h3>Điều gì làm dự án "của bạn"</h3>
+<ul>
+<li><strong>Dữ liệu riêng:</strong> tài liệu thật (quy chế trường, chính sách một shop), dữ liệu tiếng Việt, ảnh tự chụp. Dữ liệu riêng buộc bạn giải quyết vấn đề thật mà tutorial không có.</li>
+<li><strong>Một quyết định có đo lường:</strong> "thử 3 cách chia đoạn, chọn cách B vì recall@5 cao hơn 9 điểm" cho thấy bạn làm kỹ sư, không chỉ chạy code mẫu.</li>
+<li><strong>Hạn chế trung thực:</strong> nêu được model sai ở đâu và vì sao cho thấy bạn hiểu hệ thống sâu hơn người chỉ khoe kết quả tốt.</li>
+</ul>
+<h2 id="lt-3">Ba dự án chủ lực từ lộ trình</h2>
 <ol>
-<li><strong>Tạo ảnh bằng diffusion + LoRA</strong> (P5): cho thấy hiểu sâu model sinh, tự viết DDPM, fine-tune, đánh giá, đóng gói app. Hợp với hướng nghiên cứu.</li>
+<li><strong>Tạo ảnh bằng diffusion + LoRA</strong> (P5): cho thấy hiểu sâu model sinh, tự viết DDPM, fine-tune, đánh giá, đóng gói app. Hợp với hướng nghiên cứu và là bản làm lại đồ án tốt nghiệp ở mức cao hơn.</li>
 <li><strong>Hệ RAG có eval và giám sát</strong> (P4 + P8): kỹ năng được tuyển nhiều nhất. Hybrid search, reranker, bộ eval, API, Docker, dashboard.</li>
 <li><strong>Model chuyên biệt cho tiếng Việt, hoặc dự án EPIC-KITCHENS</strong> (P3, P6, P7): fine-tune LLM/VLM cho một tác vụ tiếng Việt có số đo so với baseline; hoặc dự án video/anticipation gắn với hướng robotics.</li>
 </ol>
-<p>Ba dự án phủ ba mảng: model sinh, ứng dụng LLM, model chuyên biệt. Mỗi cái là một câu chuyện riêng khi phỏng vấn.</p>
-<h2 id="lt-3">Cấu trúc một dự án</h2>
+<p>Ba dự án phủ ba mảng: model sinh, ứng dụng LLM, model chuyên biệt. Mỗi cái là một câu chuyện riêng khi phỏng vấn, và mỗi cái hợp với một kiểu việc: ứng dụng LLM cho freelance và công ty sản phẩm; diffusion và EPIC-KITCHENS cho vị trí nghiên cứu.</p>
+<h2 id="lt-4">Cấu trúc một dự án</h2>
 <div class="hl"><pre><span></span><code>README.md            một câu, demo, kết quả, kiến trúc, cách chạy, hạn chế
 docs/                báo cáo đánh giá, sơ đồ
 src/                 code dạng module, không chỉ notebook
@@ -81,11 +93,148 @@ tests/               test cho phần quan trọng
 Dockerfile, docker-compose.yml
 </code></pre></div>
 
-<h2 id="lt-4">Câu chuyện dự án</h2>
-<p>Chuẩn bị một bản kể 2 phút cho mỗi dự án, theo khung: <strong>vấn đề</strong> (ai gặp, vì sao quan trọng) → <strong>cách làm</strong> (một quyết định kỹ thuật khó và lý do) → <strong>kết quả</strong> (số đo) → <strong>bài học</strong> (điều bạn sẽ làm khác). Phỏng vấn viên thường đào sâu vào quyết định kỹ thuật và cách bạn biết nó đúng.</p>
+<h3>README theo thứ tự người đọc cần</h3>
+<table>
+<thead>
+<tr>
+<th>Thứ tự</th>
+<th>Phần</th>
+<th>Trả lời câu hỏi</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Một câu + ảnh/GIF demo + link</td>
+<td>cái này là gì, trông thế nào</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Bảng kết quả so với baseline</td>
+<td>tốt tới mức nào</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Kiến trúc (sơ đồ) và quyết định chính</td>
+<td>làm thế nào, vì sao</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Cách chạy (vài lệnh)</td>
+<td>tôi thử được không</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Hạn chế và việc tiếp theo</td>
+<td>tác giả hiểu giới hạn không</td>
+</tr>
+</tbody>
+</table>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>Viết lại một mô tả dự án:</p>
+<table>
+<thead>
+<tr>
+<th>Trước</th>
+<th>Sau</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>"Dự án phân loại cảm xúc review bằng BERT."</td>
+<td>"Phân loại cảm xúc review sản phẩm tiếng Việt (3 nhãn) cho shop nội thất. PhoBERT fine-tune đạt macro-F1 0,87 trên 600 review test, so với 0,74 của LLM few-shot; chạy CPU 40 ms/review. Phân tích lỗi: nhầm nhiều nhất ở review mỉa mai."</td>
+</tr>
+</tbody>
+</table>
+<p>Bản sau có: đối tượng (shop nội thất), dữ liệu (tiếng Việt, 600 review test), số đo so với baseline, chi phí chạy, và một hạn chế cụ thể. (Số liệu ở đây là minh họa; dùng số của bạn.)</p>
+</div>
+<div class="box pitfall">
+<div class="box-h">Lỗi hay gặp</div>
+<p><strong>Đẩy notebook chưa chạy lại từ đầu.</strong> Notebook có ô lỗi, output cũ không khớp code, đường dẫn <code>C:\Users\...</code> cứng trong code: người xem mở ra là mất tin tưởng ngay. Trước khi công khai: "Restart and run all", xóa đường dẫn cá nhân, kiểm tra lịch sử git không có file <code>.env</code> hay khóa API.</p>
+</div>
+<h2 id="lt-5">Câu chuyện dự án</h2>
+<p>Chuẩn bị một bản kể 2 phút cho mỗi dự án:</p>
+<figure class="fig"><img src="../assets/fig/p10-1-story.svg" alt="Phần lớn thời gian dành cho quyết định kỹ thuật: đó là nơi phỏng vấn viên đào sâu." loading="lazy"><figcaption>Phần lớn thời gian dành cho quyết định kỹ thuật: đó là nơi phỏng vấn viên đào sâu.</figcaption></figure>
+
+<ul>
+<li><strong>Vấn đề:</strong> ai gặp, vì sao quan trọng.</li>
+<li><strong>Quyết định kỹ thuật:</strong> một lựa chọn khó, các phương án đã cân nhắc, vì sao chọn, kiểm chứng bằng cách nào.</li>
+<li><strong>Kết quả:</strong> con số so với baseline.</li>
+<li><strong>Bài học:</strong> điều bạn sẽ làm khác nếu làm lại.</li>
+</ul>
+<p>Phỏng vấn viên thường hỏi tiếp: "Nếu dữ liệu gấp 100 lần thì sao?", "Con số này đo thế nào, trên bao nhiêu mẫu?", "Phần nào bạn tự làm?". Chuẩn bị trả lời trước cho cả ba.</p>
 <div class="keep">
 <p><strong>Ghi nhớ:</strong> mỗi dự án cần trả lời được câu "bạn biết nó tốt bằng cách nào?". Câu trả lời là bộ eval và con số.</p>
-</div></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p10.1:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 1</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Ngân sách thời gian</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Bạn có 20 giờ/tuần trong 12 tuần cho portfolio. Mỗi dự án chủ lực cần khoảng 60 giờ làm và 10 giờ viết README, quay video.</p>
+</div>
+<div class="box check">
+<div class="box-h">Tự kiểm tra nhanh</div>
+<div class="ans" id="p10-1-t-b74-a1">
+<div class="ans-fields"><label>Câu chuyện 2 phút: phần quyết định kỹ thuật chiếm bao nhiêu giây<input inputmode="decimal" data-ans="50.0" data-tol="0.0" autocomplete="off"></label><label>Bảng tiêu chí có bao nhiêu tiêu chí để chấm một dự án<input inputmode="decimal" data-ans="5.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div>
+<div aria-live="polite" class="ans-fb"></div>
+</div>
+</div>
+<h2 id="lt-6">Tóm tắt bài và thuật ngữ</h2>
+<table>
+<thead>
+<tr>
+<th>Chủ đề</th>
+<th>Ý chính</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Dự án tốt</td>
+<td>vấn đề cụ thể, số đo, phần tự làm, chạy được, trình bày rõ</td>
+</tr>
+<tr>
+<td>"Của bạn"</td>
+<td>dữ liệu riêng, quyết định có đo lường, hạn chế trung thực</td>
+</tr>
+<tr>
+<td>Ba dự án</td>
+<td>diffusion + LoRA; RAG có eval; model tiếng Việt hoặc EPIC-KITCHENS</td>
+</tr>
+<tr>
+<td>README</td>
+<td>một câu + demo → kết quả → kiến trúc → cách chạy → hạn chế</td>
+</tr>
+<tr>
+<td>Câu chuyện</td>
+<td>vấn đề → quyết định → kết quả → bài học, 2 phút</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Thuật ngữ</th>
+<th>Nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>portfolio</td>
+<td>tập dự án làm bằng chứng năng lực</td>
+</tr>
+<tr>
+<td>baseline</td>
+<td>mốc so sánh (cách đơn giản hơn, model gốc)</td>
+</tr>
+<tr>
+<td>ablation</td>
+<td>thử bỏ hoặc đổi từng thành phần để đo đóng góp</td>
+</tr>
+<tr>
+<td>demo</td>
+<td>bản chạy được để người khác thử</td>
+</tr>
+<tr>
+<td>model card</td>
+<td>tài liệu mô tả model, dữ liệu, cách dùng, hạn chế</td>
+</tr>
+</tbody>
+</table></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p10.1:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 1</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Ngân sách thời gian</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Bạn có 20 giờ/tuần trong 12 tuần cho portfolio. Mỗi dự án chủ lực cần khoảng 60 giờ làm và 10 giờ viết README, quay video.</p>
 <div class="ans" id="p10-1-e1-a1"><div class="ans-fields"><label>Tổng giờ có<input inputmode="decimal" data-ans="240.0" data-tol="0.0" autocomplete="off"></label><label>Giờ cho 3 dự án<input inputmode="decimal" data-ans="210.0" data-tol="0.0" autocomplete="off"></label><label>Giờ còn lại cho hồ sơ và ứng tuyển<input inputmode="decimal" data-ans="30.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
 
 <details class="fold solution">
@@ -125,7 +274,7 @@ Dockerfile, docker-compose.yml
     </div>
     <aside class="aside">
       <div class="abox"><h4>Tiến độ bài này</h4><div class="ring"><svg viewBox="0 0 64 64" aria-hidden="true"><circle class="bg" cx="32" cy="32" r="28"/><circle class="fg" cx="32" cy="32" r="28" stroke-dasharray="176" stroke-dashoffset="176"/></svg><div><b id="ring-n">0/3</b><span id="ring-sub">phần đã xong</span></div></div></div>
-      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Thế nào là dự án portfolio tốt</a></li><li><a href="#lt-2">Ba dự án chủ lực từ lộ trình</a></li><li><a href="#lt-3">Cấu trúc một dự án</a></li><li><a href="#lt-4">Câu chuyện dự án</a></li></ol></div>
+      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Vì sao dự án quan trọng hơn chứng chỉ</a></li><li><a href="#lt-2">Thế nào là dự án portfolio tốt</a></li><li><a href="#lt-3">Ba dự án chủ lực từ lộ trình</a></li><li><a href="#lt-4">Cấu trúc một dự án</a></li><li><a href="#lt-5">Câu chuyện dự án</a></li><li><a href="#lt-6">Tóm tắt bài và thuật ngữ</a></li></ol></div>
       
       <div class="abox"><h4>Cùng giai đoạn</h4><ul><li><span class=cur>3 dự án chủ lực</span></li><li><a href="p10-2.html">Hồ sơ: CV, GitHub, LinkedIn, Hugging Face</a></li><li><a href="p10-3.html">Phỏng vấn</a></li><li><a href="p10-4.html">Tìm việc remote và freelance</a></li></ul></div>
     </aside>

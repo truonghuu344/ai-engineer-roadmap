@@ -22,48 +22,119 @@
 <main class="container">
   <div class="crumbs"><a href="../bai-hoc.html">Bài học</a><span>/</span><a href="../bai-hoc.html#p10">P10 · Portfolio và đi làm</a><span>/</span><span>P10.3</span></div>
   <section class="lhero side"><div class="code">P10.3</div><h1>Phỏng vấn</h1><div class="lmeta"><span class="m">Giai đoạn P10 · Portfolio và đi làm</span><span class="m">Tuần 24–45</span><span class="chip ready"><span class="dot"></span>Có nội dung đầy đủ</span></div>
-    <div class="intro"><p>Phỏng vấn AI Engineer thường gồm bốn vòng: <strong>coding</strong> (Python, cấu trúc dữ liệu), <strong>nền tảng ML</strong> (hỏi đáp kiến thức), <strong>thiết kế hệ thống ML</strong> (thiết kế một hệ RAG, hệ gợi ý), và <strong>hành vi</strong> (kể về dự án, cách làm việc). Bài này cho bạn khung trả lời từng vòng, và một bộ bài luyện có đáp án.</p></div></section>
+    <div class="intro"><p>Phỏng vấn AI Engineer thường gồm bốn vòng: <strong>coding</strong> (Python, cấu trúc dữ liệu), <strong>nền tảng ML</strong> (hỏi đáp kiến thức), <strong>thiết kế hệ thống ML</strong> (thiết kế một hệ RAG, hệ gợi ý), và <strong>hành vi</strong> (kể về dự án, cách làm việc). Bài này cho bạn khung trả lời từng vòng, một ví dụ thiết kế hệ thống đi đủ 6 bước có số liệu, và một bộ bài luyện có đáp án.</p></div></section>
   
-  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">4 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
+  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">6 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
   <div class="lgrid" style="margin-top:22px">
-    <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">Coding</h2>
+    <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">Người phỏng vấn chấm gì</h2>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Biết kiến thức chưa đủ: phỏng vấn đo <strong>cách bạn dùng</strong> kiến thức dưới áp lực thời gian. Nhiều ứng viên giỏi trượt vì im lặng code, hoặc trả lời đúng mà không nói đánh đổi. Có khung trả lời sẵn giúp bạn thể hiện đúng năng lực đã có sau 9 phần của lộ trình.</p>
+</div>
+<table>
+<thead>
+<tr>
+<th>Vòng</th>
+<th>Chấm</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Coding</td>
+<td>hiểu đề, chọn cấu trúc dữ liệu, code sạch, tự kiểm tra</td>
+</tr>
+<tr>
+<td>Nền tảng ML</td>
+<td>hiểu cơ chế, không chỉ thuộc định nghĩa; biết khi nào dùng</td>
+</tr>
+<tr>
+<td>Thiết kế hệ thống</td>
+<td>làm rõ yêu cầu, ước lượng bằng số, đánh đổi, đánh giá</td>
+</tr>
+<tr>
+<td>Hành vi</td>
+<td>trách nhiệm, học từ sai lầm, làm việc với người khác</td>
+</tr>
+</tbody>
+</table>
+<h2 id="lt-2">Coding</h2>
 <p>Đa số vòng coding cho AI Engineer ở mức LeetCode easy–medium, bằng Python. Trọng tâm: mảng, chuỗi, hash map, hai con trỏ, sắp xếp, heap, BFS/DFS cơ bản. Ngoài ra hay có bài thực tế: xử lý dữ liệu, viết một hàm metric, cài đặt k-means hay softmax bằng numpy.</p>
-<p>Quy trình khi làm bài: <strong>hỏi lại đề</strong> (đầu vào, ràng buộc, ca biên) → <strong>nói hướng giải và độ phức tạp</strong> trước khi code → code sạch → <strong>tự chạy tay một ví dụ</strong> → nêu cách tối ưu nếu có.</p>
-<h2 id="lt-2">Nền tảng ML</h2>
+<p>Quy trình khi làm bài:</p>
+<ol>
+<li><strong>Hỏi lại đề:</strong> đầu vào là gì, kích thước bao nhiêu, ca biên (rỗng, trùng, số âm).</li>
+<li><strong>Nói hướng giải và độ phức tạp</strong> trước khi code. Nếu chỉ nghĩ ra cách chậm, nói cách chậm trước rồi cải thiện.</li>
+<li><strong>Code sạch:</strong> tên biến có nghĩa, hàm nhỏ.</li>
+<li><strong>Tự chạy tay một ví dụ</strong>, kể cả ca biên.</li>
+<li><strong>Nêu cách tối ưu</strong> hoặc mở rộng nếu còn thời gian.</li>
+</ol>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>Đề: "Viết softmax bằng numpy."</p>
+<p>Cách trả lời tốt nói to: "Softmax là exp chia tổng exp. Nhưng exp(1000) tràn số thành inf. Vì softmax không đổi khi trừ cùng một hằng số, tôi trừ giá trị lớn nhất trước."</p>
+<div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">numpy</span><span class="tk-w"> </span><span class="tk-k">as</span><span class="tk-w"> </span><span class="tk-nn">np</span>
+<span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">softmax</span><span class="tk-p">(</span><span class="tk-n">z</span><span class="tk-p">):</span>
+    <span class="tk-n">z</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">asarray</span><span class="tk-p">(</span><span class="tk-n">z</span><span class="tk-p">,</span> <span class="tk-nb">float</span><span class="tk-p">)</span>
+    <span class="tk-n">e</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">exp</span><span class="tk-p">(</span><span class="tk-n">z</span> <span class="tk-o">-</span> <span class="tk-n">z</span><span class="tk-o">.</span><span class="tk-n">max</span><span class="tk-p">(</span><span class="tk-n">axis</span><span class="tk-o">=-</span><span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-n">keepdims</span><span class="tk-o">=</span><span class="tk-kc">True</span><span class="tk-p">))</span>     <span class="tk-c1"># trừ max: chống tràn số</span>
+    <span class="tk-k">return</span> <span class="tk-n">e</span> <span class="tk-o">/</span> <span class="tk-n">e</span><span class="tk-o">.</span><span class="tk-n">sum</span><span class="tk-p">(</span><span class="tk-n">axis</span><span class="tk-o">=-</span><span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-n">keepdims</span><span class="tk-o">=</span><span class="tk-kc">True</span><span class="tk-p">)</span>
+
+<span class="tk-n">softmax</span><span class="tk-p">([</span><span class="tk-mi">1000</span><span class="tk-p">,</span> <span class="tk-mi">1001</span><span class="tk-p">,</span> <span class="tk-mi">1002</span><span class="tk-p">])</span>   <span class="tk-c1"># [0.090, 0.245, 0.665]; bản không trừ max cho nan</span>
+</code></pre></div>
+
+<p>Điểm cộng nằm ở việc tự nêu vấn đề tràn số và hỗ trợ batch (<code>axis=-1</code>), không phải ở số dòng code.</p>
+</div>
+<h2 id="lt-3">Nền tảng ML</h2>
 <p>Câu hỏi hay gặp (bạn đã học tất cả trong lộ trình):</p>
 <table>
 <thead>
 <tr>
 <th>Chủ đề</th>
 <th>Câu hỏi ví dụ</th>
+<th>Bài đã học</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td>Đánh giá</td>
 <td>Precision và recall khác nhau thế nào, khi nào ưu tiên cái nào? Data leakage là gì?</td>
+<td>P1.4</td>
 </tr>
 <tr>
 <td>Train</td>
 <td>Overfitting nhận biết và xử lý thế nào? Vì sao cần chuẩn hóa đầu vào?</td>
+<td>P1.2, P2.2</td>
 </tr>
 <tr>
 <td>Deep learning</td>
 <td>Vì sao chia √d_k trong attention? BatchNorm khác LayerNorm thế nào?</td>
+<td>P3.1, P2.2</td>
 </tr>
 <tr>
 <td>LLM</td>
 <td>RAG hay fine-tune khi nào? Temperature làm gì? Hallucination giảm thế nào?</td>
+<td>P4.1, P4.2, P6.1</td>
 </tr>
 <tr>
 <td>Production</td>
 <td>Đo chất lượng hệ LLM thế nào? Giảm độ trễ và chi phí thế nào?</td>
+<td>P4.3, P6.3, P8.3</td>
 </tr>
 </tbody>
 </table>
 <p>Trả lời theo khung: <strong>định nghĩa ngắn → trực giác hoặc ví dụ → khi nào dùng / đánh đổi</strong>.</p>
-<h2 id="lt-3">Thiết kế hệ thống ML</h2>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>"Vì sao chia √d_k trong attention?"</p>
+<ul>
+<li><strong>Định nghĩa:</strong> điểm attention là tích vô hướng q·k chia √d_k trước softmax.</li>
+<li><strong>Trực giác:</strong> nếu q, k có các thành phần ngẫu nhiên phương sai 1, tích vô hướng của d_k thành phần có phương sai d_k. Với d_k = 64, điểm có độ lệch chuẩn 8; softmax của các số lớn như vậy gần như one-hot, gradient gần 0, train rất chậm.</li>
+<li><strong>Đánh đổi:</strong> chia √d_k đưa độ lệch chuẩn về khoảng 1, softmax "mềm", gradient ổn định.</li>
+</ul>
+<p>Ba câu, có con số, có lý do. Tốt hơn nhiều câu "để chuẩn hóa".</p>
+</div>
+<h2 id="lt-4">Thiết kế hệ thống ML</h2>
 <p>Khung 6 bước, nói to từng bước:</p>
+<figure class="fig"><img src="../assets/fig/p10-3-design.svg" alt="Sáu bước của một buổi thiết kế hệ thống. Đừng nhảy thẳng vào bước 3." loading="lazy"><figcaption>Sáu bước của một buổi thiết kế hệ thống. Đừng nhảy thẳng vào bước 3.</figcaption></figure>
+
 <ol>
 <li><strong>Làm rõ yêu cầu:</strong> người dùng, quy mô, độ trễ, chất lượng mong muốn, ràng buộc (dữ liệu nhạy cảm, ngân sách).</li>
 <li><strong>Ước lượng:</strong> số request/giây, dữ liệu, token, chi phí.</li>
@@ -72,11 +143,108 @@
 <li><strong>Đánh giá và giám sát:</strong> offline eval, online metric, A/B test.</li>
 <li><strong>Rủi ro và mở rộng:</strong> điểm nghẽn, lỗi, an toàn, chi phí khi tăng gấp 10.</li>
 </ol>
-<h2 id="lt-4">Hành vi: STAR</h2>
-<p>Kể chuyện theo <strong>S</strong>ituation (bối cảnh) – <strong>T</strong>ask (nhiệm vụ của bạn) – <strong>A</strong>ction (bạn đã làm gì, cụ thể, dùng "tôi") – <strong>R</strong>esult (kết quả, có số, và bài học). Chuẩn bị sẵn 5 câu chuyện từ dự án và thực tập: một lần giải quyết vấn đề khó, một lần sai và sửa, một lần bất đồng, một lần học nhanh thứ mới, một lần làm việc nhóm.</p>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>Đề: "Thiết kế trợ lý hỏi đáp tài liệu nội bộ cho công ty 2.000 nhân viên."</p>
+<ol>
+<li><strong>Làm rõ:</strong> tài liệu gì (quy trình, chính sách, khoảng 5.000 file)? Phân quyền theo phòng ban? Tiếng Việt? Độ trễ chấp nhận khoảng 3 giây? Dữ liệu có được gửi ra API bên ngoài không?</li>
+<li><strong>Ước lượng:</strong> 2.000 người × 8 câu/ngày = 16.000 câu/ngày, dồn vào 8 giờ làm việc: khoảng 0,56 câu/giây, đỉnh gấp 3 khoảng <strong>1,7 câu/giây</strong>. Mỗi câu khoảng 3.000 token đầu vào (câu hỏi + 5 đoạn): 48 triệu token/ngày, với giá ví dụ 1 USD/triệu token là <strong>48 USD/ngày</strong>: không đáng lo, nhưng cần cache cho câu hỏi lặp.</li>
+<li><strong>Kiến trúc:</strong> API (xác thực SSO) → retrieval (hybrid search trên pgvector, lọc theo phòng ban) → reranker → LLM → trả lời có trích dẫn; pipeline nạp tài liệu chạy nền qua hàng đợi.</li>
+<li><strong>Đi sâu:</strong> phân quyền trong truy vấn tìm kiếm (P8.4); chia đoạn theo cấu trúc tài liệu; cập nhật khi tài liệu đổi.</li>
+<li><strong>Đánh giá:</strong> bộ 150 câu hỏi có đáp án từ các phòng ban; recall@5, faithfulness; nút thích/không thích; mẫu có nhãn mỗi tuần.</li>
+<li><strong>Rủi ro:</strong> rò tài liệu giữa phòng ban, prompt injection trong tài liệu, tài liệu cũ mâu thuẫn tài liệu mới; tăng 10 lần người dùng thì vẫn chỉ khoảng 17 câu/giây, một GPU tự host hoặc API đủ sức.</li>
+</ol>
+<p>Chú ý bước 2 dẫn thẳng tới quyết định: quy mô nhỏ nên chi phí LLM không phải vấn đề chính; vấn đề chính là phân quyền và chất lượng retrieval.</p>
+</div>
+<div class="box pitfall">
+<div class="box-h">Lỗi hay gặp</div>
+<p><strong>Vẽ kiến trúc ngay phút đầu.</strong> Thiết kế "chatbot cho 10 triệu người dùng" và "cho 200 nhân viên" khác nhau hoàn toàn. Không hỏi yêu cầu và không ước lượng thì mọi lựa chọn sau đều là đoán, và người phỏng vấn sẽ ghi nhận đúng điều đó.</p>
+</div>
+<h2 id="lt-5">Hành vi: STAR</h2>
+<p>Kể chuyện theo <strong>S</strong>ituation (bối cảnh) – <strong>T</strong>ask (nhiệm vụ của bạn) – <strong>A</strong>ction (bạn đã làm gì, cụ thể, dùng "tôi") – <strong>R</strong>esult (kết quả, có số, và bài học).</p>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>"Kể về một lần bạn mắc lỗi."</p>
+<ul>
+<li><strong>S:</strong> Dự án RAG cho quy chế đào tạo, tôi báo cáo recall@5 0,92.</li>
+<li><strong>T:</strong> Tôi chịu trách nhiệm bộ eval.</li>
+<li><strong>A:</strong> Khi thêm câu hỏi mới, điểm tụt mạnh. Tôi phát hiện bộ eval cũ được sinh từ chính các đoạn đã chia, nên câu hỏi trùng từ khóa với đoạn đúng. Tôi viết lại 60 câu bằng cách diễn đạt khác, tách riêng tập dùng để chỉnh cấu hình.</li>
+<li><strong>R:</strong> Recall@5 thật là 0,78; sau khi thêm hybrid search lên 0,86. Bài học: bộ eval phải được tạo độc lập với hệ thống đang đo.</li>
+</ul>
+<p>(Câu chuyện minh họa; dùng chuyện thật của bạn.) Câu chuyện về sai lầm tốt có phần <strong>R</strong> cho thấy bạn sửa được và rút ra quy tắc.</p>
+</div>
+<p>Chuẩn bị sẵn 5 câu chuyện từ dự án và thực tập: một lần giải quyết vấn đề khó, một lần sai và sửa, một lần bất đồng, một lần học nhanh thứ mới, một lần làm việc nhóm. Một câu chuyện tốt dùng được cho nhiều câu hỏi khác nhau.</p>
 <div class="keep">
 <p><strong>Ghi nhớ:</strong> ở mọi vòng, người phỏng vấn chấm <strong>cách bạn suy nghĩ</strong> nhiều hơn đáp án cuối. Nói ra giả định và đánh đổi.</p>
-</div></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p10.3:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 1</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Ước lượng cho thiết kế hệ thống</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Chatbot cho 1 triệu người dùng, mỗi người 5 câu hỏi/ngày, lưu lượng đỉnh gấp 3 trung bình. Mỗi câu hỏi tốn 1.500 token đầu vào. Giá ví dụ 1 USD cho 1 triệu token đầu vào.</p>
+</div>
+<div class="box check">
+<div class="box-h">Tự kiểm tra nhanh</div>
+<div class="ans" id="p10-3-t-b69-a1">
+<div class="ans-fields"><label>2.000 người × 8 câu/ngày, dồn vào 8 giờ, đỉnh gấp 3: câu/giây (2 chữ số)<input inputmode="decimal" data-ans="1.67" data-tol="0.01" autocomplete="off"></label><label>16.000 câu/ngày × 3.000 token: triệu token mỗi ngày<input inputmode="decimal" data-ans="48.0" data-tol="0.001" autocomplete="off"></label><label>softmax([1000, 1001, 1002]) phần tử cuối (3 chữ số)<input inputmode="decimal" data-ans="0.665" data-tol="0.001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div>
+<div aria-live="polite" class="ans-fb"></div>
+</div>
+</div>
+<h2 id="lt-6">Tóm tắt bài và thuật ngữ</h2>
+<table>
+<thead>
+<tr>
+<th>Vòng</th>
+<th>Khung</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Coding</td>
+<td>hỏi đề → nói hướng + độ phức tạp → code → chạy tay → tối ưu</td>
+</tr>
+<tr>
+<td>Nền tảng ML</td>
+<td>định nghĩa → trực giác/ví dụ có số → đánh đổi</td>
+</tr>
+<tr>
+<td>Thiết kế hệ thống</td>
+<td>yêu cầu → ước lượng → kiến trúc → đi sâu → đánh giá → rủi ro</td>
+</tr>
+<tr>
+<td>Hành vi</td>
+<td>STAR, kết quả có số và bài học</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Thuật ngữ</th>
+<th>Nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>time / space complexity</td>
+<td>độ phức tạp thời gian / bộ nhớ</td>
+</tr>
+<tr>
+<td>edge case</td>
+<td>ca biên</td>
+</tr>
+<tr>
+<td>back-of-the-envelope estimate</td>
+<td>ước lượng nhanh bằng phép tính đơn giản</td>
+</tr>
+<tr>
+<td>trade-off</td>
+<td>đánh đổi</td>
+</tr>
+<tr>
+<td>STAR</td>
+<td>Situation, Task, Action, Result</td>
+</tr>
+<tr>
+<td>numerical stability</td>
+<td>ổn định số (tránh tràn, mất chính xác)</td>
+</tr>
+</tbody>
+</table></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p10.3:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 1</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Ước lượng cho thiết kế hệ thống</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Chatbot cho 1 triệu người dùng, mỗi người 5 câu hỏi/ngày, lưu lượng đỉnh gấp 3 trung bình. Mỗi câu hỏi tốn 1.500 token đầu vào. Giá ví dụ 1 USD cho 1 triệu token đầu vào.</p>
 <div class="ans" id="p10-3-e1-a1"><div class="ans-fields"><label>Request/giây trung bình<input inputmode="decimal" data-ans="57.87" data-tol="0.01" autocomplete="off"></label><label>Request/giây đỉnh<input inputmode="decimal" data-ans="173.61" data-tol="0.01" autocomplete="off"></label><label>Chi phí token đầu vào mỗi ngày (USD)<input inputmode="decimal" data-ans="7500.0" data-tol="0.01" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
 
 <details class="fold solution">
@@ -152,7 +320,7 @@
     </div>
     <aside class="aside">
       <div class="abox"><h4>Tiến độ bài này</h4><div class="ring"><svg viewBox="0 0 64 64" aria-hidden="true"><circle class="bg" cx="32" cy="32" r="28"/><circle class="fg" cx="32" cy="32" r="28" stroke-dasharray="176" stroke-dashoffset="176"/></svg><div><b id="ring-n">0/3</b><span id="ring-sub">phần đã xong</span></div></div></div>
-      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Coding</a></li><li><a href="#lt-2">Nền tảng ML</a></li><li><a href="#lt-3">Thiết kế hệ thống ML</a></li><li><a href="#lt-4">Hành vi: STAR</a></li></ol></div>
+      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Người phỏng vấn chấm gì</a></li><li><a href="#lt-2">Coding</a></li><li><a href="#lt-3">Nền tảng ML</a></li><li><a href="#lt-4">Thiết kế hệ thống ML</a></li><li><a href="#lt-5">Hành vi: STAR</a></li><li><a href="#lt-6">Tóm tắt bài và thuật ngữ</a></li></ol></div>
       
       <div class="abox"><h4>Cùng giai đoạn</h4><ul><li><a href="p10-1.html">3 dự án chủ lực</a></li><li><a href="p10-2.html">Hồ sơ: CV, GitHub, LinkedIn, Hugging Face</a></li><li><span class=cur>Phỏng vấn</span></li><li><a href="p10-4.html">Tìm việc remote và freelance</a></li></ul></div>
     </aside>
