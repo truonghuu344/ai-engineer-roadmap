@@ -109,7 +109,7 @@
 
   /* cursor spotlight + gentle tilt on cards */
   if (fine && !reduce) {
-    const spot = ".fcard, .trio-card, .lcard, .excard, .pn a, .abox, .pblock, .stats > div, .dl, .phase, .mod";
+    const spot = ".fcard, .trio-card, .lcard, .excard, .pn a, .abox, .pblock, .stats > div, .dl, .mcard";
     document.addEventListener("pointermove", (e) => {
       const el = e.target.closest && e.target.closest(spot); if (!el) return;
       if (!el.classList.contains("fx-spot")) el.classList.add("fx-spot");

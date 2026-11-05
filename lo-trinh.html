@@ -138,34 +138,82 @@ details[open] > summary .chev { transform: rotate(90deg); }
   .p-right { grid-column: 2; text-align: left; display: flex; gap: 10px; align-items: center; }
   .p-right .meter { margin-top: 0; }
 }
-.p-body { padding: 0 18px 18px; display: grid; gap: 14px; }
-.p-goal { font-size: 15px; padding-top: 2px; }
-.p-skip { font-size: 14px; color: var(--muted); background: var(--paper); border-radius: 6px; padding: 10px 14px; }
+.p-body { padding: 0 18px 20px; display: grid; gap: 14px; }
+/* phase goal: one clear target + numbers */
+.p-hero { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; align-items: stretch; }
+.p-goalcard { display: flex; gap: 14px; align-items: flex-start; padding: 14px 16px; border-radius: 10px; background: var(--accent-soft); border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent); }
+.phase.side .p-goalcard { background: var(--side-soft); border-color: color-mix(in srgb, var(--side) 25%, transparent); }
+.p-goalcard .ic { flex: none; width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; background: var(--surface); color: var(--accent); }
+.phase.side .p-goalcard .ic { color: var(--side); }
+.p-goalcard .lbl { font: 600 11.5px/1 var(--f-body); letter-spacing: .1em; text-transform: uppercase; color: var(--accent); }
+.phase.side .p-goalcard .lbl { color: var(--side); }
+.p-goalcard p { margin: 6px 0 0; font-size: 15.5px; line-height: 1.5; font-weight: 500; }
+.p-nums { display: flex; gap: 8px; }
+.p-nums div { min-width: 74px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; text-align: center; display: grid; align-content: center; }
+.p-nums b { font: 700 20px/1 var(--f-display); font-variant-numeric: tabular-nums; }
+.p-nums span { font-size: 12px; color: var(--muted); margin-top: 4px; }
+@media (max-width: 640px) { .p-hero { grid-template-columns: minmax(0, 1fr); } .p-nums div { flex: 1; } }
+.p-skip { font-size: 13.5px; color: var(--muted); display: flex; gap: 8px; align-items: baseline; }
+.p-skip::before { content: "⏭"; }
 
-.module { border-top: 1px solid var(--line); padding-top: 16px; display: grid; gap: 12px; }
-.m-head { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: baseline; }
-.m-id { font-family: var(--f-mono); font-size: 13px; color: var(--muted); }
-.m-title { font-weight: 700; font-size: 17px; }
-.chip { font-size: 12px; font-weight: 600; padding: 3px 8px; border-radius: 4px; letter-spacing: .02em; white-space: nowrap; }
-.chip.ready { background: var(--ok-soft); color: var(--ok); }
+/* module cards */
+.mgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 290px), 1fr)); gap: 12px; }
+.mcard { position: relative; display: flex; flex-direction: column; gap: 10px; padding: 16px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); min-width: 0;
+  transition: transform .25s cubic-bezier(.2, .7, .2, 1), box-shadow .25s, border-color .25s; }
+.mcard:hover { transform: translateY(-3px); box-shadow: var(--shadow); border-color: color-mix(in srgb, var(--accent) 45%, var(--line)); }
+.mcard.is-done { border-color: var(--ok); background: linear-gradient(180deg, var(--ok-soft), var(--surface) 70%); }
+.mcard.is-next { border-color: var(--hot); box-shadow: 0 0 0 3px var(--hot-soft); }
+.mcard.is-skipped { opacity: .55; }
+.mc-top { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.m-id { font: 600 12.5px var(--f-mono); color: var(--accent); }
+.phase.side .m-id { color: var(--side); }
+.chip { font-size: 11.5px; font-weight: 600; padding: 3px 8px; border-radius: 999px; white-space: nowrap; }
 .chip.now { background: var(--hot-soft); color: var(--hot); }
-.chip.planned { background: var(--paper); color: var(--muted); border: 1px solid var(--line); }
 .chip.needs { background: var(--side-soft); color: var(--side); }
-.chip.skipped { background: var(--paper); color: var(--muted); text-decoration: line-through; }
-.m-links { display: flex; flex-wrap: wrap; gap: 8px 16px; font-size: 14px; align-items: center; }
-.m-links .file { font-family: var(--f-mono); font-size: 12.5px; }
-.parts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
-@media (max-width: 760px) { .parts { grid-template-columns: minmax(0, 1fr); } }
-.part { border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; min-width: 0; background: var(--surface); }
-.part.done { border-color: var(--ok); background: var(--ok-soft); }
-.part label { display: flex; gap: 8px; align-items: center; font-weight: 600; font-size: 13px; letter-spacing: .06em; text-transform: uppercase; cursor: pointer; }
-.part label input { width: 17px; height: 17px; accent-color: var(--ok); margin: 0; }
-.part ul { margin: 8px 0 0; padding-left: 18px; font-size: 14px; line-height: 1.5; display: grid; gap: 4px; }
-.m-done { font-size: 14px; }
-.m-done b { font-weight: 600; }
-.m-actions { display: flex; gap: 8px; }
-.module.is-skipped .parts, .module.is-skipped .m-done { opacity: .45; }
-.next-flag { font-size: 12px; font-weight: 700; color: var(--surface); background: var(--hot); padding: 3px 8px; border-radius: 4px; }
+.chip.skipped { background: var(--paper); color: var(--muted); }
+.chip.ok { background: var(--ok); color: #fff; }
+.next-flag { font-size: 11.5px; font-weight: 700; color: #fff; background: var(--hot); padding: 3px 8px; border-radius: 999px; }
+@media (prefers-reduced-motion: no-preference) { .next-flag { animation: nfPulse 1.8s ease-in-out infinite; } }
+@keyframes nfPulse { 50% { box-shadow: 0 0 0 5px color-mix(in srgb, var(--hot) 20%, transparent); } }
+.mc-title { margin: 0; font: 700 16.5px/1.35 var(--f-body); }
+.mc-title a { color: var(--ink); text-decoration: none; }
+.mc-title a:hover { color: var(--accent); }
+.mc-goal { margin: 0; font-size: 13.5px; line-height: 1.5; color: var(--muted); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.mc-goal b { color: var(--ink); font-weight: 600; }
+.mc-parts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin-top: auto; }
+.pt { position: relative; cursor: pointer; }
+.pt input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.pt span { display: flex; justify-content: center; align-items: center; gap: 5px; white-space: nowrap; box-sizing: border-box; width: 100%; font: 600 12px/1 var(--f-body); padding: 8px 4px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); background: var(--surface); transition: background .2s, color .2s, border-color .2s, transform .15s; }
+.pt span::before { content: ""; flex: none; width: 12px; height: 12px; border-radius: 50%; border: 1.5px solid currentColor; box-sizing: border-box; display: grid; place-items: center; font-size: 9px; line-height: 1; }
+.pt:hover span { border-color: var(--ok); color: var(--ink); }
+.pt input:checked + span { background: var(--ok); border-color: var(--ok); color: #fff; }
+.pt input:checked + span::before { content: "✓"; border-color: #fff; }
+.pt input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 2px; }
+.pt input:disabled + span { cursor: default; opacity: .6; }
+.pt:active span { transform: scale(.94); }
+@media (prefers-reduced-motion: no-preference) { .pt.just span { animation: ptPop .45s cubic-bezier(.2, .7, .2, 1); } }
+@keyframes ptPop { 40% { transform: scale(1.12); } }
+.mc-foot { display: flex; align-items: center; gap: 10px; }
+.mc-bar { flex: 1; height: 5px; border-radius: 3px; background: var(--line); overflow: hidden; }
+.mc-bar i { display: block; height: 100%; background: var(--ok); border-radius: 3px; transition: width .6s cubic-bezier(.2, .7, .2, 1); }
+.mc-go { font: 600 13.5px/1 var(--f-body); color: var(--accent); text-decoration: none; white-space: nowrap; }
+.mc-go .arr { display: inline-block; transition: transform .2s; }
+.mcard:hover .mc-go .arr { transform: translateX(3px); }
+.mc-more { display: flex; gap: 12px; font-size: 12.5px; }
+.mc-more a, .mc-more button { color: var(--muted); background: none; border: 0; padding: 0; font: inherit; cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
+.mc-more a:hover, .mc-more button:hover { color: var(--accent); }
+
+/* open animation */
+@media (prefers-reduced-motion: no-preference) {
+  details.phase.opening .p-hero { animation: mcIn .45s cubic-bezier(.2, .7, .2, 1) both; }
+  details.phase.opening .mcard { animation: mcIn .5s cubic-bezier(.2, .7, .2, 1) both; animation-delay: calc(var(--i, 0) * 60ms + 80ms); }
+  details.phase > summary { transition: background .2s; }
+  details.phase > summary:hover { background: color-mix(in srgb, var(--accent-soft) 45%, transparent); }
+  details.phase > summary .p-code { transition: transform .25s cubic-bezier(.2, .7, .2, 1); }
+  details.phase > summary:hover .p-code { transform: translateX(3px); }
+}
+@keyframes mcIn { from { opacity: 0; transform: translateY(12px) scale(.98); } }
+details.phase > summary { border-radius: 10px; }
 footer { margin-top: 64px; padding-top: 18px; border-top: 1px solid var(--line); font-size: 14px; color: var(--muted); }
 @media (prefers-reduced-motion: reduce) { .meter i, .chev { transition: none; } }
 </style>
@@ -335,29 +383,38 @@ footer { margin-top: 64px; padding-top: 18px; border-top: 1px solid var(--line);
       const ph = PHASES.find((p) => p.id === pid), s = phaseStats(ph), pct = s.n ? Math.round(s.d / s.n * 100) : 0;
       const mods = ph.modules.filter(moduleVisible);
       if (!mods.length && filter !== "all") return "";
-      const body = mods.map((m) => {
-        const chip = m.status === "ready" ? `<span class="chip ready">Tài liệu đã có</span>` : m.status === "now" ? `<span class="chip now">Đang học · tài liệu đã có</span>` : `<span class="chip planned">Claude soạn khi tới</span>`;
-        const needs = m.needs ? `<span class="chip needs">cần học xong ${esc(m.needs)}</span>` : "";
-        const sk = isSkipped(m) ? `<span class="chip skipped">đã bỏ qua</span>` : "";
-        const isNext = nx && nx.m.id === m.id ? `<span class="next-flag">Việc tiếp theo</span>` : "";
-        const links = `<div class="m-links"><a href="bai/${m.id.replace(".", "-")}.html">Trang bài →</a>${m.link ? `<a href="${m.link}">Vào bài học đầy đủ →</a>` : ""}${m.files ? `<a class="file" href="notebooks/${m.files.split(" ")[0]}" download>tải notebook: ${esc(m.files)}</a>` : ""}</div>`;
+      const ICON_T = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/></svg>';
+      const cards = mods.map((m, i) => {
+        const sl = m.id.replace(".", "-"), href = `bai/${sl}.html`, nd = PARTS.filter(([k]) => partDone(m, k)).length;
+        const flags = (nx && nx.m.id === m.id ? `<span class="next-flag">Việc tiếp theo</span>` : "")
+          + (m.status === "now" ? `<span class="chip now">Đang học</span>` : "")
+          + (m.needs ? `<span class="chip needs">cần ${esc(m.needs)}</span>` : "")
+          + (isSkipped(m) ? `<span class="chip skipped">đã bỏ qua</span>` : nd === 3 ? `<span class="chip ok">✓ Xong</span>` : "");
         const parts = PARTS.map(([k, label]) => {
-          const id = `cb-${m.id.replace(".", "-")}-${k}`, on = partDone(m, k), items = m[k] || [];
-          return `<div class="part ${on ? "done" : ""}"><label for="${id}"><input type="checkbox" id="${id}" data-key="${m.id}:${k}" ${on ? "checked" : ""} ${isSkipped(m) ? "disabled" : ""}>${label}</label>
-            <ul>${items.map((x) => `<li>${esc(x)}</li>`).join("")}</ul></div>`;
+          const id = `cb-${sl}-${k}`, on = partDone(m, k);
+          return `<label class="pt" for="${id}"><input type="checkbox" id="${id}" data-key="${m.id}:${k}" ${on ? "checked" : ""} ${isSkipped(m) ? "disabled" : ""}><span>${label}</span></label>`;
         }).join("");
-        const skipBtn = ph.skip ? `<div class="m-actions"><button class="b" data-skip="${m.id}" id="skip-${m.id.replace(".", "-")}">${isSkipped(m) ? "Học lại bài này" : "Bỏ qua, đã biết"}</button></div>` : "";
-        return `<div class="module ${isSkipped(m) ? "is-skipped" : ""}" id="m-${m.id.replace(".", "-")}">
-          <div class="m-head"><span class="m-id">${m.id.toUpperCase()}</span><span class="m-title">${esc(m.title)}</span>${chip}${needs}${sk}${isNext}</div>
-          ${links}<div class="parts">${parts}</div>
-          <div class="m-done"><b>Xong khi:</b> ${esc(m.done)}</div>${skipBtn}</div>`;
+        const more = [m.files ? `<a href="notebooks/${m.files.split(" ")[0]}" download>Notebook</a>` : "",
+          ph.skip ? `<button type="button" data-skip="${m.id}" id="skip-${sl}">${isSkipped(m) ? "Học lại bài này" : "Bỏ qua, đã biết"}</button>` : ""].filter(Boolean).join("");
+        const cls = ["mcard", isSkipped(m) ? "is-skipped" : nd === 3 ? "is-done" : "", nx && nx.m.id === m.id ? "is-next" : ""].join(" ");
+        return `<article class="${cls}" id="m-${sl}" style="--i:${i}">
+          <div class="mc-top"><span class="m-id">${m.id.toUpperCase()}</span>${flags}</div>
+          <h3 class="mc-title"><a href="${href}">${esc(m.title)}</a></h3>
+          <p class="mc-goal"><b>Mục tiêu:</b> ${esc(m.done)}</p>
+          <div class="mc-parts">${parts}</div>
+          <div class="mc-foot"><span class="mc-bar" title="${nd}/3 phần"><i style="width:${nd / 3 * 100}%"></i></span><a class="mc-go" href="${href}">Vào học <span class="arr">→</span></a></div>
+          ${more ? `<div class="mc-more">${more}</div>` : ""}</article>`;
       }).join("");
+      const weeks = ph.weeks[1] - ph.weeks[0] + 1;
+      const body = `<div class="p-hero"><div class="p-goalcard"><span class="ic">${ICON_T}</span><div><div class="lbl">Mục tiêu giai đoạn</div><p>${esc(ph.goal)}</p></div></div>
+        <div class="p-nums"><div><b>${ph.modules.length}</b><span>bài</span></div><div><b>${weeks}</b><span>tuần</span></div><div><b>${s.d}/${s.n}</b><span>phần xong</span></div></div></div>
+        ${ph.skip ? `<div class="p-skip">${esc(ph.skip)}</div>` : ""}<div class="mgrid">${cards}</div>`;
       const open = filter !== "all" ? true : !!openState[ph.id];
       return `<details class="phase ${ph.track === "side" ? "side" : ""}" data-id="${ph.id}" ${open ? "open" : ""}>
         <summary><span class="p-code">${ph.id.toUpperCase()}</span>
           <span><span class="p-name">${esc(ph.name)}</span><div class="p-meta">Tuần ${ph.weeks[0]}–${ph.weeks[1]} · ${ph.modules.length} bài${ph.track === "side" ? " · chạy song song" : ""}</div></span>
           <span class="p-right"><span class="p-pct">${pct}%<span class="chev" aria-hidden="true">›</span></span><div class="meter"><i style="width:${pct}%"></i></div></span></summary>
-        <div class="p-body"><div class="p-goal"><b>Mục tiêu:</b> ${esc(ph.goal)}</div>${ph.skip ? `<div class="p-skip">${esc(ph.skip)}</div>` : ""}${body}</div></details>`;
+        <div class="p-body">${body}</div></details>`;
     }).join("");
   }
   function renderAll() { const nx = renderSummary(); renderGantt(); renderPhases(nx); }
@@ -382,8 +439,14 @@ footer { margin-top: 64px; padding-top: 18px; border-top: 1px solid var(--line);
   document.getElementById("phases").addEventListener("change", (e) => {
     const cb = e.target.closest("input[data-key]"); if (!cb) return;
     if (cb.checked) done[cb.dataset.key] = true; else delete done[cb.dataset.key];
+    const card = cb.closest(".mcard"), oldW = card ? card.querySelector(".mc-bar i").style.width : null;
     renderAll(); scheduleSave();
-    const again = document.getElementById(cb.id); if (again) again.focus();
+    const again = document.getElementById(cb.id); if (!again) return;
+    again.focus();
+    const lab = again.closest(".pt"); lab.classList.add("just"); setTimeout(() => lab.classList.remove("just"), 500);
+    const nc = again.closest(".mcard");
+    if (nc && oldW !== null) { const bar = nc.querySelector(".mc-bar i"), w = bar.style.width; bar.style.transition = "none"; bar.style.width = oldW; void bar.offsetWidth; bar.style.transition = ""; bar.style.width = w; }
+    if (cb.checked && nc && nc.classList.contains("is-done") && window.AIE && AIE.confettiAt) AIE.confettiAt(nc, 46);
   });
   document.getElementById("phases").addEventListener("click", (e) => {
     const b = e.target.closest("button[data-skip]"); if (!b) return;
@@ -396,8 +459,14 @@ footer { margin-top: 64px; padding-top: 18px; border-top: 1px solid var(--line);
     filter = b.dataset.filter;
     document.querySelectorAll("[data-filter]").forEach((x) => x.classList.toggle("on", x === b));
     renderPhases(firstFocus());
+    document.querySelectorAll("details.phase[open]").forEach(playOpen);
   }));
-  document.getElementById("expandAll").addEventListener("click", () => { PHASES.forEach((p) => (openState[p.id] = true)); document.querySelectorAll("details.phase").forEach((d) => (d.open = true)); });
+  function playOpen(d) { d.classList.remove("opening"); void d.offsetWidth; d.classList.add("opening"); clearTimeout(d._t); d._t = setTimeout(() => d.classList.remove("opening"), 1400); }
+  document.getElementById("phases").addEventListener("click", (e) => {
+    const sm = e.target.closest("details.phase > summary"); if (!sm) return;
+    const d = sm.parentElement; setTimeout(() => { if (d.open) playOpen(d); }, 0);
+  });
+  document.getElementById("expandAll").addEventListener("click", () => { PHASES.forEach((p) => (openState[p.id] = true)); document.querySelectorAll("details.phase").forEach((d) => { if (!d.open) { d.open = true; playOpen(d); } }); });
   document.getElementById("collapseAll").addEventListener("click", () => { PHASES.forEach((p) => (openState[p.id] = false)); document.querySelectorAll("details.phase").forEach((d) => (d.open = false)); });
 
   renderAll();
