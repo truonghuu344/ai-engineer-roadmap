@@ -22,23 +22,530 @@
 <main class="container">
   <div class="crumbs"><a href="../bai-hoc.html">Bài học</a><span>/</span><a href="../bai-hoc.html#p2">P2 · Deep Learning nền tảng</a><span>/</span><span>P2.1</span></div>
   <section class="lhero"><div class="code">P2.1</div><h1>Bài 1 · Mạng nơ-ron học thế nào</h1><div class="lmeta"><span class="m">Giai đoạn P2 · Deep Learning nền tảng</span><span class="m">Tuần 8–12</span><span class="chip now"><span class="dot"></span>Đang học</span></div>
-    <div class="intro"><p>Bài nền tảng nhất của lộ trình. Trang lý thuyết tương tác đầy đủ (có demo kéo-thả, 7 bài tính tay và bài kiểm tra 8 câu) nằm ở nút <strong>Vào bài học</strong> phía trên. Trang này tóm tắt các ý chính, có thêm bộ bài tập mới để tự kiểm tra, và hướng dẫn phần thực hành.</p></div></section>
+    <div class="intro"><p>Bài nền tảng nhất của lộ trình: mạng nơ-ron học thế nào, từ một neuron tới vòng lặp train trong PyTorch. Trang lý thuyết tương tác đầy đủ (có demo kéo-thả, 7 bài tính tay và bài kiểm tra 8 câu) nằm ở nút <strong>Vào bài học</strong> phía trên. Trang này giải thích chi tiết từng ý, có ví dụ tính tay đầy đủ, bộ bài tập mới để tự kiểm tra, và hướng dẫn phần thực hành.</p></div></section>
   <div class="full-cta"><div><b>Bài này đã có nội dung đầy đủ</b><p>Trang lý thuyết tương tác, bài tính tay và bài kiểm tra cuối bài.</p></div><a class="btn primary" href="../bai01.html">Vào bài học <span class="arr">→</span></a></div>
-  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">5 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
+  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">9 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
   <div class="lgrid" style="margin-top:22px">
-    <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">Vòng lặp học</h2>
-<p>Mạng nơ-ron là một hàm f(x; θ) với rất nhiều tham số θ. Train là lặp lại bốn việc: <strong>forward</strong> (tính dự đoán), tính <strong>loss</strong>, <strong>backward</strong> (tính gradient của loss theo từng tham số), <strong>cập nhật</strong> tham số ngược hướng gradient.</p>
-<h2 id="lt-2">Dữ liệu là tensor</h2>
-<p>PyTorch xếp batch ảnh theo <code>[N, C, H, W]</code>. Trước khi đưa vào model, ảnh được chia 255 rồi chuẩn hóa theo từng kênh: <code>(x/255 − mean) / std</code>.</p>
-<h2 id="lt-3">Linear và ReLU</h2>
-<p><code>y = x·Wᵀ + b</code> với W shape (out, in). Hai lớp Linear không có hàm kích hoạt ở giữa vẫn chỉ là một lớp Linear. ReLU = max(0, z) thêm tính phi tuyến.</p>
-<h2 id="lt-4">Softmax và cross-entropy</h2>
-<p>Softmax biến logits thành xác suất: pᵢ = e^zᵢ / Σ e^zⱼ. Cross-entropy = −log(p_đúng). Model đoán đều cho 10 lớp có loss ln 10 ≈ 2.30.</p>
-<h2 id="lt-5">Gradient descent và backprop</h2>
-<p><code>w ← w − η·∂L/∂w</code>. Learning rate quá nhỏ thì chậm, quá lớn thì dao động hoặc phân kỳ. Backprop dùng quy tắc dây chuyền đi ngược từ loss; <code>.grad</code> cộng dồn nên mỗi bước phải gọi <code>zero_grad()</code>.</p>
+    <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">Từ hồi quy logistic tới mạng nơ-ron</h2>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Hồi quy logistic chỉ kẻ được một đường thẳng. Phần lớn bài toán thật (nhận ảnh, hiểu câu) cần ranh giới cong và phức tạp hơn rất nhiều. Mạng nơ-ron giải quyết điều đó bằng một ý tưởng đơn giản: xếp chồng nhiều lớp "logistic", xen giữa là một phép phi tuyến.</p>
+</div>
+<h3>Một neuron, một lớp, một mạng</h3>
+<ul>
+<li><strong>Neuron</strong>: z = w · x + b rồi qua hàm kích hoạt a = φ(z). Hồi quy logistic chính là một neuron với φ = sigmoid.</li>
+<li><strong>Lớp (layer)</strong>: nhiều neuron cùng nhận một đầu vào. Viết gọn bằng ma trận: <strong>z = W x + b</strong>, với W có một hàng cho mỗi neuron.</li>
+<li><strong>Mạng nhiều lớp (MLP)</strong>: đầu ra của lớp này là đầu vào của lớp sau.</li>
+</ul>
+<div class="hl"><pre><span></span><code>h₁ = ReLU(W₁ x + b₁)
+h₂ = ReLU(W₂ h₁ + b₂)
+logits = W₃ h₂ + b₃              lớp cuối không có ReLU
+p = softmax(logits)
+</code></pre></div>
+
+<figure class="fig"><img src="../assets/fig/p2-1-mlp.svg" alt="Một MLP phân loại ảnh: đầu vào là các điểm ảnh, hai lớp ẩn, lớp cuối cho 10 logits. Mỗi đường nối là một trọng số." loading="lazy"><figcaption>Một MLP phân loại ảnh: đầu vào là các điểm ảnh, hai lớp ẩn, lớp cuối cho 10 logits. Mỗi đường nối là một trọng số.</figcaption></figure>
+
+<h3>Vì sao cần lớp ẩn: bài toán XOR</h3>
+<p>Bốn điểm (0, 0), (1, 1) thuộc lớp 0; (0, 1), (1, 0) thuộc lớp 1. Không có đường thẳng nào tách được chúng, nên hồi quy logistic chỉ đúng 50%. Một MLP với một lớp ẩn 8 neuron đạt 100% sau vài trăm bước train.</p>
+<figure class="fig"><img src="../assets/fig/p2-1-xor.svg" alt="XOR: hồi quy logistic không làm được gì (trái). Lớp ẩn &quot;uốn&quot; không gian để lớp cuối kẻ được ranh giới (phải)." loading="lazy"><figcaption>XOR: hồi quy logistic không làm được gì (trái). Lớp ẩn &quot;uốn&quot; không gian để lớp cuối kẻ được ranh giới (phải).</figcaption></figure>
+
+<p>Lớp ẩn học ra các <strong>đặc trưng mới</strong> từ đặc trưng gốc (ví dụ "x₁ và x₂ khác nhau"), rồi lớp cuối chỉ cần kẻ đường thẳng trên các đặc trưng mới đó. Mạng sâu lặp lại điều này nhiều lần: lớp đầu của mạng nhận ảnh học cạnh và góc, lớp giữa học hoa văn, lớp sau học bộ phận (mắt, bánh xe).</p>
+<h2 id="lt-2">Vòng lặp học</h2>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Mọi model deep learning, từ mạng 2 lớp tới LLM trăm tỉ tham số, đều train bằng cùng một vòng lặp. Nắm chắc nó thì đọc code train nào cũng thấy quen.</p>
+</div>
+<p>Mạng nơ-ron là một hàm f(x; θ) với rất nhiều tham số θ. Train là lặp lại bốn việc:</p>
+<table>
+<thead>
+<tr>
+<th>Bước</th>
+<th>Làm gì</th>
+<th>Trong PyTorch</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Forward</td>
+<td>đưa batch qua mạng, tính dự đoán</td>
+<td><code>logits = model(x)</code></td>
+</tr>
+<tr>
+<td>Loss</td>
+<td>so dự đoán với đáp án</td>
+<td><code>loss = F.cross_entropy(logits, y)</code></td>
+</tr>
+<tr>
+<td>Backward</td>
+<td>tính gradient của loss theo <strong>mọi</strong> tham số</td>
+<td><code>loss.backward()</code></td>
+</tr>
+<tr>
+<td>Cập nhật</td>
+<td>dịch tham số ngược hướng gradient</td>
+<td><code>opt.step()</code></td>
+</tr>
+</tbody>
+</table>
+<p>Thêm <code>opt.zero_grad()</code> ở đầu mỗi bước (lý do ở mục backprop).</p>
+<h3>Epoch, batch, iteration</h3>
+<ul>
+<li><strong>Batch</strong>: một nhóm mẫu xử lý cùng lúc (ví dụ 128 ảnh). Gradient tính trên batch là ước lượng có nhiễu của gradient trên toàn bộ dữ liệu.</li>
+<li><strong>Iteration (step)</strong>: một lần cập nhật tham số, dùng một batch.</li>
+<li><strong>Epoch</strong>: một lượt đi qua toàn bộ tập train.</li>
+</ul>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>CIFAR-10 có 50.000 ảnh train, batch 128: mỗi epoch có ⌈50.000 / 128⌉ = <strong>391</strong> iteration (batch cuối chỉ có 80 ảnh). Train 20 epoch là 391 × 20 = <strong>7.820</strong> lần cập nhật.</p>
+</div>
+<h2 id="lt-3">Dữ liệu là tensor</h2>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Mạng nơ-ron chỉ làm việc với tensor số thực. Biết chính xác ảnh, nhãn, batch được xếp thành shape nào giúp bạn đọc mọi lỗi "shape mismatch" và viết được model của riêng mình.</p>
+</div>
+<h3>Tensor và shape</h3>
+<p>Tensor là mảng nhiều chiều, giống mảng numpy (P0.1) nhưng chạy được trên GPU và tự tính gradient.</p>
+<table>
+<thead>
+<tr>
+<th>Dữ liệu</th>
+<th>Shape thường gặp</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Một batch ảnh màu</td>
+<td><code>[N, C, H, W]</code>: số ảnh, kênh màu (3), cao, rộng</td>
+</tr>
+<tr>
+<td>Một batch ảnh CIFAR-10</td>
+<td><code>[128, 3, 32, 32]</code></td>
+</tr>
+<tr>
+<td>Nhãn phân loại</td>
+<td><code>[N]</code>, mỗi phần tử là chỉ số lớp 0..9, kiểu <code>long</code></td>
+</tr>
+<tr>
+<td>Đầu ra lớp cuối</td>
+<td><code>[N, 10]</code>: 10 logits cho mỗi ảnh</td>
+</tr>
+<tr>
+<td>Một batch câu (P3)</td>
+<td><code>[N, T]</code> chỉ số token, rồi <code>[N, T, d]</code> sau embedding</td>
+</tr>
+</tbody>
+</table>
+<div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">torch</span>
+<span class="tk-n">x</span> <span class="tk-o">=</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">randn</span><span class="tk-p">(</span><span class="tk-mi">128</span><span class="tk-p">,</span> <span class="tk-mi">3</span><span class="tk-p">,</span> <span class="tk-mi">32</span><span class="tk-p">,</span> <span class="tk-mi">32</span><span class="tk-p">)</span>          <span class="tk-c1"># batch ảnh giả</span>
+<span class="tk-n">x</span><span class="tk-o">.</span><span class="tk-n">shape</span><span class="tk-p">,</span> <span class="tk-n">x</span><span class="tk-o">.</span><span class="tk-n">dtype</span><span class="tk-p">,</span> <span class="tk-n">x</span><span class="tk-o">.</span><span class="tk-n">device</span>               <span class="tk-c1"># torch.Size([128, 3, 32, 32]) torch.float32 cpu</span>
+<span class="tk-n">x</span> <span class="tk-o">=</span> <span class="tk-n">x</span><span class="tk-o">.</span><span class="tk-n">to</span><span class="tk-p">(</span><span class="tk-s2">"cuda"</span><span class="tk-p">)</span>                         <span class="tk-c1"># chuyển lên GPU (model cũng phải ở cùng thiết bị)</span>
+<span class="tk-n">x</span><span class="tk-o">.</span><span class="tk-n">flatten</span><span class="tk-p">(</span><span class="tk-mi">1</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">shape</span>                       <span class="tk-c1"># [128, 3072]: duỗi mỗi ảnh thành vector cho MLP</span>
+</code></pre></div>
+
+<h3>Chuẩn hóa ảnh</h3>
+<p>Ảnh gốc có giá trị 0–255. Trước khi đưa vào model: chia 255 để về [0, 1], rồi chuẩn hóa <strong>theo từng kênh</strong>: (x − mean) / std, với mean và std tính trên tập train.</p>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>Với CIFAR-10, mean kênh đỏ là 0.4914 và std là 0.2470. Một điểm ảnh đỏ có giá trị 200:</p>
+<ul>
+<li>200 / 255 = 0.7843</li>
+<li>(0.7843 − 0.4914) / 0.2470 ≈ <strong>1.186</strong></li>
+</ul>
+<p>Sau chuẩn hóa, mỗi kênh có trung bình 0, độ lệch chuẩn 1 trên tập train: mọi đầu vào cùng thang đo, gradient descent đi thẳng hơn (giống lý do chuẩn hóa ở P1.1).</p>
+</div>
+<div class="box pitfall">
+<div class="box-h">Lỗi hay gặp</div>
+<p><strong>Quên chuẩn hóa ở lúc dự đoán.</strong> Model train trên ảnh đã chuẩn hóa mà khi chạy thật lại nhận ảnh 0–255 sẽ cho kết quả vô nghĩa, không báo lỗi gì. Đóng gói phép chuẩn hóa cùng model (trong <code>transforms</code> hoặc trong hàm <code>predict</code>) để không bao giờ quên.</p>
+</div>
+<h2 id="lt-4">Linear và hàm kích hoạt</h2>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Lớp Linear là nơi chứa gần như mọi tham số của mạng. Hàm kích hoạt là thứ biến chồng lớp Linear thành một model mạnh. Thiếu nó, mạng sâu đến đâu cũng chỉ là hồi quy tuyến tính.</p>
+</div>
+<h3>Lớp Linear</h3>
+<p><code>nn.Linear(in, out)</code> tính <strong>y = x Wᵀ + b</strong>, W shape (out, in), b shape (out). Số tham số = in × out + out.</p>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>MLP cho ảnh CIFAR-10 duỗi phẳng: 3 × 32 × 32 = 3.072 đầu vào → 256 → 10.</p>
+<ul>
+<li>Lớp 1: 3.072 × 256 + 256 = <strong>786.688</strong> tham số</li>
+<li>Lớp 2: 256 × 10 + 10 = <strong>2.570</strong> tham số</li>
+<li>Tổng: <strong>789.258</strong> tham số, gần như tất cả nằm ở lớp đầu.</li>
+</ul>
+<div class="hl"><pre><span></span><code><span class="tk-n">model</span> <span class="tk-o">=</span> <span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">Sequential</span><span class="tk-p">(</span><span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">Flatten</span><span class="tk-p">(),</span> <span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">Linear</span><span class="tk-p">(</span><span class="tk-mi">3072</span><span class="tk-p">,</span> <span class="tk-mi">256</span><span class="tk-p">),</span> <span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">ReLU</span><span class="tk-p">(),</span> <span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">Linear</span><span class="tk-p">(</span><span class="tk-mi">256</span><span class="tk-p">,</span> <span class="tk-mi">10</span><span class="tk-p">))</span>
+<span class="tk-nb">sum</span><span class="tk-p">(</span><span class="tk-n">p</span><span class="tk-o">.</span><span class="tk-n">numel</span><span class="tk-p">()</span> <span class="tk-k">for</span> <span class="tk-n">p</span> <span class="tk-ow">in</span> <span class="tk-n">model</span><span class="tk-o">.</span><span class="tk-n">parameters</span><span class="tk-p">())</span>     <span class="tk-c1"># 789258</span>
+</code></pre></div>
+
+</div>
+<h3>Vì sao cần phi tuyến</h3>
+<p>Hai lớp Linear liền nhau: W₂(W₁x + b₁) + b₂ = (W₂W₁)x + (W₂b₁ + b₂). Đó vẫn là <strong>một</strong> lớp Linear. Chồng 100 lớp Linear cũng không mạnh hơn một lớp. Hàm kích hoạt phi tuyến ở giữa phá vỡ điều đó.</p>
+<h3>Các hàm kích hoạt</h3>
+<figure class="fig"><img src="../assets/fig/p2-1-act.svg" alt="ReLU đơn giản và nhanh, là mặc định. GELU mượt hơn, dùng trong Transformer. Sigmoid và tanh bị &quot;bão hòa&quot; ở hai đầu." loading="lazy"><figcaption>ReLU đơn giản và nhanh, là mặc định. GELU mượt hơn, dùng trong Transformer. Sigmoid và tanh bị &quot;bão hòa&quot; ở hai đầu.</figcaption></figure>
+
+<table>
+<thead>
+<tr>
+<th>Hàm</th>
+<th>Công thức</th>
+<th>Đạo hàm</th>
+<th>Dùng ở đâu</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ReLU</td>
+<td>max(0, z)</td>
+<td>1 nếu z &gt; 0, 0 nếu z &lt; 0</td>
+<td>mặc định cho lớp ẩn</td>
+</tr>
+<tr>
+<td>GELU</td>
+<td>z · Φ(z)</td>
+<td>mượt quanh 0</td>
+<td>Transformer, ViT</td>
+</tr>
+<tr>
+<td>sigmoid</td>
+<td>1/(1 + e⁻ᶻ)</td>
+<td>σ(1 − σ), tối đa 0.25</td>
+<td>đầu ra nhị phân, cổng trong LSTM</td>
+</tr>
+<tr>
+<td>tanh</td>
+<td>(eᶻ − e⁻ᶻ)/(eᶻ + e⁻ᶻ)</td>
+<td>1 − tanh², tối đa 1</td>
+<td>RNN cũ</td>
+</tr>
+</tbody>
+</table>
+<p>Sigmoid có đạo hàm tối đa 0.25. Qua 10 lớp sigmoid, gradient có thể bị nhân với 0.25¹⁰ ≈ 10⁻⁶: lớp đầu gần như không học được (<strong>vanishing gradient</strong>). ReLU có đạo hàm đúng bằng 1 ở phần dương nên tránh được vấn đề này, là lý do chính khiến mạng sâu train được từ khoảng 2012.</p>
+<div class="box pitfall">
+<div class="box-h">Lỗi hay gặp</div>
+<p><strong>"ReLU chết".</strong> Nếu một neuron có z &lt; 0 với mọi mẫu (thường do learning rate quá lớn đẩy bias về rất âm), gradient của nó luôn bằng 0 và nó không bao giờ học lại. Dấu hiệu: nhiều neuron có đầu ra luôn bằng 0. Giảm learning rate, hoặc dùng LeakyReLU/GELU.</p>
+</div>
+<h2 id="lt-5">Softmax và cross-entropy</h2>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Lớp cuối của mọi mạng phân loại (từ CNN nhận ảnh tới LLM đoán token tiếp theo) đều là softmax + cross-entropy. LLM thực chất là một bộ phân loại khổng lồ với hàng chục nghìn lớp (mỗi token là một lớp).</p>
+</div>
+<h3>Softmax: từ logits tới xác suất</h3>
+<div class="hl"><pre><span></span><code>pᵢ = e^(zᵢ) / Σⱼ e^(zⱼ)
+</code></pre></div>
+
+<p>Lũy thừa làm mọi số dương; chia tổng làm tổng bằng 1. Logit lớn hơn 1 đơn vị thì xác suất lớn hơn gấp e ≈ 2.72 lần.</p>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>Logits cho ba lớp (mèo, chó, gà): z = (2, 1, 0.1).</p>
+<ul>
+<li>e² = 7.389, e¹ = 2.718, e⁰·¹ = 1.105, tổng = 11.212</li>
+<li>p = (7.389, 2.718, 1.105) / 11.212 = <strong>(0.659, 0.242, 0.099)</strong></li>
+</ul>
+<p>Nếu đáp án là mèo: loss = −log 0.659 ≈ <strong>0.417</strong>. Nếu đáp án là gà: loss = −log 0.099 ≈ 2.32.</p>
+</div>
+<h3>Nhiệt độ (temperature)</h3>
+<p>Chia logits cho T trước softmax: T &lt; 1 làm phân phối <strong>sắc</strong> hơn (tự tin hơn), T &gt; 1 làm <strong>mềm</strong> hơn. Đây chính là tham số <code>temperature</code> khi gọi LLM (P3, P4): temperature thấp cho câu trả lời ổn định, cao cho câu trả lời đa dạng.</p>
+<figure class="fig"><img src="../assets/fig/p2-1-softmax.svg" alt="Cùng logits (2, 1, 0.1) với ba nhiệt độ. T = 0.5: lớp đầu chiếm 86%. T = 2: phân phối đều hơn hẳn." loading="lazy"><figcaption>Cùng logits (2, 1, 0.1) với ba nhiệt độ. T = 0.5: lớp đầu chiếm 86%. T = 2: phân phối đều hơn hẳn.</figcaption></figure>
+
+<h3>Cross-entropy</h3>
+<div class="hl"><pre><span></span><code>loss = −log p_(lớp đúng)
+</code></pre></div>
+
+<p>Model đoán đều cho 10 lớp (pᵢ = 0.1) có loss = ln 10 ≈ <strong>2.303</strong>. Đây là con số bạn nên thấy ở bước train đầu tiên của bài phân loại 10 lớp; nếu loss ban đầu khác xa, có thể khởi tạo hoặc nhãn có vấn đề.</p>
+<p>Gradient của cross-entropy theo logits rất gọn: <strong>∂loss/∂zᵢ = pᵢ − [i là lớp đúng]</strong>, "dự đoán trừ đáp án", y như hồi quy logistic ở P1.1.</p>
+<div class="box pitfall">
+<div class="box-h">Lỗi hay gặp</div>
+<p><strong>Cho softmax vào trước <code>F.cross_entropy</code>.</strong> Hàm <code>F.cross_entropy</code> (và <code>nn.CrossEntropyLoss</code>) đã gồm sẵn log-softmax bên trong, nhận <strong>logits</strong> thô. Thêm <code>softmax</code> vào cuối model thì softmax bị áp hai lần: model vẫn train nhưng chậm và kém hơn. Nhãn truyền vào là <strong>chỉ số lớp</strong> kiểu <code>long</code>, không phải one-hot.</p>
+</div>
+<div class="box check">
+<div class="box-h">Tự kiểm tra nhanh</div>
+<p>Logits (0, 0, 0, 0) cho 4 lớp.</p>
+<div class="ans" id="p2-1-t-b144-a1">
+<div class="ans-fields"><label>Xác suất mỗi lớp<input inputmode="decimal" data-ans="0.25" data-tol="0.001" autocomplete="off"></label><label>Cross-entropy (log tự nhiên)<input inputmode="decimal" data-ans="1.3863" data-tol="0.001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div>
+<div aria-live="polite" class="ans-fb"></div>
+</div>
+</div>
+<h2 id="lt-6">Gradient descent và learning rate</h2>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Learning rate là siêu tham số quan trọng nhất khi train mạng nơ-ron. Sai learning rate thì mọi thứ khác (kiến trúc, dữ liệu) đều không cứu được.</p>
+</div>
+<div class="hl"><pre><span></span><code>θ ← θ − η · ∇θ L
+</code></pre></div>
+
+<figure class="fig"><img src="../assets/fig/p2-1-lr.svg" alt="Cùng điểm bắt đầu, 8 bước. η nhỏ: nhích từng chút. η vừa: tới đáy sau vài bước. η quá lớn: mỗi bước nhảy qua đáy và văng xa hơn." loading="lazy"><figcaption>Cùng điểm bắt đầu, 8 bước. η nhỏ: nhích từng chút. η vừa: tới đáy sau vài bước. η quá lớn: mỗi bước nhảy qua đáy và văng xa hơn.</figcaption></figure>
+
+<table>
+<thead>
+<tr>
+<th>Triệu chứng của loss</th>
+<th>Nguyên nhân thường gặp</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Giảm rất chậm, gần như thẳng</td>
+<td>η quá nhỏ</td>
+</tr>
+<tr>
+<td>Giảm nhanh rồi dao động mạnh</td>
+<td>η hơi lớn, cần giảm dần (scheduler)</td>
+</tr>
+<tr>
+<td>Tăng vọt, ra <code>nan</code></td>
+<td>η quá lớn, hoặc lỗi dữ liệu</td>
+</tr>
+<tr>
+<td>Không đổi từ đầu</td>
+<td>quên <code>opt.step()</code>, gradient không chảy, hoặc nhãn sai</td>
+</tr>
+</tbody>
+</table>
+<h3>SGD theo mini-batch và các optimizer</h3>
+<p>Tính gradient trên toàn bộ 50.000 ảnh cho mỗi bước quá chậm, nên ta dùng gradient của một <strong>mini-batch</strong>: rẻ hơn hàng trăm lần, có nhiễu nhưng trung bình vẫn đúng hướng. Nhiễu đó còn giúp thoát khỏi những vùng phẳng.</p>
+<table>
+<thead>
+<tr>
+<th>Optimizer</th>
+<th>Ý tưởng</th>
+<th>Learning rate thường dùng</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SGD + momentum</td>
+<td>cộng dồn "quán tính" từ các bước trước, bớt zig-zag</td>
+<td>0.01–0.1</td>
+</tr>
+<tr>
+<td>Adam / AdamW</td>
+<td>mỗi tham số có learning rate tự điều chỉnh theo độ lớn gradient gần đây</td>
+<td>1e-4–3e-3</td>
+</tr>
+</tbody>
+</table>
+<p>AdamW (Adam + weight decay tách riêng) là lựa chọn mặc định an toàn. Bài P2.2 đi sâu vào scheduler và các mẹo train.</p>
+<h2 id="lt-7">Backpropagation</h2>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Mạng có hàng triệu tham số, và mỗi bước train cần đạo hàm của loss theo <strong>từng</strong> tham số. Backprop tính tất cả trong một lượt đi ngược, tốn chi phí cỡ bằng một lượt forward. Không có nó thì deep learning không tồn tại.</p>
+</div>
+<h3>Đồ thị tính toán</h3>
+<p>Mỗi phép tính trong forward là một nút. Backward đi ngược từ loss, ở mỗi nút nhân gradient đi tới với đạo hàm cục bộ của nút đó (quy tắc dây chuyền, P0.2).</p>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>Mạng nhỏ: x = (1, 2), W₁ = [[0.5, −0.5], [0.25, 0.75]], ReLU, w₂ = (1, −1), không bias, đáp án y = 1, loss MSE.</p>
+<p><strong>Forward:</strong></p>
+<ul>
+<li>h_pre = W₁x = (0.5 − 1, 0.25 + 1.5) = (−0.5, 1.75)</li>
+<li>h = ReLU(h_pre) = (0, 1.75)</li>
+<li>ŷ = w₂ · h = 0 − 1.75 = −1.75</li>
+<li>L = (ŷ − 1)² = (−2.75)² = 7.5625</li>
+</ul>
+<p><strong>Backward:</strong></p>
+<ul>
+<li>∂L/∂ŷ = 2(ŷ − 1) = −5.5</li>
+<li>∂L/∂w₂ = ∂L/∂ŷ · h = −5.5 × (0, 1.75) = (0, −9.625)</li>
+<li>∂L/∂h = ∂L/∂ŷ · w₂ = (−5.5, 5.5)</li>
+<li>ReLU: neuron 1 có h_pre âm nên gradient bị chặn: ∂L/∂h_pre = (0, 5.5)</li>
+<li>∂L/∂W₁ = ∂L/∂h_pre ⊗ x = [[0, 0], [5.5, 11]]</li>
+</ul>
+<p>Neuron thứ nhất "tắt" (h_pre &lt; 0) nên các trọng số nối vào nó không nhận gradient ở mẫu này.</p>
+</div>
+<figure class="fig"><img src="../assets/fig/p2-1-graph.svg" alt="Forward đi trái sang phải và lưu các giá trị trung gian. Backward đi phải sang trái, dùng lại các giá trị đó." loading="lazy"><figcaption>Forward đi trái sang phải và lưu các giá trị trung gian. Backward đi phải sang trái, dùng lại các giá trị đó.</figcaption></figure>
+
+<p>PyTorch làm đúng việc này tự động (<strong>autograd</strong>):</p>
+<div class="hl"><pre><span></span><code><span class="tk-n">x</span> <span class="tk-o">=</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">tensor</span><span class="tk-p">([</span><span class="tk-mf">1.</span><span class="tk-p">,</span> <span class="tk-mf">2.</span><span class="tk-p">])</span>
+<span class="tk-n">W1</span> <span class="tk-o">=</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">tensor</span><span class="tk-p">([[</span><span class="tk-mf">0.5</span><span class="tk-p">,</span> <span class="tk-o">-</span><span class="tk-mf">0.5</span><span class="tk-p">],</span> <span class="tk-p">[</span><span class="tk-mf">0.25</span><span class="tk-p">,</span> <span class="tk-mf">0.75</span><span class="tk-p">]],</span> <span class="tk-n">requires_grad</span><span class="tk-o">=</span><span class="tk-kc">True</span><span class="tk-p">)</span>
+<span class="tk-n">w2</span> <span class="tk-o">=</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">tensor</span><span class="tk-p">([</span><span class="tk-mf">1.</span><span class="tk-p">,</span> <span class="tk-o">-</span><span class="tk-mf">1.</span><span class="tk-p">],</span> <span class="tk-n">requires_grad</span><span class="tk-o">=</span><span class="tk-kc">True</span><span class="tk-p">)</span>
+<span class="tk-n">L</span> <span class="tk-o">=</span> <span class="tk-p">(</span><span class="tk-n">w2</span> <span class="tk-o">@</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">relu</span><span class="tk-p">(</span><span class="tk-n">W1</span> <span class="tk-o">@</span> <span class="tk-n">x</span><span class="tk-p">)</span> <span class="tk-o">-</span> <span class="tk-mi">1</span><span class="tk-p">)</span> <span class="tk-o">**</span> <span class="tk-mi">2</span>
+<span class="tk-n">L</span><span class="tk-o">.</span><span class="tk-n">backward</span><span class="tk-p">()</span>
+<span class="tk-n">W1</span><span class="tk-o">.</span><span class="tk-n">grad</span>      <span class="tk-c1"># tensor([[ 0.0000,  0.0000], [ 5.5000, 11.0000]])</span>
+<span class="tk-n">w2</span><span class="tk-o">.</span><span class="tk-n">grad</span>      <span class="tk-c1"># tensor([-0.0000, -9.6250])</span>
+</code></pre></div>
+
+<h3>Vì sao phải <code>zero_grad()</code></h3>
+<p><code>.grad</code> <strong>cộng dồn</strong> qua mỗi lần gọi <code>backward()</code>. Không xóa thì gradient của bước này cộng với bước trước:</p>
+<div class="hl"><pre><span></span><code><span class="tk-n">w</span> <span class="tk-o">=</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">tensor</span><span class="tk-p">(</span><span class="tk-mf">2.</span><span class="tk-p">,</span> <span class="tk-n">requires_grad</span><span class="tk-o">=</span><span class="tk-kc">True</span><span class="tk-p">)</span>
+<span class="tk-k">for</span> <span class="tk-n">_</span> <span class="tk-ow">in</span> <span class="tk-nb">range</span><span class="tk-p">(</span><span class="tk-mi">2</span><span class="tk-p">):</span>
+    <span class="tk-p">((</span><span class="tk-mi">3</span> <span class="tk-o">*</span> <span class="tk-n">w</span> <span class="tk-o">-</span> <span class="tk-mi">1</span><span class="tk-p">)</span> <span class="tk-o">**</span> <span class="tk-mi">2</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">backward</span><span class="tk-p">()</span>
+    <span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-n">w</span><span class="tk-o">.</span><span class="tk-n">grad</span><span class="tk-p">)</span>          <span class="tk-c1"># 30.0 rồi 60.0, không phải 30.0 hai lần</span>
+</code></pre></div>
+
+<p>Cơ chế cộng dồn có ích khi bạn muốn <strong>gradient accumulation</strong> (cộng gradient của nhiều batch nhỏ để giả lập batch lớn khi thiếu bộ nhớ GPU), nhưng mặc định phải xóa mỗi bước.</p>
 <div class="keep">
 <p><strong>Ghi nhớ:</strong> năm dòng của mọi bước train: <code>zero_grad → forward → loss → backward → step</code>.</p>
-</div></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p2.1:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class=ex-lead><p>Bộ bài tập này khác các bài tính tay trong trang lý thuyết, dùng để kiểm tra lại sau khi học xong.</p></div><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 4</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Softmax với hai logit bằng nhau</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Logits = [1, 1, 0]. Biết e ≈ 2.718.</p>
+</div>
+<div class="box check">
+<div class="box-h">Tự kiểm tra nhanh</div>
+<p>Neuron a = ReLU(w·x + b), loss L = a. Với x = 3, w = 2, b = −1:</p>
+<div class="ans" id="p2-1-t-b213-a1">
+<div class="ans-fields"><label>a<input inputmode="decimal" data-ans="5.0" data-tol="0.0" autocomplete="off"></label><label>∂L/∂w<input inputmode="decimal" data-ans="3.0" data-tol="0.0" autocomplete="off"></label><label>∂L/∂b<input inputmode="decimal" data-ans="1.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div>
+<div aria-live="polite" class="ans-fb"></div>
+</div>
+</div>
+<h2 id="lt-8">Vòng lặp train hoàn chỉnh trong PyTorch</h2>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Đây là đoạn code bạn sẽ viết lại hàng trăm lần. Mỗi dòng đều có lý do, và mỗi dòng bị quên là một lỗi kinh điển.</p>
+</div>
+<div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">torch</span><span class="tk-o">,</span><span class="tk-w"> </span><span class="tk-nn">torch.nn</span><span class="tk-w"> </span><span class="tk-k">as</span><span class="tk-w"> </span><span class="tk-nn">nn</span><span class="tk-o">,</span><span class="tk-w"> </span><span class="tk-nn">torch.nn.functional</span><span class="tk-w"> </span><span class="tk-k">as</span><span class="tk-w"> </span><span class="tk-nn">F</span>
+<span class="tk-n">device</span> <span class="tk-o">=</span> <span class="tk-s2">"cuda"</span> <span class="tk-k">if</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">cuda</span><span class="tk-o">.</span><span class="tk-n">is_available</span><span class="tk-p">()</span> <span class="tk-k">else</span> <span class="tk-s2">"cpu"</span>
+<span class="tk-n">model</span> <span class="tk-o">=</span> <span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">Sequential</span><span class="tk-p">(</span><span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">Flatten</span><span class="tk-p">(),</span> <span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">Linear</span><span class="tk-p">(</span><span class="tk-mi">3072</span><span class="tk-p">,</span> <span class="tk-mi">256</span><span class="tk-p">),</span> <span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">ReLU</span><span class="tk-p">(),</span> <span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">Linear</span><span class="tk-p">(</span><span class="tk-mi">256</span><span class="tk-p">,</span> <span class="tk-mi">10</span><span class="tk-p">))</span><span class="tk-o">.</span><span class="tk-n">to</span><span class="tk-p">(</span><span class="tk-n">device</span><span class="tk-p">)</span>
+<span class="tk-n">opt</span> <span class="tk-o">=</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">optim</span><span class="tk-o">.</span><span class="tk-n">AdamW</span><span class="tk-p">(</span><span class="tk-n">model</span><span class="tk-o">.</span><span class="tk-n">parameters</span><span class="tk-p">(),</span> <span class="tk-n">lr</span><span class="tk-o">=</span><span class="tk-mf">1e-3</span><span class="tk-p">)</span>
+
+<span class="tk-k">for</span> <span class="tk-n">epoch</span> <span class="tk-ow">in</span> <span class="tk-nb">range</span><span class="tk-p">(</span><span class="tk-mi">20</span><span class="tk-p">):</span>
+    <span class="tk-n">model</span><span class="tk-o">.</span><span class="tk-n">train</span><span class="tk-p">()</span>                                  <span class="tk-c1"># bật chế độ train (dropout, batchnorm)</span>
+    <span class="tk-k">for</span> <span class="tk-n">x</span><span class="tk-p">,</span> <span class="tk-n">y</span> <span class="tk-ow">in</span> <span class="tk-n">train_loader</span><span class="tk-p">:</span>
+        <span class="tk-n">x</span><span class="tk-p">,</span> <span class="tk-n">y</span> <span class="tk-o">=</span> <span class="tk-n">x</span><span class="tk-o">.</span><span class="tk-n">to</span><span class="tk-p">(</span><span class="tk-n">device</span><span class="tk-p">),</span> <span class="tk-n">y</span><span class="tk-o">.</span><span class="tk-n">to</span><span class="tk-p">(</span><span class="tk-n">device</span><span class="tk-p">)</span>
+        <span class="tk-n">opt</span><span class="tk-o">.</span><span class="tk-n">zero_grad</span><span class="tk-p">()</span>
+        <span class="tk-n">loss</span> <span class="tk-o">=</span> <span class="tk-n">F</span><span class="tk-o">.</span><span class="tk-n">cross_entropy</span><span class="tk-p">(</span><span class="tk-n">model</span><span class="tk-p">(</span><span class="tk-n">x</span><span class="tk-p">),</span> <span class="tk-n">y</span><span class="tk-p">)</span>
+        <span class="tk-n">loss</span><span class="tk-o">.</span><span class="tk-n">backward</span><span class="tk-p">()</span>
+        <span class="tk-n">opt</span><span class="tk-o">.</span><span class="tk-n">step</span><span class="tk-p">()</span>
+
+    <span class="tk-n">model</span><span class="tk-o">.</span><span class="tk-n">eval</span><span class="tk-p">()</span>                                   <span class="tk-c1"># tắt dropout, batchnorm dùng thống kê đã học</span>
+    <span class="tk-n">correct</span> <span class="tk-o">=</span> <span class="tk-n">total</span> <span class="tk-o">=</span> <span class="tk-mi">0</span>
+    <span class="tk-k">with</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">no_grad</span><span class="tk-p">():</span>                          <span class="tk-c1"># không lưu đồ thị: nhanh hơn, ít bộ nhớ hơn</span>
+        <span class="tk-k">for</span> <span class="tk-n">x</span><span class="tk-p">,</span> <span class="tk-n">y</span> <span class="tk-ow">in</span> <span class="tk-n">val_loader</span><span class="tk-p">:</span>
+            <span class="tk-n">x</span><span class="tk-p">,</span> <span class="tk-n">y</span> <span class="tk-o">=</span> <span class="tk-n">x</span><span class="tk-o">.</span><span class="tk-n">to</span><span class="tk-p">(</span><span class="tk-n">device</span><span class="tk-p">),</span> <span class="tk-n">y</span><span class="tk-o">.</span><span class="tk-n">to</span><span class="tk-p">(</span><span class="tk-n">device</span><span class="tk-p">)</span>
+            <span class="tk-n">correct</span> <span class="tk-o">+=</span> <span class="tk-p">(</span><span class="tk-n">model</span><span class="tk-p">(</span><span class="tk-n">x</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">argmax</span><span class="tk-p">(</span><span class="tk-mi">1</span><span class="tk-p">)</span> <span class="tk-o">==</span> <span class="tk-n">y</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">sum</span><span class="tk-p">()</span><span class="tk-o">.</span><span class="tk-n">item</span><span class="tk-p">();</span> <span class="tk-n">total</span> <span class="tk-o">+=</span> <span class="tk-n">y</span><span class="tk-o">.</span><span class="tk-n">numel</span><span class="tk-p">()</span>
+    <span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-n">epoch</span><span class="tk-p">,</span> <span class="tk-n">loss</span><span class="tk-o">.</span><span class="tk-n">item</span><span class="tk-p">(),</span> <span class="tk-n">correct</span> <span class="tk-o">/</span> <span class="tk-n">total</span><span class="tk-p">)</span>
+</code></pre></div>
+
+<table>
+<thead>
+<tr>
+<th>Dòng</th>
+<th>Quên thì sao</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>.to(device)</code> cho cả model và dữ liệu</td>
+<td>lỗi "Expected all tensors to be on the same device"</td>
+</tr>
+<tr>
+<td><code>model.train()</code> / <code>model.eval()</code></td>
+<td>dropout vẫn bật khi đánh giá, điểm thấp và dao động</td>
+</tr>
+<tr>
+<td><code>torch.no_grad()</code> khi đánh giá</td>
+<td>tốn bộ nhớ, có thể hết VRAM</td>
+</tr>
+<tr>
+<td><code>opt.zero_grad()</code></td>
+<td>gradient cộng dồn, train sai</td>
+</tr>
+<tr>
+<td><code>.item()</code> khi in loss</td>
+<td>giữ cả đồ thị trong bộ nhớ nếu cộng dồn tensor loss</td>
+</tr>
+</tbody>
+</table>
+<details class="fold deep">
+<summary>Đào sâu thêm</summary>
+<p><strong>Kiểm tra sức khỏe trước khi train lâu.</strong> (1) Loss ở bước đầu có gần ln(số lớp) không? (2) Cho model học thuộc <strong>một batch</strong> duy nhất: loss phải về gần 0 sau vài trăm bước; nếu không, có lỗi trong model hoặc vòng lặp. (3) In shape của mọi tensor ở batch đầu. Ba bước này mất 5 phút và bắt được phần lớn lỗi trước khi bạn chờ 3 tiếng train.</p>
+</details>
+<h2 id="lt-9">Tóm tắt bài và thuật ngữ</h2>
+<table>
+<thead>
+<tr>
+<th>Khái niệm</th>
+<th>Điều cần nhớ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>MLP</td>
+<td>chồng Linear + hàm kích hoạt; lớp ẩn học đặc trưng mới</td>
+</tr>
+<tr>
+<td>Tensor ảnh</td>
+<td><code>[N, C, H, W]</code>, chuẩn hóa theo kênh bằng mean/std của train</td>
+</tr>
+<tr>
+<td>Linear</td>
+<td>y = xWᵀ + b, số tham số = in × out + out</td>
+</tr>
+<tr>
+<td>Phi tuyến</td>
+<td>thiếu nó, nhiều lớp Linear = một lớp</td>
+</tr>
+<tr>
+<td>Softmax + CE</td>
+<td><code>F.cross_entropy(logits, y)</code>, loss ban đầu ≈ ln(số lớp)</td>
+</tr>
+<tr>
+<td>Learning rate</td>
+<td>quá nhỏ thì chậm, quá lớn thì phân kỳ</td>
+</tr>
+<tr>
+<td>Backprop</td>
+<td>quy tắc dây chuyền đi ngược đồ thị, <code>.grad</code> cộng dồn</td>
+</tr>
+<tr>
+<td>Vòng train</td>
+<td>zero_grad → forward → loss → backward → step</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Thuật ngữ</th>
+<th>Nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>neuron / layer</td>
+<td>một đơn vị tính w·x + b / một nhóm neuron</td>
+</tr>
+<tr>
+<td>MLP</td>
+<td>mạng nhiều lớp kết nối đầy đủ</td>
+</tr>
+<tr>
+<td>hidden layer</td>
+<td>lớp ẩn, giữa đầu vào và đầu ra</td>
+</tr>
+<tr>
+<td>activation function</td>
+<td>hàm kích hoạt (ReLU, GELU, sigmoid)</td>
+</tr>
+<tr>
+<td>logits</td>
+<td>điểm thô trước softmax</td>
+</tr>
+<tr>
+<td>epoch / batch / iteration</td>
+<td>một lượt dữ liệu / một nhóm mẫu / một lần cập nhật</td>
+</tr>
+<tr>
+<td>optimizer</td>
+<td>thuật toán cập nhật tham số (SGD, AdamW)</td>
+</tr>
+<tr>
+<td>backpropagation</td>
+<td>tính gradient bằng quy tắc dây chuyền đi ngược</td>
+</tr>
+<tr>
+<td>autograd</td>
+<td>cơ chế tự tính gradient của PyTorch</td>
+</tr>
+<tr>
+<td>vanishing gradient</td>
+<td>gradient nhỏ dần về 0 qua nhiều lớp</td>
+</tr>
+<tr>
+<td>temperature</td>
+<td>hệ số chia logits để làm phân phối sắc hoặc mềm hơn</td>
+</tr>
+<tr>
+<td>device</td>
+<td>nơi tensor nằm: CPU hoặc GPU</td>
+</tr>
+</tbody>
+</table></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p2.1:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class=ex-lead><p>Bộ bài tập này khác các bài tính tay trong trang lý thuyết, dùng để kiểm tra lại sau khi học xong.</p></div><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 4</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Softmax với hai logit bằng nhau</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Logits = [1, 1, 0]. Biết e ≈ 2.718.</p>
 <div class="ans" id="p2-1-e1-a1"><div class="ans-fields"><label>p của lớp đầu tiên<input inputmode="decimal" data-ans="0.4223" data-tol="0.001" autocomplete="off"></label><label>Loss nếu lớp đúng là lớp thứ 3<input inputmode="decimal" data-ans="1.862" data-tol="0.002" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
 
 <details class="fold solution">
@@ -113,7 +620,7 @@
     </div>
     <aside class="aside">
       <div class="abox"><h4>Tiến độ bài này</h4><div class="ring"><svg viewBox="0 0 64 64" aria-hidden="true"><circle class="bg" cx="32" cy="32" r="28"/><circle class="fg" cx="32" cy="32" r="28" stroke-dasharray="176" stroke-dashoffset="176"/></svg><div><b id="ring-n">0/3</b><span id="ring-sub">phần đã xong</span></div></div></div>
-      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Vòng lặp học</a></li><li><a href="#lt-2">Dữ liệu là tensor</a></li><li><a href="#lt-3">Linear và ReLU</a></li><li><a href="#lt-4">Softmax và cross-entropy</a></li><li><a href="#lt-5">Gradient descent và backprop</a></li></ol></div>
+      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Từ hồi quy logistic tới mạng nơ-ron</a></li><li><a href="#lt-2">Vòng lặp học</a></li><li><a href="#lt-3">Dữ liệu là tensor</a></li><li><a href="#lt-4">Linear và hàm kích hoạt</a></li><li><a href="#lt-5">Softmax và cross-entropy</a></li><li><a href="#lt-6">Gradient descent và learning rate</a></li><li><a href="#lt-7">Backpropagation</a></li><li><a href="#lt-8">Vòng lặp train hoàn chỉnh trong PyTorch</a></li><li><a href="#lt-9">Tóm tắt bài và thuật ngữ</a></li></ol></div>
       <div class="abox"><h4>Notebook</h4><div style="display:grid;gap:8px"><a class="dl" href="../notebooks/bai01_thuc_hanh.ipynb" download><span class="ext">IPYNB</span><span>Bài tập<span style="display:block;font:400 12px var(--f-mono);color:var(--muted)">bai01_thuc_hanh.ipynb</span></span></a><a class="dl" href="../notebooks/bai01_thuc_hanh_LOI_GIAI.ipynb" download><span class="ext">IPYNB</span><span>Lời giải<span style="display:block;font:400 12px var(--f-mono);color:var(--muted)">bai01_thuc_hanh_LOI_GIAI.ipynb</span></span></a></div></div>
       <div class="abox"><h4>Cùng giai đoạn</h4><ul><li><span class=cur>Bài 1 · Mạng nơ-ron học thế nào</span></li><li><a href="p2-2.html">Bài 2 · Train mạng thật</a></li><li><a href="p2-3.html">CNN hiện đại và transfer learning</a></li></ul></div>
     </aside>

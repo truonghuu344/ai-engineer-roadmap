@@ -22,55 +22,438 @@
 <main class="container">
   <div class="crumbs"><a href="../bai-hoc.html">Bài học</a><span>/</span><a href="../bai-hoc.html#p2">P2 · Deep Learning nền tảng</a><span>/</span><span>P2.2</span></div>
   <section class="lhero"><div class="code">P2.2</div><h1>Bài 2 · Train mạng thật</h1><div class="lmeta"><span class="m">Giai đoạn P2 · Deep Learning nền tảng</span><span class="m">Tuần 8–12</span><span class="chip ready"><span class="dot"></span>Có nội dung đầy đủ</span></div>
-    <div class="intro"><p>Bài 1 train mạng nhỏ trên toàn bộ dữ liệu cùng lúc. Train mạng thật trên 50.000 ảnh cần thêm bốn thứ: chia <strong>mini-batch</strong>, optimizer thông minh hơn (<strong>Adam</strong>), kiến trúc hợp với ảnh (<strong>CNN</strong>), và các kỹ thuật chống học thuộc (<strong>BatchNorm, Dropout, augmentation</strong>). Học xong bài này bạn hiểu từng dòng của Lab 1.</p></div></section>
+    <div class="intro"><p>Bài 1 train mạng nhỏ trên dữ liệu nhỏ. Train mạng thật trên 50.000 ảnh cần thêm bốn thứ: chia <strong>mini-batch</strong>, optimizer thông minh hơn (<strong>Adam</strong>), kiến trúc hợp với ảnh (<strong>CNN</strong>), và các kỹ thuật chống học thuộc (<strong>BatchNorm, Dropout, augmentation</strong>). Học xong bài này bạn hiểu từng dòng của Lab 1 và biết vì sao nó được viết như vậy.</p></div></section>
   
-  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">6 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
+  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">7 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
   <div class="lgrid" style="margin-top:22px">
     <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">Mini-batch, epoch, iteration</h2>
-<p>Tính gradient trên cả 45.000 ảnh mỗi bước thì quá chậm và không vừa bộ nhớ GPU. Ta lấy từng <strong>mini-batch</strong> (ví dụ 128 ảnh), tính gradient trên đó và cập nhật ngay.</p>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Bạn không thể đưa 50.000 ảnh vào GPU một lúc, và cũng không cần: một mẫu nhỏ đủ ngẫu nhiên đã cho hướng đi gần đúng. Cách chia batch ảnh hưởng trực tiếp tới tốc độ train, bộ nhớ cần, và cả chất lượng model.</p>
+</div>
+<p>Ta lấy từng <strong>mini-batch</strong> (ví dụ 128 ảnh), tính gradient trên đó và cập nhật ngay:</p>
 <div class="hl"><pre><span></span><code>iteration (step) = một lần cập nhật trên một batch
 epoch            = đi hết toàn bộ tập train một lần
 số step / epoch  = ⌈số mẫu / batch size⌉
 </code></pre></div>
 
-<p>Gradient từ một batch là ước lượng có nhiễu của gradient thật. Nhiễu này không xấu: nó giúp thoát khỏi các vùng phẳng và thường cho model tổng quát tốt hơn. Batch lớn hơn thì gradient ít nhiễu hơn, thường cho phép learning rate lớn hơn.</p>
-<h2 id="lt-2">Optimizer: SGD, momentum, Adam, AdamW</h2>
-<div class="hl"><pre><span></span><code>SGD:       w ← w − η·g
-Momentum:  v ← μ·v + g;   w ← w − η·v          (μ ≈ 0.9: "quán tính", đi nhanh qua thung lũng hẹp)
-Adam:      m ← β₁m + (1−β₁)g;   v ← β₂v + (1−β₂)g²
-           m̂ = m/(1−β₁ᵗ);  v̂ = v/(1−β₂ᵗ)       (hiệu chỉnh bias ở những bước đầu)
-           w ← w − η·m̂ / (√v̂ + ε)
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>MNIST có 60.000 ảnh train. Với batch 256: ⌈60.000 / 256⌉ = <strong>235</strong> step mỗi epoch (step cuối chỉ có 96 ảnh). 10 epoch là 2.350 lần cập nhật. Đổi sang batch 64 thì có 938 step mỗi epoch: mỗi step rẻ hơn, nhưng nhiều step hơn.</p>
+</div>
+<h3>Nhiễu của gradient là có lợi</h3>
+<p>Gradient từ một batch là <strong>ước lượng có nhiễu</strong> của gradient thật trên toàn bộ dữ liệu. Nhiễu này không xấu: nó giúp thoát khỏi các vùng phẳng và điểm yên ngựa, và thường cho model tổng quát tốt hơn so với gradient "sạch".</p>
+<table>
+<thead>
+<tr>
+<th>Batch size</th>
+<th>Ưu điểm</th>
+<th>Nhược điểm</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Nhỏ (16–64)</td>
+<td>ít bộ nhớ, nhiễu giúp tổng quát</td>
+<td>chậm trên GPU (không tận dụng song song)</td>
+</tr>
+<tr>
+<td>Lớn (512+)</td>
+<td>nhanh trên GPU, gradient ổn định</td>
+<td>cần nhiều bộ nhớ, thường cần learning rate lớn hơn và warmup</td>
+</tr>
+</tbody>
+</table>
+<p>Quy tắc thực hành: chọn batch lớn nhất vừa bộ nhớ GPU trong khoảng 32–512, rồi chỉnh learning rate. Khi tăng batch k lần, thử tăng learning rate khoảng k lần (với SGD) hoặc √k lần (với Adam).</p>
+<h3>DataLoader trong PyTorch</h3>
+<div class="hl"><pre><span></span><code><span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">torch.utils.data</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">DataLoader</span>
+<span class="tk-n">train_loader</span> <span class="tk-o">=</span> <span class="tk-n">DataLoader</span><span class="tk-p">(</span><span class="tk-n">train_ds</span><span class="tk-p">,</span> <span class="tk-n">batch_size</span><span class="tk-o">=</span><span class="tk-mi">128</span><span class="tk-p">,</span> <span class="tk-n">shuffle</span><span class="tk-o">=</span><span class="tk-kc">True</span><span class="tk-p">,</span> <span class="tk-n">num_workers</span><span class="tk-o">=</span><span class="tk-mi">2</span><span class="tk-p">,</span> <span class="tk-n">pin_memory</span><span class="tk-o">=</span><span class="tk-kc">True</span><span class="tk-p">)</span>
+<span class="tk-n">val_loader</span> <span class="tk-o">=</span> <span class="tk-n">DataLoader</span><span class="tk-p">(</span><span class="tk-n">val_ds</span><span class="tk-p">,</span> <span class="tk-n">batch_size</span><span class="tk-o">=</span><span class="tk-mi">256</span><span class="tk-p">,</span> <span class="tk-n">shuffle</span><span class="tk-o">=</span><span class="tk-kc">False</span><span class="tk-p">)</span>
+<span class="tk-k">for</span> <span class="tk-n">x</span><span class="tk-p">,</span> <span class="tk-n">y</span> <span class="tk-ow">in</span> <span class="tk-n">train_loader</span><span class="tk-p">:</span>      <span class="tk-c1"># mỗi vòng lặp trả về một batch [128, 3, 32, 32] và [128]</span>
+    <span class="tk-o">...</span>
 </code></pre></div>
 
-<p>Adam chia gradient cho độ lớn trung bình của chính nó, nên <strong>mỗi tham số có learning rate thích nghi riêng</strong> và ít nhạy với thang đo. Mặc định tốt: <code>lr=1e-3</code> (CNN nhỏ), <code>3e-4</code> (Transformer).</p>
-<p><strong>AdamW</strong> tách weight decay ra khỏi gradient: <code>w ← w − η·(update + λ·w)</code>. Đây là optimizer mặc định cho Transformer và hầu hết model hiện đại.</p>
-<h2 id="lt-3">Lịch learning rate và khởi tạo</h2>
+<p><code>shuffle=True</code> cho tập train là bắt buộc: nếu dữ liệu xếp theo lớp (5.000 ảnh máy bay rồi 5.000 ảnh ô tô...), model sẽ học lệch theo từng đoạn. <code>num_workers</code> cho phép CPU chuẩn bị batch sau trong lúc GPU đang tính batch trước.</p>
+<h2 id="lt-2">Optimizer: SGD, momentum, Adam, AdamW</h2>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Optimizer quyết định dùng gradient thế nào để cập nhật tham số. SGD thuần đi zig-zag khi mặt loss có hướng dốc và hướng phẳng; các optimizer hiện đại sửa điều đó, và chọn đúng optimizer có thể rút thời gian train nhiều lần.</p>
+</div>
+<h3>SGD và momentum</h3>
+<div class="hl"><pre><span></span><code>SGD:       w ← w − η·g
+Momentum:  v ← μ·v + g;   w ← w − η·v          (μ ≈ 0.9)
+</code></pre></div>
+
+<p>Momentum giữ một "vận tốc" v cộng dồn gradient các bước trước. Hướng gradient ổn định (dọc theo thung lũng) được tăng tốc; hướng gradient đổi dấu liên tục (ngang thung lũng) bị triệt tiêu.</p>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>Gradient không đổi g = 2, η = 0.05, μ = 0.9, bắt đầu w = 0, v = 0:</p>
+<table>
+<thead>
+<tr>
+<th>Bước</th>
+<th>v = 0.9·v + 2</th>
+<th>w = w − 0.05·v</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>2.0</td>
+<td>−0.10</td>
+</tr>
+<tr>
+<td>2</td>
+<td>3.8</td>
+<td>−0.29</td>
+</tr>
+<tr>
+<td>3</td>
+<td>5.42</td>
+<td>−0.561</td>
+</tr>
+</tbody>
+</table>
+<p>Vận tốc tăng dần về giới hạn 2 / (1 − 0.9) = 20: khi gradient ổn định, momentum đi nhanh gấp tới 10 lần SGD thuần.</p>
+</div>
+<h3>Adam</h3>
+<div class="hl"><pre><span></span><code>m ← β₁m + (1−β₁)g              trung bình động của gradient (hướng đi)
+v ← β₂v + (1−β₂)g²             trung bình động của bình phương gradient (độ lớn)
+m̂ = m/(1−β₁ᵗ);  v̂ = v/(1−β₂ᵗ)   hiệu chỉnh vì m, v bắt đầu từ 0
+w ← w − η·m̂ / (√v̂ + ε)
+</code></pre></div>
+
+<p>Adam chia gradient cho độ lớn trung bình của chính nó, nên <strong>mỗi tham số có bước đi riêng</strong> và không phụ thuộc thang đo của gradient.</p>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>Hai tham số, gradient ở bước đầu lần lượt là 0.01 và 100. Với η = 0.001 (β₁ = 0.9, β₂ = 0.999):</p>
 <ul>
-<li><strong>Warmup:</strong> tăng lr từ gần 0 lên giá trị đích trong vài trăm bước đầu, tránh các bước đầu quá mạnh khi Adam chưa ước lượng tốt.</li>
-<li><strong>Cosine decay:</strong> giảm lr theo nửa chu kỳ cos về gần 0 ở cuối. Lab 1 dùng <code>CosineAnnealingLR</code>.</li>
-<li><strong>Khởi tạo trọng số:</strong> He (Kaiming) cho ReLU, Xavier cho tanh. PyTorch đã khởi tạo hợp lý sẵn cho <code>nn.Linear</code> và <code>nn.Conv2d</code>.</li>
+<li>Tham số 1: m̂ = 0.01, v̂ = 0.0001, bước = 0.001 × 0.01 / 0.01 = <strong>0.001</strong></li>
+<li>Tham số 2: m̂ = 100, v̂ = 10.000, bước = 0.001 × 100 / 100 = <strong>0.001</strong></li>
 </ul>
+<p>Gradient chênh nhau 10.000 lần nhưng bước đi bằng nhau. Với SGD, tham số 2 sẽ bước gấp 10.000 lần tham số 1.</p>
+</div>
+<figure class="fig"><img src="../assets/fig/p2-2-optim.svg" alt="Cùng 40 bước trên thung lũng hẹp. SGD dao động mạnh theo hướng dốc. Momentum đi xa hơn nhưng vượt qua đáy rồi quay lại. Adam đi gần như thẳng nhờ chuẩn hóa từng hướng." loading="lazy"><figcaption>Cùng 40 bước trên thung lũng hẹp. SGD dao động mạnh theo hướng dốc. Momentum đi xa hơn nhưng vượt qua đáy rồi quay lại. Adam đi gần như thẳng nhờ chuẩn hóa từng hướng.</figcaption></figure>
+
+<h3>AdamW</h3>
+<p><strong>AdamW</strong> tách weight decay ra khỏi gradient: <code>w ← w − η·(bước Adam + λ·w)</code>. Với Adam thường, thêm L2 vào loss rồi chia cho √v̂ làm weight decay yếu đi với các tham số có gradient lớn; AdamW sửa điều đó. Đây là optimizer mặc định cho Transformer và hầu hết model hiện đại.</p>
+<table>
+<thead>
+<tr>
+<th>Optimizer</th>
+<th>Learning rate thường dùng</th>
+<th>Khi nào</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SGD + momentum 0.9</td>
+<td>0.01–0.1</td>
+<td>CNN cho ảnh khi muốn kết quả tốt nhất và chịu tune</td>
+</tr>
+<tr>
+<td>AdamW</td>
+<td>1e-3 (CNN nhỏ), 3e-4 (Transformer), 1e-5–5e-5 (fine-tune)</td>
+<td>mặc định an toàn</td>
+</tr>
+</tbody>
+</table>
+<h2 id="lt-3">Lịch learning rate, warmup và khởi tạo</h2>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Learning rate tốt ở đầu quá trình train (khi còn xa đáp án) khác learning rate tốt ở cuối (khi cần tinh chỉnh). Thay đổi learning rate theo thời gian thường cho thêm vài điểm accuracy mà không tốn gì.</p>
+</div>
+<ul>
+<li><strong>Warmup:</strong> tăng lr từ gần 0 lên giá trị đích trong vài trăm bước đầu. Ở đầu, Adam chưa ước lượng tốt v, và trọng số khởi tạo ngẫu nhiên tạo gradient lớn; bước quá mạnh lúc này có thể phá hỏng model.</li>
+<li><strong>Cosine decay:</strong> giảm lr theo nửa chu kỳ cos về gần 0 ở cuối. Lab 1 dùng <code>CosineAnnealingLR</code>.</li>
+<li><strong>Step decay:</strong> chia lr cho 10 ở một số epoch cố định (cách cũ, vẫn hay gặp trong bài báo).</li>
+</ul>
+<figure class="fig"><img src="../assets/fig/p2-2-schedule.svg" alt="Warmup 200 bước rồi cosine decay về 0: lịch phổ biến nhất khi train Transformer." loading="lazy"><figcaption>Warmup 200 bước rồi cosine decay về 0: lịch phổ biến nhất khi train Transformer.</figcaption></figure>
+
+<div class="hl"><pre><span></span><code><span class="tk-n">opt</span> <span class="tk-o">=</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">optim</span><span class="tk-o">.</span><span class="tk-n">AdamW</span><span class="tk-p">(</span><span class="tk-n">model</span><span class="tk-o">.</span><span class="tk-n">parameters</span><span class="tk-p">(),</span> <span class="tk-n">lr</span><span class="tk-o">=</span><span class="tk-mf">3e-4</span><span class="tk-p">,</span> <span class="tk-n">weight_decay</span><span class="tk-o">=</span><span class="tk-mf">0.05</span><span class="tk-p">)</span>
+<span class="tk-n">sched</span> <span class="tk-o">=</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">optim</span><span class="tk-o">.</span><span class="tk-n">lr_scheduler</span><span class="tk-o">.</span><span class="tk-n">OneCycleLR</span><span class="tk-p">(</span><span class="tk-n">opt</span><span class="tk-p">,</span> <span class="tk-n">max_lr</span><span class="tk-o">=</span><span class="tk-mf">3e-4</span><span class="tk-p">,</span> <span class="tk-n">total_steps</span><span class="tk-o">=</span><span class="tk-nb">len</span><span class="tk-p">(</span><span class="tk-n">train_loader</span><span class="tk-p">)</span> <span class="tk-o">*</span> <span class="tk-n">epochs</span><span class="tk-p">,</span> <span class="tk-n">pct_start</span><span class="tk-o">=</span><span class="tk-mf">0.05</span><span class="tk-p">)</span>
+<span class="tk-c1"># trong vòng lặp, sau opt.step():</span>
+<span class="tk-n">sched</span><span class="tk-o">.</span><span class="tk-n">step</span><span class="tk-p">()</span>
+</code></pre></div>
+
+<h3>Khởi tạo trọng số</h3>
+<p>Trọng số ban đầu quá lớn thì kích hoạt "nổ" qua các lớp; quá nhỏ thì tín hiệu tắt dần. Ý tưởng: giữ phương sai đầu ra mỗi lớp xấp xỉ phương sai đầu vào (nhớ P0.2: tổng n số độc lập có phương sai gấp n lần).</p>
+<table>
+<thead>
+<tr>
+<th>Cách</th>
+<th>Phương sai trọng số</th>
+<th>Dùng với</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>He (Kaiming)</td>
+<td>2 / n_in</td>
+<td>ReLU</td>
+</tr>
+<tr>
+<td>Xavier (Glorot)</td>
+<td>2 / (n_in + n_out)</td>
+<td>tanh, sigmoid</td>
+</tr>
+</tbody>
+</table>
+<p>PyTorch đã khởi tạo hợp lý sẵn cho <code>nn.Linear</code> và <code>nn.Conv2d</code>, nên bạn hiếm khi phải tự làm, nhưng cần biết khi tự viết lớp mới.</p>
 <h2 id="lt-4">Convolution: vì sao hợp với ảnh</h2>
-<p>Lớp Linear nối mọi pixel với mọi neuron: ảnh 32×32×3 vào 512 neuron đã cần 1,5 triệu trọng số, và không tận dụng việc pixel gần nhau liên quan nhau. <strong>Convolution</strong> trượt một bộ lọc nhỏ (3×3) khắp ảnh, <strong>dùng chung trọng số</strong> ở mọi vị trí.</p>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>MLP coi ảnh là một dãy số, bỏ qua việc pixel cạnh nhau liên quan nhau và một con mèo ở góc trái vẫn là con mèo khi ở góc phải. CNN đưa hai hiểu biết đó vào kiến trúc, nên học nhanh hơn, cần ít tham số hơn, và chính xác hơn hẳn trên ảnh.</p>
+</div>
+<h3>Hai ý tưởng: cục bộ và dùng chung trọng số</h3>
+<p>Lớp Linear nối mọi pixel với mọi neuron: ảnh 32×32×3 vào 512 neuron đã cần <strong>1.573.376</strong> trọng số. <strong>Convolution</strong> trượt một bộ lọc nhỏ (ví dụ 3×3) khắp ảnh:</p>
+<ul>
+<li><strong>Cục bộ:</strong> mỗi đầu ra chỉ nhìn một vùng nhỏ của đầu vào.</li>
+<li><strong>Dùng chung trọng số:</strong> cùng một bộ lọc ở mọi vị trí, nên một đặc trưng (cạnh, góc) học ở chỗ này dùng được ở mọi chỗ khác.</li>
+</ul>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>Ảnh 5×5 có một cạnh dọc (trái tối, phải sáng). Bộ lọc 3×3 có cột trái −1, cột giữa 0, cột phải +1. Trượt bộ lọc, mỗi vị trí tính tổng tích từng phần tử:</p>
+<figure class="fig"><img src="../assets/fig/p2-2-conv.svg" alt="Ô đầu ra (0, 0) = tổng của vùng xanh nhân từng ô với kernel = 3. Đầu ra lớn ở chỗ có cạnh dọc, bằng 0 ở vùng đều màu." loading="lazy"><figcaption>Ô đầu ra (0, 0) = tổng của vùng xanh nhân từng ô với kernel = 3. Đầu ra lớn ở chỗ có cạnh dọc, bằng 0 ở vùng đều màu.</figcaption></figure>
+<p>Đầu ra cao (3) đúng ở vị trí có cạnh, bằng 0 ở vùng đồng màu. Đó là "bản đồ đặc trưng" (feature map) cho biết cạnh dọc nằm ở đâu.</p>
+</div>
+<p>Trong CNN thật, các bộ lọc không do người viết mà <strong>được học</strong>. Lớp đầu thường tự học ra những bộ lọc giống bộ phát hiện cạnh và màu.</p>
+<figure class="fig"><img src="../assets/fig/p2-2-featuremaps.svg" alt="Áp ba bộ lọc lên ảnh chữ số 0. Bộ lọc cạnh dọc làm sáng hai nét dọc, bộ lọc cạnh ngang làm sáng nét trên và dưới." loading="lazy"><figcaption>Áp ba bộ lọc lên ảnh chữ số 0. Bộ lọc cạnh dọc làm sáng hai nét dọc, bộ lọc cạnh ngang làm sáng nét trên và dưới.</figcaption></figure>
+
+<h3>Kích thước đầu ra và số tham số</h3>
 <div class="hl"><pre><span></span><code>Kích thước đầu ra = ⌊(n + 2p − k) / s⌋ + 1
-   n: kích thước vào, k: kernel, p: padding, s: stride
+   n: kích thước vào, k: kernel, p: padding (đệm 0 quanh ảnh), s: stride (bước trượt)
 Số tham số Conv2d(C_in, C_out, k) = C_in · C_out · k · k + C_out
 </code></pre></div>
 
-<p><code>padding=1</code> với kernel 3 giữ nguyên kích thước. <strong>MaxPool2d(2)</strong> lấy max trong mỗi ô 2×2, giảm kích thước một nửa. Các lớp đầu học cạnh và màu, các lớp sau ghép thành hoa văn, rồi thành bộ phận của vật thể.</p>
-<h2 id="lt-5">BatchNorm và Dropout</h2>
-<p><strong>BatchNorm</strong> chuẩn hóa đầu ra của lớp theo thống kê của batch, rồi co giãn bằng hai tham số học được:</p>
-<div class="hl"><pre><span></span><code>x̂ = (x − μ_batch) / √(σ²_batch + ε);   y = γ·x̂ + β
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>Ảnh MNIST 28×28:</p>
+<ul>
+<li>Kernel 3, padding 0, stride 1: (28 + 0 − 3)/1 + 1 = <strong>26</strong></li>
+<li>Kernel 3, padding 1, stride 2: ⌊(28 + 2 − 3)/2⌋ + 1 = <strong>14</strong></li>
+</ul>
+<p><code>Conv2d(3, 16, 5)</code>: 3 × 16 × 5 × 5 + 16 = <strong>1.216</strong> tham số, dù đầu vào là ảnh bao nhiêu pixel cũng vậy. So với 1,57 triệu của lớp Linear ở trên.</p>
+</div>
+<h3>Kênh và pooling</h3>
+<ul>
+<li>Mỗi lớp conv có <strong>C_out bộ lọc</strong>, mỗi bộ lọc nhìn <strong>mọi kênh</strong> đầu vào và cho ra một kênh đầu ra. Ảnh màu 3 kênh qua <code>Conv2d(3, 32, 3)</code> thành 32 kênh đặc trưng.</li>
+<li><strong>MaxPool2d(2)</strong> lấy max trong mỗi ô 2×2: giảm kích thước một nửa, giữ lại đặc trưng mạnh nhất, làm model ít nhạy với dịch chuyển nhỏ.</li>
+<li>Mẫu kiến trúc kinh điển: [Conv → BatchNorm → ReLU] × 2 → MaxPool, lặp lại vài khối, mỗi khối gấp đôi số kênh và giảm nửa kích thước, cuối cùng là lớp Linear phân loại.</li>
+</ul>
+<div class="hl"><pre><span></span><code><span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">block</span><span class="tk-p">(</span><span class="tk-n">cin</span><span class="tk-p">,</span> <span class="tk-n">cout</span><span class="tk-p">):</span>
+    <span class="tk-k">return</span> <span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">Sequential</span><span class="tk-p">(</span><span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">Conv2d</span><span class="tk-p">(</span><span class="tk-n">cin</span><span class="tk-p">,</span> <span class="tk-n">cout</span><span class="tk-p">,</span> <span class="tk-mi">3</span><span class="tk-p">,</span> <span class="tk-n">padding</span><span class="tk-o">=</span><span class="tk-mi">1</span><span class="tk-p">),</span> <span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">BatchNorm2d</span><span class="tk-p">(</span><span class="tk-n">cout</span><span class="tk-p">),</span> <span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">ReLU</span><span class="tk-p">(),</span>
+                         <span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">Conv2d</span><span class="tk-p">(</span><span class="tk-n">cout</span><span class="tk-p">,</span> <span class="tk-n">cout</span><span class="tk-p">,</span> <span class="tk-mi">3</span><span class="tk-p">,</span> <span class="tk-n">padding</span><span class="tk-o">=</span><span class="tk-mi">1</span><span class="tk-p">),</span> <span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">BatchNorm2d</span><span class="tk-p">(</span><span class="tk-n">cout</span><span class="tk-p">),</span> <span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">ReLU</span><span class="tk-p">(),</span>
+                         <span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">MaxPool2d</span><span class="tk-p">(</span><span class="tk-mi">2</span><span class="tk-p">))</span>
+<span class="tk-n">model</span> <span class="tk-o">=</span> <span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">Sequential</span><span class="tk-p">(</span><span class="tk-n">block</span><span class="tk-p">(</span><span class="tk-mi">3</span><span class="tk-p">,</span> <span class="tk-mi">32</span><span class="tk-p">),</span> <span class="tk-n">block</span><span class="tk-p">(</span><span class="tk-mi">32</span><span class="tk-p">,</span> <span class="tk-mi">64</span><span class="tk-p">),</span> <span class="tk-n">block</span><span class="tk-p">(</span><span class="tk-mi">64</span><span class="tk-p">,</span> <span class="tk-mi">128</span><span class="tk-p">),</span>     <span class="tk-c1"># 32→16→8→4</span>
+                      <span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">Flatten</span><span class="tk-p">(),</span> <span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">Linear</span><span class="tk-p">(</span><span class="tk-mi">128</span> <span class="tk-o">*</span> <span class="tk-mi">4</span> <span class="tk-o">*</span> <span class="tk-mi">4</span><span class="tk-p">,</span> <span class="tk-mi">10</span><span class="tk-p">))</span>
 </code></pre></div>
 
-<p>Khi train, BatchNorm dùng thống kê của batch hiện tại và cập nhật <strong>running mean/var</strong>. Khi eval, nó dùng running mean/var. Đó là lý do phải gọi <code>model.train()</code> và <code>model.eval()</code> đúng chỗ.</p>
-<p><strong>Dropout(p)</strong> khi train tắt ngẫu nhiên tỉ lệ p neuron và nhân phần còn lại với 1/(1−p) để giữ kỳ vọng. Khi eval, dropout không làm gì. Nó buộc mạng không phụ thuộc vào vài neuron riêng lẻ.</p>
-<h2 id="lt-6">Data augmentation và overfitting</h2>
-<p>Augmentation tạo biến thể của ảnh train mỗi epoch: cắt ngẫu nhiên, lật ngang, đổi màu nhẹ. Model thấy "nhiều" dữ liệu hơn mà không cần gán nhãn thêm. Chỉ áp dụng cho train, <strong>không bao giờ</strong> cho val/test.</p>
-<p>Dấu hiệu overfitting trên learning curve: train loss tiếp tục giảm, val loss đi ngang rồi tăng. Thuốc chữa theo thứ tự nên thử: thêm augmentation, weight decay, dropout, model nhỏ hơn, dừng sớm theo val.</p>
+<div class="box pitfall">
+<div class="box-h">Lỗi hay gặp</div>
+<p><strong>Tính sai kích thước trước lớp Linear.</strong> Sau ba lần MaxPool2d(2), ảnh 32×32 còn 4×4; nhân 128 kênh là 2.048 đầu vào cho Linear. Tính sai thì lỗi "mat1 and mat2 shapes cannot be multiplied". Mẹo: dùng <code>nn.LazyLinear(10)</code> để PyTorch tự suy ra, hoặc chạy một batch giả và in shape trước lớp Linear.</p>
+</div>
+<div class="box check">
+<div class="box-h">Tự kiểm tra nhanh</div>
+<p>Ảnh 64×64 qua Conv2d kernel 3, padding 1, stride 1, rồi MaxPool2d(2), rồi Conv2d kernel 3, padding 0, stride 1.</p>
+<div class="ans" id="p2-2-t-b149-a1">
+<div class="ans-fields"><label>Kích thước sau conv đầu<input inputmode="decimal" data-ans="64.0" data-tol="0.0" autocomplete="off"></label><label>Sau MaxPool<input inputmode="decimal" data-ans="32.0" data-tol="0.0" autocomplete="off"></label><label>Sau conv thứ hai<input inputmode="decimal" data-ans="30.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div>
+<div aria-live="polite" class="ans-fb"></div>
+</div>
+</div>
+<h2 id="lt-5">BatchNorm và Dropout</h2>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Mạng sâu khó train vì phân phối đầu vào của mỗi lớp thay đổi liên tục khi các lớp trước được cập nhật. BatchNorm ổn định điều đó, cho phép learning rate lớn hơn và train nhanh hơn nhiều. Dropout là cách đơn giản nhất để chống học thuộc ở lớp kết nối đầy đủ.</p>
+</div>
+<h3>BatchNorm</h3>
+<p>BatchNorm chuẩn hóa đầu ra của lớp theo thống kê của batch, rồi co giãn bằng hai tham số học được:</p>
+<div class="hl"><pre><span></span><code>x̂ = (x − μ_batch) / √(σ²_batch + ε)
+y = γ·x̂ + β                         γ, β học được: mạng có thể "hoàn tác" chuẩn hóa nếu cần
+</code></pre></div>
+
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>Một kênh trong batch có 4 giá trị [1, 3, 5, 11]. μ = 5, σ² = (16 + 4 + 0 + 36)/4 = 14.</p>
+<ul>
+<li>x̂ của 11 = (11 − 5)/√14 ≈ <strong>1.604</strong></li>
+<li>x̂ của 1 = (1 − 5)/√14 ≈ −1.069</li>
+</ul>
+<p>Với γ = 1, β = 0 (giá trị khởi tạo), đầu ra chính là x̂: trung bình 0, phương sai 1.</p>
+</div>
+<p>Với ảnh, BatchNorm2d chuẩn hóa <strong>theo từng kênh</strong>, gộp qua batch và mọi vị trí (N, H, W). Mỗi kênh có một cặp γ, β, nên <code>BatchNorm2d(C)</code> có 2C tham số học được.</p>
+<p><strong>Train và eval khác nhau:</strong> khi train, BatchNorm dùng thống kê của batch hiện tại và cập nhật dần <strong>running mean/var</strong>. Khi eval, nó dùng running mean/var (vì lúc dự đoán có thể chỉ có một ảnh, không có "batch").</p>
+<h3>Dropout</h3>
+<p>Khi train, <strong>Dropout(p)</strong> tắt ngẫu nhiên tỉ lệ p neuron và nhân phần còn lại với 1/(1 − p) để giữ nguyên kỳ vọng. Khi eval, dropout không làm gì.</p>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>Dropout(0.2), một neuron có giá trị 4. Khi train: 20% khả năng thành 0, 80% khả năng thành 4 / 0.8 = <strong>5</strong>. Kỳ vọng: 0.8 × 5 = 4, đúng bằng giá trị gốc, nên lúc eval (không dropout) đầu ra cùng thang đo.</p>
+</div>
+<p>Dropout buộc mạng không dựa vào vài neuron riêng lẻ, giống train một tập hợp nhiều mạng con rồi lấy trung bình. Hay dùng ở lớp Linear (p = 0.2–0.5); với CNN hiện đại có BatchNorm, dropout ít được dùng trong các khối conv.</p>
 <div class="keep">
 <p><strong>Ghi nhớ:</strong> <code>model.train()</code> khi train, <code>model.eval()</code> và <code>torch.no_grad()</code> khi đánh giá. Quên một trong hai là lỗi phổ biến nhất khiến kết quả lệch mà không báo lỗi gì.</p>
-</div></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p2.2:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 5</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Kích thước đầu ra của convolution</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Ảnh vào 32×32.</p>
+</div>
+<div class="box pitfall">
+<div class="box-h">Lỗi hay gặp</div>
+<p><strong>Batch quá nhỏ với BatchNorm.</strong> Với batch 2–4, thống kê batch rất nhiễu và BatchNorm làm hại nhiều hơn giúp. Khi buộc phải dùng batch nhỏ (ảnh độ phân giải cao, video), dùng <strong>GroupNorm</strong> hoặc <strong>LayerNorm</strong> (không phụ thuộc batch). Transformer dùng LayerNorm vì lý do này (P3).</p>
+</div>
+<h2 id="lt-6">Data augmentation và overfitting</h2>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Dữ liệu có nhãn đắt. Augmentation tạo ra "dữ liệu mới" miễn phí bằng cách biến đổi ảnh có sẵn theo những cách không làm đổi nhãn. Trên các bộ dữ liệu ảnh nhỏ, augmentation thường là cách cải thiện accuracy rẻ nhất.</p>
+</div>
+<p>Mỗi epoch, mỗi ảnh train được biến đổi ngẫu nhiên một chút. Model thấy "nhiều" ảnh khác nhau hơn và học được rằng một con mèo lệch sang trái hay tối hơn một chút vẫn là con mèo.</p>
+<figure class="fig"><img src="../assets/fig/p2-2-augment.svg" alt="Một số phép augmentation. Phải chọn phép không đổi nhãn: lật ngang chữ số 3 tạo ra một hình không còn là chữ số 3, nên không dùng cho chữ số; nhưng với ảnh chó mèo thì lật ngang rất tốt." loading="lazy"><figcaption>Một số phép augmentation. Phải chọn phép không đổi nhãn: lật ngang chữ số 3 tạo ra một hình không còn là chữ số 3, nên không dùng cho chữ số; nhưng với ảnh chó mèo thì lật ngang rất tốt.</figcaption></figure>
+
+<div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">torchvision.transforms</span><span class="tk-w"> </span><span class="tk-k">as</span><span class="tk-w"> </span><span class="tk-nn">T</span>
+<span class="tk-n">train_tf</span> <span class="tk-o">=</span> <span class="tk-n">T</span><span class="tk-o">.</span><span class="tk-n">Compose</span><span class="tk-p">([</span>
+    <span class="tk-n">T</span><span class="tk-o">.</span><span class="tk-n">RandomCrop</span><span class="tk-p">(</span><span class="tk-mi">32</span><span class="tk-p">,</span> <span class="tk-n">padding</span><span class="tk-o">=</span><span class="tk-mi">4</span><span class="tk-p">),</span>            <span class="tk-c1"># đệm 4 pixel rồi cắt ngẫu nhiên lại 32×32</span>
+    <span class="tk-n">T</span><span class="tk-o">.</span><span class="tk-n">RandomHorizontalFlip</span><span class="tk-p">(),</span>
+    <span class="tk-n">T</span><span class="tk-o">.</span><span class="tk-n">ColorJitter</span><span class="tk-p">(</span><span class="tk-mf">0.2</span><span class="tk-p">,</span> <span class="tk-mf">0.2</span><span class="tk-p">,</span> <span class="tk-mf">0.2</span><span class="tk-p">),</span>
+    <span class="tk-n">T</span><span class="tk-o">.</span><span class="tk-n">ToTensor</span><span class="tk-p">(),</span>
+    <span class="tk-n">T</span><span class="tk-o">.</span><span class="tk-n">Normalize</span><span class="tk-p">((</span><span class="tk-mf">0.4914</span><span class="tk-p">,</span> <span class="tk-mf">0.4822</span><span class="tk-p">,</span> <span class="tk-mf">0.4465</span><span class="tk-p">),</span> <span class="tk-p">(</span><span class="tk-mf">0.2470</span><span class="tk-p">,</span> <span class="tk-mf">0.2435</span><span class="tk-p">,</span> <span class="tk-mf">0.2616</span><span class="tk-p">)),</span>
+<span class="tk-p">])</span>
+<span class="tk-n">test_tf</span> <span class="tk-o">=</span> <span class="tk-n">T</span><span class="tk-o">.</span><span class="tk-n">Compose</span><span class="tk-p">([</span><span class="tk-n">T</span><span class="tk-o">.</span><span class="tk-n">ToTensor</span><span class="tk-p">(),</span> <span class="tk-n">T</span><span class="tk-o">.</span><span class="tk-n">Normalize</span><span class="tk-p">((</span><span class="tk-mf">0.4914</span><span class="tk-p">,</span> <span class="tk-mf">0.4822</span><span class="tk-p">,</span> <span class="tk-mf">0.4465</span><span class="tk-p">),</span> <span class="tk-p">(</span><span class="tk-mf">0.2470</span><span class="tk-p">,</span> <span class="tk-mf">0.2435</span><span class="tk-p">,</span> <span class="tk-mf">0.2616</span><span class="tk-p">))])</span>
+</code></pre></div>
+
+<p>Chỉ áp dụng augmentation cho train, <strong>không bao giờ</strong> cho val/test: bạn muốn đo model trên ảnh thật như lúc chạy thật.</p>
+<h3>Đọc learning curve</h3>
+<figure class="fig"><img src="../assets/fig/p2-2-overfit.svg" alt="MLP lớn train trên chỉ 100 ảnh chữ số. Trái: train loss về 0 rất nhanh, val loss thấp nhất ở epoch 50 rồi tăng dần (0.41 → 0.48): model bắt đầu học thuộc. Phải: thêm dropout và weight decay, val loss thấp hơn (0.37). Trên bộ dữ liệu dễ như thế này, accuracy hai bên gần bằng nhau." loading="lazy"><figcaption>MLP lớn train trên chỉ 100 ảnh chữ số. Trái: train loss về 0 rất nhanh, val loss thấp nhất ở epoch 50 rồi tăng dần (0.41 → 0.48): model bắt đầu học thuộc. Phải: thêm dropout và weight decay, val loss thấp hơn (0.37). Trên bộ dữ liệu dễ như thế này, accuracy hai bên gần bằng nhau.</figcaption></figure>
+
+<p>Dấu hiệu overfitting: train loss tiếp tục giảm, val loss đi ngang rồi tăng. Thuốc chữa theo thứ tự nên thử:</p>
+<ol>
+<li>Thêm augmentation (rẻ nhất, thường hiệu quả nhất với ảnh).</li>
+<li>Weight decay (AdamW <code>weight_decay=0.01–0.1</code>).</li>
+<li>Dropout ở các lớp Linear.</li>
+<li>Model nhỏ hơn.</li>
+<li><strong>Early stopping</strong>: lưu checkpoint có val loss tốt nhất, dừng khi không cải thiện sau vài epoch.</li>
+<li>Thu thập thêm dữ liệu (đắt nhất, nhưng hiệu quả nhất về lâu dài).</li>
+</ol>
+<details class="fold deep">
+<summary>Đào sâu thêm</summary>
+<p><strong>Transfer learning thường thắng tất cả các mẹo trên.</strong> Thay vì train CNN từ đầu, lấy một model đã train trên ImageNet (hàng triệu ảnh) và chỉ fine-tune lớp cuối. Model đó đã biết cạnh, hoa văn, bộ phận vật thể; bạn chỉ dạy nó phân biệt các lớp của mình. Với vài nghìn ảnh, transfer learning thường hơn train từ đầu 10–20 điểm accuracy. Đây là nội dung P2.3.</p>
+</details>
+<div class="box check">
+<div class="box-h">Tự kiểm tra nhanh</div>
+<p>Dropout(0.25), neuron có giá trị 6 và không bị tắt. Một batch có 4 ảnh, BatchNorm2d(16).</p>
+<div class="ans" id="p2-2-t-b219-a1">
+<div class="ans-fields"><label>Giá trị sau dropout khi train<input inputmode="decimal" data-ans="8.0" data-tol="0.001" autocomplete="off"></label><label>Số tham số học được của BatchNorm2d(16)<input inputmode="decimal" data-ans="32.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div>
+<div aria-live="polite" class="ans-fb"></div>
+</div>
+</div>
+<h2 id="lt-7">Tóm tắt bài và thuật ngữ</h2>
+<table>
+<thead>
+<tr>
+<th>Chủ đề</th>
+<th>Điều cần nhớ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Mini-batch</td>
+<td>step/epoch = ⌈N / batch⌉; shuffle tập train</td>
+</tr>
+<tr>
+<td>Optimizer</td>
+<td>AdamW mặc định; SGD + momentum cho CNN khi chịu tune</td>
+</tr>
+<tr>
+<td>Lịch lr</td>
+<td>warmup ngắn + cosine decay</td>
+</tr>
+<tr>
+<td>Khởi tạo</td>
+<td>He cho ReLU; PyTorch đã làm sẵn</td>
+</tr>
+<tr>
+<td>Convolution</td>
+<td>cục bộ + dùng chung trọng số; out = ⌊(n + 2p − k)/s⌋ + 1</td>
+</tr>
+<tr>
+<td>BatchNorm</td>
+<td>chuẩn hóa theo kênh; train dùng thống kê batch, eval dùng running</td>
+</tr>
+<tr>
+<td>Dropout</td>
+<td>chỉ khi train, nhân 1/(1 − p)</td>
+</tr>
+<tr>
+<td>Augmentation</td>
+<td>chỉ cho train, phải giữ nguyên nhãn</td>
+</tr>
+<tr>
+<td>Overfit</td>
+<td>augmentation → weight decay → dropout → early stopping</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Thuật ngữ</th>
+<th>Nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>mini-batch</td>
+<td>nhóm mẫu dùng cho một lần cập nhật</td>
+</tr>
+<tr>
+<td>DataLoader</td>
+<td>công cụ chia batch, xáo trộn, nạp song song</td>
+</tr>
+<tr>
+<td>momentum</td>
+<td>quán tính, cộng dồn gradient các bước trước</td>
+</tr>
+<tr>
+<td>Adam / AdamW</td>
+<td>optimizer có bước thích nghi / thêm weight decay tách riêng</td>
+</tr>
+<tr>
+<td>warmup / cosine decay</td>
+<td>tăng dần lr lúc đầu / giảm lr theo hàm cos</td>
+</tr>
+<tr>
+<td>He / Xavier init</td>
+<td>các cách khởi tạo giữ phương sai qua lớp</td>
+</tr>
+<tr>
+<td>convolution / kernel</td>
+<td>phép trượt bộ lọc / bộ lọc</td>
+</tr>
+<tr>
+<td>padding / stride</td>
+<td>đệm viền / bước trượt</td>
+</tr>
+<tr>
+<td>feature map</td>
+<td>bản đồ đặc trưng, đầu ra của một bộ lọc</td>
+</tr>
+<tr>
+<td>pooling</td>
+<td>gộp vùng nhỏ (max, average) để giảm kích thước</td>
+</tr>
+<tr>
+<td>BatchNorm / LayerNorm / GroupNorm</td>
+<td>các cách chuẩn hóa kích hoạt</td>
+</tr>
+<tr>
+<td>dropout</td>
+<td>tắt ngẫu nhiên neuron khi train</td>
+</tr>
+<tr>
+<td>data augmentation</td>
+<td>biến đổi ảnh train để có thêm dữ liệu</td>
+</tr>
+<tr>
+<td>early stopping</td>
+<td>dừng khi val không cải thiện</td>
+</tr>
+</tbody>
+</table></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p2.2:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 5</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Kích thước đầu ra của convolution</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Ảnh vào 32×32.</p>
 <div class="ans" id="p2-2-e1-a1"><div class="ans-fields"><label>k=3, p=1, s=1<input inputmode="decimal" data-ans="32.0" data-tol="0.0" autocomplete="off"></label><label>k=5, p=0, s=2<input inputmode="decimal" data-ans="14.0" data-tol="0.0" autocomplete="off"></label><label>Sau MaxPool2d(2) của trường hợp đầu<input inputmode="decimal" data-ans="16.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
 
 <details class="fold solution">
@@ -167,7 +550,7 @@ Số tham số Conv2d(C_in, C_out, k) = C_in · C_out · k · k + C_out
     </div>
     <aside class="aside">
       <div class="abox"><h4>Tiến độ bài này</h4><div class="ring"><svg viewBox="0 0 64 64" aria-hidden="true"><circle class="bg" cx="32" cy="32" r="28"/><circle class="fg" cx="32" cy="32" r="28" stroke-dasharray="176" stroke-dashoffset="176"/></svg><div><b id="ring-n">0/3</b><span id="ring-sub">phần đã xong</span></div></div></div>
-      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Mini-batch, epoch, iteration</a></li><li><a href="#lt-2">Optimizer: SGD, momentum, Adam, AdamW</a></li><li><a href="#lt-3">Lịch learning rate và khởi tạo</a></li><li><a href="#lt-4">Convolution: vì sao hợp với ảnh</a></li><li><a href="#lt-5">BatchNorm và Dropout</a></li><li><a href="#lt-6">Data augmentation và overfitting</a></li></ol></div>
+      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Mini-batch, epoch, iteration</a></li><li><a href="#lt-2">Optimizer: SGD, momentum, Adam, AdamW</a></li><li><a href="#lt-3">Lịch learning rate, warmup và khởi tạo</a></li><li><a href="#lt-4">Convolution: vì sao hợp với ảnh</a></li><li><a href="#lt-5">BatchNorm và Dropout</a></li><li><a href="#lt-6">Data augmentation và overfitting</a></li><li><a href="#lt-7">Tóm tắt bài và thuật ngữ</a></li></ol></div>
       <div class="abox"><h4>Notebook</h4><div style="display:grid;gap:8px"><a class="dl" href="../notebooks/lab01_training_loop.ipynb" download><span class="ext">IPYNB</span><span>Bài tập<span style="display:block;font:400 12px var(--f-mono);color:var(--muted)">lab01_training_loop.ipynb</span></span></a><a class="dl" href="../notebooks/lab01_training_loop_LOI_GIAI.ipynb" download><span class="ext">IPYNB</span><span>Lời giải<span style="display:block;font:400 12px var(--f-mono);color:var(--muted)">lab01_training_loop_LOI_GIAI.ipynb</span></span></a></div></div>
       <div class="abox"><h4>Cùng giai đoạn</h4><ul><li><a href="p2-1.html">Bài 1 · Mạng nơ-ron học thế nào</a></li><li><span class=cur>Bài 2 · Train mạng thật</span></li><li><a href="p2-3.html">CNN hiện đại và transfer learning</a></li></ul></div>
     </aside>

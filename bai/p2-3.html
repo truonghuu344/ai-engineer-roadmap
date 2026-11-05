@@ -22,19 +22,93 @@
 <main class="container">
   <div class="crumbs"><a href="../bai-hoc.html">Bài học</a><span>/</span><a href="../bai-hoc.html#p2">P2 · Deep Learning nền tảng</a><span>/</span><span>P2.3</span></div>
   <section class="lhero"><div class="code">P2.3</div><h1>CNN hiện đại và transfer learning</h1><div class="lmeta"><span class="m">Giai đoạn P2 · Deep Learning nền tảng</span><span class="m">Tuần 8–12</span><span class="chip ready"><span class="dot"></span>Có nội dung đầy đủ</span></div>
-    <div class="intro"><p>Trong công việc thật, gần như không ai train CNN từ đầu. Ta lấy một model đã học trên hàng triệu ảnh (ImageNet) rồi <strong>chuyển giao</strong> sang bài toán của mình với vài trăm ảnh. Bài này giải thích vì sao ResNet train được rất sâu, cách fine-tune đúng, và cách debug khi training không chạy.</p></div></section>
+    <div class="intro"><p>Trong công việc thật, gần như không ai train CNN từ đầu. Ta lấy một model đã học trên hàng triệu ảnh (ImageNet) rồi <strong>chuyển giao</strong> sang bài toán của mình với vài trăm ảnh. Bài này giải thích vì sao ResNet train được rất sâu, cách fine-tune đúng, cách train nhanh hơn bằng mixed precision, và cách debug khi training không chạy.</p></div></section>
   
-  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">4 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
+  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">5 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
   <div class="lgrid" style="margin-top:22px">
-    <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">ResNet và kết nối tắt</h2>
-<p>Mạng càng sâu thì gradient phải đi qua càng nhiều lớp khi backprop. Nếu mỗi lớp nhân gradient với một số nhỏ hơn 1, sau 50 lớp gradient gần như bằng 0 (<strong>vanishing gradient</strong>) và các lớp đầu không học được.</p>
-<p>ResNet thêm <strong>kết nối tắt</strong>: đầu ra của block là <code>x + F(x)</code> thay vì <code>F(x)</code>.</p>
+    <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">Vanishing gradient và ResNet</h2>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Mạng sâu hơn học được đặc trưng phức tạp hơn, nhưng trước năm 2015 người ta không train nổi mạng quá khoảng 20 lớp: thêm lớp còn làm kết quả tệ đi. ResNet giải quyết điều đó bằng một thay đổi một dòng, và ý tưởng của nó có mặt trong mọi model lớn hiện nay, kể cả Transformer và LLM.</p>
+</div>
+<h3>Gradient bị nhân nhỏ dần qua các lớp</h3>
+<p>Khi backprop, gradient ở lớp đầu là <strong>tích</strong> của đạo hàm qua mọi lớp phía sau (quy tắc dây chuyền). Nếu mỗi lớp nhân với một số nhỏ hơn 1, tích đó co lại theo cấp số nhân.</p>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>Đạo hàm của sigmoid tối đa là 0.25. Qua 10 lớp sigmoid, gradient bị nhân với tối đa 0.25¹⁰ ≈ <strong>9.5 × 10⁻⁷</strong>: lớp đầu nhận gradient nhỏ hơn một phần triệu so với lớp cuối, gần như không học được gì.</p>
+</div>
+<figure class="fig"><img src="../assets/fig/p2-3-gradnorm.svg" alt="Đo thật trên mạng 30 lớp sigmoid khởi tạo ngẫu nhiên: không có kết nối tắt, gradient tắt dần về phía đầu vào. Có kết nối tắt, mọi lớp nhận gradient cỡ như nhau." loading="lazy"><figcaption>Đo thật trên mạng 30 lớp sigmoid khởi tạo ngẫu nhiên: không có kết nối tắt, gradient tắt dần về phía đầu vào. Có kết nối tắt, mọi lớp nhận gradient cỡ như nhau.</figcaption></figure>
+
+<p>ReLU (P2.1) giảm bớt vấn đề, BatchNorm (P2.2) giúp thêm, nhưng với 50–100 lớp vẫn chưa đủ.</p>
+<h3>Kết nối tắt</h3>
+<p>ResNet cho đầu ra của mỗi block là <strong>x + F(x)</strong> thay vì F(x): block chỉ cần học <strong>phần chênh lệch</strong> (residual) cần cộng thêm vào đầu vào.</p>
 <div class="hl"><pre><span></span><code>y = x + F(x)   ⇒   ∂y/∂x = 1 + ∂F/∂x
 </code></pre></div>
 
-<p>Số 1 trong đạo hàm là "đường cao tốc" cho gradient: dù F học gì, gradient vẫn đi thẳng về các lớp trước. Nhờ đó ResNet train được 50, 101, 152 lớp. Kết nối tắt cũng có mặt trong mọi Transformer.</p>
+<figure class="fig"><img src="../assets/fig/p2-3-resblock.svg" alt="Một residual block: hai lớp conv học F(x), đường tắt mang x đi thẳng tới phép cộng." loading="lazy"><figcaption>Một residual block: hai lớp conv học F(x), đường tắt mang x đi thẳng tới phép cộng.</figcaption></figure>
+
+<p>Số <strong>1</strong> trong đạo hàm là "đường cao tốc" cho gradient: dù F học gì (kể cả khi ∂F/∂x rất nhỏ), gradient vẫn đi thẳng về các lớp trước. Thêm một block mới cũng không thể làm mạng tệ đi nhiều: nếu block đó vô ích, nó chỉ cần học F(x) ≈ 0 để trở thành phép đồng nhất. Nhờ vậy ResNet train được 50, 101, 152 lớp.</p>
+<table>
+<thead>
+<tr>
+<th>Model</th>
+<th>Số lớp</th>
+<th>Tham số</th>
+<th>Ghi chú</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ResNet-18</td>
+<td>18</td>
+<td>11.7M</td>
+<td>nhanh, đủ cho hầu hết bài toán nhỏ</td>
+</tr>
+<tr>
+<td>ResNet-50</td>
+<td>50</td>
+<td>25.6M</td>
+<td>"bottleneck block", baseline kinh điển</td>
+</tr>
+<tr>
+<td>EfficientNet, ConvNeXt</td>
+<td>khác nhau</td>
+<td>khác nhau</td>
+<td>CNN hiện đại, chính xác hơn với cùng chi phí</td>
+</tr>
+<tr>
+<td>ViT (P7)</td>
+<td>Transformer</td>
+<td>86M (Base)</td>
+<td>cần nhiều dữ liệu pretrain hơn</td>
+</tr>
+</tbody>
+</table>
+<div class="box check">
+<div class="box-h">Tự kiểm tra nhanh</div>
+<p>Hai block nối tiếp, mỗi block có ∂F/∂x = 0.2 (vô hướng, để đơn giản).</p>
+<div class="ans" id="p2-3-t-b34-a1">
+<div class="ans-fields"><label>Gradient qua 2 block không có kết nối tắt<input inputmode="decimal" data-ans="0.04" data-tol="0.0001" autocomplete="off"></label><label>Gradient qua 2 block có kết nối tắt<input inputmode="decimal" data-ans="1.44" data-tol="0.0001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div>
+<div aria-live="polite" class="ans-fb"></div>
+</div>
+</div>
 <h2 id="lt-2">Transfer learning: linear probe và fine-tune</h2>
-<p>Model pretrained trên ImageNet đã học được cạnh, hoa văn, hình dạng: những thứ hữu ích cho hầu hết bài toán ảnh. Hai cách dùng:</p>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Dữ liệu có nhãn của bạn thường chỉ vài trăm đến vài nghìn ảnh: quá ít để train CNN từ đầu. Model pretrained trên ImageNet (1.2 triệu ảnh, 1.000 lớp) đã học được cạnh, hoa văn, hình dạng, bộ phận vật thể. Tái dùng những thứ đó thường cho kết quả tốt hơn hẳn và train trong vài phút thay vì vài ngày.</p>
+</div>
+<h3>Backbone và head</h3>
+<p>Một model phân loại gồm hai phần:</p>
+<ul>
+<li><strong>Backbone</strong>: toàn bộ các lớp conv, biến ảnh thành một vector đặc trưng (ResNet-18 cho ra 512 số, ResNet-50 cho 2.048 số).</li>
+<li><strong>Head</strong>: lớp Linear cuối biến vector đặc trưng thành logits của các lớp.</li>
+</ul>
+<p>Transfer learning giữ backbone, thay head bằng một lớp mới có số đầu ra đúng bằng số lớp của bạn.</p>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>ResNet-50 cho bài phân loại 5 loại lá cây: head mới <code>Linear(2048, 5)</code> có 2.048 × 5 + 5 = <strong>10.245</strong> tham số. Backbone có khoảng 23.5 triệu tham số đã học sẵn. Với linear probe, bạn chỉ train 10.245 tham số đó: rất nhanh, khó overfit.</p>
+</div>
+<h3>Hai cách dùng</h3>
 <table>
 <thead>
 <tr>
@@ -46,7 +120,7 @@
 <tbody>
 <tr>
 <td>Train gì</td>
-<td>chỉ lớp cuối (head mới)</td>
+<td>chỉ head mới</td>
 <td>mọi lớp</td>
 </tr>
 <tr>
@@ -56,51 +130,282 @@
 </tr>
 <tr>
 <td>Tốc độ</td>
-<td>rất nhanh</td>
+<td>rất nhanh, có thể tính sẵn đặc trưng một lần</td>
 <td>chậm hơn</td>
 </tr>
 <tr>
-<td>Khi nào</td>
-<td>dữ liệu giống ImageNet, ít ảnh</td>
-<td>dữ liệu khác biệt (X-quang, ảnh vệ tinh)</td>
+<td>Rủi ro</td>
+<td>trần thấp nếu dữ liệu khác xa ImageNet</td>
+<td>phá hỏng đặc trưng pretrained nếu lr lớn</td>
 </tr>
 </tbody>
 </table>
-<p>Cách làm phổ biến: linear probe vài epoch cho head ổn định, rồi mở khóa toàn bộ và fine-tune với <strong>learning rate nhỏ</strong> cho backbone (ví dụ bằng 1/10 lr của head). Learning rate lớn sẽ phá những gì model đã học.</p>
-<div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">torchvision</span>
+<figure class="fig"><img src="../assets/fig/p2-3-strategy.svg" alt="Chọn chiến lược theo hai câu hỏi: có bao nhiêu ảnh, và ảnh của bạn giống ảnh đời thường đến đâu." loading="lazy"><figcaption>Chọn chiến lược theo hai câu hỏi: có bao nhiêu ảnh, và ảnh của bạn giống ảnh đời thường đến đâu.</figcaption></figure>
+
+<h3>Công thức hai giai đoạn</h3>
+<p>Cách làm phổ biến và an toàn:</p>
+<ol>
+<li><strong>Giai đoạn 1 (linear probe):</strong> khóa backbone, train head mới vài epoch với lr khoảng 1e-3. Head ngẫu nhiên lúc đầu tạo gradient lớn và vô nghĩa; khóa backbone để gradient đó không phá hỏng các lớp đã học.</li>
+<li><strong>Giai đoạn 2 (fine-tune):</strong> mở khóa toàn bộ, train tiếp với <strong>learning rate nhỏ</strong> cho backbone (thường bằng 1/10 lr của head).</li>
+</ol>
+<div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">torch</span><span class="tk-o">,</span><span class="tk-w"> </span><span class="tk-nn">torchvision</span>
 <span class="tk-n">m</span> <span class="tk-o">=</span> <span class="tk-n">torchvision</span><span class="tk-o">.</span><span class="tk-n">models</span><span class="tk-o">.</span><span class="tk-n">resnet18</span><span class="tk-p">(</span><span class="tk-n">weights</span><span class="tk-o">=</span><span class="tk-s2">"IMAGENET1K_V1"</span><span class="tk-p">)</span>
-<span class="tk-n">m</span><span class="tk-o">.</span><span class="tk-n">fc</span> <span class="tk-o">=</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">Linear</span><span class="tk-p">(</span><span class="tk-n">m</span><span class="tk-o">.</span><span class="tk-n">fc</span><span class="tk-o">.</span><span class="tk-n">in_features</span><span class="tk-p">,</span> <span class="tk-n">num_classes</span><span class="tk-p">)</span>       <span class="tk-c1"># head mới</span>
-<span class="tk-k">for</span> <span class="tk-n">p</span> <span class="tk-ow">in</span> <span class="tk-n">m</span><span class="tk-o">.</span><span class="tk-n">parameters</span><span class="tk-p">():</span> <span class="tk-n">p</span><span class="tk-o">.</span><span class="tk-n">requires_grad</span> <span class="tk-o">=</span> <span class="tk-kc">False</span>             <span class="tk-c1"># linear probe: khóa backbone</span>
+<span class="tk-n">m</span><span class="tk-o">.</span><span class="tk-n">fc</span> <span class="tk-o">=</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">Linear</span><span class="tk-p">(</span><span class="tk-n">m</span><span class="tk-o">.</span><span class="tk-n">fc</span><span class="tk-o">.</span><span class="tk-n">in_features</span><span class="tk-p">,</span> <span class="tk-n">num_classes</span><span class="tk-p">)</span>        <span class="tk-c1"># head mới: 512 → num_classes</span>
+
+<span class="tk-c1"># Giai đoạn 1: linear probe</span>
+<span class="tk-k">for</span> <span class="tk-n">p</span> <span class="tk-ow">in</span> <span class="tk-n">m</span><span class="tk-o">.</span><span class="tk-n">parameters</span><span class="tk-p">():</span> <span class="tk-n">p</span><span class="tk-o">.</span><span class="tk-n">requires_grad</span> <span class="tk-o">=</span> <span class="tk-kc">False</span>
 <span class="tk-k">for</span> <span class="tk-n">p</span> <span class="tk-ow">in</span> <span class="tk-n">m</span><span class="tk-o">.</span><span class="tk-n">fc</span><span class="tk-o">.</span><span class="tk-n">parameters</span><span class="tk-p">():</span> <span class="tk-n">p</span><span class="tk-o">.</span><span class="tk-n">requires_grad</span> <span class="tk-o">=</span> <span class="tk-kc">True</span>
+<span class="tk-n">opt</span> <span class="tk-o">=</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">optim</span><span class="tk-o">.</span><span class="tk-n">AdamW</span><span class="tk-p">(</span><span class="tk-n">m</span><span class="tk-o">.</span><span class="tk-n">fc</span><span class="tk-o">.</span><span class="tk-n">parameters</span><span class="tk-p">(),</span> <span class="tk-n">lr</span><span class="tk-o">=</span><span class="tk-mf">1e-3</span><span class="tk-p">)</span>
+<span class="tk-c1"># ... train vài epoch ...</span>
+
+<span class="tk-c1"># Giai đoạn 2: fine-tune toàn bộ, backbone lr nhỏ hơn</span>
+<span class="tk-k">for</span> <span class="tk-n">p</span> <span class="tk-ow">in</span> <span class="tk-n">m</span><span class="tk-o">.</span><span class="tk-n">parameters</span><span class="tk-p">():</span> <span class="tk-n">p</span><span class="tk-o">.</span><span class="tk-n">requires_grad</span> <span class="tk-o">=</span> <span class="tk-kc">True</span>
 <span class="tk-n">opt</span> <span class="tk-o">=</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">optim</span><span class="tk-o">.</span><span class="tk-n">AdamW</span><span class="tk-p">([</span>
     <span class="tk-p">{</span><span class="tk-s2">"params"</span><span class="tk-p">:</span> <span class="tk-n">m</span><span class="tk-o">.</span><span class="tk-n">fc</span><span class="tk-o">.</span><span class="tk-n">parameters</span><span class="tk-p">(),</span> <span class="tk-s2">"lr"</span><span class="tk-p">:</span> <span class="tk-mf">1e-3</span><span class="tk-p">},</span>
     <span class="tk-p">{</span><span class="tk-s2">"params"</span><span class="tk-p">:</span> <span class="tk-p">[</span><span class="tk-n">p</span> <span class="tk-k">for</span> <span class="tk-n">n</span><span class="tk-p">,</span> <span class="tk-n">p</span> <span class="tk-ow">in</span> <span class="tk-n">m</span><span class="tk-o">.</span><span class="tk-n">named_parameters</span><span class="tk-p">()</span> <span class="tk-k">if</span> <span class="tk-ow">not</span> <span class="tk-n">n</span><span class="tk-o">.</span><span class="tk-n">startswith</span><span class="tk-p">(</span><span class="tk-s2">"fc"</span><span class="tk-p">)],</span> <span class="tk-s2">"lr"</span><span class="tk-p">:</span> <span class="tk-mf">1e-4</span><span class="tk-p">},</span>
-<span class="tk-p">])</span>
+<span class="tk-p">],</span> <span class="tk-n">weight_decay</span><span class="tk-o">=</span><span class="tk-mf">0.01</span><span class="tk-p">)</span>
 </code></pre></div>
 
-<p>Nhớ dùng <strong>cùng mean/std chuẩn hóa</strong> như lúc pretrain (ImageNet: mean 0.485, 0.456, 0.406; std 0.229, 0.224, 0.225) và kích thước ảnh tương đương (224×224).</p>
+<h3>Chuẩn hóa và kích thước giống lúc pretrain</h3>
+<p>Model pretrained "quen" với ảnh đã chuẩn hóa theo mean/std của ImageNet: mean (0.485, 0.456, 0.406), std (0.229, 0.224, 0.225), kích thước khoảng 224×224. Dùng cùng các giá trị đó; dùng mean/std của dữ liệu riêng hoặc quên chuẩn hóa sẽ làm đặc trưng sai lệch. Cách chắc chắn nhất: lấy transform đi kèm trọng số.</p>
+<div class="hl"><pre><span></span><code><span class="tk-n">weights</span> <span class="tk-o">=</span> <span class="tk-n">torchvision</span><span class="tk-o">.</span><span class="tk-n">models</span><span class="tk-o">.</span><span class="tk-n">ResNet18_Weights</span><span class="tk-o">.</span><span class="tk-n">IMAGENET1K_V1</span>
+<span class="tk-n">preprocess</span> <span class="tk-o">=</span> <span class="tk-n">weights</span><span class="tk-o">.</span><span class="tk-n">transforms</span><span class="tk-p">()</span>      <span class="tk-c1"># resize, crop, chuẩn hóa đúng như lúc pretrain</span>
+</code></pre></div>
+
+<div class="box pitfall">
+<div class="box-h">Lỗi hay gặp</div>
+<p><strong>Learning rate quá lớn khi fine-tune.</strong> Dùng lr 1e-3 cho cả backbone ngay từ đầu (như khi train từ đầu) thường làm accuracy tụt mạnh ở epoch đầu rồi không hồi phục: các đặc trưng tốt đã bị ghi đè. Triệu chứng: fine-tune toàn bộ còn tệ hơn linear probe. Giảm lr backbone xuống 1e-4 hoặc 1e-5.</p>
+</div>
+<div class="box pitfall">
+<div class="box-h">Lỗi hay gặp</div>
+<p><strong>Quên BatchNorm khi khóa backbone.</strong> <code>requires_grad = False</code> khóa trọng số nhưng <strong>không</strong> khóa running mean/var của BatchNorm: ở chế độ <code>train()</code>, chúng vẫn bị cập nhật theo dữ liệu của bạn. Với batch nhỏ, điều đó có thể làm hỏng backbone. Khi linear probe, đặt các lớp BatchNorm của backbone ở chế độ <code>eval()</code>, hoặc tính sẵn đặc trưng một lần rồi train head trên đó.</p>
+</div>
+<details class="fold deep">
+<summary>Đào sâu thêm</summary>
+<p><strong>Feature extraction một lần.</strong> Với linear probe, backbone không đổi, nên có thể chạy backbone qua toàn bộ tập train <strong>một lần</strong>, lưu vector 512 chiều của mỗi ảnh, rồi train hồi quy logistic (P1.1) trên các vector đó. Nhanh hơn hàng chục lần so với chạy lại backbone mỗi epoch, và là cách tốt để thử nhanh xem transfer learning có hợp với dữ liệu của bạn không. Cùng ý tưởng này dùng embedding cho văn bản ở P4 và CLIP ở P7.</p>
+</details>
 <h2 id="lt-3">Mixed precision và tốc độ</h2>
-<p>GPU hiện đại tính nhanh hơn nhiều ở 16 bit. <strong>Mixed precision</strong> chạy forward/backward ở fp16 hoặc bf16, giữ trọng số chính ở fp32.</p>
-<div class="hl"><pre><span></span><code><span class="tk-n">scaler</span> <span class="tk-o">=</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">amp</span><span class="tk-o">.</span><span class="tk-n">GradScaler</span><span class="tk-p">()</span>
-<span class="tk-k">with</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">autocast</span><span class="tk-p">(</span><span class="tk-n">device_type</span><span class="tk-o">=</span><span class="tk-s2">"cuda"</span><span class="tk-p">,</span> <span class="tk-n">dtype</span><span class="tk-o">=</span><span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">float16</span><span class="tk-p">):</span>
-    <span class="tk-n">loss</span> <span class="tk-o">=</span> <span class="tk-n">criterion</span><span class="tk-p">(</span><span class="tk-n">model</span><span class="tk-p">(</span><span class="tk-n">x</span><span class="tk-p">),</span> <span class="tk-n">y</span><span class="tk-p">)</span>
-<span class="tk-n">scaler</span><span class="tk-o">.</span><span class="tk-n">scale</span><span class="tk-p">(</span><span class="tk-n">loss</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">backward</span><span class="tk-p">();</span> <span class="tk-n">scaler</span><span class="tk-o">.</span><span class="tk-n">step</span><span class="tk-p">(</span><span class="tk-n">opt</span><span class="tk-p">);</span> <span class="tk-n">scaler</span><span class="tk-o">.</span><span class="tk-n">update</span><span class="tk-p">()</span>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>GPU hiện đại tính ở 16 bit nhanh hơn 32 bit nhiều lần và cần một nửa bộ nhớ. Bật mixed precision thường chỉ thêm 3 dòng code mà train nhanh hơn 1,5–3 lần, hoặc cho phép batch lớn hơn gấp đôi.</p>
+</div>
+<h3>Ba định dạng số thực</h3>
+<figure class="fig"><img src="../assets/fig/p2-3-floats.svg" alt="Số bit cho phần mũ quyết định khoảng giá trị (lớn nhất, nhỏ nhất); số bit cho phần định trị quyết định độ chính xác. bf16 giữ khoảng giá trị của fp32 nhưng chính xác kém hơn." loading="lazy"><figcaption>Số bit cho phần mũ quyết định khoảng giá trị (lớn nhất, nhỏ nhất); số bit cho phần định trị quyết định độ chính xác. bf16 giữ khoảng giá trị của fp32 nhưng chính xác kém hơn.</figcaption></figure>
+
+<table>
+<thead>
+<tr>
+<th>Định dạng</th>
+<th>Số lớn nhất</th>
+<th>Khoảng cách giữa hai số gần 1</th>
+<th>Hay gặp vấn đề</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>fp32</td>
+<td>3.4 × 10³⁸</td>
+<td>1.2 × 10⁻⁷</td>
+<td>chậm, tốn bộ nhớ</td>
+</tr>
+<tr>
+<td>fp16</td>
+<td>65.504</td>
+<td>9.8 × 10⁻⁴</td>
+<td>tràn: 70.000 thành <code>inf</code>; số rất nhỏ như 10⁻⁸ thành 0</td>
+</tr>
+<tr>
+<td>bf16</td>
+<td>3.4 × 10³⁸</td>
+<td>7.8 × 10⁻³</td>
+<td>kém chính xác hơn fp16, nhưng hầu như không tràn</td>
+</tr>
+</tbody>
+</table>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>Bộ nhớ trọng số của ResNet-50 (25.6 triệu tham số): fp32 cần 25.6M × 4 byte = <strong>102.4 MB</strong>, bf16 cần <strong>51.2 MB</strong>. Khi train, bộ nhớ chủ yếu dành cho <strong>activation</strong> (đầu ra trung gian của mọi lớp, lưu lại cho backward) và trạng thái optimizer, nên tiết kiệm thật còn lớn hơn ở phần activation.</p>
+</div>
+<h3>Mixed precision trong PyTorch</h3>
+<p>"Mixed" vì không phải mọi thứ đều ở 16 bit: trọng số gốc và bước cập nhật vẫn ở fp32, chỉ forward/backward chạy ở 16 bit. Một số phép nhạy cảm (softmax, loss, norm) được <code>autocast</code> tự giữ ở fp32.</p>
+<div class="hl"><pre><span></span><code><span class="tk-n">scaler</span> <span class="tk-o">=</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">amp</span><span class="tk-o">.</span><span class="tk-n">GradScaler</span><span class="tk-p">()</span>                       <span class="tk-c1"># chỉ cần cho fp16</span>
+<span class="tk-k">for</span> <span class="tk-n">x</span><span class="tk-p">,</span> <span class="tk-n">y</span> <span class="tk-ow">in</span> <span class="tk-n">train_loader</span><span class="tk-p">:</span>
+    <span class="tk-n">opt</span><span class="tk-o">.</span><span class="tk-n">zero_grad</span><span class="tk-p">()</span>
+    <span class="tk-k">with</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">autocast</span><span class="tk-p">(</span><span class="tk-n">device_type</span><span class="tk-o">=</span><span class="tk-s2">"cuda"</span><span class="tk-p">,</span> <span class="tk-n">dtype</span><span class="tk-o">=</span><span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">float16</span><span class="tk-p">):</span>
+        <span class="tk-n">loss</span> <span class="tk-o">=</span> <span class="tk-n">F</span><span class="tk-o">.</span><span class="tk-n">cross_entropy</span><span class="tk-p">(</span><span class="tk-n">model</span><span class="tk-p">(</span><span class="tk-n">x</span><span class="tk-p">),</span> <span class="tk-n">y</span><span class="tk-p">)</span>
+    <span class="tk-n">scaler</span><span class="tk-o">.</span><span class="tk-n">scale</span><span class="tk-p">(</span><span class="tk-n">loss</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">backward</span><span class="tk-p">()</span>                     <span class="tk-c1"># nhân loss lên để gradient nhỏ không thành 0</span>
+    <span class="tk-n">scaler</span><span class="tk-o">.</span><span class="tk-n">step</span><span class="tk-p">(</span><span class="tk-n">opt</span><span class="tk-p">)</span>                                  <span class="tk-c1"># chia lại trước khi cập nhật, bỏ bước nếu có inf</span>
+    <span class="tk-n">scaler</span><span class="tk-o">.</span><span class="tk-n">update</span><span class="tk-p">()</span>
 </code></pre></div>
 
-<p>Với bf16 (GPU A100, H100) không cần GradScaler. Thường nhanh hơn 1,5–3 lần và tiết kiệm gần một nửa bộ nhớ activation.</p>
-<p><strong>DataLoader nhanh:</strong> <code>num_workers</code> = số nhân CPU, <code>pin_memory=True</code>, ảnh lưu sẵn kích thước nhỏ. Nếu GPU utilization trong <code>nvidia-smi</code> thấp, nút thắt là dữ liệu chứ không phải model.</p>
+<p>Với bf16 (GPU A100, H100, RTX 30xx trở lên) không cần GradScaler vì bf16 không bị tràn số nhỏ; chỉ cần <code>autocast(..., dtype=torch.bfloat16)</code>. Colab T4 không hỗ trợ bf16 nhanh, dùng fp16 + GradScaler.</p>
+<h3>Dữ liệu cũng phải nhanh</h3>
+<p>GPU nhanh mà dữ liệu nạp chậm thì GPU ngồi chờ. Nếu <strong>GPU utilization</strong> trong <code>nvidia-smi</code> thường dưới 70%, nút thắt là dữ liệu:</p>
+<ul>
+<li><code>DataLoader(num_workers=số nhân CPU, pin_memory=True, persistent_workers=True)</code></li>
+<li>Lưu ảnh ở kích thước gần với kích thước train (không giải nén ảnh 4K để rồi resize về 224 mỗi epoch).</li>
+<li>Đặt dữ liệu trên ổ đĩa cục bộ của máy train, không đọc qua mạng (trên Colab: chép từ Drive vào <code>/content</code> trước khi train).</li>
+</ul>
 <h2 id="lt-4">Debug training</h2>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Code deep learning sai thường <strong>không báo lỗi</strong>: nó chạy, loss giảm một chút, và cho kết quả tệ. Một quy trình kiểm tra có thứ tự giúp tìm lỗi trong vài phút thay vì vài ngày.</p>
+</div>
 <p>Khi training không chạy, kiểm tra theo thứ tự:</p>
-<ol>
-<li><strong>Overfit một batch:</strong> loss trên 1 batch cố định phải về gần 0. Không về 0 thì có bug (quên <code>zero_grad</code>, sai nhãn, sai shape).</li>
-<li><strong>Loss ban đầu:</strong> phân loại K lớp phải gần ln K. Lệch xa là có bug khởi tạo hoặc dữ liệu.</li>
-<li><strong>Nhìn dữ liệu sau transform:</strong> vẽ một batch kèm nhãn. Ảnh có bị lật màu, nhãn có khớp không?</li>
-<li><strong>LR range test:</strong> tăng lr theo cấp số nhân qua vài trăm bước, chọn lr nhỏ hơn khoảng 10 lần so với chỗ loss bắt đầu bùng nổ.</li>
-<li><strong>Đọc learning curve:</strong> train và val cùng cao là underfit, cách xa nhau là overfit.</li>
-</ol>
+<h3>1. Loss ban đầu có hợp lý không</h3>
+<p>Phân loại K lớp với model vừa khởi tạo phải có loss gần <strong>ln K</strong> (10 lớp: 2.30, 100 lớp: 4.61). Lệch xa (ví dụ 15 hoặc <code>nan</code>) là có lỗi khởi tạo, nhãn, hoặc đã đưa softmax vào trước cross-entropy.</p>
+<h3>2. Overfit một batch</h3>
+<p>Lấy <strong>một batch cố định</strong> (ví dụ 32 ảnh), train lặp lại vài trăm bước. Một model đủ lớn phải học thuộc được 32 ảnh: loss về gần 0. Không về 0 thì chắc chắn có bug.</p>
+<figure class="fig"><img src="../assets/fig/p2-3-debug.svg" alt="Trái: LR range test. Phải: vòng train đúng đưa loss của một batch từ 2.32 về 0.03; vòng train quên `opt.step()` thì loss đứng yên ở ln 10." loading="lazy"><figcaption>Trái: LR range test. Phải: vòng train đúng đưa loss của một batch từ 2.32 về 0.03; vòng train quên `opt.step()` thì loss đứng yên ở ln 10.</figcaption></figure>
+
+<table>
+<thead>
+<tr>
+<th>Triệu chứng khi overfit một batch</th>
+<th>Thường là</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Loss đứng yên</td>
+<td>quên <code>opt.step()</code>, <code>requires_grad=False</code> nhầm, lr = 0</td>
+</tr>
+<tr>
+<td>Loss giảm rất chậm</td>
+<td>lr quá nhỏ, nhãn bị xáo trộn so với ảnh</td>
+</tr>
+<tr>
+<td>Loss thành <code>nan</code></td>
+<td>lr quá lớn, log của 0, chia cho 0, fp16 tràn</td>
+</tr>
+<tr>
+<td>Loss dao động không giảm</td>
+<td>quên <code>zero_grad()</code>, lr quá lớn</td>
+</tr>
+</tbody>
+</table>
+<h3>3. Nhìn dữ liệu sau transform</h3>
+<p>Vẽ một batch <strong>sau</strong> khi qua DataLoader (đảo chuẩn hóa để hiển thị), kèm nhãn. Rất nhiều lỗi chỉ thấy bằng mắt: ảnh bị đảo kênh màu (BGR thay vì RGB), bị xoay, nhãn lệch so với ảnh, augmentation quá mạnh làm vật thể biến mất.</p>
+<h3>4. Chọn learning rate bằng LR range test</h3>
+<p>Train vài trăm bước, tăng lr theo cấp số nhân từ rất nhỏ (1e-6) tới rất lớn (1), ghi loss. Loss sẽ đi ngang (lr quá nhỏ), giảm nhanh, rồi bùng nổ. Chọn lr nhỏ hơn khoảng <strong>10 lần</strong> so với điểm loss thấp nhất. Ở hình trên, loss thấp nhất tại η ≈ 0.96 nên chọn khoảng 0.1.</p>
+<h3>5. Đọc learning curve</h3>
+<p>Train và val cùng cao là underfit (model yếu, train chưa đủ); cách xa nhau là overfit (P1.2, P2.2). Luôn log cả hai, kèm learning rate, theo từng epoch.</p>
 <div class="keep">
 <p><strong>Ghi nhớ:</strong> overfit một batch trước khi train thật. Năm phút kiểm tra này tiết kiệm hàng giờ GPU.</p>
-</div></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p2.3:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 3</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Gradient qua kết nối tắt</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Một chuỗi 3 block, mỗi block có đạo hàm cục bộ ∂F/∂x = 0.5. Gradient từ phía sau truyền về là 1.</p>
+</div>
+<div class="box check">
+<div class="box-h">Tự kiểm tra nhanh</div>
+<p>Bài phân loại 100 loại chim, model vừa khởi tạo.</p>
+<div class="ans" id="p2-3-t-b181-a1">
+<div class="ans-fields"><label>Loss ban đầu kỳ vọng (log tự nhiên)<input inputmode="decimal" data-ans="4.6052" data-tol="0.001" autocomplete="off"></label><label>LR range test có loss thấp nhất ở 0.3, nên chọn khoảng<input inputmode="decimal" data-ans="0.03" data-tol="0.0001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div>
+<div aria-live="polite" class="ans-fb"></div>
+</div>
+</div>
+<h2 id="lt-5">Tóm tắt bài và thuật ngữ</h2>
+<table>
+<thead>
+<tr>
+<th>Chủ đề</th>
+<th>Điều cần nhớ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Vanishing gradient</td>
+<td>tích đạo hàm nhỏ hơn 1 qua nhiều lớp làm lớp đầu không học</td>
+</tr>
+<tr>
+<td>ResNet</td>
+<td>y = x + F(x), gradient luôn có đường đi thẳng</td>
+</tr>
+<tr>
+<td>Transfer learning</td>
+<td>backbone pretrained + head mới</td>
+</tr>
+<tr>
+<td>Hai giai đoạn</td>
+<td>linear probe trước, fine-tune với lr backbone nhỏ sau</td>
+</tr>
+<tr>
+<td>Chuẩn hóa</td>
+<td>dùng đúng mean/std và kích thước lúc pretrain</td>
+</tr>
+<tr>
+<td>Mixed precision</td>
+<td>autocast + GradScaler (fp16) hoặc bf16</td>
+</tr>
+<tr>
+<td>Debug</td>
+<td>loss ban đầu ≈ ln K → overfit một batch → nhìn dữ liệu → LR range test → learning curve</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Thuật ngữ</th>
+<th>Nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>residual / skip connection</td>
+<td>kết nối tắt cộng đầu vào vào đầu ra của block</td>
+</tr>
+<tr>
+<td>backbone / head</td>
+<td>phần trích đặc trưng / lớp phân loại cuối</td>
+</tr>
+<tr>
+<td>pretrained</td>
+<td>đã train sẵn trên dữ liệu lớn</td>
+</tr>
+<tr>
+<td>transfer learning</td>
+<td>chuyển kiến thức từ bài toán này sang bài toán khác</td>
+</tr>
+<tr>
+<td>linear probe</td>
+<td>chỉ train head, khóa backbone</td>
+</tr>
+<tr>
+<td>fine-tuning</td>
+<td>train tiếp toàn bộ (hoặc một phần) model pretrained</td>
+</tr>
+<tr>
+<td>freeze</td>
+<td>khóa tham số, không cập nhật</td>
+</tr>
+<tr>
+<td>feature extraction</td>
+<td>dùng backbone để biến ảnh thành vector đặc trưng</td>
+</tr>
+<tr>
+<td>mixed precision</td>
+<td>train kết hợp 16 bit và 32 bit</td>
+</tr>
+<tr>
+<td>fp16 / bf16</td>
+<td>hai định dạng số thực 16 bit</td>
+</tr>
+<tr>
+<td>GradScaler</td>
+<td>nhân loss để gradient fp16 không bị làm tròn về 0</td>
+</tr>
+<tr>
+<td>activation memory</td>
+<td>bộ nhớ lưu kết quả trung gian cho backward</td>
+</tr>
+<tr>
+<td>GPU utilization</td>
+<td>tỉ lệ thời gian GPU đang tính</td>
+</tr>
+<tr>
+<td>LR range test</td>
+<td>quét learning rate để chọn giá trị tốt</td>
+</tr>
+</tbody>
+</table></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p2.3:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 3</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Gradient qua kết nối tắt</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Một chuỗi 3 block, mỗi block có đạo hàm cục bộ ∂F/∂x = 0.5. Gradient từ phía sau truyền về là 1.</p>
 <div class="ans" id="p2-3-e1-a1"><div class="ans-fields"><label>Không có kết nối tắt<input inputmode="decimal" data-ans="0.125" data-tol="0.0001" autocomplete="off"></label><label>Có kết nối tắt<input inputmode="decimal" data-ans="3.375" data-tol="0.0001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
 
 <details class="fold solution">
@@ -219,7 +524,7 @@
     </div>
     <aside class="aside">
       <div class="abox"><h4>Tiến độ bài này</h4><div class="ring"><svg viewBox="0 0 64 64" aria-hidden="true"><circle class="bg" cx="32" cy="32" r="28"/><circle class="fg" cx="32" cy="32" r="28" stroke-dasharray="176" stroke-dashoffset="176"/></svg><div><b id="ring-n">0/3</b><span id="ring-sub">phần đã xong</span></div></div></div>
-      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">ResNet và kết nối tắt</a></li><li><a href="#lt-2">Transfer learning: linear probe và fine-tune</a></li><li><a href="#lt-3">Mixed precision và tốc độ</a></li><li><a href="#lt-4">Debug training</a></li></ol></div>
+      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Vanishing gradient và ResNet</a></li><li><a href="#lt-2">Transfer learning: linear probe và fine-tune</a></li><li><a href="#lt-3">Mixed precision và tốc độ</a></li><li><a href="#lt-4">Debug training</a></li><li><a href="#lt-5">Tóm tắt bài và thuật ngữ</a></li></ol></div>
       
       <div class="abox"><h4>Cùng giai đoạn</h4><ul><li><a href="p2-1.html">Bài 1 · Mạng nơ-ron học thế nào</a></li><li><a href="p2-2.html">Bài 2 · Train mạng thật</a></li><li><span class=cur>CNN hiện đại và transfer learning</span></li></ul></div>
     </aside>
