@@ -22,54 +22,519 @@
 <main class="container">
   <div class="crumbs"><a href="../bai-hoc.html">Bài học</a><span>/</span><a href="../bai-hoc.html#p3">P3 · Transformer và NLP</a><span>/</span><span>P3.4</span></div>
   <section class="lhero"><div class="code">P3.4</div><h1>Hệ sinh thái Hugging Face</h1><div class="lmeta"><span class="m">Giai đoạn P3 · Transformer và NLP</span><span class="m">Tuần 13–17</span><span class="chip ready"><span class="dot"></span>Có nội dung đầy đủ</span></div>
-    <div class="intro"><p>Hugging Face là "GitHub của AI": hàng trăm nghìn model và dataset, cùng bộ thư viện để tải, fine-tune và chia sẻ chúng chỉ trong vài chục dòng code. Bài này dạy bốn thư viện cốt lõi (<code>transformers</code>, <code>tokenizers</code>, <code>datasets</code>, <code>Trainer</code>) và cách đẩy model của bạn lên Hub. Phần thực hành fine-tune <strong>PhoBERT</strong> phân loại cảm xúc tiếng Việt.</p></div></section>
+    <div class="intro"><p>Hugging Face là "GitHub của AI": hàng trăm nghìn model và dataset, cùng bộ thư viện để tải, fine-tune và chia sẻ chúng chỉ trong vài chục dòng code. Bài này dạy bốn thư viện cốt lõi (<code>transformers</code>, <code>tokenizers</code>, <code>datasets</code>, <code>Trainer</code>), cách đẩy model của bạn lên Hub, và những lỗi hay gặp khi fine-tune model tiếng Việt. Phần thực hành fine-tune <strong>PhoBERT</strong> phân loại cảm xúc tiếng Việt.</p></div></section>
   
-  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">5 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
+  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">7 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
   <div class="lgrid" style="margin-top:22px">
-    <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">Auto classes: tải model trong 3 dòng</h2>
+    <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">Hệ sinh thái Hugging Face</h2>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Gần như mọi công việc AI Engineer với model mã nguồn mở đều đi qua Hugging Face: tải model, chuẩn bị dữ liệu, fine-tune, chia sẻ kết quả. Thành thạo bộ công cụ này nghĩa là bạn đi từ ý tưởng tới model chạy được trong một buổi chiều.</p>
+</div>
+<figure class="fig"><img src="../assets/fig/p3-4-flow.svg" alt="Quy trình fine-tune điển hình: lấy model và dữ liệu từ Hub, token hóa, gắn head mới, train bằng Trainer, đẩy kết quả trở lại Hub." loading="lazy"><figcaption>Quy trình fine-tune điển hình: lấy model và dữ liệu từ Hub, token hóa, gắn head mới, train bằng Trainer, đẩy kết quả trở lại Hub.</figcaption></figure>
+
+<table>
+<thead>
+<tr>
+<th>Thư viện</th>
+<th>Làm gì</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>huggingface_hub</code></td>
+<td>tải và đẩy file lên Hub, đăng nhập, quản lý repo</td>
+</tr>
+<tr>
+<td><code>transformers</code></td>
+<td>kiến trúc model (BERT, Llama, ViT…), Auto classes, <code>pipeline</code>, <code>Trainer</code></td>
+</tr>
+<tr>
+<td><code>tokenizers</code></td>
+<td>tokenizer viết bằng Rust, rất nhanh (dùng ngầm qua <code>AutoTokenizer</code>)</td>
+</tr>
+<tr>
+<td><code>datasets</code></td>
+<td>tải và xử lý dataset lớn, cache trên đĩa</td>
+</tr>
+<tr>
+<td><code>evaluate</code>, <code>peft</code>, <code>trl</code></td>
+<td>metric; fine-tune tiết kiệm (LoRA, P6.1); SFT và DPO (P6.2)</td>
+</tr>
+</tbody>
+</table>
+<p>Mỗi model trên Hub là một <strong>repo Git</strong>: <code>config.json</code> (kiến trúc), trọng số (<code>model.safetensors</code>), file tokenizer, và <code>README.md</code> (model card).</p>
+<h3>Thử nhanh bằng pipeline</h3>
+<div class="hl"><pre><span></span><code><span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">transformers</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">pipeline</span>
+<span class="tk-n">clf</span> <span class="tk-o">=</span> <span class="tk-n">pipeline</span><span class="tk-p">(</span><span class="tk-s2">"sentiment-analysis"</span><span class="tk-p">,</span> <span class="tk-n">model</span><span class="tk-o">=</span><span class="tk-s2">"&lt;tên-model-trên-Hub&gt;"</span><span class="tk-p">)</span>
+<span class="tk-n">clf</span><span class="tk-p">(</span><span class="tk-s2">"Giảng viên dạy rất dễ hiểu"</span><span class="tk-p">)</span>      <span class="tk-c1"># [{'label': ..., 'score': ...}]</span>
+</code></pre></div>
+
+<p><code>pipeline</code> gói tokenizer, model và hậu xử lý thành một lệnh. Dùng để thử nhanh một model trước khi quyết định fine-tune.</p>
+<h2 id="lt-2">Auto classes: tải model trong 3 dòng</h2>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Có hàng trăm kiến trúc khác nhau. Auto classes cho phép bạn viết một đoạn code dùng được cho mọi model, chỉ đổi tên repo.</p>
+</div>
 <div class="hl"><pre><span></span><code><span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">transformers</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">AutoTokenizer</span><span class="tk-p">,</span> <span class="tk-n">AutoModelForSequenceClassification</span>
 <span class="tk-n">tok</span> <span class="tk-o">=</span> <span class="tk-n">AutoTokenizer</span><span class="tk-o">.</span><span class="tk-n">from_pretrained</span><span class="tk-p">(</span><span class="tk-s2">"vinai/phobert-base-v2"</span><span class="tk-p">)</span>
-<span class="tk-n">model</span> <span class="tk-o">=</span> <span class="tk-n">AutoModelForSequenceClassification</span><span class="tk-o">.</span><span class="tk-n">from_pretrained</span><span class="tk-p">(</span><span class="tk-s2">"vinai/phobert-base-v2"</span><span class="tk-p">,</span> <span class="tk-n">num_labels</span><span class="tk-o">=</span><span class="tk-mi">3</span><span class="tk-p">)</span>
+<span class="tk-n">model</span> <span class="tk-o">=</span> <span class="tk-n">AutoModelForSequenceClassification</span><span class="tk-o">.</span><span class="tk-n">from_pretrained</span><span class="tk-p">(</span>
+    <span class="tk-s2">"vinai/phobert-base-v2"</span><span class="tk-p">,</span> <span class="tk-n">num_labels</span><span class="tk-o">=</span><span class="tk-mi">3</span><span class="tk-p">,</span>
+    <span class="tk-n">id2label</span><span class="tk-o">=</span><span class="tk-p">{</span><span class="tk-mi">0</span><span class="tk-p">:</span> <span class="tk-s2">"tiêu cực"</span><span class="tk-p">,</span> <span class="tk-mi">1</span><span class="tk-p">:</span> <span class="tk-s2">"trung tính"</span><span class="tk-p">,</span> <span class="tk-mi">2</span><span class="tk-p">:</span> <span class="tk-s2">"tích cực"</span><span class="tk-p">},</span>
+    <span class="tk-n">label2id</span><span class="tk-o">=</span><span class="tk-p">{</span><span class="tk-s2">"tiêu cực"</span><span class="tk-p">:</span> <span class="tk-mi">0</span><span class="tk-p">,</span> <span class="tk-s2">"trung tính"</span><span class="tk-p">:</span> <span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-s2">"tích cực"</span><span class="tk-p">:</span> <span class="tk-mi">2</span><span class="tk-p">})</span>
 </code></pre></div>
 
-<p><code>Auto*</code> đọc file <code>config.json</code> của repo để biết kiến trúc. Hậu tố cho biết <strong>head</strong> gắn trên thân model: <code>ForSequenceClassification</code> (phân loại câu), <code>ForTokenClassification</code> (NER), <code>ForCausalLM</code> (sinh văn bản), <code>AutoModel</code> (chỉ thân, lấy embedding). Head mới được khởi tạo ngẫu nhiên, nên bạn sẽ thấy cảnh báo "some weights were newly initialized": đó là bình thường, bạn sắp fine-tune nó.</p>
-<h2 id="lt-2">Tokenizer: padding, truncation, attention mask</h2>
-<div class="hl"><pre><span></span><code><span class="tk-n">batch</span> <span class="tk-o">=</span> <span class="tk-n">tok</span><span class="tk-p">([</span><span class="tk-s2">"câu ngắn"</span><span class="tk-p">,</span> <span class="tk-s2">"một câu dài hơn nhiều"</span><span class="tk-p">],</span> <span class="tk-n">padding</span><span class="tk-o">=</span><span class="tk-kc">True</span><span class="tk-p">,</span> <span class="tk-n">truncation</span><span class="tk-o">=</span><span class="tk-kc">True</span><span class="tk-p">,</span> <span class="tk-n">max_length</span><span class="tk-o">=</span><span class="tk-mi">256</span><span class="tk-p">,</span> <span class="tk-n">return_tensors</span><span class="tk-o">=</span><span class="tk-s2">"pt"</span><span class="tk-p">)</span>
+<p><code>Auto*</code> đọc <code>config.json</code> của repo để biết kiến trúc. Hậu tố cho biết <strong>head</strong> gắn trên thân model:</p>
+<table>
+<thead>
+<tr>
+<th>Class</th>
+<th>Head</th>
+<th>Đầu ra</th>
+<th>Dùng cho</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>AutoModel</code></td>
+<td>không có</td>
+<td>vector mỗi token</td>
+<td>lấy embedding</td>
+</tr>
+<tr>
+<td><code>AutoModelForSequenceClassification</code></td>
+<td>Linear trên vector đầu câu</td>
+<td>(B, num_labels)</td>
+<td>phân loại câu</td>
+</tr>
+<tr>
+<td><code>AutoModelForTokenClassification</code></td>
+<td>Linear trên mỗi token</td>
+<td>(B, T, num_labels)</td>
+<td>nhận dạng thực thể (NER)</td>
+</tr>
+<tr>
+<td><code>AutoModelForQuestionAnswering</code></td>
+<td>2 Linear: vị trí bắt đầu, kết thúc</td>
+<td>(B, T) × 2</td>
+<td>trích câu trả lời từ đoạn văn</td>
+</tr>
+<tr>
+<td><code>AutoModelForCausalLM</code></td>
+<td>Linear ra từ vựng</td>
+<td>(B, T, V)</td>
+<td>sinh văn bản (GPT, Qwen)</td>
+</tr>
+</tbody>
+</table>
+<p>Head mới được khởi tạo ngẫu nhiên, nên bạn sẽ thấy cảnh báo "Some weights … were newly initialized": đó là bình thường, bạn sắp fine-tune nó. Truyền <code>id2label</code> để model lưu luôn tên nhãn, khi dùng lại khỏi phải nhớ 0 là gì.</p>
+<div class="box pitfall">
+<div class="box-h">Lỗi hay gặp</div>
+<p><strong>Nhầm thân model với model đã fine-tune.</strong> <code>vinai/phobert-base-v2</code> là model <strong>pretrain</strong> (masked LM), chưa biết phân loại cảm xúc. Gắn head phân loại rồi dùng ngay sẽ cho dự đoán ngẫu nhiên. Phải fine-tune trước, hoặc tìm trên Hub một model đã fine-tune cho đúng tác vụ.</p>
+</div>
+<h2 id="lt-3">Tokenizer: padding, truncation, attention mask</h2>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>GPU xử lý batch dưới dạng tensor chữ nhật, nhưng các câu dài ngắn khác nhau. Padding, truncation và attention mask là cách biến các câu lệch nhau thành tensor mà model vẫn hiểu đúng.</p>
+</div>
+<div class="hl"><pre><span></span><code><span class="tk-n">batch</span> <span class="tk-o">=</span> <span class="tk-n">tok</span><span class="tk-p">([</span><span class="tk-s2">"Thầy dạy hay"</span><span class="tk-p">,</span> <span class="tk-s2">"Phòng_học nóng quá , không"</span><span class="tk-p">],</span>
+            <span class="tk-n">padding</span><span class="tk-o">=</span><span class="tk-kc">True</span><span class="tk-p">,</span> <span class="tk-n">truncation</span><span class="tk-o">=</span><span class="tk-kc">True</span><span class="tk-p">,</span> <span class="tk-n">max_length</span><span class="tk-o">=</span><span class="tk-mi">256</span><span class="tk-p">,</span> <span class="tk-n">return_tensors</span><span class="tk-o">=</span><span class="tk-s2">"pt"</span><span class="tk-p">)</span>
 <span class="tk-n">batch</span><span class="tk-p">[</span><span class="tk-s2">"input_ids"</span><span class="tk-p">]</span>        <span class="tk-c1"># (2, T): id token, câu ngắn được đệm bằng pad_token_id</span>
-<span class="tk-n">batch</span><span class="tk-p">[</span><span class="tk-s2">"attention_mask"</span><span class="tk-p">]</span>   <span class="tk-c1"># (2, T): 1 = token thật, 0 = đệm, để attention bỏ qua phần đệm</span>
+<span class="tk-n">batch</span><span class="tk-p">[</span><span class="tk-s2">"attention_mask"</span><span class="tk-p">]</span>   <span class="tk-c1"># (2, T): 1 = token thật, 0 = đệm</span>
 </code></pre></div>
 
-<p><strong>PhoBERT</strong> có hai điểm riêng cần nhớ: đầu vào phải được <strong>tách từ</strong> trước (ví dụ "học sinh" thành "học_sinh", dùng <code>pyvi</code> hoặc <code>underthesea</code>), và độ dài tối đa là <strong>256</strong> token.</p>
-<h2 id="lt-3">datasets: xử lý dữ liệu nhanh</h2>
+<figure class="fig"><img src="../assets/fig/p3-4-padding.svg" alt="Câu ngắn được đệm bằng &lt;pad&gt; cho bằng câu dài nhất trong batch. Attention mask bằng 0 ở các vị trí đệm để attention bỏ qua chúng (điểm attention bị đặt −∞, giống causal mask ở P3.2)." loading="lazy"><figcaption>Câu ngắn được đệm bằng &lt;pad&gt; cho bằng câu dài nhất trong batch. Attention mask bằng 0 ở các vị trí đệm để attention bỏ qua chúng (điểm attention bị đặt −∞, giống causal mask ở P3.2).</figcaption></figure>
+
+<table>
+<thead>
+<tr>
+<th>Tham số</th>
+<th>Ý nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>padding=True</code></td>
+<td>đệm tới câu dài nhất <strong>trong lần gọi này</strong></td>
+</tr>
+<tr>
+<td><code>padding="max_length"</code></td>
+<td>đệm mọi câu tới <code>max_length</code> (tốn tính toán, xem dưới)</td>
+</tr>
+<tr>
+<td><code>truncation=True, max_length=256</code></td>
+<td>cắt câu dài hơn 256 token</td>
+</tr>
+<tr>
+<td><code>return_tensors="pt"</code></td>
+<td>trả về tensor PyTorch thay vì list</td>
+</tr>
+</tbody>
+</table>
+<p>Tokenizer cũng thêm <strong>token đặc biệt</strong>: PhoBERT (theo RoBERTa) dùng <code>&lt;s&gt;</code> ở đầu và <code>&lt;/s&gt;</code> ở cuối; BERT dùng <code>[CLS]</code> và <code>[SEP]</code>. Head phân loại đọc vector của token đầu câu (<code>&lt;s&gt;</code> / <code>[CLS]</code>), vì qua các lớp attention hai chiều, vector này đã tổng hợp thông tin cả câu.</p>
+<h3>PhoBERT cần tách từ trước</h3>
+<p>Tiếng Việt viết cách nhau theo <strong>âm tiết</strong>, không theo từ: "học sinh" là một từ gồm hai âm tiết. PhoBERT được pretrain trên văn bản đã <strong>tách từ</strong> (nối âm tiết trong một từ bằng dấu gạch dưới), nên đầu vào cũng phải tách từ giống hệt:</p>
+<div class="hl"><pre><span></span><code>Thô:      Phòng học nóng quá, không bật được điều hòa
+Tách từ:  Phòng_học nóng quá , không bật được điều_hòa
+</code></pre></div>
+
+<div class="hl"><pre><span></span><code><span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">pyvi</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">ViTokenizer</span>
+<span class="tk-n">ViTokenizer</span><span class="tk-o">.</span><span class="tk-n">tokenize</span><span class="tk-p">(</span><span class="tk-s2">"Phòng học nóng quá, không bật được điều hòa"</span><span class="tk-p">)</span>
+</code></pre></div>
+
+<p>PhoBERT cũng chỉ nhận tối đa <strong>256</strong> token (ít hơn 512 của BERT gốc).</p>
+<div class="box pitfall">
+<div class="box-h">Lỗi hay gặp</div>
+<p><strong>Quên tách từ với PhoBERT.</strong> Model vẫn chạy và không báo lỗi, vì tokenizer vẫn cắt được văn bản thô thành subword. Nhưng cách cắt khác lúc pretrain, nên kết quả kém đi đáng kể. Với các model tiếng Việt khác (ví dụ model đa ngôn ngữ như XLM-R), <strong>không</strong> tách từ: luôn đọc model card để biết model cần đầu vào dạng nào.</p>
+</div>
+<h3>Đệm theo batch tiết kiệm bao nhiêu</h3>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>Mô phỏng 10.000 câu bình luận (trung bình 30 token, câu dài nhất 168), batch 32:</p>
+<table>
+<thead>
+<tr>
+<th>Cách đệm</th>
+<th>Số token phải tính / số token thật</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Đệm mọi câu tới 256</td>
+<td><strong>×8.5</strong></td>
+</tr>
+<tr>
+<td>Đệm theo câu dài nhất trong từng batch</td>
+<td><strong>×2.6</strong></td>
+</tr>
+<tr>
+<td>Đệm theo batch, gom các câu cùng độ dài vào một batch</td>
+<td><strong>×1.0</strong></td>
+</tr>
+</tbody>
+</table>
+<p>Đệm tới 256 tốn gấp 8.5 lần tính toán cho các token <code>&lt;pad&gt;</code> vô dụng.</p>
+</div>
+<figure class="fig"><img src="../assets/fig/p3-4-dynpad.svg" alt="Phần lớn câu ngắn hơn nhiều so với max_length. Đệm theo batch (DataCollatorWithPadding) rẻ hơn hẳn; gom câu cùng độ dài (`group_by_length=True` trong TrainingArguments) còn rẻ hơn nữa." loading="lazy"><figcaption>Phần lớn câu ngắn hơn nhiều so với max_length. Đệm theo batch (DataCollatorWithPadding) rẻ hơn hẳn; gom câu cùng độ dài (`group_by_length=True` trong TrainingArguments) còn rẻ hơn nữa.</figcaption></figure>
+
+<h2 id="lt-4">datasets: xử lý dữ liệu nhanh</h2>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Dữ liệu train thường lớn hơn RAM. Thư viện <code>datasets</code> lưu dữ liệu dạng cột trên đĩa (Apache Arrow), đọc theo nhu cầu, và cache kết quả xử lý, nên bạn xử lý được dataset vài GB trên laptop và không phải chạy lại bước token hóa mỗi lần.</p>
+</div>
 <div class="hl"><pre><span></span><code><span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">datasets</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">load_dataset</span>
-<span class="tk-n">ds</span> <span class="tk-o">=</span> <span class="tk-n">load_dataset</span><span class="tk-p">(</span><span class="tk-s2">"uitnlp/vietnamese_students_feedback"</span><span class="tk-p">)</span>          <span class="tk-c1"># train / validation / test</span>
-<span class="tk-n">ds</span> <span class="tk-o">=</span> <span class="tk-n">ds</span><span class="tk-o">.</span><span class="tk-n">map</span><span class="tk-p">(</span><span class="tk-k">lambda</span> <span class="tk-n">b</span><span class="tk-p">:</span> <span class="tk-n">tok</span><span class="tk-p">(</span><span class="tk-n">b</span><span class="tk-p">[</span><span class="tk-s2">"sentence"</span><span class="tk-p">],</span> <span class="tk-n">truncation</span><span class="tk-o">=</span><span class="tk-kc">True</span><span class="tk-p">,</span> <span class="tk-n">max_length</span><span class="tk-o">=</span><span class="tk-mi">256</span><span class="tk-p">),</span> <span class="tk-n">batched</span><span class="tk-o">=</span><span class="tk-kc">True</span><span class="tk-p">)</span>
-<span class="tk-n">ds</span> <span class="tk-o">=</span> <span class="tk-n">ds</span><span class="tk-o">.</span><span class="tk-n">rename_column</span><span class="tk-p">(</span><span class="tk-s2">"sentiment"</span><span class="tk-p">,</span> <span class="tk-s2">"labels"</span><span class="tk-p">)</span>
+<span class="tk-n">ds</span> <span class="tk-o">=</span> <span class="tk-n">load_dataset</span><span class="tk-p">(</span><span class="tk-s2">"uitnlp/vietnamese_students_feedback"</span><span class="tk-p">)</span>        <span class="tk-c1"># DatasetDict: train / validation / test</span>
+<span class="tk-n">ds</span><span class="tk-p">[</span><span class="tk-s2">"train"</span><span class="tk-p">][</span><span class="tk-mi">0</span><span class="tk-p">]</span>                                                  <span class="tk-c1"># một dòng dạng dict</span>
+<span class="tk-n">ds</span><span class="tk-p">[</span><span class="tk-s2">"train"</span><span class="tk-p">]</span><span class="tk-o">.</span><span class="tk-n">features</span>                                            <span class="tk-c1"># kiểu từng cột, tên nhãn</span>
+
+<span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">preprocess</span><span class="tk-p">(</span><span class="tk-n">batch</span><span class="tk-p">):</span>
+    <span class="tk-k">return</span> <span class="tk-n">tok</span><span class="tk-p">(</span><span class="tk-n">batch</span><span class="tk-p">[</span><span class="tk-s2">"sentence"</span><span class="tk-p">],</span> <span class="tk-n">truncation</span><span class="tk-o">=</span><span class="tk-kc">True</span><span class="tk-p">,</span> <span class="tk-n">max_length</span><span class="tk-o">=</span><span class="tk-mi">256</span><span class="tk-p">)</span>
+<span class="tk-n">ds</span> <span class="tk-o">=</span> <span class="tk-n">ds</span><span class="tk-o">.</span><span class="tk-n">map</span><span class="tk-p">(</span><span class="tk-n">preprocess</span><span class="tk-p">,</span> <span class="tk-n">batched</span><span class="tk-o">=</span><span class="tk-kc">True</span><span class="tk-p">)</span>                           <span class="tk-c1"># token hóa, cache trên đĩa</span>
+<span class="tk-n">ds</span> <span class="tk-o">=</span> <span class="tk-n">ds</span><span class="tk-o">.</span><span class="tk-n">rename_column</span><span class="tk-p">(</span><span class="tk-s2">"sentiment"</span><span class="tk-p">,</span> <span class="tk-s2">"labels"</span><span class="tk-p">)</span>                    <span class="tk-c1"># Trainer tìm cột tên "labels"</span>
+<span class="tk-n">ds</span> <span class="tk-o">=</span> <span class="tk-n">ds</span><span class="tk-o">.</span><span class="tk-n">remove_columns</span><span class="tk-p">([</span><span class="tk-s2">"topic"</span><span class="tk-p">])</span>                               <span class="tk-c1"># bỏ cột không dùng</span>
 </code></pre></div>
 
-<p><code>map(batched=True)</code> xử lý nhiều dòng một lần và lưu cache trên đĩa (Apache Arrow), nên dataset vài GB vẫn chạy được trên laptop.</p>
-<h2 id="lt-4">Trainer</h2>
-<p><code>Trainer</code> gói sẵn vòng lặp train bạn tự viết ở Lab 1: mixed precision, gradient accumulation, đánh giá định kỳ, lưu checkpoint, log.</p>
-<div class="hl"><pre><span></span><code><span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">transformers</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">TrainingArguments</span><span class="tk-p">,</span> <span class="tk-n">Trainer</span><span class="tk-p">,</span> <span class="tk-n">DataCollatorWithPadding</span>
-<span class="tk-n">args</span> <span class="tk-o">=</span> <span class="tk-n">TrainingArguments</span><span class="tk-p">(</span><span class="tk-s2">"phobert-sentiment"</span><span class="tk-p">,</span> <span class="tk-n">learning_rate</span><span class="tk-o">=</span><span class="tk-mf">2e-5</span><span class="tk-p">,</span> <span class="tk-n">per_device_train_batch_size</span><span class="tk-o">=</span><span class="tk-mi">32</span><span class="tk-p">,</span>
-                         <span class="tk-n">num_train_epochs</span><span class="tk-o">=</span><span class="tk-mi">3</span><span class="tk-p">,</span> <span class="tk-n">warmup_ratio</span><span class="tk-o">=</span><span class="tk-mf">0.1</span><span class="tk-p">,</span> <span class="tk-n">weight_decay</span><span class="tk-o">=</span><span class="tk-mf">0.01</span><span class="tk-p">,</span> <span class="tk-n">fp16</span><span class="tk-o">=</span><span class="tk-kc">True</span><span class="tk-p">,</span>
-                         <span class="tk-n">eval_strategy</span><span class="tk-o">=</span><span class="tk-s2">"epoch"</span><span class="tk-p">,</span> <span class="tk-n">save_strategy</span><span class="tk-o">=</span><span class="tk-s2">"epoch"</span><span class="tk-p">,</span> <span class="tk-n">load_best_model_at_end</span><span class="tk-o">=</span><span class="tk-kc">True</span><span class="tk-p">,</span>
-                         <span class="tk-n">metric_for_best_model</span><span class="tk-o">=</span><span class="tk-s2">"f1_macro"</span><span class="tk-p">)</span>
+<p>Các thao tác hay dùng:</p>
+<table>
+<thead>
+<tr>
+<th>Thao tác</th>
+<th>Lệnh</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Lọc</td>
+<td><code>ds.filter(lambda x: len(x["sentence"]) &gt; 5)</code></td>
+</tr>
+<tr>
+<td>Chia train/test</td>
+<td><code>ds["train"].train_test_split(test_size=0.1, seed=42, stratify_by_column="labels")</code></td>
+</tr>
+<tr>
+<td>Sang pandas</td>
+<td><code>ds["train"].to_pandas()</code></td>
+</tr>
+<tr>
+<td>Đọc file của bạn</td>
+<td><code>load_dataset("csv", data_files={"train": "train.csv", "test": "test.csv"})</code></td>
+</tr>
+<tr>
+<td>Dataset quá lớn</td>
+<td><code>load_dataset(..., streaming=True)</code>: đọc từng dòng, không tải hết</td>
+</tr>
+</tbody>
+</table>
+<p><code>map(batched=True)</code> xử lý 1.000 dòng một lần thay vì từng dòng: nhanh hơn hàng chục lần vì tokenizer Rust xử lý cả lô.</p>
+<div class="box pitfall">
+<div class="box-h">Lỗi hay gặp</div>
+<p><strong>Nhìn dữ liệu trước khi train.</strong> In vài dòng mỗi lớp, đếm số mẫu mỗi nhãn (<code>ds["train"].to_pandas()["labels"].value_counts()</code>). Bộ dữ liệu cảm xúc thường có lớp "trung tính" rất ít: accuracy cao nhưng model gần như không bao giờ đoán đúng lớp đó. Báo cáo <strong>macro F1</strong> (P1.2) cùng accuracy.</p>
+</div>
+<h2 id="lt-5">Trainer</h2>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Vòng lặp train bạn tự viết ở Lab 1 rất tốt để hiểu, nhưng dự án thật cần thêm mixed precision, gradient accumulation, đánh giá định kỳ, lưu checkpoint tốt nhất, log lên dashboard. <code>Trainer</code> có sẵn tất cả, ít bug hơn code tự viết.</p>
+</div>
+<div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">numpy</span><span class="tk-w"> </span><span class="tk-k">as</span><span class="tk-w"> </span><span class="tk-nn">np</span>
+<span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">sklearn.metrics</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">f1_score</span><span class="tk-p">,</span> <span class="tk-n">accuracy_score</span>
+<span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">transformers</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">TrainingArguments</span><span class="tk-p">,</span> <span class="tk-n">Trainer</span><span class="tk-p">,</span> <span class="tk-n">DataCollatorWithPadding</span>
+
+<span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">compute_metrics</span><span class="tk-p">(</span><span class="tk-n">eval_pred</span><span class="tk-p">):</span>
+    <span class="tk-n">logits</span><span class="tk-p">,</span> <span class="tk-n">labels</span> <span class="tk-o">=</span> <span class="tk-n">eval_pred</span>
+    <span class="tk-n">preds</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">argmax</span><span class="tk-p">(</span><span class="tk-n">logits</span><span class="tk-p">,</span> <span class="tk-n">axis</span><span class="tk-o">=-</span><span class="tk-mi">1</span><span class="tk-p">)</span>
+    <span class="tk-k">return</span> <span class="tk-p">{</span><span class="tk-s2">"accuracy"</span><span class="tk-p">:</span> <span class="tk-n">accuracy_score</span><span class="tk-p">(</span><span class="tk-n">labels</span><span class="tk-p">,</span> <span class="tk-n">preds</span><span class="tk-p">),</span> <span class="tk-s2">"f1_macro"</span><span class="tk-p">:</span> <span class="tk-n">f1_score</span><span class="tk-p">(</span><span class="tk-n">labels</span><span class="tk-p">,</span> <span class="tk-n">preds</span><span class="tk-p">,</span> <span class="tk-n">average</span><span class="tk-o">=</span><span class="tk-s2">"macro"</span><span class="tk-p">)}</span>
+
+<span class="tk-n">args</span> <span class="tk-o">=</span> <span class="tk-n">TrainingArguments</span><span class="tk-p">(</span>
+    <span class="tk-s2">"phobert-sentiment"</span><span class="tk-p">,</span>
+    <span class="tk-n">learning_rate</span><span class="tk-o">=</span><span class="tk-mf">2e-5</span><span class="tk-p">,</span> <span class="tk-n">per_device_train_batch_size</span><span class="tk-o">=</span><span class="tk-mi">32</span><span class="tk-p">,</span> <span class="tk-n">num_train_epochs</span><span class="tk-o">=</span><span class="tk-mi">3</span><span class="tk-p">,</span>
+    <span class="tk-n">warmup_ratio</span><span class="tk-o">=</span><span class="tk-mf">0.1</span><span class="tk-p">,</span> <span class="tk-n">weight_decay</span><span class="tk-o">=</span><span class="tk-mf">0.01</span><span class="tk-p">,</span> <span class="tk-n">fp16</span><span class="tk-o">=</span><span class="tk-kc">True</span><span class="tk-p">,</span>
+    <span class="tk-n">eval_strategy</span><span class="tk-o">=</span><span class="tk-s2">"epoch"</span><span class="tk-p">,</span> <span class="tk-n">save_strategy</span><span class="tk-o">=</span><span class="tk-s2">"epoch"</span><span class="tk-p">,</span>
+    <span class="tk-n">load_best_model_at_end</span><span class="tk-o">=</span><span class="tk-kc">True</span><span class="tk-p">,</span> <span class="tk-n">metric_for_best_model</span><span class="tk-o">=</span><span class="tk-s2">"f1_macro"</span><span class="tk-p">,</span>
+    <span class="tk-n">group_by_length</span><span class="tk-o">=</span><span class="tk-kc">True</span><span class="tk-p">,</span> <span class="tk-n">report_to</span><span class="tk-o">=</span><span class="tk-s2">"none"</span><span class="tk-p">)</span>
 <span class="tk-n">trainer</span> <span class="tk-o">=</span> <span class="tk-n">Trainer</span><span class="tk-p">(</span><span class="tk-n">model</span><span class="tk-o">=</span><span class="tk-n">model</span><span class="tk-p">,</span> <span class="tk-n">args</span><span class="tk-o">=</span><span class="tk-n">args</span><span class="tk-p">,</span> <span class="tk-n">train_dataset</span><span class="tk-o">=</span><span class="tk-n">ds</span><span class="tk-p">[</span><span class="tk-s2">"train"</span><span class="tk-p">],</span> <span class="tk-n">eval_dataset</span><span class="tk-o">=</span><span class="tk-n">ds</span><span class="tk-p">[</span><span class="tk-s2">"validation"</span><span class="tk-p">],</span>
                   <span class="tk-n">data_collator</span><span class="tk-o">=</span><span class="tk-n">DataCollatorWithPadding</span><span class="tk-p">(</span><span class="tk-n">tok</span><span class="tk-p">),</span> <span class="tk-n">compute_metrics</span><span class="tk-o">=</span><span class="tk-n">compute_metrics</span><span class="tk-p">)</span>
 <span class="tk-n">trainer</span><span class="tk-o">.</span><span class="tk-n">train</span><span class="tk-p">()</span>
+<span class="tk-n">trainer</span><span class="tk-o">.</span><span class="tk-n">evaluate</span><span class="tk-p">(</span><span class="tk-n">ds</span><span class="tk-p">[</span><span class="tk-s2">"test"</span><span class="tk-p">])</span>          <span class="tk-c1"># đo test một lần, ở cuối</span>
 </code></pre></div>
 
-<p>Learning rate fine-tune encoder thường nhỏ: <strong>2e-5 đến 5e-5</strong>. <code>DataCollatorWithPadding</code> đệm theo câu dài nhất <strong>trong từng batch</strong> thay vì cả dataset, nhanh hơn nhiều.</p>
-<h2 id="lt-5">Hub và model card</h2>
-<div class="hl"><pre><span></span><code><span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">huggingface_hub</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">login</span><span class="tk-p">;</span> <span class="tk-n">login</span><span class="tk-p">()</span>          <span class="tk-c1"># token có quyền write</span>
-<span class="tk-n">trainer</span><span class="tk-o">.</span><span class="tk-n">push_to_hub</span><span class="tk-p">()</span>                                <span class="tk-c1"># đẩy model, tokenizer, config, model card</span>
+<h3>Các tham số quan trọng</h3>
+<table>
+<thead>
+<tr>
+<th>Tham số</th>
+<th>Ý nghĩa</th>
+<th>Giá trị thường dùng khi fine-tune encoder</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>learning_rate</code></td>
+<td>lr đỉnh</td>
+<td><strong>2e-5 đến 5e-5</strong> (nhỏ hơn nhiều so với train từ đầu)</td>
+</tr>
+<tr>
+<td><code>per_device_train_batch_size</code></td>
+<td>batch trên mỗi GPU</td>
+<td>16–32</td>
+</tr>
+<tr>
+<td><code>gradient_accumulation_steps</code></td>
+<td>cộng gradient k batch rồi mới cập nhật</td>
+<td>tăng khi thiếu bộ nhớ</td>
+</tr>
+<tr>
+<td><code>num_train_epochs</code></td>
+<td>số epoch</td>
+<td>2–5</td>
+</tr>
+<tr>
+<td><code>warmup_ratio</code></td>
+<td>tỉ lệ bước warmup</td>
+<td>0.06–0.1</td>
+</tr>
+<tr>
+<td><code>weight_decay</code></td>
+<td>AdamW weight decay</td>
+<td>0.01</td>
+</tr>
+<tr>
+<td><code>fp16</code> / <code>bf16</code></td>
+<td>mixed precision (P2.3)</td>
+<td><code>fp16=True</code> trên Colab T4</td>
+</tr>
+<tr>
+<td><code>load_best_model_at_end</code></td>
+<td>nạp lại checkpoint tốt nhất theo <code>metric_for_best_model</code></td>
+<td><code>True</code></td>
+</tr>
+</tbody>
+</table>
+<figure class="fig"><img src="../assets/fig/p3-4-schedule.svg" alt="Lịch learning rate mặc định của Trainer: tăng tuyến tính trong phần warmup, rồi giảm tuyến tính về 0." loading="lazy"><figcaption>Lịch learning rate mặc định của Trainer: tăng tuyến tính trong phần warmup, rồi giảm tuyến tính về 0.</figcaption></figure>
+
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>12.000 câu train, <code>per_device_train_batch_size=16</code>, <code>gradient_accumulation_steps=4</code>, 1 GPU:</p>
+<ul>
+<li>Batch hiệu dụng: 16 × 4 = <strong>64</strong> câu mỗi lần cập nhật.</li>
+<li>Mỗi epoch: ⌈12.000 / 16⌉ = 750 batch, chia 4 → <strong>188</strong> bước cập nhật.</li>
+<li>3 epoch: 564 bước; <code>warmup_ratio=0.1</code> → khoảng 57 bước warmup.</li>
+</ul>
+<p>Gradient accumulation cho kết quả gần giống batch 64 thật mà chỉ cần bộ nhớ cho batch 16.</p>
+</div>
+<div class="box pitfall">
+<div class="box-h">Lỗi hay gặp</div>
+<p><strong>Learning rate như train từ đầu.</strong> Fine-tune BERT với lr 1e-3 thường làm loss nổ hoặc model sụp về đoán một lớp duy nhất (<strong>catastrophic forgetting</strong>: quên kiến thức pretrain). Với encoder cỡ base, bắt đầu ở 2e-5; nếu loss không giảm thì thử 5e-5.</p>
+</div>
+<h2 id="lt-6">Hub, model card và giấy phép</h2>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Model nằm trong máy bạn thì không ai thấy. Model trên Hub có model card tốt là bằng chứng cụ thể trong portfolio: nhà tuyển dụng tải về chạy thử được ngay, và thấy bạn biết đo lường, biết nói rõ giới hạn.</p>
+</div>
+<div class="hl"><pre><span></span><code><span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">huggingface_hub</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">login</span>
+<span class="tk-n">login</span><span class="tk-p">()</span>                                   <span class="tk-c1"># token có quyền write, lấy ở trang Settings → Access Tokens</span>
+<span class="tk-n">trainer</span><span class="tk-o">.</span><span class="tk-n">push_to_hub</span><span class="tk-p">(</span><span class="tk-n">commit_message</span><span class="tk-o">=</span><span class="tk-s2">"PhoBERT cảm xúc, macro F1 0.xx trên test"</span><span class="tk-p">)</span>
 </code></pre></div>
 
-<p><strong>Model card</strong> (README.md của repo model) là tài liệu bắt buộc: model dùng cho việc gì, train trên dữ liệu nào, kết quả đo được, giới hạn và thiên lệch đã biết, giấy phép. Đọc model card <strong>trước</strong> khi dùng model của người khác, đặc biệt mục giấy phép (có model cấm dùng thương mại).</p>
+<p><code>push_to_hub</code> đẩy trọng số (<code>.safetensors</code>), config, tokenizer, và tạo model card cơ bản. Người khác dùng lại chỉ với <code>from_pretrained("tên-bạn/phobert-sentiment")</code>.</p>
+<h3>Model card cần có gì</h3>
+<div class="hl"><pre><span></span><code><span class="tk-gh"># PhoBERT phân loại cảm xúc phản hồi sinh viên</span>
+
+<span class="tk-gu">### Model dùng để làm gì</span>
+Phân loại câu phản hồi tiếng Việt thành tiêu cực / trung tính / tích cực. Đầu vào cần tách từ (pyvi).
+
+<span class="tk-gu">### Dữ liệu</span>
+UIT-VSFC: ... câu train, ... validation, ... test. Phân phối nhãn: ...
+
+<span class="tk-gu">### Kết quả (test)</span>
+| Metric | Giá trị |
+|---|---|
+| Accuracy | ... |
+| Macro F1 | ... |
+
+<span class="tk-gu">### Giới hạn</span>
+Kém với lớp trung tính (ít dữ liệu). Chỉ train trên phản hồi giáo dục, chưa thử trên bình luận mạng xã hội.
+
+<span class="tk-gu">### Cách dùng</span>
+(3–5 dòng code)
+</code></pre></div>
+
+<h3>Giấy phép</h3>
+<p>Đọc mục license <strong>trước</strong> khi dùng model hoặc dataset của người khác:</p>
+<table>
+<thead>
+<tr>
+<th>Giấy phép</th>
+<th>Dùng thương mại</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Apache-2.0, MIT</td>
+<td>được</td>
+</tr>
+<tr>
+<td>CC-BY-4.0</td>
+<td>được, phải ghi nguồn</td>
+</tr>
+<tr>
+<td>CC-BY-NC</td>
+<td><strong>không</strong></td>
+</tr>
+<tr>
+<td>Giấy phép riêng (Llama, Gemma…)</td>
+<td>được với điều kiện, đọc kỹ</td>
+</tr>
+</tbody>
+</table>
+<p>PhoBERT dùng giấy phép MIT. Một số dataset học thuật tiếng Việt chỉ cho phép nghiên cứu.</p>
 <div class="keep">
-<p><strong>Ghi nhớ:</strong> model bạn đẩy lên Hub kèm model card tốt là một mục portfolio hoàn chỉnh: nhà tuyển dụng tải về chạy thử được ngay.</p>
-</div></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p3.4:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 3</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Số bước train</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>20.000 câu train, batch 32, 3 epoch, <code>warmup_ratio=0.1</code>.</p>
+<p><strong>Ghi nhớ:</strong> model bạn đẩy lên Hub kèm model card tốt (kết quả đo được, giới hạn, cách dùng) là một mục portfolio hoàn chỉnh.</p>
+</div>
+<div class="box check">
+<div class="box-h">Tự kiểm tra nhanh</div>
+<p>Fine-tune với 8.000 câu train, batch 32, gradient accumulation 2, 4 epoch.</p>
+<div class="ans" id="p3-4-t-b228-a1">
+<div class="ans-fields"><label>Batch hiệu dụng<input inputmode="decimal" data-ans="64.0" data-tol="0.0" autocomplete="off"></label><label>Số bước cập nhật mỗi epoch<input inputmode="decimal" data-ans="125.0" data-tol="0.0" autocomplete="off"></label><label>Tổng số bước cập nhật<input inputmode="decimal" data-ans="500.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div>
+<div aria-live="polite" class="ans-fb"></div>
+</div>
+</div>
+<h2 id="lt-7">Tóm tắt bài và thuật ngữ</h2>
+<table>
+<thead>
+<tr>
+<th>Việc</th>
+<th>Công cụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Thử model nhanh</td>
+<td><code>pipeline(...)</code></td>
+</tr>
+<tr>
+<td>Tải model + head</td>
+<td><code>AutoModelFor&lt;Task&gt;.from_pretrained(..., num_labels=...)</code></td>
+</tr>
+<tr>
+<td>Token hóa</td>
+<td><code>AutoTokenizer</code>, <code>padding</code>, <code>truncation</code>, <code>attention_mask</code></td>
+</tr>
+<tr>
+<td>Dữ liệu</td>
+<td><code>load_dataset</code>, <code>map(batched=True)</code>, <code>filter</code>, <code>train_test_split</code></td>
+</tr>
+<tr>
+<td>Train</td>
+<td><code>TrainingArguments</code> + <code>Trainer</code> + <code>DataCollatorWithPadding</code></td>
+</tr>
+<tr>
+<td>Chia sẻ</td>
+<td><code>push_to_hub</code>, model card, giấy phép</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Thuật ngữ</th>
+<th>Nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Hub</td>
+<td>kho model và dataset của Hugging Face</td>
+</tr>
+<tr>
+<td>checkpoint</td>
+<td>bộ trọng số đã lưu tại một thời điểm</td>
+</tr>
+<tr>
+<td>head</td>
+<td>lớp cuối gắn cho một tác vụ cụ thể</td>
+</tr>
+<tr>
+<td>Auto classes</td>
+<td>class tự chọn kiến trúc theo config</td>
+</tr>
+<tr>
+<td>padding / truncation</td>
+<td>đệm câu ngắn / cắt câu dài</td>
+</tr>
+<tr>
+<td>attention mask</td>
+<td>1 cho token thật, 0 cho token đệm</td>
+</tr>
+<tr>
+<td>special tokens</td>
+<td>token đặc biệt: <code>&lt;s&gt;</code>, <code>&lt;/s&gt;</code>, <code>[CLS]</code>, <code>[SEP]</code>, <code>&lt;pad&gt;</code></td>
+</tr>
+<tr>
+<td>word segmentation</td>
+<td>tách từ tiếng Việt (nối âm tiết bằng "_")</td>
+</tr>
+<tr>
+<td>data collator</td>
+<td>hàm gộp các mẫu thành một batch</td>
+</tr>
+<tr>
+<td>gradient accumulation</td>
+<td>cộng gradient nhiều batch nhỏ trước khi cập nhật</td>
+</tr>
+<tr>
+<td>catastrophic forgetting</td>
+<td>quên kiến thức pretrain khi fine-tune mạnh tay</td>
+</tr>
+<tr>
+<td>model card</td>
+<td>tài liệu mô tả model, dữ liệu, kết quả, giới hạn</td>
+</tr>
+<tr>
+<td>safetensors</td>
+<td>định dạng lưu trọng số an toàn, tải nhanh</td>
+</tr>
+</tbody>
+</table></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p3.4:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 3</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Số bước train</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>20.000 câu train, batch 32, 3 epoch, <code>warmup_ratio=0.1</code>.</p>
 <div class="ans" id="p3-4-e1-a1"><div class="ans-fields"><label>Số bước mỗi epoch<input inputmode="decimal" data-ans="625.0" data-tol="0.0" autocomplete="off"></label><label>Tổng số bước<input inputmode="decimal" data-ans="1875.0" data-tol="0.0" autocomplete="off"></label><label>Số bước warmup (làm tròn lên)<input inputmode="decimal" data-ans="188.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
 
 <details class="fold solution">
@@ -184,7 +649,7 @@
     </div>
     <aside class="aside">
       <div class="abox"><h4>Tiến độ bài này</h4><div class="ring"><svg viewBox="0 0 64 64" aria-hidden="true"><circle class="bg" cx="32" cy="32" r="28"/><circle class="fg" cx="32" cy="32" r="28" stroke-dasharray="176" stroke-dashoffset="176"/></svg><div><b id="ring-n">0/3</b><span id="ring-sub">phần đã xong</span></div></div></div>
-      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Auto classes: tải model trong 3 dòng</a></li><li><a href="#lt-2">Tokenizer: padding, truncation, attention mask</a></li><li><a href="#lt-3">datasets: xử lý dữ liệu nhanh</a></li><li><a href="#lt-4">Trainer</a></li><li><a href="#lt-5">Hub và model card</a></li></ol></div>
+      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Hệ sinh thái Hugging Face</a></li><li><a href="#lt-2">Auto classes: tải model trong 3 dòng</a></li><li><a href="#lt-3">Tokenizer: padding, truncation, attention mask</a></li><li><a href="#lt-4">datasets: xử lý dữ liệu nhanh</a></li><li><a href="#lt-5">Trainer</a></li><li><a href="#lt-6">Hub, model card và giấy phép</a></li><li><a href="#lt-7">Tóm tắt bài và thuật ngữ</a></li></ol></div>
       
       <div class="abox"><h4>Cùng giai đoạn</h4><ul><li><a href="p3-1.html">Tokenization và embedding</a></li><li><a href="p3-2.html">Bài 3 · Attention và Transformer</a></li><li><a href="p3-3.html">Language model và sinh văn bản</a></li><li><span class=cur>Hệ sinh thái Hugging Face</span></li></ul></div>
     </aside>

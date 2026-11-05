@@ -22,53 +22,292 @@
 <main class="container">
   <div class="crumbs"><a href="../bai-hoc.html">Bài học</a><span>/</span><a href="../bai-hoc.html#p3">P3 · Transformer và NLP</a><span>/</span><span>P3.1</span></div>
   <section class="lhero"><div class="code">P3.1</div><h1>Tokenization và embedding</h1><div class="lmeta"><span class="m">Giai đoạn P3 · Transformer và NLP</span><span class="m">Tuần 13–17</span><span class="chip ready"><span class="dot"></span>Có nội dung đầy đủ</span></div>
-    <div class="intro"><p>Trước khi model đọc được văn bản, văn bản phải thành số. Bài này đi qua hai bước đầu tiên của mọi LLM: <strong>tokenization</strong> (cắt văn bản thành các mảnh có id) và <strong>embedding</strong> (biến mỗi id thành một vector có nghĩa). Bạn sẽ hiểu vì sao tiếng Việt thường tốn nhiều token hơn tiếng Anh, và vì sao các mô hình cũ như RNN nhường chỗ cho Transformer.</p></div></section>
+    <div class="intro"><p>Trước khi model đọc được văn bản, văn bản phải thành số. Bài này đi qua hai bước đầu tiên của mọi LLM: <strong>tokenization</strong> (cắt văn bản thành các mảnh có id) và <strong>embedding</strong> (biến mỗi id thành một vector có nghĩa). Bạn sẽ thấy bằng số đo thật vì sao tiếng Việt thường tốn nhiều token hơn tiếng Anh, và vì sao các mô hình cũ như RNN nhường chỗ cho Transformer.</p></div></section>
   
-  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">5 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
+  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">6 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
   <div class="lgrid" style="margin-top:22px">
     <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">Token là gì</h2>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Mọi thứ về LLM đều tính bằng token: giá API (đồng trên một triệu token), giới hạn context (128K token), tốc độ (token mỗi giây). Hiểu token là hiểu chi phí và giới hạn của sản phẩm bạn xây.</p>
+</div>
 <p>Model không đọc chữ cái hay từ, mà đọc <strong>token</strong>: các mảnh văn bản lấy từ một bộ từ vựng cố định (thường 32.000 đến 200.000 mảnh). Mỗi token có một id số nguyên.</p>
-<div class="hl"><pre><span></span><code>"Tôi học AI"  →  ["T", "ôi", " học", " AI"]  →  [51, 9821, 4410, 15592]
+<div class="hl"><pre><span></span><code>"Tôi học AI"  →  ["T", "ôi", " học", " AI"]  →  [51, 9821, 4410, 15592]     (ví dụ minh họa)
 </code></pre></div>
 
-<p>Cắt theo <strong>ký tự</strong> thì chuỗi quá dài; cắt theo <strong>từ</strong> thì bộ từ vựng khổng lồ và gặp từ mới là bó tay. <strong>Subword</strong> đứng giữa: từ phổ biến là một token, từ hiếm được ghép từ nhiều mảnh nhỏ.</p>
+<h3>Ba cách cắt văn bản</h3>
+<table>
+<thead>
+<tr>
+<th>Cách cắt</th>
+<th>Ví dụ "unhappiness"</th>
+<th>Ưu điểm</th>
+<th>Nhược điểm</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Ký tự</td>
+<td>u, n, h, a, p, p, … (11 token)</td>
+<td>từ vựng nhỏ, không bao giờ gặp ký tự lạ</td>
+<td>chuỗi rất dài, model phải tự học ghép chữ thành từ</td>
+</tr>
+<tr>
+<td>Từ</td>
+<td>unhappiness (1 token)</td>
+<td>chuỗi ngắn</td>
+<td>từ vựng khổng lồ; từ mới, tên riêng, lỗi chính tả là "không biết"</td>
+</tr>
+<tr>
+<td><strong>Subword</strong></td>
+<td>un, happiness (2 token)</td>
+<td>cân bằng: từ phổ biến là 1 token, từ hiếm ghép từ mảnh nhỏ</td>
+<td>phụ thuộc dữ liệu dùng để học tokenizer</td>
+</tr>
+</tbody>
+</table>
+<p>Mọi LLM hiện nay dùng subword. Khoảng trắng thường dính vào token đi sau (" học", " AI"), nên "AI" ở đầu câu và " AI" giữa câu có thể là hai token khác nhau.</p>
 <h2 id="lt-2">Byte Pair Encoding (BPE)</h2>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>BPE là thuật toán tạo bộ từ vựng cho GPT, LLaMA, Qwen và hầu hết LLM. Tự cài BPE (phần thực hành) là cách tốt nhất để hiểu vì sao tokenizer cắt chữ như vậy.</p>
+</div>
+<h3>Thuật toán</h3>
 <p>BPE học bộ từ vựng từ dữ liệu bằng cách gộp dần cặp mảnh hay đi cùng nhau nhất:</p>
 <div class="hl"><pre><span></span><code>1. Bắt đầu: mỗi ký tự (hoặc byte) là một token
-2. Đếm mọi cặp token liền kề trong toàn bộ dữ liệu
-3. Gộp cặp phổ biến nhất thành token mới, thêm vào từ vựng
-4. Lặp lại tới khi đủ kích thước từ vựng
+2. Đếm mọi cặp token liền kề trong toàn bộ dữ liệu (nhân với tần suất của từ)
+3. Gộp cặp phổ biến nhất thành token mới, thêm vào từ vựng, ghi lại quy tắc gộp
+4. Lặp lại tới khi đủ kích thước từ vựng mong muốn
 </code></pre></div>
 
-<p>GPT dùng <strong>byte-level BPE</strong>: bắt đầu từ 256 byte, nên mọi văn bản (cả emoji, tiếng Việt có dấu) đều mã hóa được, không bao giờ gặp token "không biết".</p>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>Kho dữ liệu nhỏ gồm bốn từ với tần suất: "nhanh" ×4, "nhà" ×6, "nhân" ×5, "anh" ×3.</p>
+<p><strong>Lượt 1.</strong> Đếm cặp: (n, h) xuất hiện 2 lần trong "nhanh" (×4) + 1 lần trong "nhà" (×6) + 1 lần trong "nhân" (×5) + 1 lần trong "anh" (×3) = 8 + 6 + 5 + 3 = <strong>22</strong>, nhiều nhất. Gộp thành "nh".</p>
+<p><strong>Lượt 2.</strong> Cặp (a, nh) xuất hiện trong "nh·a·nh" (×4) và "a·nh" (×3) = <strong>7</strong>. Gộp thành "anh".</p>
+<p><strong>Lượt 3.</strong> Cặp (nh, à) = <strong>6</strong>. Gộp thành "nhà".</p>
+<figure class="fig"><img src="../assets/fig/p3-1-bpe.svg" alt="Ba lượt gộp đầu tiên. Sau lượt 3, &quot;nhà&quot; và &quot;anh&quot; đã là một token; &quot;nhanh&quot; là hai token &quot;nh&quot; + &quot;anh&quot;." loading="lazy"><figcaption>Ba lượt gộp đầu tiên. Sau lượt 3, &quot;nhà&quot; và &quot;anh&quot; đã là một token; &quot;nhanh&quot; là hai token &quot;nh&quot; + &quot;anh&quot;.</figcaption></figure>
+<p>Khi mã hóa văn bản mới, tokenizer áp dụng <strong>đúng các quy tắc gộp theo thứ tự đã học</strong>. Từ chưa từng thấy như "nhanh nhảu" vẫn cắt được thành các mảnh đã biết.</p>
+</div>
+<h3>Byte-level BPE</h3>
+<p>GPT-2 trở đi dùng <strong>byte-level BPE</strong>: bắt đầu từ 256 byte thay vì ký tự. Mọi văn bản (emoji, tiếng Việt có dấu, mã nguồn) đều là chuỗi byte, nên <strong>không bao giờ</strong> gặp token "không biết". Cái giá: ký tự ngoài bảng mã ASCII cần 2–4 byte, và nếu tokenizer chưa học gộp các byte đó thì một chữ bị cắt thành nhiều token.</p>
+<details class="fold deep">
+<summary>Đào sâu thêm</summary>
+<p><strong>Các biến thể.</strong> <strong>WordPiece</strong> (BERT, PhoBERT dùng biến thể BPE) chọn cặp gộp theo xác suất thay vì tần suất. <strong>SentencePiece/Unigram</strong> (T5, LLaMA 1–2) coi khoảng trắng là một ký tự bình thường và học từ vựng bằng cách bỏ dần các mảnh ít hữu ích. Khác nhau về chi tiết, cùng một ý tưởng: từ phổ biến thành một mảnh, từ hiếm ghép từ nhiều mảnh.</p>
+</details>
 <h2 id="lt-3">Vì sao tiếng Việt tốn token hơn</h2>
-<p>Bộ từ vựng được học chủ yếu từ dữ liệu tiếng Anh, nên từ tiếng Anh thường gọn trong một token. Chữ tiếng Việt có dấu được mã hóa UTF-8 thành 2–3 byte, và các tổ hợp như "ường", "ộ" ít xuất hiện trong dữ liệu học, nên bị cắt nhỏ hơn. Hệ quả thực tế:</p>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Nếu sản phẩm của bạn phục vụ người Việt, chi phí API, tốc độ phản hồi và lượng tài liệu nhét được vào context đều phụ thuộc vào tokenizer xử lý tiếng Việt tốt đến đâu.</p>
+</div>
+<p>Bộ từ vựng được học chủ yếu từ dữ liệu tiếng Anh, nên từ tiếng Anh thường gọn trong một token. Chữ tiếng Việt có dấu được mã hóa UTF-8 thành 2–3 byte ("ư" là 2 byte, "ờ" là 3 byte), và nếu các tổ hợp đó hiếm trong dữ liệu học tokenizer thì chúng bị cắt vụn.</p>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>Đo thật với hai tokenizer có sẵn bộ từ vựng công khai:</p>
+<table>
+<thead>
+<tr>
+<th>Câu</th>
+<th>Số từ</th>
+<th>Byte UTF-8</th>
+<th>GPT-2</th>
+<th>Whisper multilingual</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>"I am learning artificial intelligence to become an AI engineer."</td>
+<td>10</td>
+<td>63</td>
+<td>11</td>
+<td>11</td>
+</tr>
+<tr>
+<td>"Tôi đang học trí tuệ nhân tạo để làm kỹ sư AI."</td>
+<td>12</td>
+<td>63</td>
+<td><strong>43</strong></td>
+<td><strong>19</strong></td>
+</tr>
+</tbody>
+</table>
+<p>Với GPT-2 (học gần như chỉ trên tiếng Anh), chữ "người" bị cắt thành <strong>7 token</strong>: "ng" rồi từng byte lẻ. Với tokenizer được học trên nhiều ngôn ngữ, "người" chỉ còn 2 token, và cả câu tốn khoảng 1.7 lần tiếng Anh thay vì gần 4 lần.</p>
+</div>
+<figure class="fig"><img src="../assets/fig/p3-1-tokens.svg" alt="Cùng nội dung, cùng số byte. Tokenizer học trên nhiều ngôn ngữ giảm mạnh số token tiếng Việt, nhưng vẫn nhiều hơn tiếng Anh." loading="lazy"><figcaption>Cùng nội dung, cùng số byte. Tokenizer học trên nhiều ngôn ngữ giảm mạnh số token tiếng Việt, nhưng vẫn nhiều hơn tiếng Anh.</figcaption></figure>
+
+<p>Hệ quả thực tế:</p>
 <ul>
-<li>Cùng một nội dung, tiếng Việt thường tốn nhiều token hơn: <strong>chi phí API cao hơn</strong>, <strong>context window chứa được ít chữ hơn</strong>.</li>
-<li>Luôn đo số token thực tế bằng tokenizer của đúng model bạn dùng, đừng ước lượng theo số từ.</li>
+<li>Cùng một nội dung, tiếng Việt thường tốn nhiều token hơn: <strong>chi phí API cao hơn</strong>, <strong>context window chứa được ít chữ hơn</strong>, <strong>sinh câu trả lời chậm hơn</strong> (model sinh từng token).</li>
+<li>Các model mới (GPT-4o, Qwen2.5, Gemma) có từ vựng lớn hơn và học trên nhiều ngôn ngữ hơn nên tiếng Việt đỡ tốn hơn nhiều, nhưng chênh lệch vẫn còn.</li>
+<li>Luôn đo số token thực tế bằng tokenizer của <strong>đúng model bạn dùng</strong>, đừng ước lượng theo số từ.</li>
 </ul>
-<h2 id="lt-4">Embedding</h2>
-<p>Mỗi token id được tra trong một bảng <strong>embedding</strong> shape (kích thước từ vựng, d) để lấy một vector d chiều. Bảng này là tham số, được học cùng model.</p>
-<div class="hl"><pre><span></span><code><span class="tk-n">emb</span> <span class="tk-o">=</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">Embedding</span><span class="tk-p">(</span><span class="tk-n">num_embeddings</span><span class="tk-o">=</span><span class="tk-mi">50_000</span><span class="tk-p">,</span> <span class="tk-n">embedding_dim</span><span class="tk-o">=</span><span class="tk-mi">768</span><span class="tk-p">)</span>
-<span class="tk-n">ids</span> <span class="tk-o">=</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">tensor</span><span class="tk-p">([[</span><span class="tk-mi">51</span><span class="tk-p">,</span> <span class="tk-mi">9821</span><span class="tk-p">,</span> <span class="tk-mi">4410</span><span class="tk-p">]])</span>      <span class="tk-c1"># (batch, seq)</span>
-<span class="tk-n">x</span> <span class="tk-o">=</span> <span class="tk-n">emb</span><span class="tk-p">(</span><span class="tk-n">ids</span><span class="tk-p">)</span>                                <span class="tk-c1"># (1, 3, 768)</span>
+<div class="hl"><pre><span></span><code><span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">transformers</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">AutoTokenizer</span>
+<span class="tk-n">tok</span> <span class="tk-o">=</span> <span class="tk-n">AutoTokenizer</span><span class="tk-o">.</span><span class="tk-n">from_pretrained</span><span class="tk-p">(</span><span class="tk-s2">"Qwen/Qwen2.5-0.5B-Instruct"</span><span class="tk-p">)</span>
+<span class="tk-n">ids</span> <span class="tk-o">=</span> <span class="tk-n">tok</span><span class="tk-p">(</span><span class="tk-s2">"Tôi đang học trí tuệ nhân tạo."</span><span class="tk-p">)[</span><span class="tk-s2">"input_ids"</span><span class="tk-p">]</span>
+<span class="tk-nb">len</span><span class="tk-p">(</span><span class="tk-n">ids</span><span class="tk-p">),</span> <span class="tk-n">tok</span><span class="tk-o">.</span><span class="tk-n">convert_ids_to_tokens</span><span class="tk-p">(</span><span class="tk-n">ids</span><span class="tk-p">)</span>
 </code></pre></div>
 
-<p>Sau khi train, các token có nghĩa gần nhau có vector gần nhau theo <strong>cosine similarity</strong>. Embedding cấp câu (dùng cho tìm kiếm ngữ nghĩa và RAG ở P4) được tạo bằng cách đưa cả câu qua một model rồi gộp các vector token lại.</p>
+<div class="box pitfall">
+<div class="box-h">Lỗi hay gặp</div>
+<p><strong>Ước lượng chi phí bằng số từ.</strong> Quy tắc "1 token ≈ 0.75 từ" chỉ đúng với tiếng Anh. Một hệ thống chatbot tiếng Việt ước lượng theo quy tắc đó có thể đánh giá thấp chi phí 2–4 lần. Lấy 100 tin nhắn thật, đếm token bằng tokenizer thật, rồi mới tính.</p>
+</div>
+<div class="box check">
+<div class="box-h">Tự kiểm tra nhanh</div>
+<p>Một API tính 3 USD cho mỗi triệu token đầu vào. Mỗi ngày có 20.000 câu hỏi, mỗi câu trung bình 150 token tiếng Anh. Với tiếng Việt, giả sử số token gấp 1.7 lần.</p>
+<div class="ans" id="p3-1-t-b69-a1">
+<div class="ans-fields"><label>Chi phí mỗi ngày với tiếng Anh (USD)<input inputmode="decimal" data-ans="9.0" data-tol="0.001" autocomplete="off"></label><label>Chi phí mỗi ngày với tiếng Việt (USD)<input inputmode="decimal" data-ans="15.3" data-tol="0.001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div>
+<div aria-live="polite" class="ans-fb"></div>
+</div>
+</div>
+<h2 id="lt-4">Embedding</h2>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Id của token chỉ là số thứ tự, không mang nghĩa: token 4410 không "gần" token 4411. Embedding biến mỗi id thành một vector, và sau khi train, vị trí của vector mang nghĩa. Đây cũng là nền tảng của tìm kiếm ngữ nghĩa và RAG ở P4.</p>
+</div>
+<h3>Bảng tra</h3>
+<p>Mỗi token id được tra trong một bảng <strong>embedding</strong> shape (V, d), V là kích thước từ vựng, d là số chiều, để lấy một vector d chiều. Về toán, đó là nhân one-hot của id với bảng; về cài đặt, chỉ là lấy hàng thứ id.</p>
+<figure class="fig"><img src="../assets/fig/p3-1-embedding.svg" alt="Mỗi id lấy ra một hàng của bảng embedding. Câu 3 token thành ma trận (3, d)." loading="lazy"><figcaption>Mỗi id lấy ra một hàng của bảng embedding. Câu 3 token thành ma trận (3, d).</figcaption></figure>
+
+<div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">torch</span>
+<span class="tk-n">emb</span> <span class="tk-o">=</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">Embedding</span><span class="tk-p">(</span><span class="tk-n">num_embeddings</span><span class="tk-o">=</span><span class="tk-mi">32_000</span><span class="tk-p">,</span> <span class="tk-n">embedding_dim</span><span class="tk-o">=</span><span class="tk-mi">512</span><span class="tk-p">)</span>
+<span class="tk-n">ids</span> <span class="tk-o">=</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">tensor</span><span class="tk-p">([[</span><span class="tk-mi">51</span><span class="tk-p">,</span> <span class="tk-mi">4410</span><span class="tk-p">,</span> <span class="tk-mi">15592</span><span class="tk-p">]])</span>     <span class="tk-c1"># (batch=1, seq=3)</span>
+<span class="tk-n">x</span> <span class="tk-o">=</span> <span class="tk-n">emb</span><span class="tk-p">(</span><span class="tk-n">ids</span><span class="tk-p">)</span>                                <span class="tk-c1"># (1, 3, 512)</span>
+</code></pre></div>
+
+<p>Bảng này là <strong>tham số</strong>, khởi tạo ngẫu nhiên và được học cùng model bằng backprop như mọi trọng số khác.</p>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>Qwen2.5-0.5B có từ vựng 151.936 token và d = 896. Bảng embedding có 151.936 × 896 ≈ <strong>136 triệu</strong> tham số: hơn một phần tư toàn bộ model 0.5 tỉ tham số. Ở bf16 (2 byte mỗi số) bảng này chiếm khoảng <strong>272 MB</strong>. Từ vựng lớn giúp tiếng Việt tốn ít token hơn, nhưng đổi lại bảng embedding và lớp đầu ra (cũng có shape V × d) rất nặng.</p>
+</div>
+<h3>Embedding mang nghĩa</h3>
+<p>Sau khi train, token có nghĩa gần nhau có vector gần nhau theo <strong>cosine similarity</strong> (P0.2): "vua" gần "hoàng hậu", "Hà Nội" gần "Hải Phòng". Hướng trong không gian cũng mang nghĩa: nổi tiếng từ word2vec là vector("vua") − vector("đàn ông") + vector("phụ nữ") ≈ vector("hoàng hậu").</p>
+<h3>Embedding cấp câu</h3>
+<p>Embedding token chỉ biểu diễn từng mảnh. Để so sánh <strong>cả câu</strong> (tìm tài liệu liên quan tới câu hỏi), ta đưa câu qua một model (thường là encoder như BERT, bge-m3) rồi <strong>gộp</strong> các vector token lại, ví dụ lấy trung bình hoặc lấy vector của token đặc biệt đầu câu. Model embedding câu được train riêng để câu cùng nghĩa có cosine cao. Đây là công cụ chính của P4.2 (RAG).</p>
 <div class="keep">
-<p><strong>Ghi nhớ:</strong> tokenizer và embedding là một cặp. Đổi tokenizer thì toàn bộ bảng embedding và model phải train lại.</p>
+<p><strong>Ghi nhớ:</strong> tokenizer và embedding là một cặp. Đổi tokenizer thì id thay đổi, toàn bộ bảng embedding và model phải train lại.</p>
+</div>
+<div class="box pitfall">
+<div class="box-h">Lỗi hay gặp</div>
+<p><strong>Dùng nhầm tokenizer.</strong> Tải model từ một nơi và tokenizer từ nơi khác (hoặc phiên bản khác) thì id lệch: model nhận "rác" mà không báo lỗi gì, chỉ cho ra câu trả lời vô nghĩa. Luôn tải tokenizer và model từ cùng một tên model.</p>
 </div>
 <h2 id="lt-5">Giới hạn của RNN và LSTM</h2>
-<p>Trước Transformer, văn bản được xử lý bằng <strong>RNN</strong>: đọc từng token theo thứ tự, cập nhật một trạng thái ẩn h.</p>
-<div class="hl"><pre><span></span><code>hₜ = tanh(W·hₜ₋₁ + U·xₜ)
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Hiểu vì sao RNN thất bại là hiểu vì sao Transformer được thiết kế như vậy. Hai vấn đề của RNN chính là hai thứ attention giải quyết.</p>
+</div>
+<h3>RNN đọc từng token một</h3>
+<p>Trước Transformer, văn bản được xử lý bằng <strong>RNN</strong>: đọc từng token theo thứ tự, cập nhật một trạng thái ẩn h mang "trí nhớ" về những gì đã đọc:</p>
+<div class="hl"><pre><span></span><code>hₜ = tanh(W·hₜ₋₁ + U·xₜ + b)
 </code></pre></div>
 
-<p>Hai vấn đề lớn:</p>
+<p>Toàn bộ câu phải được nén vào một vector h cố định kích thước.</p>
+<h3>Hai vấn đề lớn</h3>
 <ol>
-<li><strong>Vanishing gradient:</strong> thông tin từ token đầu phải đi qua hàng trăm phép nhân mới tới token cuối, gradient tắt dần. LSTM giảm bớt bằng các cổng, nhưng không giải quyết hẳn với chuỗi dài.</li>
-<li><strong>Không song song được:</strong> muốn tính hₜ phải có hₜ₋₁, nên không tận dụng được GPU.</li>
+<li><strong>Vanishing gradient theo thời gian:</strong> thông tin từ token đầu phải đi qua hàng trăm phép nhân với W (và qua tanh) mới tới token cuối. Giống mạng sâu không có kết nối tắt (P2.3), gradient tắt dần, nên RNN khó nhớ quan hệ xa ("Con mèo mà hôm qua tôi thấy ở chợ … <strong>nó</strong> …").</li>
+<li><strong>Không song song được:</strong> muốn tính hₜ phải có hₜ₋₁. Chuỗi 1.000 token cần 1.000 bước tuần tự, không tận dụng được hàng nghìn nhân của GPU.</li>
 </ol>
-<p>Attention (Bài 3) giải quyết cả hai: mỗi token nhìn thẳng vào mọi token khác trong một bước, và mọi vị trí tính cùng lúc.</p></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p3.1:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 3</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Đếm cặp trong BPE</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Dữ liệu (từ và số lần xuất hiện), đã tách thành ký tự:</p>
+<p><strong>LSTM</strong> và <strong>GRU</strong> thêm các "cổng" học được quyết định giữ hay quên thông tin, giảm bớt vấn đề 1 (cổng quên hoạt động như một kết nối tắt theo thời gian), nhưng không giải quyết vấn đề 2.</p>
+<figure class="fig"><img src="../assets/fig/p3-1-rnn.svg" alt="RNN: thông tin đi tuần tự qua từng bước. Attention: token 1 và token 4 nối trực tiếp, mọi cặp tính cùng lúc." loading="lazy"><figcaption>RNN: thông tin đi tuần tự qua từng bước. Attention: token 1 và token 4 nối trực tiếp, mọi cặp tính cùng lúc.</figcaption></figure>
+
+<h3>Attention giải quyết cả hai</h3>
+<p>Attention (P3.2) cho mỗi token <strong>nhìn thẳng</strong> vào mọi token khác trong một bước: đường đi giữa hai token bất kỳ dài 1 thay vì dài bằng khoảng cách giữa chúng. Và mọi vị trí tính cùng lúc bằng phép nhân ma trận. Cái giá: chi phí tăng theo bình phương độ dài chuỗi, một chủ đề bạn sẽ gặp lại ở P9.3.</p>
+<div class="box check">
+<div class="box-h">Tự kiểm tra nhanh</div>
+<p>Một RNN có mỗi bước nhân gradient với 0.9 (giả sử không đổi).</p>
+<div class="ans" id="p3-1-t-b131-a1">
+<div class="ans-fields"><label>Hệ số còn lại sau 10 bước<input inputmode="decimal" data-ans="0.3487" data-tol="0.001" autocomplete="off"></label><label>Sau 100 bước (làm tròn 6 chữ số thập phân)<input inputmode="decimal" data-ans="2.7e-05" data-tol="1e-06" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div>
+<div aria-live="polite" class="ans-fb"></div>
+</div>
+</div>
+<h2 id="lt-6">Tóm tắt bài và thuật ngữ</h2>
+<table>
+<thead>
+<tr>
+<th>Bước</th>
+<th>Đầu vào</th>
+<th>Đầu ra</th>
+<th>Ghi nhớ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Tokenizer</td>
+<td>văn bản</td>
+<td>danh sách id</td>
+<td>subword (BPE), đo bằng tokenizer thật</td>
+</tr>
+<tr>
+<td>Embedding</td>
+<td>id, shape (N, T)</td>
+<td>vector, shape (N, T, d)</td>
+<td>bảng (V, d) học được</td>
+</tr>
+<tr>
+<td>Mô hình chuỗi</td>
+<td>vector</td>
+<td>biểu diễn theo ngữ cảnh</td>
+<td>RNN tuần tự, attention song song</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Thuật ngữ</th>
+<th>Nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>token</td>
+<td>mảnh văn bản trong bộ từ vựng</td>
+</tr>
+<tr>
+<td>vocabulary (V)</td>
+<td>bộ từ vựng, tập mọi token</td>
+</tr>
+<tr>
+<td>tokenizer</td>
+<td>công cụ cắt văn bản thành token và ngược lại</td>
+</tr>
+<tr>
+<td>subword</td>
+<td>mảnh nhỏ hơn từ</td>
+</tr>
+<tr>
+<td>BPE</td>
+<td>thuật toán gộp dần cặp phổ biến nhất</td>
+</tr>
+<tr>
+<td>byte-level</td>
+<td>bắt đầu từ 256 byte, không có token lạ</td>
+</tr>
+<tr>
+<td>merge rule</td>
+<td>quy tắc gộp học được, áp dụng theo thứ tự</td>
+</tr>
+<tr>
+<td>embedding</td>
+<td>vector biểu diễn token (hoặc câu)</td>
+</tr>
+<tr>
+<td>embedding dimension (d)</td>
+<td>số chiều của vector</td>
+</tr>
+<tr>
+<td>context window</td>
+<td>số token tối đa model xử lý một lần</td>
+</tr>
+<tr>
+<td>RNN / LSTM / GRU</td>
+<td>mạng hồi quy đọc tuần tự / có cổng</td>
+</tr>
+<tr>
+<td>hidden state</td>
+<td>trạng thái ẩn mang thông tin đã đọc</td>
+</tr>
+</tbody>
+</table></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p3.1:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 3</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Đếm cặp trong BPE</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Dữ liệu (từ và số lần xuất hiện), đã tách thành ký tự:</p>
 <table>
 <thead>
 <tr>
@@ -204,7 +443,7 @@
     </div>
     <aside class="aside">
       <div class="abox"><h4>Tiến độ bài này</h4><div class="ring"><svg viewBox="0 0 64 64" aria-hidden="true"><circle class="bg" cx="32" cy="32" r="28"/><circle class="fg" cx="32" cy="32" r="28" stroke-dasharray="176" stroke-dashoffset="176"/></svg><div><b id="ring-n">0/3</b><span id="ring-sub">phần đã xong</span></div></div></div>
-      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Token là gì</a></li><li><a href="#lt-2">Byte Pair Encoding (BPE)</a></li><li><a href="#lt-3">Vì sao tiếng Việt tốn token hơn</a></li><li><a href="#lt-4">Embedding</a></li><li><a href="#lt-5">Giới hạn của RNN và LSTM</a></li></ol></div>
+      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Token là gì</a></li><li><a href="#lt-2">Byte Pair Encoding (BPE)</a></li><li><a href="#lt-3">Vì sao tiếng Việt tốn token hơn</a></li><li><a href="#lt-4">Embedding</a></li><li><a href="#lt-5">Giới hạn của RNN và LSTM</a></li><li><a href="#lt-6">Tóm tắt bài và thuật ngữ</a></li></ol></div>
       
       <div class="abox"><h4>Cùng giai đoạn</h4><ul><li><span class=cur>Tokenization và embedding</span></li><li><a href="p3-2.html">Bài 3 · Attention và Transformer</a></li><li><a href="p3-3.html">Language model và sinh văn bản</a></li><li><a href="p3-4.html">Hệ sinh thái Hugging Face</a></li></ul></div>
     </aside>

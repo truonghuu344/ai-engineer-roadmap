@@ -22,29 +22,138 @@
 <main class="container">
   <div class="crumbs"><a href="../bai-hoc.html">Bài học</a><span>/</span><a href="../bai-hoc.html#p3">P3 · Transformer và NLP</a><span>/</span><span>P3.3</span></div>
   <section class="lhero"><div class="code">P3.3</div><h1>Language model và sinh văn bản</h1><div class="lmeta"><span class="m">Giai đoạn P3 · Transformer và NLP</span><span class="m">Tuần 13–17</span><span class="chip ready"><span class="dot"></span>Có nội dung đầy đủ</span></div>
-    <div class="intro"><p>GPT, Claude, Llama đều được pretrain bằng một nhiệm vụ đơn giản đến bất ngờ: <strong>đoán token tiếp theo</strong>. Bài này giải thích nhiệm vụ đó, cách đo model ngôn ngữ bằng perplexity, các cách lấy mẫu khi sinh văn bản (temperature, top-k, top-p), và sự khác nhau giữa ba họ BERT, GPT, T5. Phần thực hành, bạn train một GPT nhỏ biết viết tiếng Việt.</p></div></section>
+    <div class="intro"><p>GPT, Claude, Llama đều được pretrain bằng một nhiệm vụ đơn giản đến bất ngờ: <strong>đoán token tiếp theo</strong>. Bài này giải thích nhiệm vụ đó, cách đo model ngôn ngữ bằng perplexity, các cách lấy mẫu khi sinh văn bản (temperature, top-k, top-p), sự khác nhau giữa ba họ BERT, GPT, T5, và quy luật "model càng lớn càng tốt" vận hành thế nào. Phần thực hành, bạn train một GPT nhỏ biết viết tiếng Việt.</p></div></section>
   
-  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">5 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
+  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">6 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
   <div class="lgrid" style="margin-top:22px">
     <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">Next-token prediction</h2>
-<p>Cho chuỗi token x₁ … xₜ, model dự đoán phân phối của xₜ₊₁. Loss là cross-entropy trên <strong>mọi vị trí</strong> cùng lúc (nhờ causal mask, một lần forward cho T dự đoán):</p>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Nhiệm vụ đoán token tiếp theo là lý do LLM tồn tại: nó biến toàn bộ văn bản trên internet thành dữ liệu train mà không cần ai gán nhãn. Hiểu nhiệm vụ này giúp bạn hiểu cả sức mạnh (kiến thức rộng) lẫn điểm yếu (bịa ra câu nghe hợp lý) của LLM.</p>
+</div>
+<h3>Nhiệm vụ</h3>
+<p>Cho chuỗi token x₁ … xₜ, model dự đoán <strong>phân phối xác suất</strong> của xₜ₊₁ trên toàn bộ từ vựng. Một câu được sinh ra là tích các xác suất có điều kiện:</p>
+<div class="hl"><pre><span></span><code>p(x₁, x₂, …, x_T) = p(x₁) · p(x₂ | x₁) · p(x₃ | x₁, x₂) · … · p(x_T | x₁ … x_T₋₁)
+</code></pre></div>
+
+<p>Đây là <strong>maximum likelihood</strong> (P0.2) áp dụng cho văn bản: train để văn bản thật có xác suất cao nhất dưới model. Lấy −log và trung bình, ta có loss cross-entropy:</p>
 <div class="hl"><pre><span></span><code>L = −(1/T) Σₜ log p(xₜ₊₁ | x₁ … xₜ)
 </code></pre></div>
 
-<p>Nhãn chính là văn bản dịch đi một vị trí, nên mọi văn bản trên internet đều là dữ liệu train không cần gán nhãn. Để đoán tốt token tiếp theo trên dữ liệu đa dạng, model buộc phải học ngữ pháp, kiến thức, suy luận.</p>
-<div class="hl"><pre><span></span><code><span class="tk-n">x</span> <span class="tk-o">=</span> <span class="tk-n">tokens</span><span class="tk-p">[:,</span> <span class="tk-p">:</span><span class="tk-o">-</span><span class="tk-mi">1</span><span class="tk-p">]</span>          <span class="tk-c1"># đầu vào</span>
-<span class="tk-n">y</span> <span class="tk-o">=</span> <span class="tk-n">tokens</span><span class="tk-p">[:,</span> <span class="tk-mi">1</span><span class="tk-p">:]</span>           <span class="tk-c1"># đáp án: dịch trái 1</span>
-<span class="tk-n">logits</span> <span class="tk-o">=</span> <span class="tk-n">model</span><span class="tk-p">(</span><span class="tk-n">x</span><span class="tk-p">)</span>           <span class="tk-c1"># (B, T, vocab)</span>
+<h3>Nhãn là văn bản dịch đi một vị trí</h3>
+<figure class="fig"><img src="../assets/fig/p3-3-shift.svg" alt="Đầu vào là chuỗi bỏ token cuối, đáp án là chuỗi bỏ token đầu. Nhờ causal mask (P3.2), mỗi vị trí chỉ thấy quá khứ của nó, nên một lượt forward chấm được cả 7 dự đoán." loading="lazy"><figcaption>Đầu vào là chuỗi bỏ token cuối, đáp án là chuỗi bỏ token đầu. Nhờ causal mask (P3.2), mỗi vị trí chỉ thấy quá khứ của nó, nên một lượt forward chấm được cả 7 dự đoán.</figcaption></figure>
+
+<div class="hl"><pre><span></span><code><span class="tk-n">x</span> <span class="tk-o">=</span> <span class="tk-n">tokens</span><span class="tk-p">[:,</span> <span class="tk-p">:</span><span class="tk-o">-</span><span class="tk-mi">1</span><span class="tk-p">]</span>                     <span class="tk-c1"># (B, T)   đầu vào</span>
+<span class="tk-n">y</span> <span class="tk-o">=</span> <span class="tk-n">tokens</span><span class="tk-p">[:,</span> <span class="tk-mi">1</span><span class="tk-p">:]</span>                      <span class="tk-c1"># (B, T)   đáp án: dịch trái 1 vị trí</span>
+<span class="tk-n">logits</span> <span class="tk-o">=</span> <span class="tk-n">model</span><span class="tk-p">(</span><span class="tk-n">x</span><span class="tk-p">)</span>                      <span class="tk-c1"># (B, T, V)</span>
 <span class="tk-n">loss</span> <span class="tk-o">=</span> <span class="tk-n">F</span><span class="tk-o">.</span><span class="tk-n">cross_entropy</span><span class="tk-p">(</span><span class="tk-n">logits</span><span class="tk-o">.</span><span class="tk-n">reshape</span><span class="tk-p">(</span><span class="tk-o">-</span><span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-n">V</span><span class="tk-p">),</span> <span class="tk-n">y</span><span class="tk-o">.</span><span class="tk-n">reshape</span><span class="tk-p">(</span><span class="tk-o">-</span><span class="tk-mi">1</span><span class="tk-p">))</span>
 </code></pre></div>
 
+<h3>Vì sao nhiệm vụ đơn giản lại học được nhiều</h3>
+<p>Để đoán đúng token tiếp theo trên dữ liệu đa dạng, model buộc phải học:</p>
+<table>
+<thead>
+<tr>
+<th>Câu cần đoán tiếp</th>
+<th>Model phải biết</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>"Các con mèo đang …"</td>
+<td>ngữ pháp: chủ ngữ số nhiều</td>
+</tr>
+<tr>
+<td>"Thủ đô của Nhật Bản là …"</td>
+<td>kiến thức thế giới</td>
+</tr>
+<tr>
+<td>"23 + 19 = …"</td>
+<td>tính toán</td>
+</tr>
+<tr>
+<td>"Anh ấy làm rơi cốc nước nên sàn nhà bị …"</td>
+<td>quan hệ nhân quả</td>
+</tr>
+<tr>
+<td>"def fibonacci(n): …"</td>
+<td>lập trình</td>
+</tr>
+</tbody>
+</table>
+<p>Mặt trái: model được thưởng vì viết ra token <strong>nghe hợp lý</strong>, không phải token <strong>đúng sự thật</strong>. Khi không biết, nó vẫn sinh ra câu trôi chảy: đó là gốc của <strong>hallucination</strong> (bịa thông tin), chủ đề quan trọng ở P4.</p>
 <h2 id="lt-2">Perplexity</h2>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Loss 2.3 hay 1.8 khó hình dung. Perplexity đổi loss thành một con số có ý nghĩa trực quan, và là metric chuẩn để so model ngôn ngữ trong bài báo.</p>
+</div>
 <div class="hl"><pre><span></span><code>perplexity = exp(loss trung bình)
 </code></pre></div>
 
-<p>Perplexity là "model đang phân vân giữa bao nhiêu lựa chọn" mỗi bước. Model đoán đều trên 65 ký tự có perplexity 65; model tốt trên văn bản tiếng Anh với tokenizer BPE thường dưới 10. Chỉ so perplexity giữa các model dùng <strong>cùng tokenizer</strong> và cùng tập đánh giá.</p>
+<p>Perplexity là "model đang phân vân giữa bao nhiêu lựa chọn" ở mỗi bước, tính trung bình. Model đoán đều trên K lựa chọn có loss = ln K, nên perplexity = K.</p>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>Train ba model ngôn ngữ cấp ký tự rất đơn giản trên vài đoạn văn tiếng Việt (83 ký tự khác nhau), đo trên một đoạn chưa thấy:</p>
+<table>
+<thead>
+<tr>
+<th>Model</th>
+<th>Cách đoán</th>
+<th>Perplexity</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Đoán đều</td>
+<td>mọi ký tự xác suất 1/83</td>
+<td><strong>83.0</strong></td>
+</tr>
+<tr>
+<td>Unigram</td>
+<td>theo tần suất ký tự ("n", "h", dấu cách hay gặp)</td>
+<td><strong>33.2</strong></td>
+</tr>
+<tr>
+<td>Bigram</td>
+<td>theo ký tự liền trước ("n" thường theo sau là "g", "h")</td>
+<td><strong>16.8</strong></td>
+</tr>
+</tbody>
+</table>
+<p>Mỗi khi model nhìn thêm ngữ cảnh, perplexity giảm: nó bớt phân vân. Một Transformer nhìn hàng trăm ký tự trước sẽ giảm xuống còn vài đơn vị.</p>
+</div>
+<figure class="fig"><img src="../assets/fig/p3-3-ppl.svg" alt="Ba model đếm tần suất, đo thật trên cùng đoạn văn." loading="lazy"><figcaption>Ba model đếm tần suất, đo thật trên cùng đoạn văn.</figcaption></figure>
+
+<table>
+<thead>
+<tr>
+<th>Loss trung bình (log tự nhiên)</th>
+<th>0.5</th>
+<th>1.0</th>
+<th>1.5</th>
+<th>3.0</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Perplexity</td>
+<td>1.65</td>
+<td>2.72</td>
+<td>4.48</td>
+<td>20.1</td>
+</tr>
+</tbody>
+</table>
+<div class="box pitfall">
+<div class="box-h">Lỗi hay gặp</div>
+<p><strong>So perplexity giữa hai tokenizer khác nhau.</strong> Perplexity tính <strong>theo token</strong>. Tokenizer cắt nhỏ hơn (nhiều token hơn cho cùng câu) thì mỗi token dễ đoán hơn, perplexity thấp hơn, dù model không tốt hơn. Chỉ so perplexity giữa các model dùng <strong>cùng tokenizer</strong> và cùng tập đánh giá; muốn so khác tokenizer thì quy về "bit trên mỗi byte" hoặc "trên mỗi ký tự".</p>
+</div>
 <h2 id="lt-3">Sinh văn bản và các cách lấy mẫu</h2>
-<p>Sinh văn bản là lặp: đưa chuỗi hiện tại vào model, lấy phân phối token tiếp theo, chọn một token, nối vào, lặp lại.</p>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Cùng một model, cách chọn token khi sinh quyết định câu trả lời lặp đi lặp lại, chính xác, hay sáng tạo. Các tham số <code>temperature</code>, <code>top_p</code> bạn gặp khi gọi API LLM chính là những thứ trong mục này.</p>
+</div>
+<p>Sinh văn bản là lặp: đưa chuỗi hiện tại vào model, lấy phân phối token tiếp theo, <strong>chọn</strong> một token, nối vào, lặp lại tới khi gặp token kết thúc hoặc đủ độ dài.</p>
 <table>
 <thead>
 <tr>
@@ -57,7 +166,7 @@
 <tr>
 <td>Greedy</td>
 <td>luôn chọn token xác suất cao nhất</td>
-<td>ổn định nhưng hay lặp</td>
+<td>ổn định, nhưng hay lặp vòng ("rất rất rất…")</td>
 </tr>
 <tr>
 <td>Temperature T</td>
@@ -71,23 +180,79 @@
 </tr>
 <tr>
 <td>Top-p (nucleus)</td>
-<td>giữ ít token nhất có tổng xác suất ≥ p</td>
+<td>giữ <strong>ít token nhất</strong> có tổng xác suất ≥ p</td>
 <td>số token giữ lại tự thay đổi theo độ chắc chắn</td>
 </tr>
 </tbody>
 </table>
+<h3>Temperature</h3>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>Logits (3, 1, 0.5, 0, −1) cho 5 token:</p>
+<table>
+<thead>
+<tr>
+<th>Temperature</th>
+<th>Phân phối</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0.5</td>
+<td>0.973, 0.018, 0.007, 0.002, 0.000</td>
+</tr>
+<tr>
+<td>1.0</td>
+<td>0.778, 0.105, 0.064, 0.039, 0.014</td>
+</tr>
+<tr>
+<td>2.0</td>
+<td>0.497, 0.183, 0.142, 0.111, 0.067</td>
+</tr>
+</tbody>
+</table>
+<p>Lấy mẫu từ model bigram ở mục trên, bắt đầu bằng "H", với ba nhiệt độ (kết quả thật):</p>
+<div class="hl"><pre><span></span><code>T = 0.3:  "Hà mười th th t t t th trấth nh là th th th th th th nh ch th"
+T = 1.0:  "Hq sẫỏi sỏửBuổió tớềỏạgưtậNội hưlà g, sáythốtảiácựa Người môc"
+T = 1.8:  "HđọậsãsThoinqữềỉểôợẫìCêeVêệmắíSữqqồHệcthốpữăầéopụcựểpútoà nừk"
+</code></pre></div>
+
+<p>Nhiệt độ thấp: lặp lại cụm phổ biến nhất ("th"). Nhiệt độ cao: gần như ngẫu nhiên. Model bigram quá yếu nên cả ba đều không thành câu; với LLM thật, khoảng 0.7–1.0 cho văn bản tự nhiên.</p>
+</div>
+<h3>Top-k và top-p</h3>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>Phân phối (0.40, 0.25, 0.20, 0.10, 0.05):</p>
+<ul>
+<li><strong>Top-k = 3</strong>: giữ 0.40, 0.25, 0.20, chuẩn hóa lại chia cho 0.85 → (0.471, 0.294, 0.235).</li>
+<li><strong>Top-p = 0.6</strong>: cộng dồn 0.40, 0.65 ≥ 0.6 → giữ 2 token, chuẩn hóa → (0.615, 0.385).</li>
+</ul>
+</div>
+<p>Ưu điểm của top-p: khi model chắc chắn, nó chỉ giữ 1–2 token (không cho cơ hội chọn bậy); khi model phân vân (nhiều lựa chọn đều hợp lý), nó giữ nhiều token để câu đa dạng. Top-k giữ cố định k token bất kể tình huống.</p>
+<figure class="fig"><img src="../assets/fig/p3-3-topp.svg" alt="Cùng top-k = 3 và top-p = 0.9 trên hai phân phối. Model chắc chắn: top-p chỉ giữ 2 token. Model phân vân: top-p giữ 6 token, còn top-k vẫn cắt cứng ở 3." loading="lazy"><figcaption>Cùng top-k = 3 và top-p = 0.9 trên hai phân phối. Model chắc chắn: top-p chỉ giữ 2 token. Model phân vân: top-p giữ 6 token, còn top-k vẫn cắt cứng ở 3.</figcaption></figure>
+
 <div class="hl"><pre><span></span><code><span class="tk-nd">@torch</span><span class="tk-o">.</span><span class="tk-n">no_grad</span><span class="tk-p">()</span>
 <span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">sample_next</span><span class="tk-p">(</span><span class="tk-n">logits</span><span class="tk-p">,</span> <span class="tk-n">temperature</span><span class="tk-o">=</span><span class="tk-mf">0.8</span><span class="tk-p">,</span> <span class="tk-n">top_k</span><span class="tk-o">=</span><span class="tk-mi">50</span><span class="tk-p">):</span>
+    <span class="tk-k">if</span> <span class="tk-n">temperature</span> <span class="tk-o">==</span> <span class="tk-mi">0</span><span class="tk-p">:</span>
+        <span class="tk-k">return</span> <span class="tk-n">logits</span><span class="tk-o">.</span><span class="tk-n">argmax</span><span class="tk-p">(</span><span class="tk-o">-</span><span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-n">keepdim</span><span class="tk-o">=</span><span class="tk-kc">True</span><span class="tk-p">)</span>                <span class="tk-c1"># greedy</span>
     <span class="tk-n">logits</span> <span class="tk-o">=</span> <span class="tk-n">logits</span> <span class="tk-o">/</span> <span class="tk-n">temperature</span>
     <span class="tk-n">v</span><span class="tk-p">,</span> <span class="tk-n">_</span> <span class="tk-o">=</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">topk</span><span class="tk-p">(</span><span class="tk-n">logits</span><span class="tk-p">,</span> <span class="tk-nb">min</span><span class="tk-p">(</span><span class="tk-n">top_k</span><span class="tk-p">,</span> <span class="tk-n">logits</span><span class="tk-o">.</span><span class="tk-n">size</span><span class="tk-p">(</span><span class="tk-o">-</span><span class="tk-mi">1</span><span class="tk-p">)))</span>
-    <span class="tk-n">logits</span><span class="tk-p">[</span><span class="tk-n">logits</span> <span class="tk-o">&lt;</span> <span class="tk-n">v</span><span class="tk-p">[</span><span class="tk-o">...</span><span class="tk-p">,</span> <span class="tk-o">-</span><span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-kc">None</span><span class="tk-p">]]</span> <span class="tk-o">=</span> <span class="tk-nb">float</span><span class="tk-p">(</span><span class="tk-s2">"-inf"</span><span class="tk-p">)</span>
+    <span class="tk-n">logits</span><span class="tk-p">[</span><span class="tk-n">logits</span> <span class="tk-o">&lt;</span> <span class="tk-n">v</span><span class="tk-p">[</span><span class="tk-o">...</span><span class="tk-p">,</span> <span class="tk-o">-</span><span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-kc">None</span><span class="tk-p">]]</span> <span class="tk-o">=</span> <span class="tk-nb">float</span><span class="tk-p">(</span><span class="tk-s2">"-inf"</span><span class="tk-p">)</span>         <span class="tk-c1"># bỏ mọi token ngoài top-k</span>
     <span class="tk-k">return</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">multinomial</span><span class="tk-p">(</span><span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">softmax</span><span class="tk-p">(</span><span class="tk-n">logits</span><span class="tk-p">,</span> <span class="tk-o">-</span><span class="tk-mi">1</span><span class="tk-p">),</span> <span class="tk-mi">1</span><span class="tk-p">)</span>
 </code></pre></div>
 
 <div class="keep">
-<p><strong>Ghi nhớ:</strong> temperature = 0 tương đương greedy. Cho tác vụ cần chính xác (trích xuất, code) dùng nhiệt độ thấp; cho viết sáng tạo dùng 0.7–1.0.</p>
+<p><strong>Ghi nhớ:</strong> temperature = 0 tương đương greedy. Cho tác vụ cần chính xác (trích xuất thông tin, code, phân loại) dùng nhiệt độ thấp (0–0.3); cho viết sáng tạo dùng 0.7–1.0. Thường chỉ chỉnh một trong hai: temperature hoặc top-p.</p>
 </div>
+<details class="fold deep">
+<summary>Đào sâu thêm</summary>
+<p><strong>Beam search.</strong> Thay vì chọn một token mỗi bước, giữ B chuỗi có xác suất tổng cao nhất, mở rộng tất cả, lại giữ B chuỗi tốt nhất. Beam search tốt cho dịch máy và nhận dạng giọng nói (có một đáp án "đúng"), nhưng với chat và viết thì cho văn bản nhạt, lặp, nên LLM chat thường dùng lấy mẫu với top-p.</p>
+</details>
 <h2 id="lt-4">BERT, GPT, T5</h2>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Khi chọn model cho một sản phẩm (phân loại email, tìm kiếm tài liệu, chatbot), câu hỏi đầu tiên là chọn họ nào. Chọn sai họ có thể tốn chi phí gấp 100 lần hoặc cho chất lượng kém hẳn.</p>
+</div>
 <table>
 <thead>
 <tr>
@@ -122,11 +287,189 @@
 <td>sinh văn bản, chat, mọi tác vụ qua prompt</td>
 <td>dịch, tóm tắt</td>
 </tr>
+<tr>
+<td>Đại diện tiếng Việt</td>
+<td>PhoBERT</td>
+<td>Qwen, Llama, Vistral</td>
+<td>ViT5</td>
+</tr>
 </tbody>
 </table>
-<p>Ngày nay decoder-only (GPT) thống trị vì mở rộng tốt và làm được mọi việc qua prompt. Encoder như BERT vẫn rất phổ biến cho embedding và phân loại vì nhỏ, nhanh, rẻ.</p>
+<h3>Masked LM: vì sao BERT hiểu tốt</h3>
+<p>BERT che ngẫu nhiên 15% token và đoán chúng từ <strong>cả hai phía</strong>: "Tôi [MASK] cơm ở nhà hàng" → "ăn". Nhìn được cả bên phải giúp BERT hiểu nghĩa từ trong ngữ cảnh tốt hơn GPT cùng kích thước, nhưng BERT không sinh văn bản liên tục được (không có thứ tự trái sang phải).</p>
+<h3>Vì sao decoder-only thống trị</h3>
+<ul>
+<li><strong>Mở rộng tốt</strong>: cùng một nhiệm vụ đơn giản, chỉ cần thêm dữ liệu và tham số.</li>
+<li><strong>Mọi tác vụ qua prompt</strong>: phân loại, dịch, tóm tắt, viết code đều diễn đạt được thành "viết tiếp đoạn văn này".</li>
+<li><strong>Học trong ngữ cảnh (in-context learning)</strong>: đưa vài ví dụ vào prompt là model làm theo, không cần train lại.</li>
+</ul>
+<p>Encoder như BERT vẫn rất phổ biến cho embedding và phân loại vì nhỏ (100–300 triệu tham số), nhanh, rẻ, và có thể fine-tune trên một GPU nhỏ (P3.4).</p>
+<div class="box check">
+<div class="box-h">Tự kiểm tra nhanh</div>
+<p>Bạn cần chọn kiến trúc cho từng việc. Gõ 1 cho encoder (BERT), 2 cho decoder (GPT).</p>
+<div class="ans" id="p3-3-t-b128-a1">
+<div class="ans-fields"><label>Phân loại 1 triệu bình luận/ngày thành tích cực/tiêu cực, chi phí thấp<input inputmode="decimal" data-ans="1.0" data-tol="0.0" autocomplete="off"></label><label>Chatbot trả lời câu hỏi khách hàng bằng câu văn tự nhiên<input inputmode="decimal" data-ans="2.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div>
+<div aria-live="polite" class="ans-fb"></div>
+</div>
+</div>
 <h2 id="lt-5">Scaling và những gì xảy ra sau pretrain</h2>
-<p>Các nghiên cứu về <strong>scaling law</strong> cho thấy loss giảm đều theo hàm lũy thừa khi tăng số tham số, lượng dữ liệu và lượng tính toán. Model pretrain xong chỉ biết "viết tiếp văn bản". Để thành trợ lý biết làm theo hướng dẫn, nó còn qua <strong>SFT</strong> (fine-tune trên cặp hỏi–đáp) và <strong>preference tuning</strong> (RLHF, DPO). Hai bước này học ở P6.</p></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p3.3:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 3</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Perplexity</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><div class="ans" id="p3-3-e1-a1"><div class="ans-fields"><label>Loss trung bình 2.0, perplexity<input inputmode="decimal" data-ans="7.389" data-tol="0.001" autocomplete="off"></label><label>Loss ban đầu với 65 ký tự đoán đều<input inputmode="decimal" data-ans="4.1744" data-tol="0.001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Biết quy luật scaling giúp trả lời câu hỏi thực tế: với ngân sách GPU này, nên train model bao nhiêu tham số và trên bao nhiêu dữ liệu? Và vì sao một model pretrain xong chưa dùng làm chatbot được.</p>
+</div>
+<h3>Scaling law</h3>
+<p>Các nghiên cứu về <strong>scaling law</strong> cho thấy loss giảm đều và dự đoán được theo hàm lũy thừa khi tăng số tham số N, lượng dữ liệu D (số token), và lượng tính toán C:</p>
+<div class="hl"><pre><span></span><code>C ≈ 6 · N · D                               (FLOP để train: 6 phép tính mỗi tham số mỗi token)
+L(N, D) ≈ E + A / N^α + B / D^β              (dạng của nghiên cứu Chinchilla, 2022)
+</code></pre></div>
+
+<p>E là loss không thể giảm (độ khó tự nhiên của văn bản); hai số hạng sau giảm khi tăng N và D.</p>
+<figure class="fig"><img src="../assets/fig/p3-3-scaling.svg" alt="Dùng công thức và hằng số công bố trong nghiên cứu Chinchilla. Mỗi đường là một ngân sách tính toán cố định: model quá nhỏ thì thiếu sức chứa, quá lớn thì không đủ dữ liệu để train trong ngân sách đó." loading="lazy"><figcaption>Dùng công thức và hằng số công bố trong nghiên cứu Chinchilla. Mỗi đường là một ngân sách tính toán cố định: model quá nhỏ thì thiếu sức chứa, quá lớn thì không đủ dữ liệu để train trong ngân sách đó.</figcaption></figure>
+
+<p>Kết luận thực hành của Chinchilla: với ngân sách cố định, nên tăng N và D <strong>cùng nhịp</strong>, khoảng <strong>20 token dữ liệu cho mỗi tham số</strong>. Nhiều model trước đó (như GPT-3 với 175 tỉ tham số train trên 300 tỉ token) "quá to so với lượng dữ liệu". Model hiện nay thường train vượt xa tỉ lệ đó (hàng nghìn tỉ token cho model vài tỉ tham số) vì model nhỏ rẻ hơn khi <strong>chạy</strong> cho hàng triệu người dùng.</p>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>Chinchilla: N = 70 tỉ tham số, D = 1.4 nghìn tỉ token (đúng 20 token mỗi tham số).</p>
+<ul>
+<li>Tính toán: 6 × 70·10⁹ × 1.4·10¹² ≈ <strong>5.9·10²³ FLOP</strong>.</li>
+<li>Một GPU H100 thực tế đạt khoảng 4·10¹⁴ FLOP/giây: cần khoảng 1.5·10⁹ giây GPU, tức khoảng <strong>17.000 GPU-ngày</strong>. Đó là lý do chỉ vài tổ chức pretrain model lớn; phần lớn kỹ sư AI làm việc với model đã pretrain.</li>
+</ul>
+</div>
+<h3>Sau pretrain: từ "viết tiếp" thành "trợ lý"</h3>
+<p>Model pretrain xong (<strong>base model</strong>) chỉ biết viết tiếp văn bản. Hỏi "Thủ đô của Pháp là gì?" nó có thể viết tiếp "Thủ đô của Đức là gì? Thủ đô của Ý là gì?" như một danh sách câu hỏi trên mạng. Để thành trợ lý:</p>
+<table>
+<thead>
+<tr>
+<th>Bước</th>
+<th>Dữ liệu</th>
+<th>Học được</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Pretrain</td>
+<td>hàng nghìn tỉ token văn bản</td>
+<td>ngôn ngữ, kiến thức, suy luận</td>
+</tr>
+<tr>
+<td>SFT (supervised fine-tuning)</td>
+<td>vài chục nghìn cặp hướng dẫn–trả lời mẫu</td>
+<td>định dạng hội thoại, làm theo yêu cầu</td>
+</tr>
+<tr>
+<td>Preference tuning (RLHF, DPO)</td>
+<td>các cặp câu trả lời được người chấm "tốt hơn/kém hơn"</td>
+<td>trả lời hữu ích, trung thực, an toàn hơn</td>
+</tr>
+<tr>
+<td>RL với phần thưởng kiểm chứng được</td>
+<td>bài toán, code có test</td>
+<td>suy luận nhiều bước (reasoning model, P9.3)</td>
+</tr>
+</tbody>
+</table>
+<p>Hai bước SFT và DPO bạn sẽ tự làm ở P6.</p>
+<h2 id="lt-6">Tóm tắt bài và thuật ngữ</h2>
+<table>
+<thead>
+<tr>
+<th>Chủ đề</th>
+<th>Điều cần nhớ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Pretrain</td>
+<td>đoán token tiếp, nhãn = văn bản dịch 1 vị trí</td>
+</tr>
+<tr>
+<td>Loss</td>
+<td>cross-entropy trung bình mọi vị trí</td>
+</tr>
+<tr>
+<td>Perplexity</td>
+<td>exp(loss), so được khi cùng tokenizer</td>
+</tr>
+<tr>
+<td>Sinh văn bản</td>
+<td>greedy, temperature, top-k, top-p</td>
+</tr>
+<tr>
+<td>Họ model</td>
+<td>encoder (hiểu), decoder (sinh), encoder–decoder (biến đổi chuỗi)</td>
+</tr>
+<tr>
+<td>Scaling</td>
+<td>C ≈ 6ND; khoảng 20 token/tham số là tối ưu tính toán</td>
+</tr>
+<tr>
+<td>Sau pretrain</td>
+<td>SFT → preference tuning → (RL)</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Thuật ngữ</th>
+<th>Nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>language model</td>
+<td>mô hình gán xác suất cho chuỗi văn bản</td>
+</tr>
+<tr>
+<td>next-token prediction</td>
+<td>nhiệm vụ đoán token tiếp theo</td>
+</tr>
+<tr>
+<td>autoregressive</td>
+<td>sinh lần lượt, mỗi bước dựa trên các token đã sinh</td>
+</tr>
+<tr>
+<td>perplexity</td>
+<td>exp(loss), "số lựa chọn đang phân vân"</td>
+</tr>
+<tr>
+<td>greedy decoding</td>
+<td>luôn chọn token xác suất cao nhất</td>
+</tr>
+<tr>
+<td>temperature</td>
+<td>hệ số làm phân phối sắc hoặc mềm</td>
+</tr>
+<tr>
+<td>top-k / top-p (nucleus)</td>
+<td>giữ k token / giữ đủ token để tổng xác suất ≥ p</td>
+</tr>
+<tr>
+<td>beam search</td>
+<td>giữ B chuỗi tốt nhất mỗi bước</td>
+</tr>
+<tr>
+<td>masked language model</td>
+<td>che token rồi đoán từ hai phía (BERT)</td>
+</tr>
+<tr>
+<td>in-context learning</td>
+<td>làm theo ví dụ trong prompt mà không train</td>
+</tr>
+<tr>
+<td>scaling law</td>
+<td>quy luật loss giảm theo N, D, C</td>
+</tr>
+<tr>
+<td>base model / instruct model</td>
+<td>model chỉ pretrain / đã qua SFT và preference tuning</td>
+</tr>
+<tr>
+<td>hallucination</td>
+<td>sinh thông tin sai nhưng nghe hợp lý</td>
+</tr>
+</tbody>
+</table></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p3.3:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 3</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Perplexity</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><div class="ans" id="p3-3-e1-a1"><div class="ans-fields"><label>Loss trung bình 2.0, perplexity<input inputmode="decimal" data-ans="7.389" data-tol="0.001" autocomplete="off"></label><label>Loss ban đầu với 65 ký tự đoán đều<input inputmode="decimal" data-ans="4.1744" data-tol="0.001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
 
 <details class="fold solution">
 <summary>Lời giải</summary>
@@ -256,7 +599,7 @@
     </div>
     <aside class="aside">
       <div class="abox"><h4>Tiến độ bài này</h4><div class="ring"><svg viewBox="0 0 64 64" aria-hidden="true"><circle class="bg" cx="32" cy="32" r="28"/><circle class="fg" cx="32" cy="32" r="28" stroke-dasharray="176" stroke-dashoffset="176"/></svg><div><b id="ring-n">0/3</b><span id="ring-sub">phần đã xong</span></div></div></div>
-      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Next-token prediction</a></li><li><a href="#lt-2">Perplexity</a></li><li><a href="#lt-3">Sinh văn bản và các cách lấy mẫu</a></li><li><a href="#lt-4">BERT, GPT, T5</a></li><li><a href="#lt-5">Scaling và những gì xảy ra sau pretrain</a></li></ol></div>
+      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Next-token prediction</a></li><li><a href="#lt-2">Perplexity</a></li><li><a href="#lt-3">Sinh văn bản và các cách lấy mẫu</a></li><li><a href="#lt-4">BERT, GPT, T5</a></li><li><a href="#lt-5">Scaling và những gì xảy ra sau pretrain</a></li><li><a href="#lt-6">Tóm tắt bài và thuật ngữ</a></li></ol></div>
       
       <div class="abox"><h4>Cùng giai đoạn</h4><ul><li><a href="p3-1.html">Tokenization và embedding</a></li><li><a href="p3-2.html">Bài 3 · Attention và Transformer</a></li><li><span class=cur>Language model và sinh văn bản</span></li><li><a href="p3-4.html">Hệ sinh thái Hugging Face</a></li></ul></div>
     </aside>

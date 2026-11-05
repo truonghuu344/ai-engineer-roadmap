@@ -22,68 +22,400 @@
 <main class="container">
   <div class="crumbs"><a href="../bai-hoc.html">Bài học</a><span>/</span><a href="../bai-hoc.html#p3">P3 · Transformer và NLP</a><span>/</span><span>P3.2</span></div>
   <section class="lhero"><div class="code">P3.2</div><h1>Bài 3 · Attention và Transformer</h1><div class="lmeta"><span class="m">Giai đoạn P3 · Transformer và NLP</span><span class="m">Tuần 13–17</span><span class="chip ready"><span class="dot"></span>Có nội dung đầy đủ</span></div>
-    <div class="intro"><p>Attention là ý tưởng quan trọng nhất của AI hiện đại: mọi LLM, model sinh ảnh như FLUX, và hầu hết model thị giác đều xây trên nó. Bài này dựng Transformer từ từng mảnh nhỏ: query, key, value, rồi multi-head, mask, vị trí, và cả block hoàn chỉnh. Sau bài này bạn tự cài được attention bằng vài dòng PyTorch.</p></div></section>
+    <div class="intro"><p>Attention là ý tưởng quan trọng nhất của AI hiện đại: mọi LLM, model sinh ảnh như FLUX, và hầu hết model thị giác đều xây trên nó. Bài này dựng Transformer từ từng mảnh nhỏ: query, key, value, rồi multi-head, mask, vị trí, và cả block hoàn chỉnh. Mỗi mảnh có ví dụ tính tay và code kiểm chứng. Sau bài này bạn tự cài được attention bằng vài dòng PyTorch.</p></div></section>
   
-  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">6 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
+  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">7 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
   <div class="lgrid" style="margin-top:22px">
     <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">Ý tưởng: mỗi token hỏi, mọi token trả lời</h2>
-<p>Trong câu "Con mèo ngồi trên tấm thảm vì <strong>nó</strong> mềm", để hiểu "nó" ta cần nhìn lại "thảm". Attention cho mỗi token một cách để <strong>tra cứu</strong> thông tin từ mọi token khác:</p>
-<ul>
-<li><strong>Query (q):</strong> token hiện tại đang tìm gì</li>
-<li><strong>Key (k):</strong> mỗi token mô tả mình có gì</li>
-<li><strong>Value (v):</strong> nội dung mỗi token đưa ra nếu được chọn</li>
-</ul>
-<p>Ba vector này là ba phép chiếu tuyến tính khác nhau của cùng embedding: Q = X·W_Q, K = X·W_K, V = X·W_V.</p>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Sau embedding (P3.1), mỗi token có một vector riêng nhưng chưa biết gì về ngữ cảnh: "nó" trong "con mèo… nó" và "cái bàn… nó" có cùng vector. Attention là cơ chế để mỗi token <strong>lấy thông tin từ các token khác</strong> và cập nhật vector của mình theo ngữ cảnh.</p>
+</div>
+<p>Trong câu "Con mèo ngồi trên tấm thảm vì <strong>nó</strong> mềm", để hiểu "nó" ta cần nhìn lại "thảm" (mềm là tính chất của thảm, không phải mèo). Attention cho mỗi token một cách <strong>tra cứu</strong> thông tin từ mọi token khác, giống tìm kiếm trong một từ điển mềm:</p>
+<table>
+<thead>
+<tr>
+<th>Vai trò</th>
+<th>Câu hỏi</th>
+<th>Ví dụ với "nó"</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Query (q)</strong></td>
+<td>token hiện tại đang tìm gì?</td>
+<td>"tôi là đại từ, tôi tìm danh từ mà tôi thay thế"</td>
+</tr>
+<tr>
+<td><strong>Key (k)</strong></td>
+<td>mỗi token mô tả mình có gì?</td>
+<td>"thảm": "tôi là danh từ, đồ vật"</td>
+</tr>
+<tr>
+<td><strong>Value (v)</strong></td>
+<td>nội dung token đưa ra nếu được chọn</td>
+<td>thông tin về "thảm"</td>
+</tr>
+</tbody>
+</table>
+<p>Ba vector này là ba phép chiếu tuyến tính <strong>khác nhau, học được</strong> của cùng embedding:</p>
+<div class="hl"><pre><span></span><code>Q = X · W_Q        K = X · W_K        V = X · W_V
+X: (T, d_model)    W_Q, W_K, W_V: (d_model, d_k)    Q, K, V: (T, d_k)
+</code></pre></div>
+
+<p>Tách key và value cho phép một token "quảng cáo" mình theo một cách (key) nhưng đóng góp nội dung theo cách khác (value).</p>
 <h2 id="lt-2">Scaled dot-product attention</h2>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Đây là công thức trung tâm của toàn bộ P3–P9. Hiểu từng bước của nó thì đọc được mọi biến thể (multi-head, causal, cross-attention, FlashAttention).</p>
+</div>
 <div class="hl"><pre><span></span><code>Attention(Q, K, V) = softmax( Q·Kᵀ / √d_k ) · V
 </code></pre></div>
 
+<p>Bốn bước:</p>
 <ol>
-<li><code>Q·Kᵀ</code> cho ma trận điểm (seq × seq): token i "hợp" với token j bao nhiêu.</li>
-<li>Chia √d_k: khi d_k lớn, tích vô hướng có phương sai lớn, softmax bị bão hòa (gần one-hot) và gradient rất nhỏ. Chia √d_k giữ phương sai khoảng 1.</li>
-<li>Softmax theo hàng: mỗi token có một phân phối trọng số trên mọi token.</li>
-<li>Nhân với V: đầu ra của mỗi token là <strong>trung bình có trọng số</strong> các value.</li>
+<li><strong><code>Q·Kᵀ</code></strong> cho ma trận điểm shape (T, T): ô (i, j) là tích vô hướng giữa query của token i và key của token j, đo "token j liên quan tới token i bao nhiêu".</li>
+<li><strong>Chia √d_k</strong> để giữ thang đo (giải thích ngay dưới).</li>
+<li><strong>Softmax theo hàng</strong>: mỗi token có một phân phối trọng số (tổng bằng 1) trên mọi token.</li>
+<li><strong>Nhân với V</strong>: đầu ra của mỗi token là <strong>trung bình có trọng số</strong> các value.</li>
 </ol>
-<div class="hl"><pre><span></span><code><span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">attention</span><span class="tk-p">(</span><span class="tk-n">q</span><span class="tk-p">,</span> <span class="tk-n">k</span><span class="tk-p">,</span> <span class="tk-n">v</span><span class="tk-p">,</span> <span class="tk-n">mask</span><span class="tk-o">=</span><span class="tk-kc">None</span><span class="tk-p">):</span>
-    <span class="tk-n">scores</span> <span class="tk-o">=</span> <span class="tk-n">q</span> <span class="tk-o">@</span> <span class="tk-n">k</span><span class="tk-o">.</span><span class="tk-n">transpose</span><span class="tk-p">(</span><span class="tk-o">-</span><span class="tk-mi">2</span><span class="tk-p">,</span> <span class="tk-o">-</span><span class="tk-mi">1</span><span class="tk-p">)</span> <span class="tk-o">/</span> <span class="tk-n">q</span><span class="tk-o">.</span><span class="tk-n">size</span><span class="tk-p">(</span><span class="tk-o">-</span><span class="tk-mi">1</span><span class="tk-p">)</span> <span class="tk-o">**</span> <span class="tk-mf">0.5</span>     <span class="tk-c1"># (B, T, T)</span>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>Một query, ba key/value, d_k = 2:</p>
+<div class="hl"><pre><span></span><code>q  = (1, 0)
+k₁ = (2, 0)   v₁ = (1, 0)
+k₂ = (0, 1)   v₂ = (0, 1)
+k₃ = (1, 1)   v₃ = (1, 1)
+</code></pre></div>
+
+<ul>
+<li>Điểm q·kⱼ = (2, 0, 1); chia √2: (1.414, 0, 0.707)</li>
+<li>Softmax: e^1.414 = 4.11, e^0 = 1, e^0.707 = 2.03, tổng 7.14 → trọng số <strong>(0.576, 0.140, 0.284)</strong></li>
+<li>Đầu ra = 0.576·(1, 0) + 0.140·(0, 1) + 0.284·(1, 1) = <strong>(0.860, 0.424)</strong></li>
+</ul>
+<p>Key 1 giống query nhất nên value 1 chiếm phần lớn đầu ra. Không có token nào bị loại hẳn: attention là "tra cứu mềm".</p>
+</div>
+<div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">torch</span><span class="tk-o">,</span><span class="tk-w"> </span><span class="tk-nn">math</span>
+<span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">attention</span><span class="tk-p">(</span><span class="tk-n">q</span><span class="tk-p">,</span> <span class="tk-n">k</span><span class="tk-p">,</span> <span class="tk-n">v</span><span class="tk-p">,</span> <span class="tk-n">mask</span><span class="tk-o">=</span><span class="tk-kc">None</span><span class="tk-p">):</span>
+    <span class="tk-n">scores</span> <span class="tk-o">=</span> <span class="tk-n">q</span> <span class="tk-o">@</span> <span class="tk-n">k</span><span class="tk-o">.</span><span class="tk-n">transpose</span><span class="tk-p">(</span><span class="tk-o">-</span><span class="tk-mi">2</span><span class="tk-p">,</span> <span class="tk-o">-</span><span class="tk-mi">1</span><span class="tk-p">)</span> <span class="tk-o">/</span> <span class="tk-n">math</span><span class="tk-o">.</span><span class="tk-n">sqrt</span><span class="tk-p">(</span><span class="tk-n">q</span><span class="tk-o">.</span><span class="tk-n">size</span><span class="tk-p">(</span><span class="tk-o">-</span><span class="tk-mi">1</span><span class="tk-p">))</span>   <span class="tk-c1"># (..., T, T)</span>
     <span class="tk-k">if</span> <span class="tk-n">mask</span> <span class="tk-ow">is</span> <span class="tk-ow">not</span> <span class="tk-kc">None</span><span class="tk-p">:</span>
         <span class="tk-n">scores</span> <span class="tk-o">=</span> <span class="tk-n">scores</span><span class="tk-o">.</span><span class="tk-n">masked_fill</span><span class="tk-p">(</span><span class="tk-n">mask</span> <span class="tk-o">==</span> <span class="tk-mi">0</span><span class="tk-p">,</span> <span class="tk-nb">float</span><span class="tk-p">(</span><span class="tk-s2">"-inf"</span><span class="tk-p">))</span>
-    <span class="tk-k">return</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">softmax</span><span class="tk-p">(</span><span class="tk-n">scores</span><span class="tk-p">,</span> <span class="tk-n">dim</span><span class="tk-o">=-</span><span class="tk-mi">1</span><span class="tk-p">)</span> <span class="tk-o">@</span> <span class="tk-n">v</span>                  <span class="tk-c1"># (B, T, d)</span>
+    <span class="tk-k">return</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">softmax</span><span class="tk-p">(</span><span class="tk-n">scores</span><span class="tk-p">,</span> <span class="tk-n">dim</span><span class="tk-o">=-</span><span class="tk-mi">1</span><span class="tk-p">)</span> <span class="tk-o">@</span> <span class="tk-n">v</span>                    <span class="tk-c1"># (..., T, d_k)</span>
 </code></pre></div>
 
+<h3>Vì sao chia √d_k</h3>
+<p>Nếu các thành phần của q và k độc lập, trung bình 0, phương sai 1, thì q·k là tổng của d_k số hạng, phương sai <strong>d_k</strong>, độ lệch chuẩn <strong>√d_k</strong> (P0.2: phương sai của tổng các biến độc lập cộng lại). Với d_k = 64, điểm có độ lệch chuẩn 8; với 512 thì khoảng 22.6.</p>
+<p>Điểm lớn đưa vào softmax cho phân phối gần <strong>one-hot</strong>: một key chiếm gần hết trọng số, các key khác gần 0, và gradient qua softmax gần như bằng 0 ở mọi chỗ. Model học rất chậm. Chia √d_k đưa độ lệch chuẩn về khoảng 1.</p>
+<figure class="fig"><img src="../assets/fig/p3-2-scale.svg" alt="Trái: đo thật, độ lệch chuẩn của q·k tăng đúng theo √d_k, chia √d_k đưa về 1. Phải: với d_k = 256 và 16 key, không chia thì trọng số lớn nhất trung bình 0.93 (gần one-hot); có chia thì 0.25." loading="lazy"><figcaption>Trái: đo thật, độ lệch chuẩn của q·k tăng đúng theo √d_k, chia √d_k đưa về 1. Phải: với d_k = 256 và 16 key, không chia thì trọng số lớn nhất trung bình 0.93 (gần one-hot); có chia thì 0.25.</figcaption></figure>
+
+<div class="box check">
+<div class="box-h">Tự kiểm tra nhanh</div>
+<p>q = (0, 2), hai key k₁ = (1, 1), k₂ = (0, 0), d_k = 2. Value v₁ = (4, 0), v₂ = (0, 4).</p>
+<div class="ans" id="p3-2-t-b56-a1">
+<div class="ans-fields"><label>Điểm của k₁ sau khi chia √2<input inputmode="decimal" data-ans="1.4142" data-tol="0.001" autocomplete="off"></label><label>Trọng số của k₁<input inputmode="decimal" data-ans="0.8044" data-tol="0.001" autocomplete="off"></label><label>Chiều 1 của đầu ra<input inputmode="decimal" data-ans="3.2176" data-tol="0.002" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div>
+<div aria-live="polite" class="ans-fb"></div>
+</div>
+</div>
 <h2 id="lt-3">Causal mask</h2>
-<p>Model sinh văn bản (GPT) chỉ được nhìn quá khứ: token thứ i không được thấy token i+1 trở đi, nếu không thì lúc train nó "nhìn trộm" đáp án. Ta đặt điểm của các vị trí tương lai thành −∞ trước softmax, nên trọng số của chúng bằng 0.</p>
-<div class="hl"><pre><span></span><code>mask = torch.tril(torch.ones(T, T))     # tam giác dưới: 1 = được nhìn
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Model sinh văn bản (GPT, Llama, Qwen) được train để đoán token tiếp theo. Nếu lúc train token thứ i nhìn thấy token i+1, nó chỉ cần "chép" đáp án, và sẽ vô dụng khi sinh thật (lúc đó tương lai chưa có).</p>
+</div>
+<p>Ta đặt điểm của các vị trí tương lai thành <strong>−∞</strong> trước softmax. e^(−∞) = 0, nên trọng số của chúng bằng 0 đúng tuyệt đối, và tổng trọng số của các vị trí còn lại vẫn bằng 1.</p>
+<div class="hl"><pre><span></span><code><span class="tk-n">T</span> <span class="tk-o">=</span> <span class="tk-mi">8</span>
+<span class="tk-n">mask</span> <span class="tk-o">=</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">tril</span><span class="tk-p">(</span><span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">ones</span><span class="tk-p">(</span><span class="tk-n">T</span><span class="tk-p">,</span> <span class="tk-n">T</span><span class="tk-p">))</span>     <span class="tk-c1"># tam giác dưới: 1 = được nhìn, 0 = bị che</span>
 </code></pre></div>
 
+<figure class="fig"><img src="../assets/fig/p3-2-mask.svg" alt="Trái: mask cho câu 8 token, hàng &quot;nó&quot; chỉ được nhìn 7 token tới chính nó. Phải: minh họa một đầu attention đã học dồn trọng số của &quot;nó&quot; vào &quot;thảm&quot; (số liệu minh họa, không phải từ model thật)." loading="lazy"><figcaption>Trái: mask cho câu 8 token, hàng &quot;nó&quot; chỉ được nhìn 7 token tới chính nó. Phải: minh họa một đầu attention đã học dồn trọng số của &quot;nó&quot; vào &quot;thảm&quot; (số liệu minh họa, không phải từ model thật).</figcaption></figure>
+
+<p>Nhờ mask, một lượt forward trên chuỗi T token cho ra <strong>T bài toán "đoán token tiếp theo"</strong> cùng lúc (mỗi vị trí đoán token sau nó), nên train rất hiệu quả. Đây là lý do LLM train nhanh hơn RNN nhiều.</p>
+<div class="box pitfall">
+<div class="box-h">Lỗi hay gặp</div>
+<p><strong>Mask bằng số 0 thay vì −∞.</strong> Đặt điểm tương lai bằng 0 (thay vì −∞) rồi softmax thì vị trí đó vẫn nhận trọng số e⁰ / tổng &gt; 0: model vẫn nhìn trộm tương lai. Luôn dùng <code>-inf</code> (hoặc một số rất âm như −1e9) <strong>trước</strong> softmax.</p>
+</div>
 <h2 id="lt-4">Multi-head attention</h2>
-<p>Một đầu attention chỉ học được một kiểu quan hệ. <strong>Multi-head</strong> chia d_model thành h đầu, mỗi đầu d_k = d_model / h chiều, chạy attention song song, rồi nối kết quả và chiếu qua W_O. Có đầu học quan hệ ngữ pháp, có đầu học đồng tham chiếu ("nó" → "thảm"), có đầu nhìn token liền kề.</p>
-<div class="hl"><pre><span></span><code>head_i = Attention(X·W_Qⁱ, X·W_Kⁱ, X·W_Vⁱ)
-MultiHead(X) = Concat(head_1, …, head_h)·W_O
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Một token cần nhiều loại thông tin cùng lúc: chủ ngữ của nó là gì, nó thay thế cho danh từ nào, token liền trước là gì. Một phân phối trọng số duy nhất không thể vừa nhìn chỗ này vừa nhìn chỗ kia. Nhiều đầu attention song song cho phép điều đó.</p>
+</div>
+<p><strong>Multi-head</strong> chia d_model thành h đầu, mỗi đầu d_k = d_model / h chiều, chạy attention độc lập, rồi nối kết quả và chiếu qua W_O:</p>
+<div class="hl"><pre><span></span><code>head_i = Attention(X·W_Qⁱ, X·W_Kⁱ, X·W_Vⁱ)          mỗi đầu d_k = d_model / h
+MultiHead(X) = Concat(head_1, …, head_h) · W_O
 </code></pre></div>
 
-<p>Số tham số attention: 4 ma trận d_model × d_model (Q, K, V, O) cộng bias, không phụ thuộc số đầu.</p>
+<figure class="fig"><img src="../assets/fig/p3-2-heads.svg" alt="Shape qua từng bước với d_model = 512 và 8 đầu: mỗi đầu làm việc trên 64 chiều, có ma trận T × T của riêng nó." loading="lazy"><figcaption>Shape qua từng bước với d_model = 512 và 8 đầu: mỗi đầu làm việc trên 64 chiều, có ma trận T × T của riêng nó.</figcaption></figure>
+
+<p>Nghiên cứu các model đã train cho thấy các đầu chuyên môn hóa: có đầu nhìn token liền trước, có đầu theo quan hệ ngữ pháp, có đầu làm đồng tham chiếu.</p>
+<p>Cài đặt hiệu quả: tính Q, K, V cho mọi đầu bằng <strong>một</strong> lớp Linear rồi <code>view</code> thành các đầu:</p>
+<div class="hl"><pre><span></span><code><span class="tk-k">class</span><span class="tk-w"> </span><span class="tk-nc">MultiHeadAttention</span><span class="tk-p">(</span><span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">Module</span><span class="tk-p">):</span>
+    <span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-fm">__init__</span><span class="tk-p">(</span><span class="tk-bp">self</span><span class="tk-p">,</span> <span class="tk-n">d_model</span><span class="tk-p">,</span> <span class="tk-n">n_heads</span><span class="tk-p">):</span>
+        <span class="tk-nb">super</span><span class="tk-p">()</span><span class="tk-o">.</span><span class="tk-fm">__init__</span><span class="tk-p">()</span>
+        <span class="tk-bp">self</span><span class="tk-o">.</span><span class="tk-n">h</span> <span class="tk-o">=</span> <span class="tk-n">n_heads</span>
+        <span class="tk-bp">self</span><span class="tk-o">.</span><span class="tk-n">qkv</span> <span class="tk-o">=</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">Linear</span><span class="tk-p">(</span><span class="tk-n">d_model</span><span class="tk-p">,</span> <span class="tk-mi">3</span> <span class="tk-o">*</span> <span class="tk-n">d_model</span><span class="tk-p">)</span>      <span class="tk-c1"># W_Q, W_K, W_V gộp lại</span>
+        <span class="tk-bp">self</span><span class="tk-o">.</span><span class="tk-n">o</span> <span class="tk-o">=</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">Linear</span><span class="tk-p">(</span><span class="tk-n">d_model</span><span class="tk-p">,</span> <span class="tk-n">d_model</span><span class="tk-p">)</span>            <span class="tk-c1"># W_O</span>
+
+    <span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">forward</span><span class="tk-p">(</span><span class="tk-bp">self</span><span class="tk-p">,</span> <span class="tk-n">x</span><span class="tk-p">,</span> <span class="tk-n">causal</span><span class="tk-o">=</span><span class="tk-kc">False</span><span class="tk-p">):</span>
+        <span class="tk-n">B</span><span class="tk-p">,</span> <span class="tk-n">T</span><span class="tk-p">,</span> <span class="tk-n">D</span> <span class="tk-o">=</span> <span class="tk-n">x</span><span class="tk-o">.</span><span class="tk-n">shape</span>
+        <span class="tk-n">q</span><span class="tk-p">,</span> <span class="tk-n">k</span><span class="tk-p">,</span> <span class="tk-n">v</span> <span class="tk-o">=</span> <span class="tk-bp">self</span><span class="tk-o">.</span><span class="tk-n">qkv</span><span class="tk-p">(</span><span class="tk-n">x</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">chunk</span><span class="tk-p">(</span><span class="tk-mi">3</span><span class="tk-p">,</span> <span class="tk-n">dim</span><span class="tk-o">=-</span><span class="tk-mi">1</span><span class="tk-p">)</span>                                   <span class="tk-c1"># mỗi cái (B, T, D)</span>
+        <span class="tk-n">q</span><span class="tk-p">,</span> <span class="tk-n">k</span><span class="tk-p">,</span> <span class="tk-n">v</span> <span class="tk-o">=</span> <span class="tk-p">[</span><span class="tk-n">t</span><span class="tk-o">.</span><span class="tk-n">view</span><span class="tk-p">(</span><span class="tk-n">B</span><span class="tk-p">,</span> <span class="tk-n">T</span><span class="tk-p">,</span> <span class="tk-bp">self</span><span class="tk-o">.</span><span class="tk-n">h</span><span class="tk-p">,</span> <span class="tk-n">D</span> <span class="tk-o">//</span> <span class="tk-bp">self</span><span class="tk-o">.</span><span class="tk-n">h</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">transpose</span><span class="tk-p">(</span><span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-mi">2</span><span class="tk-p">)</span> <span class="tk-k">for</span> <span class="tk-n">t</span> <span class="tk-ow">in</span> <span class="tk-p">(</span><span class="tk-n">q</span><span class="tk-p">,</span> <span class="tk-n">k</span><span class="tk-p">,</span> <span class="tk-n">v</span><span class="tk-p">)]</span>   <span class="tk-c1"># (B, h, T, d_k)</span>
+        <span class="tk-n">att</span> <span class="tk-o">=</span> <span class="tk-n">q</span> <span class="tk-o">@</span> <span class="tk-n">k</span><span class="tk-o">.</span><span class="tk-n">transpose</span><span class="tk-p">(</span><span class="tk-o">-</span><span class="tk-mi">2</span><span class="tk-p">,</span> <span class="tk-o">-</span><span class="tk-mi">1</span><span class="tk-p">)</span> <span class="tk-o">/</span> <span class="tk-n">math</span><span class="tk-o">.</span><span class="tk-n">sqrt</span><span class="tk-p">(</span><span class="tk-n">D</span> <span class="tk-o">//</span> <span class="tk-bp">self</span><span class="tk-o">.</span><span class="tk-n">h</span><span class="tk-p">)</span>                    <span class="tk-c1"># (B, h, T, T)</span>
+        <span class="tk-k">if</span> <span class="tk-n">causal</span><span class="tk-p">:</span>
+            <span class="tk-n">att</span> <span class="tk-o">=</span> <span class="tk-n">att</span><span class="tk-o">.</span><span class="tk-n">masked_fill</span><span class="tk-p">(</span><span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">triu</span><span class="tk-p">(</span><span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">ones</span><span class="tk-p">(</span><span class="tk-n">T</span><span class="tk-p">,</span> <span class="tk-n">T</span><span class="tk-p">,</span> <span class="tk-n">dtype</span><span class="tk-o">=</span><span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">bool</span><span class="tk-p">),</span> <span class="tk-mi">1</span><span class="tk-p">),</span> <span class="tk-nb">float</span><span class="tk-p">(</span><span class="tk-s2">"-inf"</span><span class="tk-p">))</span>
+        <span class="tk-n">y</span> <span class="tk-o">=</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">softmax</span><span class="tk-p">(</span><span class="tk-n">att</span><span class="tk-p">,</span> <span class="tk-n">dim</span><span class="tk-o">=-</span><span class="tk-mi">1</span><span class="tk-p">)</span> <span class="tk-o">@</span> <span class="tk-n">v</span>                                        <span class="tk-c1"># (B, h, T, d_k)</span>
+        <span class="tk-k">return</span> <span class="tk-bp">self</span><span class="tk-o">.</span><span class="tk-n">o</span><span class="tk-p">(</span><span class="tk-n">y</span><span class="tk-o">.</span><span class="tk-n">transpose</span><span class="tk-p">(</span><span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-mi">2</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">reshape</span><span class="tk-p">(</span><span class="tk-n">B</span><span class="tk-p">,</span> <span class="tk-n">T</span><span class="tk-p">,</span> <span class="tk-n">D</span><span class="tk-p">))</span>                         <span class="tk-c1"># (B, T, D)</span>
+</code></pre></div>
+
+<p>Đoạn code này cho kết quả khớp với <code>torch.nn.functional.scaled_dot_product_attention</code> của PyTorch tới sai số 10⁻⁷ (đã kiểm chứng). Trong code thật, dùng hàm có sẵn đó: nó gọi FlashAttention khi có thể, nhanh hơn và tiết kiệm bộ nhớ hơn nhiều.</p>
+<p><strong>Số tham số</strong> attention: 4 ma trận d_model × d_model (Q, K, V, O) cộng 4 vector bias, <strong>không phụ thuộc số đầu</strong> (chia nhiều đầu chỉ chia nhỏ cùng ma trận). Với d_model = 64: 4 × 64² + 4 × 64 = 16.640.</p>
 <h2 id="lt-5">Vị trí: positional encoding và RoPE</h2>
-<p>Attention không biết thứ tự: hoán vị các token thì đầu ra hoán vị theo, ý nghĩa câu thì mất. Phải đưa thông tin vị trí vào:</p>
-<ul>
-<li><strong>Sinusoidal</strong> (Transformer gốc): cộng vào embedding một vector sin/cos theo vị trí. Giống time embedding trong dự án Diffusion.</li>
-<li><strong>Learned</strong>: một bảng embedding cho mỗi vị trí (GPT-2).</li>
-<li><strong>RoPE</strong> (Llama, Qwen và hầu hết LLM hiện nay): xoay q và k một góc tỉ lệ với vị trí, nên tích q·k chỉ phụ thuộc <strong>khoảng cách</strong> giữa hai token. Dễ kéo dài context hơn.</li>
-</ul>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Attention chỉ nhìn tập hợp các vector, không có khái niệm thứ tự: "chó cắn người" và "người cắn chó" cho ra cùng tập vector đầu ra (chỉ đổi chỗ). Phải đưa thông tin vị trí vào, và cách đưa vào quyết định model xử lý được context dài tới đâu.</p>
+</div>
+<p>Ba cách chính:</p>
+<table>
+<thead>
+<tr>
+<th>Cách</th>
+<th>Làm gì</th>
+<th>Dùng ở</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Sinusoidal</strong></td>
+<td>cộng vào embedding một vector sin/cos với nhiều tần số theo vị trí</td>
+<td>Transformer gốc; time embedding trong Diffusion (P5)</td>
+</tr>
+<tr>
+<td><strong>Learned</strong></td>
+<td>một bảng embedding riêng cho mỗi vị trí 0..T_max</td>
+<td>GPT-2, BERT; không dùng được quá T_max</td>
+</tr>
+<tr>
+<td><strong>RoPE</strong></td>
+<td><strong>xoay</strong> q và k một góc tỉ lệ với vị trí trước khi tính q·k</td>
+<td>Llama, Qwen, Mistral và hầu hết LLM hiện nay</td>
+</tr>
+</tbody>
+</table>
+<div class="hl"><pre><span></span><code>Sinusoidal:  PE(pos, 2i) = sin(pos / 10000^(2i/d)),   PE(pos, 2i+1) = cos(pos / 10000^(2i/d))
+</code></pre></div>
+
+<h3>RoPE: chỉ khoảng cách mới quan trọng</h3>
+<p>RoPE chia vector thành từng cặp số, coi mỗi cặp là một điểm 2D và xoay nó một góc pos × θᵢ (mỗi cặp một tần số θᵢ khác nhau). Vì xoay q một góc a và k một góc b thì tích vô hướng chỉ phụ thuộc a − b, nên <strong>q·k chỉ phụ thuộc khoảng cách</strong> giữa hai token, không phụ thuộc vị trí tuyệt đối.</p>
+<figure class="fig"><img src="../assets/fig/p3-2-position.svg" alt="Trái: positional encoding sin/cos, chiều thấp dao động nhanh, chiều cao dao động chậm. Phải: đo thật, sau RoPE tích q·k của cùng cặp vector chỉ đổi theo khoảng cách; dời cả hai sang vị trí 100 hay 1.000 cho đúng cùng một đường." loading="lazy"><figcaption>Trái: positional encoding sin/cos, chiều thấp dao động nhanh, chiều cao dao động chậm. Phải: đo thật, sau RoPE tích q·k của cùng cặp vector chỉ đổi theo khoảng cách; dời cả hai sang vị trí 100 hay 1.000 cho đúng cùng một đường.</figcaption></figure>
+
+<p>Tính chất này giúp các kỹ thuật kéo dài context (P9.3) như "giãn" góc xoay hoạt động được: model train ở 4K token có thể dùng ở 32K token sau một ít fine-tune.</p>
 <h2 id="lt-6">Block Transformer hoàn chỉnh</h2>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Một LLM chỉ là embedding + N block giống hệt nhau + lớp đầu ra. Hiểu một block là hiểu toàn bộ kiến trúc; các model khác nhau chủ yếu ở N, d_model, và vài chi tiết nhỏ.</p>
+</div>
 <div class="hl"><pre><span></span><code>x = x + MultiHeadAttention(LayerNorm(x))      # trộn thông tin giữa các token
 x = x + FeedForward(LayerNorm(x))             # xử lý từng token độc lập
-FeedForward(x) = W₂ · GELU(W₁·x)              # W₁: d → 4d, W₂: 4d → d
+FeedForward(x) = W₂ · GELU(W₁·x + b₁) + b₂    # W₁: d → 4d, W₂: 4d → d
 </code></pre></div>
 
+<figure class="fig"><img src="../assets/fig/p3-2-block.svg" alt="Một block pre-norm: hai nhánh con, mỗi nhánh có LayerNorm trước và kết nối tắt cộng vào sau." loading="lazy"><figcaption>Một block pre-norm: hai nhánh con, mỗi nhánh có LayerNorm trước và kết nối tắt cộng vào sau.</figcaption></figure>
+
 <ul>
-<li><strong>Residual</strong> (x + …) giúp gradient đi qua hàng chục block, như ResNet.</li>
-<li><strong>LayerNorm</strong> chuẩn hóa theo chiều đặc trưng của từng token (khác BatchNorm chuẩn hóa theo batch). Kiểu "pre-norm" ở trên ổn định hơn khi train sâu.</li>
-<li><strong>Encoder</strong> (BERT) dùng attention hai chiều, hợp cho hiểu văn bản. <strong>Decoder</strong> (GPT) dùng causal mask, hợp cho sinh văn bản.</li>
+<li><strong>Residual</strong> (x + …) giúp gradient đi qua hàng chục block, như ResNet (P2.3).</li>
+<li><strong>LayerNorm</strong> chuẩn hóa theo chiều đặc trưng <strong>của từng token</strong> (khác BatchNorm chuẩn hóa theo batch), nên không phụ thuộc kích thước batch hay độ dài chuỗi. Kiểu "pre-norm" (LayerNorm đặt trước attention/FFN) ổn định hơn khi train sâu. LLM mới thường dùng RMSNorm, một biến thể đơn giản hơn.</li>
+<li><strong>Feed-forward</strong> chiếm khoảng 2/3 số tham số của block. Nhiều nghiên cứu cho thấy đây là nơi model "lưu kiến thức".</li>
 </ul>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>Đếm tham số một block của GPT-2 small (d_model = 768, FFN 4d = 3.072):</p>
+<table>
+<thead>
+<tr>
+<th>Phần</th>
+<th>Công thức</th>
+<th>Tham số</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Attention</td>
+<td>4 × 768² + 4 × 768</td>
+<td>2.362.368</td>
+</tr>
+<tr>
+<td>Feed-forward</td>
+<td>768 × 3072 + 3072 + 3072 × 768 + 768</td>
+<td>4.722.432</td>
+</tr>
+<tr>
+<td>2 LayerNorm</td>
+<td>2 × 2 × 768</td>
+<td>3.072</td>
+</tr>
+<tr>
+<td><strong>Một block</strong></td>
+<td></td>
+<td><strong>7.087.872</strong></td>
+</tr>
+</tbody>
+</table>
+<p>12 block ≈ 85 triệu, cộng embedding token (50.257 × 768 ≈ 38.6 triệu) và embedding vị trí (1.024 × 768 ≈ 0.8 triệu): tổng khoảng <strong>124 triệu</strong> tham số, đúng con số công bố của GPT-2 small.</p>
+</div>
+<h3>Encoder, decoder và encoder–decoder</h3>
+<table>
+<thead>
+<tr>
+<th>Loại</th>
+<th>Attention</th>
+<th>Model</th>
+<th>Hợp với</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Encoder</td>
+<td>hai chiều (mọi token nhìn mọi token)</td>
+<td>BERT, PhoBERT</td>
+<td>hiểu văn bản: phân loại, embedding, trích xuất</td>
+</tr>
+<tr>
+<td>Decoder</td>
+<td>causal (chỉ nhìn quá khứ)</td>
+<td>GPT, Llama, Qwen</td>
+<td>sinh văn bản, chat</td>
+</tr>
+<tr>
+<td>Encoder–decoder</td>
+<td>encoder hai chiều + decoder có <strong>cross-attention</strong> sang encoder</td>
+<td>T5, Whisper, model dịch</td>
+<td>biến chuỗi này thành chuỗi khác</td>
+</tr>
+</tbody>
+</table>
+<p>Cross-attention: query lấy từ decoder, key và value lấy từ đầu ra encoder. Cùng cơ chế này đưa câu mô tả vào model sinh ảnh ở P5.</p>
 <div class="keep">
 <p><strong>Ghi nhớ:</strong> attention trộn thông tin <strong>giữa</strong> các token, feed-forward biến đổi <strong>từng</strong> token. Chi phí attention tăng theo bình phương độ dài chuỗi: chuỗi dài gấp đôi thì ma trận điểm lớn gấp bốn.</p>
-</div></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p3.2:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 4</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Attention cho 3 token</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>d_k = 2. Q = K = [[1, 0], [0, 1], [1, 1]], V = [[1, 2], [3, 4], [5, 6]]. Tính đầu ra cho <strong>token đầu tiên</strong> (q = [1, 0]), không mask.</p>
+</div>
+<details class="fold deep">
+<summary>Đào sâu thêm</summary>
+<p><strong>Bộ nhớ của ma trận attention.</strong> Mỗi đầu cần một ma trận T × T. Với T = 2.048 ở fp16 (2 byte): 2.048² × 2 ≈ 8.4 MB mỗi đầu mỗi lớp; T = 8.192 thì 134 MB, gấp 16 lần. Nhân với số đầu, số lớp và batch, đây là lý do context dài từng rất đắt. <strong>FlashAttention</strong> tính attention theo từng khối nhỏ, không bao giờ lưu cả ma trận T × T vào bộ nhớ GPU, nên vừa nhanh hơn vừa dùng bộ nhớ tuyến tính theo T. Khi sinh văn bản, <strong>KV cache</strong> (P6.3) lưu lại K và V của các token đã có để không tính lại.</p>
+</details>
+<div class="box check">
+<div class="box-h">Tự kiểm tra nhanh</div>
+<p>Một block có d_model = 256, FFN 4d.</p>
+<div class="ans" id="p3-2-t-b171-a1">
+<div class="ans-fields"><label>Tham số attention (Q, K, V, O, có bias)<input inputmode="decimal" data-ans="263168.0" data-tol="0.0" autocomplete="off"></label><label>Tham số feed-forward (có bias)<input inputmode="decimal" data-ans="525568.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div>
+<div aria-live="polite" class="ans-fb"></div>
+</div>
+</div>
+<h2 id="lt-7">Tóm tắt bài và thuật ngữ</h2>
+<table>
+<thead>
+<tr>
+<th>Mảnh</th>
+<th>Công thức / ý chính</th>
+<th>Shape</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Q, K, V</td>
+<td>ba phép chiếu học được của X</td>
+<td>(T, d_k)</td>
+</tr>
+<tr>
+<td>Điểm</td>
+<td>Q·Kᵀ / √d_k</td>
+<td>(T, T)</td>
+</tr>
+<tr>
+<td>Mask</td>
+<td>−∞ cho tương lai trước softmax</td>
+<td>(T, T)</td>
+</tr>
+<tr>
+<td>Đầu ra một đầu</td>
+<td>softmax(điểm)·V</td>
+<td>(T, d_k)</td>
+</tr>
+<tr>
+<td>Multi-head</td>
+<td>h đầu song song, nối, W_O</td>
+<td>(T, d_model)</td>
+</tr>
+<tr>
+<td>Vị trí</td>
+<td>sin/cos, learned, RoPE</td>
+<td></td>
+</tr>
+<tr>
+<td>Block</td>
+<td>x + Attn(LN(x)); x + FFN(LN(x))</td>
+<td>(T, d_model)</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Thuật ngữ</th>
+<th>Nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>query / key / value</td>
+<td>vector "tìm gì" / "có gì" / "đưa ra gì"</td>
+</tr>
+<tr>
+<td>attention weights</td>
+<td>phân phối trọng số sau softmax</td>
+</tr>
+<tr>
+<td>self-attention</td>
+<td>Q, K, V cùng từ một chuỗi</td>
+</tr>
+<tr>
+<td>cross-attention</td>
+<td>Q từ chuỗi này, K, V từ chuỗi khác</td>
+</tr>
+<tr>
+<td>causal mask</td>
+<td>che tương lai bằng −∞</td>
+</tr>
+<tr>
+<td>multi-head attention</td>
+<td>nhiều đầu attention song song</td>
+</tr>
+<tr>
+<td>positional encoding</td>
+<td>thông tin vị trí đưa vào model</td>
+</tr>
+<tr>
+<td>RoPE</td>
+<td>rotary position embedding, xoay q và k theo vị trí</td>
+</tr>
+<tr>
+<td>LayerNorm / RMSNorm</td>
+<td>chuẩn hóa theo chiều đặc trưng của từng token</td>
+</tr>
+<tr>
+<td>feed-forward (MLP)</td>
+<td>hai lớp Linear với GELU, xử lý từng token</td>
+</tr>
+<tr>
+<td>pre-norm</td>
+<td>LayerNorm đặt trước attention/FFN</td>
+</tr>
+<tr>
+<td>encoder / decoder</td>
+<td>attention hai chiều / causal</td>
+</tr>
+<tr>
+<td>FlashAttention</td>
+<td>cách tính attention không lưu cả ma trận T × T</td>
+</tr>
+</tbody>
+</table></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p3.2:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 4</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Attention cho 3 token</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>d_k = 2. Q = K = [[1, 0], [0, 1], [1, 1]], V = [[1, 2], [3, 4], [5, 6]]. Tính đầu ra cho <strong>token đầu tiên</strong> (q = [1, 0]), không mask.</p>
 <div class="ans" id="p3-2-e1-a1"><div class="ans-fields"><label>Điểm sau khi chia √2 với token 1<input inputmode="decimal" data-ans="0.7071" data-tol="0.001" autocomplete="off"></label><label>Trọng số softmax của token 1<input inputmode="decimal" data-ans="0.4011" data-tol="0.001" autocomplete="off"></label><label>Trọng số của token 2<input inputmode="decimal" data-ans="0.1978" data-tol="0.001" autocomplete="off"></label><label>Đầu ra chiều 1<input inputmode="decimal" data-ans="3.0" data-tol="0.001" autocomplete="off"></label><label>Đầu ra chiều 2<input inputmode="decimal" data-ans="4.0" data-tol="0.001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
 
 <details class="fold hint">
@@ -169,7 +501,7 @@ FeedForward(x) = W₂ · GELU(W₁·x)              # W₁: d → 4d, W₂: 4d �
     </div>
     <aside class="aside">
       <div class="abox"><h4>Tiến độ bài này</h4><div class="ring"><svg viewBox="0 0 64 64" aria-hidden="true"><circle class="bg" cx="32" cy="32" r="28"/><circle class="fg" cx="32" cy="32" r="28" stroke-dasharray="176" stroke-dashoffset="176"/></svg><div><b id="ring-n">0/3</b><span id="ring-sub">phần đã xong</span></div></div></div>
-      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Ý tưởng: mỗi token hỏi, mọi token trả lời</a></li><li><a href="#lt-2">Scaled dot-product attention</a></li><li><a href="#lt-3">Causal mask</a></li><li><a href="#lt-4">Multi-head attention</a></li><li><a href="#lt-5">Vị trí: positional encoding và RoPE</a></li><li><a href="#lt-6">Block Transformer hoàn chỉnh</a></li></ol></div>
+      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Ý tưởng: mỗi token hỏi, mọi token trả lời</a></li><li><a href="#lt-2">Scaled dot-product attention</a></li><li><a href="#lt-3">Causal mask</a></li><li><a href="#lt-4">Multi-head attention</a></li><li><a href="#lt-5">Vị trí: positional encoding và RoPE</a></li><li><a href="#lt-6">Block Transformer hoàn chỉnh</a></li><li><a href="#lt-7">Tóm tắt bài và thuật ngữ</a></li></ol></div>
       
       <div class="abox"><h4>Cùng giai đoạn</h4><ul><li><a href="p3-1.html">Tokenization và embedding</a></li><li><span class=cur>Bài 3 · Attention và Transformer</span></li><li><a href="p3-3.html">Language model và sinh văn bản</a></li><li><a href="p3-4.html">Hệ sinh thái Hugging Face</a></li></ul></div>
     </aside>
