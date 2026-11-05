@@ -24,30 +24,214 @@
   <section class="lhero"><div class="code">P1.4</div><h1>Học không giám sát và feature engineering</h1><div class="lmeta"><span class="m">Giai đoạn P1 · Machine Learning cổ điển</span><span class="m">Tuần 4–7</span><span class="chip ready"><span class="dot"></span>Có nội dung đầy đủ</span></div>
     <div class="intro"><p>Không phải lúc nào cũng có nhãn. <strong>Học không giám sát</strong> tìm cấu trúc trong dữ liệu: nhóm khách hàng giống nhau, nén dữ liệu nhiều chiều để nhìn được. Bài này cũng dạy phần việc chiếm phần lớn thời gian thật của kỹ sư: <strong>chuẩn bị đặc trưng</strong>, gói gọn trong một <code>Pipeline</code> không rò rỉ.</p></div></section>
   
-  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">5 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
+  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">7 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
   <div class="lgrid" style="margin-top:22px">
-    <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">k-means</h2>
-<p>Chia n điểm thành k cụm sao cho mỗi điểm gần tâm cụm của nó nhất.</p>
-<div class="hl"><pre><span></span><code>1. Chọn k tâm ban đầu (k-means++ chọn tâm xa nhau)
+    <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">Học không giám sát dùng để làm gì</h2>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Dữ liệu có nhãn đắt (phải có người gán), dữ liệu không nhãn thì rẻ và nhiều. Những câu hỏi như "khách hàng của shop chia thành mấy kiểu?", "đơn hàng nào bất thường?", "dữ liệu 1.000 chiều này trông thế nào?" đều không cần nhãn.</p>
+</div>
+<table>
+<thead>
+<tr>
+<th>Nhiệm vụ</th>
+<th>Câu hỏi</th>
+<th>Kỹ thuật trong bài</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Phân cụm (clustering)</td>
+<td>dữ liệu tự chia thành những nhóm nào?</td>
+<td>k-means</td>
+</tr>
+<tr>
+<td>Giảm chiều</td>
+<td>nén nhiều đặc trưng thành ít đặc trưng mà giữ được thông tin?</td>
+<td>PCA</td>
+</tr>
+<tr>
+<td>Phát hiện bất thường</td>
+<td>điểm nào khác hẳn phần còn lại?</td>
+<td>khoảng cách tới tâm cụm, PCA reconstruction error</td>
+</tr>
+</tbody>
+</table>
+<p>Khác với học có giám sát, ở đây <strong>không có đáp án đúng để so</strong>. Đánh giá phải dựa vào chỉ số nội tại (inertia, silhouette) và quan trọng hơn: kết quả có hữu ích cho người dùng không.</p>
+<h2 id="lt-2">k-means</h2>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>k-means là thuật toán phân cụm phổ biến nhất vì đơn giản, nhanh trên hàng triệu điểm, và kết quả dễ diễn giải: mỗi cụm có một "tâm" là một khách hàng điển hình của nhóm đó.</p>
+</div>
+<h3>Thuật toán</h3>
+<p>Chia n điểm thành k cụm sao cho mỗi điểm gần tâm cụm của nó nhất:</p>
+<div class="hl"><pre><span></span><code>1. Chọn k tâm ban đầu (k-means++ chọn các tâm cách xa nhau)
 2. Gán mỗi điểm vào tâm gần nhất
 3. Cập nhật mỗi tâm = trung bình các điểm trong cụm
-4. Lặp 2–3 tới khi tâm không đổi
+4. Lặp 2–3 tới khi tâm không đổi (hoặc đổi rất ít)
 </code></pre></div>
 
-<p>Mục tiêu tối thiểu hóa <strong>inertia</strong> = tổng bình phương khoảng cách từ điểm tới tâm cụm. k-means giả định cụm có dạng tròn, cỡ tương đương, và <strong>nhạy với thang đo</strong>: phải chuẩn hóa đặc trưng trước.</p>
-<h2 id="lt-2">Chọn k</h2>
+<figure class="fig"><img src="../assets/fig/p1-4-kmeans.svg" alt="Ba tâm khởi tạo kém (dấu X). Mỗi vòng: gán điểm vào tâm gần nhất, rồi dời tâm về trung bình cụm. Sau 3 vòng các tâm đã nằm đúng giữa ba nhóm." loading="lazy"><figcaption>Ba tâm khởi tạo kém (dấu X). Mỗi vòng: gán điểm vào tâm gần nhất, rồi dời tâm về trung bình cụm. Sau 3 vòng các tâm đã nằm đúng giữa ba nhóm.</figcaption></figure>
+
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>Sáu điểm trên trục số: 1, 3, 5, 20, 22, 24, k = 2, tâm ban đầu c₁ = 1, c₂ = 3 (khởi tạo kém, hai tâm sát nhau).</p>
 <ul>
-<li><strong>Elbow:</strong> vẽ inertia theo k, chọn chỗ đường cong gãy khúc. Inertia luôn giảm khi k tăng nên không thể chọn k có inertia nhỏ nhất.</li>
-<li><strong>Silhouette score:</strong> từ −1 đến 1, đo điểm gần cụm của mình hơn cụm láng giềng bao nhiêu. Chọn k có silhouette cao.</li>
+<li><strong>Vòng 1, gán:</strong> điểm 1 về c₁; các điểm 3, 5, 20, 22, 24 gần c₂ = 3 hơn nên về c₂.</li>
+<li><strong>Vòng 1, cập nhật:</strong> c₁ = 1, c₂ = (3 + 5 + 20 + 22 + 24)/5 = <strong>14.8</strong>.</li>
+<li><strong>Vòng 2, gán:</strong> 1, 3, 5 gần c₁ = 1 hơn c₂ = 14.8; 20, 22, 24 về c₂.</li>
+<li><strong>Vòng 2, cập nhật:</strong> c₁ = (1 + 3 + 5)/3 = <strong>3</strong>, c₂ = (20 + 22 + 24)/3 = <strong>22</strong>.</li>
+<li><strong>Vòng 3:</strong> gán không đổi, dừng.</li>
+</ul>
+<p>Dù khởi tạo kém, chỉ sau hai vòng đã ra hai nhóm hợp lý {1, 3, 5} và {20, 22, 24}.</p>
+</div>
+<h3>Mục tiêu: inertia</h3>
+<p>k-means tối thiểu hóa <strong>inertia</strong> (tổng bình phương khoảng cách trong cụm):</p>
+<div class="hl"><pre><span></span><code>inertia = Σ_cụm Σ_điểm trong cụm ‖x − tâm‖²
+</code></pre></div>
+
+<p>Bước gán và bước cập nhật mỗi bước đều không làm inertia tăng, nên thuật toán luôn dừng. Nhưng nó chỉ tìm được <strong>cực tiểu cục bộ</strong>, phụ thuộc tâm ban đầu. Vì vậy scikit-learn chạy nhiều lần với các khởi tạo khác nhau (<code>n_init</code>) và giữ kết quả có inertia thấp nhất.</p>
+<div class="hl"><pre><span></span><code><span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">sklearn.cluster</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">KMeans</span>
+<span class="tk-n">km</span> <span class="tk-o">=</span> <span class="tk-n">KMeans</span><span class="tk-p">(</span><span class="tk-n">n_clusters</span><span class="tk-o">=</span><span class="tk-mi">4</span><span class="tk-p">,</span> <span class="tk-n">n_init</span><span class="tk-o">=</span><span class="tk-mi">10</span><span class="tk-p">,</span> <span class="tk-n">random_state</span><span class="tk-o">=</span><span class="tk-mi">0</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">fit</span><span class="tk-p">(</span><span class="tk-n">X_scaled</span><span class="tk-p">)</span>
+<span class="tk-n">km</span><span class="tk-o">.</span><span class="tk-n">labels_</span>             <span class="tk-c1"># cụm của từng điểm</span>
+<span class="tk-n">km</span><span class="tk-o">.</span><span class="tk-n">cluster_centers_</span>    <span class="tk-c1"># tọa độ tâm (trên thang đã chuẩn hóa)</span>
+<span class="tk-n">km</span><span class="tk-o">.</span><span class="tk-n">inertia_</span>
+</code></pre></div>
+
+<h3>Giả định của k-means và khi nào nó sai</h3>
+<p>k-means giả định các cụm <strong>tròn, cỡ tương đương</strong>, và dùng khoảng cách Euclid. Hệ quả:</p>
+<figure class="fig"><img src="../assets/fig/p1-4-fail.svg" alt="Trái: tuổi (20–60) và thu nhập tính bằng đồng (hàng chục triệu): khoảng cách gần như chỉ do thu nhập quyết định, k-means chia theo thu nhập. Giữa: chuẩn hóa trước, k-means tách đúng hai nhóm tuổi (khớp 100% so với 55% khi chưa chuẩn hóa). Phải: cụm hình vầng trăng, k-means cắt bằng một đường thẳng." loading="lazy"><figcaption>Trái: tuổi (20–60) và thu nhập tính bằng đồng (hàng chục triệu): khoảng cách gần như chỉ do thu nhập quyết định, k-means chia theo thu nhập. Giữa: chuẩn hóa trước, k-means tách đúng hai nhóm tuổi (khớp 100% so với 55% khi chưa chuẩn hóa). Phải: cụm hình vầng trăng, k-means cắt bằng một đường thẳng.</figcaption></figure>
+
+<ul>
+<li><strong>Nhạy với thang đo:</strong> luôn chuẩn hóa đặc trưng trước.</li>
+<li><strong>Không tìm được cụm hình dạng lạ:</strong> dùng DBSCAN (cụm theo mật độ) hoặc Gaussian Mixture.</li>
+<li><strong>Nhạy với ngoại lai:</strong> một điểm cực xa kéo lệch tâm; cân nhắc loại ngoại lai trước.</li>
+</ul>
+<div class="box check">
+<div class="box-h">Tự kiểm tra nhanh</div>
+<p>Điểm 1D: 2, 4, 6, 14, 16, 18, k = 2, tâm ban đầu 2 và 7.</p>
+<div class="ans" id="p1-4-t-b60-a1">
+<div class="ans-fields"><label>Tâm thứ hai sau vòng cập nhật đầu tiên<input inputmode="decimal" data-ans="13.5" data-tol="0.001" autocomplete="off"></label><label>Tâm thứ nhất sau khi hội tụ<input inputmode="decimal" data-ans="4.0" data-tol="0.001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div>
+<div aria-live="polite" class="ans-fb"></div>
+</div>
+</div>
+<h2 id="lt-3">Chọn k</h2>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>k là thứ bạn phải tự chọn. Chọn quá ít thì gộp những nhóm khác nhau; quá nhiều thì chia nhỏ vô nghĩa. Không có công thức chắc chắn, nhưng có công cụ để chọn có căn cứ.</p>
+</div>
+<ul>
+<li><strong>Elbow:</strong> vẽ inertia theo k. Inertia <strong>luôn giảm</strong> khi k tăng (k = n thì inertia = 0), nên không chọn k có inertia nhỏ nhất mà chọn chỗ đường cong <strong>gãy khúc</strong>: thêm cụm sau đó lợi rất ít.</li>
+<li><strong>Silhouette score:</strong> với mỗi điểm, a = khoảng cách trung bình tới các điểm cùng cụm, b = khoảng cách trung bình tới cụm láng giềng gần nhất; silhouette = (b − a) / max(a, b). Trung bình trên mọi điểm, từ −1 đến 1: gần 1 là cụm tách bạch, gần 0 là cụm chồng lên nhau.</li>
 <li><strong>Ý nghĩa nghiệp vụ:</strong> 4 nhóm khách hàng mà đội marketing hành động được tốt hơn 9 nhóm tối ưu về toán.</li>
 </ul>
-<h2 id="lt-3">PCA: giảm chiều</h2>
-<p>PCA tìm các hướng (thành phần chính) mà dữ liệu biến thiên nhiều nhất, rồi chiếu dữ liệu lên vài hướng đầu. Mỗi thành phần có một trị riêng λ là lượng phương sai nó giữ lại.</p>
-<div class="hl"><pre><span></span><code>Tỉ lệ phương sai giải thích của thành phần i = λᵢ / Σ λ
+<figure class="fig"><img src="../assets/fig/p1-4-choosek.svg" alt="Dữ liệu có 4 nhóm thật. Inertia giảm mạnh tới k = 4 rồi gần như phẳng; silhouette đạt đỉnh 0.81 tại k = 4." loading="lazy"><figcaption>Dữ liệu có 4 nhóm thật. Inertia giảm mạnh tới k = 4 rồi gần như phẳng; silhouette đạt đỉnh 0.81 tại k = 4.</figcaption></figure>
+
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>Kết quả trên dữ liệu ở hình:</p>
+<table>
+<thead>
+<tr>
+<th>k</th>
+<th>2</th>
+<th>3</th>
+<th>4</th>
+<th>5</th>
+<th>6</th>
+<th>7</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>inertia</td>
+<td>18363</td>
+<td>5241</td>
+<td><strong>1127</strong></td>
+<td>1020</td>
+<td>921</td>
+<td>814</td>
+</tr>
+<tr>
+<td>silhouette</td>
+<td>0.588</td>
+<td>0.762</td>
+<td><strong>0.811</strong></td>
+<td>0.680</td>
+<td>0.577</td>
+<td>0.446</td>
+</tr>
+</tbody>
+</table>
+<p>Từ 3 lên 4: inertia giảm 78%. Từ 4 lên 5: chỉ giảm 10%. Cả hai cách cùng chỉ k = 4.</p>
+</div>
+<h2 id="lt-4">PCA: giảm chiều</h2>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Dữ liệu thật thường có hàng chục đến hàng nghìn đặc trưng, nhiều đặc trưng tương quan nhau (chiều cao và cân nặng, doanh thu tháng 1 và tháng 2). PCA nén chúng thành vài "đặc trưng tổng hợp" giữ phần lớn thông tin, để vẽ được, train nhanh hơn, và bớt nhiễu.</p>
+</div>
+<h3>Ý tưởng</h3>
+<p>PCA tìm các <strong>hướng</strong> (thành phần chính, principal components) mà dữ liệu <strong>biến thiên nhiều nhất</strong>:</p>
+<ul>
+<li>PC1 là hướng có phương sai lớn nhất.</li>
+<li>PC2 vuông góc với PC1, có phương sai lớn nhất trong phần còn lại.</li>
+<li>Cứ thế tới PCd (d = số chiều gốc).</li>
+</ul>
+<p>Giữ vài PC đầu và chiếu dữ liệu lên đó là giảm chiều mà mất ít thông tin nhất (theo nghĩa phương sai).</p>
+<figure class="fig"><img src="../assets/fig/p1-4-pca2d.svg" alt="Dữ liệu 2D kéo dài theo một hướng chéo. PC1 (cam) giữ 95% phương sai; chiếu xuống PC1 là còn 1 chiều mà hầu như không mất gì." loading="lazy"><figcaption>Dữ liệu 2D kéo dài theo một hướng chéo. PC1 (cam) giữ 95% phương sai; chiếu xuống PC1 là còn 1 chiều mà hầu như không mất gì.</figcaption></figure>
+
+<h3>Tính PCA</h3>
+<div class="hl"><pre><span></span><code>1. Chuẩn hóa dữ liệu (trừ mean, thường chia std)
+2. Tính ma trận hiệp phương sai C = XᵀX / (n − 1)    shape (d, d)
+3. Tìm trị riêng λ và vector riêng v của C: C·v = λ·v
+4. Vector riêng là hướng PC, trị riêng là phương sai theo hướng đó
+5. Sắp theo λ giảm dần, giữ k vector đầu, chiếu: Z = X · V_k
 </code></pre></div>
 
-<p>Dùng PCA để: vẽ dữ liệu nhiều chiều lên 2D, giảm nhiễu, tăng tốc model. Luôn <strong>chuẩn hóa trước PCA</strong>, nếu không đặc trưng có đơn vị lớn (giá tiền) sẽ chiếm hết các thành phần.</p>
-<h2 id="lt-4">Chuẩn hóa và mã hóa</h2>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>Năm điểm (2, 1), (3, 2), (4, 3.5), (5, 4), (6, 5.5). Sau khi trừ trung bình, ma trận hiệp phương sai là:</p>
+<div class="hl"><pre><span></span><code>C = [[2.50, 2.75],
+     [2.75, 3.075]]
+</code></pre></div>
+
+<p>Trị riêng: λ₁ ≈ 5.55, λ₂ ≈ 0.02. Tỉ lệ phương sai giải thích của PC1 = 5.55 / (5.55 + 0.02) ≈ <strong>99.6%</strong>. Hướng PC1 ≈ (0.67, 0.74): đường chéo mà các điểm gần như thẳng hàng theo đó. Hai cột gần như là một thông tin, nên một chiều là đủ.</p>
+</div>
+<div class="hl"><pre><span></span><code>Tỉ lệ phương sai giải thích của thành phần i = λᵢ / Σλ
+</code></pre></div>
+
+<h3>Chọn số thành phần</h3>
+<p>Vẽ phương sai <strong>tích lũy</strong> theo số thành phần, chọn số nhỏ nhất đạt ngưỡng (thường 90–95%), hoặc đúng 2–3 nếu mục đích là vẽ.</p>
+<figure class="fig"><img src="../assets/fig/p1-4-pcadigits.svg" alt="Bộ chữ số viết tay 8×8 (64 chiều): 21 thành phần giữ 80% phương sai, 40 thành phần giữ 95%. Chiếu xuống chỉ 2 chiều, các chữ số 0, 4, 6 đã tách khá rõ." loading="lazy"><figcaption>Bộ chữ số viết tay 8×8 (64 chiều): 21 thành phần giữ 80% phương sai, 40 thành phần giữ 95%. Chiếu xuống chỉ 2 chiều, các chữ số 0, 4, 6 đã tách khá rõ.</figcaption></figure>
+
+<div class="hl"><pre><span></span><code><span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">sklearn.decomposition</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">PCA</span>
+<span class="tk-n">pca</span> <span class="tk-o">=</span> <span class="tk-n">PCA</span><span class="tk-p">(</span><span class="tk-n">n_components</span><span class="tk-o">=</span><span class="tk-mf">0.95</span><span class="tk-p">)</span>          <span class="tk-c1"># giữ đủ thành phần để đạt 95% phương sai</span>
+<span class="tk-n">Z</span> <span class="tk-o">=</span> <span class="tk-n">pca</span><span class="tk-o">.</span><span class="tk-n">fit_transform</span><span class="tk-p">(</span><span class="tk-n">X_scaled</span><span class="tk-p">)</span>
+<span class="tk-n">pca</span><span class="tk-o">.</span><span class="tk-n">n_components_</span><span class="tk-p">,</span> <span class="tk-n">pca</span><span class="tk-o">.</span><span class="tk-n">explained_variance_ratio_</span><span class="tk-p">[:</span><span class="tk-mi">3</span><span class="tk-p">]</span>
+</code></pre></div>
+
+<div class="box pitfall">
+<div class="box-h">Lỗi hay gặp</div>
+<p><strong>PCA không chuẩn hóa trước.</strong> Nếu một cột là giá tiền (hàng triệu) và một cột là số con (1–5), phương sai của giá tiền lớn hơn hàng tỉ lần, PC1 sẽ gần như chính là cột giá tiền. Luôn <code>StandardScaler</code> trước PCA, trừ khi các cột cùng đơn vị (như các điểm ảnh).</p>
+</div>
+<details class="fold deep">
+<summary>Đào sâu thêm</summary>
+<p><strong>PCA không phải là chọn đặc trưng.</strong> Mỗi PC là tổ hợp tuyến tính của <strong>mọi</strong> đặc trưng gốc, nên "PC3 tăng" khó diễn giải. Nếu cần giải thích, xem hệ số (<code>pca.components_</code>) để biết PC đó chủ yếu gồm những cột nào. Với dữ liệu phi tuyến (ảnh, văn bản), các phương pháp như t-SNE và UMAP vẽ cụm đẹp hơn PCA, nhưng chỉ dùng để <strong>nhìn</strong>, không dùng khoảng cách trên đó để kết luận.</p>
+</details>
+<div class="box check">
+<div class="box-h">Tự kiểm tra nhanh</div>
+<p>Ba thành phần có trị riêng 6, 3, 1.</p>
+<div class="ans" id="p1-4-t-b123-a1">
+<div class="ans-fields"><label>Tỉ lệ phương sai của PC1<input inputmode="decimal" data-ans="0.6" data-tol="0.001" autocomplete="off"></label><label>Phương sai tích lũy của 2 PC đầu<input inputmode="decimal" data-ans="0.9" data-tol="0.001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div>
+<div aria-live="polite" class="ans-fb"></div>
+</div>
+</div>
+<h2 id="lt-5">Chuẩn hóa và mã hóa đặc trưng</h2>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Model chỉ hiểu số. Cột "thành phố" là chữ, cột "thu nhập" có ô trống, cột "tuổi" và "doanh thu" chênh nhau hàng triệu lần. Cách bạn biến chúng thành số quyết định model học tốt hay tệ, thường nhiều hơn việc chọn model nào.</p>
+</div>
+<h3>Chuẩn hóa số</h3>
 <table>
 <thead>
 <tr>
@@ -65,50 +249,222 @@
 <tr>
 <td>MinMaxScaler</td>
 <td>(x − min) / (max − min)</td>
-<td>cần giá trị trong [0, 1]</td>
+<td>cần giá trị trong [0, 1] (ảnh, một số mạng)</td>
+</tr>
+<tr>
+<td>RobustScaler</td>
+<td>(x − trung vị) / IQR</td>
+<td>có nhiều ngoại lai</td>
+</tr>
+<tr>
+<td>log(1 + x)</td>
+<td>biến đổi trước khi scale</td>
+<td>dữ liệu lệch phải: thu nhập, số đơn, giá</td>
 </tr>
 <tr>
 <td>Không scale</td>
 <td></td>
 <td>model cây không cần</td>
 </tr>
+</tbody>
+</table>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>Cột [10, 20, 30, 40]: mean = 25, std = 11.18.</p>
+<ul>
+<li>StandardScaler: 40 → (40 − 25)/11.18 ≈ <strong>1.342</strong>; 10 → −1.342; 25 sẽ thành 0.</li>
+<li>MinMaxScaler: 20 → (20 − 10)/(40 − 10) ≈ <strong>0.333</strong>.</li>
+</ul>
+</div>
+<h3>Mã hóa biến phân loại</h3>
+<table>
+<thead>
+<tr>
+<th>Kỹ thuật</th>
+<th>Cách làm</th>
+<th>Dùng khi</th>
+</tr>
+</thead>
+<tbody>
 <tr>
 <td>One-hot</td>
 <td>mỗi giá trị một cột 0/1</td>
-<td>biến phân loại ít giá trị</td>
+<td>ít giá trị (&lt; khoảng 20), không có thứ tự</td>
 </tr>
 <tr>
 <td>Ordinal</td>
-<td>thứ tự 0, 1, 2…</td>
-<td>biến có thứ tự (S, M, L)</td>
+<td>gán thứ tự 0, 1, 2…</td>
+<td>có thứ tự thật (S &lt; M &lt; L), hoặc cho model cây</td>
 </tr>
 <tr>
 <td>Target encoding</td>
-<td>trung bình y của từng giá trị</td>
-<td>nhiều giá trị, <strong>phải làm trong CV</strong> để tránh rò rỉ</td>
+<td>thay bằng trung bình y của giá trị đó</td>
+<td>nhiều giá trị (mã quận, mã sản phẩm), <strong>phải làm trong CV</strong></td>
 </tr>
 </tbody>
 </table>
-<p><strong>Giá trị thiếu:</strong> điền trung vị (số) hoặc giá trị hay gặp nhất (phân loại), và thường thêm một cột cờ "bị thiếu" vì việc thiếu đôi khi chính là thông tin.</p>
-<h2 id="lt-5">Pipeline và ColumnTransformer</h2>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>Cột thành phố HN, HN, HCM, HCM, HCM, ĐN với nhãn mua 1, 0, 1, 1, 0, 1.</p>
+<p><strong>One-hot</strong> tạo ba cột: HCM, HN, ĐN; dòng 1 là (0, 1, 0).</p>
+<p><strong>Target encoding</strong> thay mỗi thành phố bằng tỉ lệ mua: HN = 0.5, HCM = 0.667, ĐN = <strong>1.0</strong>. Nhưng ĐN chỉ có một mẫu, và giá trị 1.0 chính là nhãn của mẫu đó: model sẽ "thấy" đáp án qua cột này. Phải tính target encoding chỉ trên phần train của mỗi fold, và làm mượt về trung bình chung khi nhóm ít mẫu.</p>
+</div>
+<h3>Giá trị thiếu</h3>
+<p>Điền trung vị (cột số) hoặc giá trị hay gặp nhất (cột phân loại), và thường thêm một cột cờ "bị thiếu": việc thiếu đôi khi chính là thông tin (khách không điền thu nhập có hành vi khác khách có điền). Model cây như LightGBM tự xử lý ô trống.</p>
+<div class="box pitfall">
+<div class="box-h">Lỗi hay gặp</div>
+<p><strong>Fit encoder trên toàn bộ dữ liệu.</strong> <code>OneHotEncoder().fit(X)</code> trên cả train và test thì biết trước những giá trị chỉ có trong test; target encoding trên toàn bộ dữ liệu là rò rỉ thẳng nhãn. Và khi chạy thật, sẽ có giá trị mới chưa từng thấy (thành phố mới): đặt <code>OneHotEncoder(handle_unknown="ignore")</code> để không bị lỗi.</p>
+</div>
+<h2 id="lt-6">Pipeline và ColumnTransformer</h2>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Một dự án thật có 5–10 bước tiền xử lý cho các nhóm cột khác nhau. Viết tay từng bước thì dễ quên áp dụng bước nào đó cho test, hoặc fit nhầm trên test. <code>Pipeline</code> gói tất cả thành <strong>một</strong> đối tượng: <code>fit</code> một lần trên train, <code>predict</code> ở mọi nơi khác, lưu thành một file để triển khai.</p>
+</div>
 <p>Gói mọi bước tiền xử lý vào cùng model. Khi gọi <code>fit</code>, mọi scaler và encoder chỉ học từ train. Khi <code>predict</code>, cùng phép biến đổi được áp lên dữ liệu mới.</p>
 <div class="hl"><pre><span></span><code><span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">sklearn.compose</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">ColumnTransformer</span>
 <span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">sklearn.pipeline</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">Pipeline</span>
 <span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">sklearn.impute</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">SimpleImputer</span>
 <span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">sklearn.preprocessing</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">StandardScaler</span><span class="tk-p">,</span> <span class="tk-n">OneHotEncoder</span>
+<span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">sklearn.linear_model</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">LogisticRegression</span>
 
 <span class="tk-n">num</span> <span class="tk-o">=</span> <span class="tk-p">[</span><span class="tk-s2">"tuổi"</span><span class="tk-p">,</span> <span class="tk-s2">"thu_nhập"</span><span class="tk-p">];</span> <span class="tk-n">cat</span> <span class="tk-o">=</span> <span class="tk-p">[</span><span class="tk-s2">"thành_phố"</span><span class="tk-p">,</span> <span class="tk-s2">"kênh"</span><span class="tk-p">]</span>
 <span class="tk-n">pre</span> <span class="tk-o">=</span> <span class="tk-n">ColumnTransformer</span><span class="tk-p">([</span>
-    <span class="tk-p">(</span><span class="tk-s2">"num"</span><span class="tk-p">,</span> <span class="tk-n">Pipeline</span><span class="tk-p">([(</span><span class="tk-s2">"imp"</span><span class="tk-p">,</span> <span class="tk-n">SimpleImputer</span><span class="tk-p">(</span><span class="tk-n">strategy</span><span class="tk-o">=</span><span class="tk-s2">"median"</span><span class="tk-p">)),</span> <span class="tk-p">(</span><span class="tk-s2">"sc"</span><span class="tk-p">,</span> <span class="tk-n">StandardScaler</span><span class="tk-p">())]),</span> <span class="tk-n">num</span><span class="tk-p">),</span>
-    <span class="tk-p">(</span><span class="tk-s2">"cat"</span><span class="tk-p">,</span> <span class="tk-n">Pipeline</span><span class="tk-p">([(</span><span class="tk-s2">"imp"</span><span class="tk-p">,</span> <span class="tk-n">SimpleImputer</span><span class="tk-p">(</span><span class="tk-n">strategy</span><span class="tk-o">=</span><span class="tk-s2">"most_frequent"</span><span class="tk-p">)),</span> <span class="tk-p">(</span><span class="tk-s2">"oh"</span><span class="tk-p">,</span> <span class="tk-n">OneHotEncoder</span><span class="tk-p">(</span><span class="tk-n">handle_unknown</span><span class="tk-o">=</span><span class="tk-s2">"ignore"</span><span class="tk-p">))]),</span> <span class="tk-n">cat</span><span class="tk-p">),</span>
+    <span class="tk-p">(</span><span class="tk-s2">"num"</span><span class="tk-p">,</span> <span class="tk-n">Pipeline</span><span class="tk-p">([(</span><span class="tk-s2">"imp"</span><span class="tk-p">,</span> <span class="tk-n">SimpleImputer</span><span class="tk-p">(</span><span class="tk-n">strategy</span><span class="tk-o">=</span><span class="tk-s2">"median"</span><span class="tk-p">,</span> <span class="tk-n">add_indicator</span><span class="tk-o">=</span><span class="tk-kc">True</span><span class="tk-p">)),</span>
+                      <span class="tk-p">(</span><span class="tk-s2">"sc"</span><span class="tk-p">,</span> <span class="tk-n">StandardScaler</span><span class="tk-p">())]),</span> <span class="tk-n">num</span><span class="tk-p">),</span>
+    <span class="tk-p">(</span><span class="tk-s2">"cat"</span><span class="tk-p">,</span> <span class="tk-n">Pipeline</span><span class="tk-p">([(</span><span class="tk-s2">"imp"</span><span class="tk-p">,</span> <span class="tk-n">SimpleImputer</span><span class="tk-p">(</span><span class="tk-n">strategy</span><span class="tk-o">=</span><span class="tk-s2">"most_frequent"</span><span class="tk-p">)),</span>
+                      <span class="tk-p">(</span><span class="tk-s2">"oh"</span><span class="tk-p">,</span> <span class="tk-n">OneHotEncoder</span><span class="tk-p">(</span><span class="tk-n">handle_unknown</span><span class="tk-o">=</span><span class="tk-s2">"ignore"</span><span class="tk-p">))]),</span> <span class="tk-n">cat</span><span class="tk-p">),</span>
 <span class="tk-p">])</span>
 <span class="tk-n">model</span> <span class="tk-o">=</span> <span class="tk-n">Pipeline</span><span class="tk-p">([(</span><span class="tk-s2">"pre"</span><span class="tk-p">,</span> <span class="tk-n">pre</span><span class="tk-p">),</span> <span class="tk-p">(</span><span class="tk-s2">"clf"</span><span class="tk-p">,</span> <span class="tk-n">LogisticRegression</span><span class="tk-p">(</span><span class="tk-n">max_iter</span><span class="tk-o">=</span><span class="tk-mi">1000</span><span class="tk-p">))])</span>
-<span class="tk-n">model</span><span class="tk-o">.</span><span class="tk-n">fit</span><span class="tk-p">(</span><span class="tk-n">X_train</span><span class="tk-p">,</span> <span class="tk-n">y_train</span><span class="tk-p">)</span>        <span class="tk-c1"># một lệnh, không rò rỉ</span>
+<span class="tk-n">model</span><span class="tk-o">.</span><span class="tk-n">fit</span><span class="tk-p">(</span><span class="tk-n">X_train</span><span class="tk-p">,</span> <span class="tk-n">y_train</span><span class="tk-p">)</span>                 <span class="tk-c1"># một lệnh, không rò rỉ</span>
+<span class="tk-n">cross_val_score</span><span class="tk-p">(</span><span class="tk-n">model</span><span class="tk-p">,</span> <span class="tk-n">X_train</span><span class="tk-p">,</span> <span class="tk-n">y_train</span><span class="tk-p">)</span>    <span class="tk-c1"># mỗi fold tự fit lại toàn bộ tiền xử lý</span>
 </code></pre></div>
 
+<p>Lợi ích cụ thể:</p>
+<ul>
+<li><strong>Cross-validation đúng:</strong> <code>cross_val_score(model, ...)</code> fit lại imputer, scaler, encoder trên từng fold train.</li>
+<li><strong>Tuning cả tiền xử lý:</strong> <code>GridSearchCV</code> có thể thử <code>pre__num__imp__strategy</code> cùng với <code>clf__C</code>.</li>
+<li><strong>Triển khai:</strong> <code>joblib.dump(model, "model.joblib")</code> lưu toàn bộ, API chỉ cần <code>model.predict(df_mới)</code>.</li>
+</ul>
 <div class="keep">
-<p><strong>Ghi nhớ:</strong> mọi phép biến đổi có "học" từ dữ liệu (mean, std, danh sách giá trị, trung bình y) phải nằm trong Pipeline.</p>
-</div></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p1.4:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 3</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>k-means bằng tay</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Dữ liệu 1 chiều: 1, 2, 3, 10, 11, 12. k = 2, tâm ban đầu c₁ = 1, c₂ = 2. Chạy 2 vòng (gán điểm, cập nhật tâm).</p>
+<p><strong>Ghi nhớ:</strong> mọi phép biến đổi có "học" từ dữ liệu (mean, std, danh sách giá trị, trung bình y, các PC) phải nằm trong Pipeline.</p>
+</div>
+<h3>Ví dụ ứng dụng: phân khúc khách hàng RFM</h3>
+<p>Một bài toán kinh điển cho shop online (phần thực hành của bài này):</p>
+<ol>
+<li>Từ bảng đơn hàng, tính cho mỗi khách: <strong>R</strong>ecency (bao nhiêu ngày từ lần mua cuối), <strong>F</strong>requency (số đơn), <strong>M</strong>onetary (tổng chi).</li>
+<li>log(1 + x) cho F và M (lệch phải), rồi StandardScaler.</li>
+<li>k-means với k từ 2 tới 8, chọn k bằng elbow, silhouette và khả năng đặt tên cụm.</li>
+<li>Đặt tên từng cụm dựa trên tâm cụm (trên thang gốc): "khách trung thành", "khách mới", "sắp rời bỏ", "chi nhiều nhưng lâu không quay lại".</li>
+<li>Đề xuất hành động cho từng nhóm.</li>
+</ol>
+<h2 id="lt-7">Tóm tắt bài và thuật ngữ</h2>
+<table>
+<thead>
+<tr>
+<th>Việc</th>
+<th>Công cụ</th>
+<th>Lưu ý</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Phân cụm</td>
+<td>k-means</td>
+<td>chuẩn hóa trước, chạy nhiều khởi tạo, cụm tròn</td>
+</tr>
+<tr>
+<td>Chọn k</td>
+<td>elbow, silhouette, nghiệp vụ</td>
+<td>không chọn k có inertia nhỏ nhất</td>
+</tr>
+<tr>
+<td>Giảm chiều</td>
+<td>PCA</td>
+<td>chuẩn hóa trước, chọn theo phương sai tích lũy</td>
+</tr>
+<tr>
+<td>Chuẩn hóa</td>
+<td>StandardScaler, log1p</td>
+<td>fit trên train</td>
+</tr>
+<tr>
+<td>Mã hóa</td>
+<td>one-hot, ordinal, target encoding</td>
+<td>target encoding trong CV</td>
+</tr>
+<tr>
+<td>Ghép lại</td>
+<td>Pipeline, ColumnTransformer</td>
+<td>một đối tượng, không rò rỉ, dễ triển khai</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Thuật ngữ</th>
+<th>Nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>unsupervised learning</td>
+<td>học không giám sát, không có nhãn</td>
+</tr>
+<tr>
+<td>clustering / cluster</td>
+<td>phân cụm / một cụm</td>
+</tr>
+<tr>
+<td>centroid</td>
+<td>tâm cụm</td>
+</tr>
+<tr>
+<td>inertia</td>
+<td>tổng bình phương khoảng cách điểm tới tâm cụm</td>
+</tr>
+<tr>
+<td>k-means++</td>
+<td>cách khởi tạo tâm cách xa nhau</td>
+</tr>
+<tr>
+<td>silhouette score</td>
+<td>độ tách bạch của cụm, từ −1 đến 1</td>
+</tr>
+<tr>
+<td>PCA / principal component</td>
+<td>phân tích thành phần chính / một hướng chính</td>
+</tr>
+<tr>
+<td>explained variance ratio</td>
+<td>tỉ lệ phương sai một thành phần giữ được</td>
+</tr>
+<tr>
+<td>eigenvalue / eigenvector</td>
+<td>trị riêng / vector riêng</td>
+</tr>
+<tr>
+<td>one-hot encoding</td>
+<td>mỗi giá trị một cột 0/1</td>
+</tr>
+<tr>
+<td>target encoding</td>
+<td>thay giá trị bằng trung bình nhãn</td>
+</tr>
+<tr>
+<td>imputation</td>
+<td>điền giá trị thiếu</td>
+</tr>
+<tr>
+<td>ColumnTransformer</td>
+<td>áp các bước khác nhau cho các nhóm cột</td>
+</tr>
+<tr>
+<td>RFM</td>
+<td>Recency, Frequency, Monetary</td>
+</tr>
+</tbody>
+</table></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p1.4:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 3</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>k-means bằng tay</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Dữ liệu 1 chiều: 1, 2, 3, 10, 11, 12. k = 2, tâm ban đầu c₁ = 1, c₂ = 2. Chạy 2 vòng (gán điểm, cập nhật tâm).</p>
 <div class="ans" id="p1-4-e1-a1"><div class="ans-fields"><label>c₂ sau vòng 1<input inputmode="decimal" data-ans="7.6" data-tol="0.001" autocomplete="off"></label><label>c₁ sau vòng 2<input inputmode="decimal" data-ans="2.0" data-tol="0.001" autocomplete="off"></label><label>c₂ sau vòng 2<input inputmode="decimal" data-ans="11.0" data-tol="0.001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
 
 <details class="fold solution">
@@ -208,7 +564,7 @@
     </div>
     <aside class="aside">
       <div class="abox"><h4>Tiến độ bài này</h4><div class="ring"><svg viewBox="0 0 64 64" aria-hidden="true"><circle class="bg" cx="32" cy="32" r="28"/><circle class="fg" cx="32" cy="32" r="28" stroke-dasharray="176" stroke-dashoffset="176"/></svg><div><b id="ring-n">0/3</b><span id="ring-sub">phần đã xong</span></div></div></div>
-      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">k-means</a></li><li><a href="#lt-2">Chọn k</a></li><li><a href="#lt-3">PCA: giảm chiều</a></li><li><a href="#lt-4">Chuẩn hóa và mã hóa</a></li><li><a href="#lt-5">Pipeline và ColumnTransformer</a></li></ol></div>
+      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Học không giám sát dùng để làm gì</a></li><li><a href="#lt-2">k-means</a></li><li><a href="#lt-3">Chọn k</a></li><li><a href="#lt-4">PCA: giảm chiều</a></li><li><a href="#lt-5">Chuẩn hóa và mã hóa đặc trưng</a></li><li><a href="#lt-6">Pipeline và ColumnTransformer</a></li><li><a href="#lt-7">Tóm tắt bài và thuật ngữ</a></li></ol></div>
       
       <div class="abox"><h4>Cùng giai đoạn</h4><ul><li><a href="p1-1.html">Hồi quy tuyến tính và logistic</a></li><li><a href="p1-2.html">Đánh giá model đúng cách</a></li><li><a href="p1-3.html">Cây quyết định và ensemble</a></li><li><span class=cur>Học không giám sát và feature engineering</span></li></ul></div>
     </aside>

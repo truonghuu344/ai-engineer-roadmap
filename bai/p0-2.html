@@ -314,9 +314,9 @@ C[1,0] = 3·5 + 4·7 = 43        C[1,1] = 3·6 + 4·8 = 50
 </div>
 <div class="box check">
 <div class="box-h">Tự kiểm tra nhanh</div>
-<p>L(w, b) = (w·x + b − y)² với x = 2, y = 7, tại w = 1, b = 1. Gợi ý: đặt e = w·x + b − y, rồi dùng quy tắc dây chuyền.</p>
+<p>L(w, b) = (w·x + b − y)² với x = 3, y = 10, tại w = 2, b = 1. Gợi ý: đặt e = w·x + b − y, rồi dùng quy tắc dây chuyền.</p>
 <div class="ans" id="p0-2-t-b175-a1">
-<div class="ans-fields"><label>e<input inputmode="decimal" data-ans="-4.0" data-tol="0.0" autocomplete="off"></label><label>∂L/∂b<input inputmode="decimal" data-ans="-8.0" data-tol="0.0" autocomplete="off"></label><label>∂L/∂w<input inputmode="decimal" data-ans="-16.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div>
+<div class="ans-fields"><label>e<input inputmode="decimal" data-ans="-3.0" data-tol="0.0" autocomplete="off"></label><label>∂L/∂b<input inputmode="decimal" data-ans="-6.0" data-tol="0.0" autocomplete="off"></label><label>∂L/∂w<input inputmode="decimal" data-ans="-18.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div>
 <div aria-live="polite" class="ans-fb"></div>
 </div>
 </div>
@@ -340,7 +340,7 @@ Phương sai     Var(X) = E[(X − E[X])²]       bình phương khoảng cách 
 σ = √2.917 ≈ 1.708
 </code></pre></div>
 
-<p>Từ dữ liệu <code>[2, 4, 4, 4, 5, 5, 7, 9]</code>: trung bình 5, độ lệch chuẩn 2 (chia cho n). Nếu chia cho n − 1 (<code>np.std(x, ddof=1)</code>, "độ lệch chuẩn mẫu") thì ra 2.138. Với dữ liệu lớn hai cách gần như bằng nhau; khi so với thư viện khác, nhớ kiểm tra họ dùng cách nào (<code>pandas.std()</code> mặc định là n − 1, <code>numpy.std()</code> mặc định là n).</p>
+<p>Từ dữ liệu <code>[1, 3, 5, 7]</code>: trung bình 4, phương sai (9 + 1 + 1 + 9)/4 = 5, độ lệch chuẩn √5 ≈ 2.236 (chia cho n). Nếu chia cho n − 1 (<code>np.std(x, ddof=1)</code>, "độ lệch chuẩn mẫu") thì ra √(20/3) ≈ 2.582. Với dữ liệu lớn hai cách gần như bằng nhau; khi so với thư viện khác, nhớ kiểm tra họ dùng cách nào (<code>pandas.std()</code> mặc định là n − 1, <code>numpy.std()</code> mặc định là n).</p>
 </div>
 <h3>Tính chất hay dùng</h3>
 <div class="hl"><pre><span></span><code>E[aX + b] = a·E[X] + b
@@ -390,10 +390,10 @@ P(B) = P(B | A)·P(A) + P(B | không A)·P(không A)
 </ul>
 <div class="box example">
 <div class="box-h">Ví dụ từng bước</div>
-<p>Bệnh có tỉ lệ 1%. Xét nghiệm phát hiện đúng 99% người bệnh, nhưng báo nhầm dương tính 5% người khỏe. Một người có kết quả dương tính: khả năng họ bị bệnh là bao nhiêu?</p>
+<p>Bệnh có tỉ lệ 2%. Xét nghiệm phát hiện đúng 90% người bệnh, nhưng báo nhầm dương tính 10% người khỏe. Một người có kết quả dương tính: khả năng họ bị bệnh là bao nhiêu?</p>
 <p>Cách dễ nhất là <strong>đếm người</strong> thay vì nhân xác suất:</p>
-<figure class="fig"><img src="../assets/fig/p0-2-bayes.svg" alt="Hình dung 10.000 người. Người khỏe đông gấp 99 lần, nên 5% báo nhầm của họ (495 người) lấn át 99 người bệnh thật." loading="lazy"><figcaption>Hình dung 10.000 người. Người khỏe đông gấp 99 lần, nên 5% báo nhầm của họ (495 người) lấn át 99 người bệnh thật.</figcaption></figure>
-<p>Bằng công thức: 0.99 × 0.01 / (0.99 × 0.01 + 0.05 × 0.99) ≈ <strong>0.167</strong>. Chỉ 16.7%, dù xét nghiệm "chính xác 99%".</p>
+<figure class="fig"><img src="../assets/fig/p0-2-bayes.svg" alt="Hình dung 10.000 người. Người khỏe đông gấp 49 lần, nên 10% báo nhầm của họ (980 người) lấn át 180 người bệnh thật." loading="lazy"><figcaption>Hình dung 10.000 người. Người khỏe đông gấp 49 lần, nên 10% báo nhầm của họ (980 người) lấn át 180 người bệnh thật.</figcaption></figure>
+<p>Bằng công thức: 0.9 × 0.02 / (0.9 × 0.02 + 0.1 × 0.98) ≈ <strong>0.155</strong>. Chỉ 15.5%, dù xét nghiệm "đúng 90%". Bài tập 5 cho bạn tự tính một trường hợp khác.</p>
 </div>
 <p>Bài học cho ML: khi lớp cần tìm <strong>hiếm</strong> (gian lận, bệnh hiếm, lỗi sản phẩm), một model có tỉ lệ báo nhầm nhỏ vẫn sinh ra phần lớn cảnh báo là nhầm. Đó là lý do ta cần precision chứ không chỉ accuracy.</p>
 <div class="box check">
@@ -594,12 +594,12 @@ P(B) = P(B | A)·P(A) + P(B | không A)·P(không A)
 <details class="fold solution">
 <summary>Lời giải</summary>
 <p>C[0,0] = hàng 1 của A · cột 1 của B = 1·1 + 2·2 + 0·0 = 5. C[0,1] = 1·0 + 2·1 + 0·4 = 2. C[1,1] = 0·0 + 1·1 + 3·4 = 13. Kết quả C = [[5, 2], [2, 13]], shape (2, 2).</p>
-</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 2</span><h3>Cosine similarity</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>u = [3, 4], v = [4, 3].</p>
-<div class="ans" id="p0-2-e2-a1"><div class="ans-fields"><label>u · v<input inputmode="decimal" data-ans="24.0" data-tol="0.0" autocomplete="off"></label><label>‖u‖<input inputmode="decimal" data-ans="5.0" data-tol="0.0" autocomplete="off"></label><label>cos(u, v)<input inputmode="decimal" data-ans="0.96" data-tol="0.001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 2</span><h3>Cosine similarity</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>u = [6, 8], v = [8, −6].</p>
+<div class="ans" id="p0-2-e2-a1"><div class="ans-fields"><label>u · v<input inputmode="decimal" data-ans="0.0" data-tol="0.0" autocomplete="off"></label><label>‖u‖<input inputmode="decimal" data-ans="10.0" data-tol="0.0" autocomplete="off"></label><label>cos(u, v)<input inputmode="decimal" data-ans="0.0" data-tol="0.001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
 
 <details class="fold solution">
 <summary>Lời giải</summary>
-<p>u · v = 12 + 12 = 24. ‖u‖ = ‖v‖ = √(9 + 16) = 5. cos = 24 / 25 = 0.96: hai vector gần cùng hướng.</p>
+<p>u · v = 48 − 48 = 0. ‖u‖ = ‖v‖ = √(36 + 64) = 10. cos = 0: hai vector <strong>vuông góc</strong>, không giống nhau chút nào về hướng dù có cùng độ dài.</p>
 </details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 3</span><h3>Gradient của MSE</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>L(w, b) = (w·x + b − y)² với x = 2, y = 7. Tính gradient tại w = 1, b = 1.</p>
 <div class="ans" id="p0-2-e3-a1"><div class="ans-fields"><label>∂L/∂w<input inputmode="decimal" data-ans="-16.0" data-tol="0.0" autocomplete="off"></label><label>∂L/∂b<input inputmode="decimal" data-ans="-8.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
 

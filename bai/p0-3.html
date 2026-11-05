@@ -60,20 +60,22 @@ wc<span class="tk-w"> </span>-l<span class="tk-w"> </span>train.csv<span class="
 
 <div class="box example">
 <div class="box-h">Ví dụ từng bước</div>
-<p>Một file <code>train.log</code> có 6 dòng:</p>
-<div class="hl"><pre><span></span><code>epoch 1 loss 2.31
-epoch 2 loss 1.85
-ERROR CUDA out of memory
-epoch 3 loss 1.52
-ERROR checkpoint not found
+<p>Một file <code>val.log</code> có 8 dòng:</p>
+<div class="hl"><pre><span></span><code>step 100 val_acc 0.61
+step 200 val_acc 0.68
+WARNING slow dataloader
+step 300 val_acc 0.72
+ERROR disk full
+step 400 val_acc 0.74
+ERROR retry failed
 done
 </code></pre></div>
 
 <ul>
-<li><code>cat train.log | grep ERROR | wc -l</code> → <strong>2</strong> (hai dòng lỗi)</li>
-<li><code>grep -c epoch train.log</code> → <strong>3</strong></li>
-<li><code>grep -v ERROR train.log | wc -l</code> → <strong>4</strong> (6 dòng trừ 2 dòng lỗi)</li>
-<li><code>grep loss train.log | tail -n 1</code> → <code>epoch 3 loss 1.52</code> (loss mới nhất)</li>
+<li><code>grep -c val_acc val.log</code> → <strong>4</strong></li>
+<li><code>cat val.log | grep -v step | wc -l</code> → <strong>4</strong> (8 dòng trừ 4 dòng có "step")</li>
+<li><code>grep val_acc val.log | tail -n 1</code> → <code>step 400 val_acc 0.74</code> (kết quả mới nhất)</li>
+<li><code>grep -E "ERROR|WARNING" val.log | wc -l</code> → <strong>3</strong> (<code>-E</code> cho phép "hoặc" bằng dấu |)</li>
 </ul>
 <p>Thêm vài lệnh nối pipe hay dùng: <code>sort</code> (sắp xếp), <code>sort -n</code> (theo số), <code>uniq -c</code> (đếm dòng trùng liên tiếp), <code>cut -d, -f2</code> (lấy cột 2 của CSV). Ví dụ đếm số mẫu mỗi nhãn: <code>cut -d, -f2 train.csv | sort | uniq -c</code>.</p>
 </div>
@@ -167,13 +169,13 @@ git<span class="tk-w"> </span>log<span class="tk-w"> </span>--oneline<span class
 
 <div class="box example">
 <div class="box-h">Ví dụ từng bước</div>
-<p>Bạn sửa <code>train.py</code>, <code>model.py</code>, <code>README.md</code>, rồi chạy:</p>
-<div class="hl"><pre><span></span><code>git<span class="tk-w"> </span>add<span class="tk-w"> </span>train.py<span class="tk-w"> </span>model.py
-git<span class="tk-w"> </span>commit<span class="tk-w"> </span>-m<span class="tk-w"> </span><span class="tk-s2">"Đổi optimizer sang AdamW"</span>
+<p>Bạn sửa <code>train.py</code>, <code>model.py</code>, <code>config.yaml</code>, <code>README.md</code>, rồi chạy:</p>
+<div class="hl"><pre><span></span><code>git<span class="tk-w"> </span>add<span class="tk-w"> </span>config.yaml
+git<span class="tk-w"> </span>commit<span class="tk-w"> </span>-m<span class="tk-w"> </span><span class="tk-s2">"Tăng batch size lên 128"</span>
 git<span class="tk-w"> </span>status
 </code></pre></div>
 
-<p>Commit chứa <strong>2 file</strong> (<code>train.py</code>, <code>model.py</code>). <code>README.md</code> vẫn ở trạng thái "modified" chưa stage, chờ commit sau. Nếu sau commit bạn lại sửa tiếp <code>train.py</code>, nó cũng hiện là "modified" lần nữa: Git theo dõi thay đổi so với commit gần nhất.</p>
+<p>Commit chỉ chứa <strong>1 file</strong> (<code>config.yaml</code>). Ba file kia vẫn ở trạng thái "modified" chưa stage, chờ commit sau. Nếu sau commit bạn lại sửa tiếp <code>train.py</code>, nó cũng hiện là "modified" lần nữa: Git theo dõi thay đổi so với commit gần nhất.</p>
 </div>
 <h3>Viết commit message tốt</h3>
 <p>Một dòng tóm tắt (dưới khoảng 70 ký tự), nói <strong>làm gì</strong>, nếu cần thì thêm đoạn <strong>vì sao</strong>:</p>

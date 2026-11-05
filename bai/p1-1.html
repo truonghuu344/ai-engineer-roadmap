@@ -22,43 +22,348 @@
 <main class="container">
   <div class="crumbs"><a href="../bai-hoc.html">Bài học</a><span>/</span><a href="../bai-hoc.html#p1">P1 · Machine Learning cổ điển</a><span>/</span><span>P1.1</span></div>
   <section class="lhero"><div class="code">P1.1</div><h1>Hồi quy tuyến tính và logistic</h1><div class="lmeta"><span class="m">Giai đoạn P1 · Machine Learning cổ điển</span><span class="m">Tuần 4–7</span><span class="chip ready"><span class="dot"></span>Có nội dung đầy đủ</span></div>
-    <div class="intro"><p>Hai model đơn giản nhất của ML, và cũng là hai thứ có mặt trong mọi mạng nơ-ron: lớp cuối của mạng hồi quy là <strong>hồi quy tuyến tính</strong>, lớp cuối của mạng phân loại nhị phân là <strong>hồi quy logistic</strong>. Hiểu kỹ hai model này thì phần deep learning chỉ là "xếp chồng nhiều lớp".</p></div></section>
+    <div class="intro"><p>Hai model đơn giản nhất của ML, và cũng là hai thứ có mặt trong mọi mạng nơ-ron: lớp cuối của mạng hồi quy là <strong>hồi quy tuyến tính</strong>, lớp cuối của mạng phân loại nhị phân là <strong>hồi quy logistic</strong>. Hiểu kỹ hai model này (dự đoán thế nào, loss là gì, gradient ra sao, chống overfit thế nào) thì phần deep learning chỉ là "xếp chồng nhiều lớp".</p></div></section>
   
-  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">5 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
+  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">7 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
   <div class="lgrid" style="margin-top:22px">
-    <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">Hồi quy tuyến tính</h2>
-<p>Dự đoán một số thực từ các đặc trưng: giá nhà từ diện tích, số phòng, vị trí.</p>
-<div class="hl"><pre><span></span><code>ŷ = w₁x₁ + w₂x₂ + … + wₙxₙ + b = w · x + b
-MSE = (1/N) Σ (ŷᵢ − yᵢ)²
-</code></pre></div>
-
-<p>MSE phạt lỗi lớn rất nặng vì bình phương. Nếu dữ liệu có nhiều điểm ngoại lai, MAE (trung bình trị tuyệt đối) bền hơn.</p>
-<h2 id="lt-2">Hai cách tìm w: nghiệm đóng và gradient descent</h2>
-<p><strong>Nghiệm đóng (normal equation):</strong> đặt gradient bằng 0 và giải ra</p>
-<div class="hl"><pre><span></span><code>w = (XᵀX)⁻¹ Xᵀy        (X có thêm cột toàn 1 cho bias)
-</code></pre></div>
-
-<p>Với một biến, công thức gọn: <code>w = Σ(x − x̄)(y − ȳ) / Σ(x − x̄)²</code>, <code>b = ȳ − w·x̄</code>. Nghiệm đóng chính xác nhưng tốn O(n³) theo số đặc trưng, không dùng được khi có hàng triệu tham số.</p>
-<p><strong>Gradient descent:</strong> lặp <code>w ← w − η·∇MSE</code> với <code>∇_w MSE = (2/N) Xᵀ(ŷ − y)</code>. Chậm hơn nhưng mở rộng được tới mạng nơ-ron.</p>
-<div class="keep">
-<p><strong>Ghi nhớ:</strong> chuẩn hóa đặc trưng (trừ mean, chia std) trước khi chạy gradient descent. Đặc trưng có thang đo lệch nhau (diện tích 50–500 m², số phòng 1–5) làm gradient descent đi zig-zag và rất chậm.</p>
+    <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">Bài toán học có giám sát</h2>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Mọi bài trong P1–P2 đều cùng một khung: có dữ liệu đầu vào kèm đáp án, tìm một hàm dự đoán đáp án cho dữ liệu mới. Nắm khung này thì mỗi model mới chỉ là thay một mảnh trong đó.</p>
 </div>
-<h2 id="lt-3">Hồi quy logistic</h2>
-<p>Phân loại hai lớp: email rác hay không, khối u lành hay ác. Tính điểm tuyến tính rồi ép về xác suất bằng <strong>sigmoid</strong>:</p>
-<div class="hl"><pre><span></span><code>z = w · x + b
-p = σ(z) = 1 / (1 + e⁻ᶻ)       σ(0) = 0.5, σ(z) → 1 khi z → +∞
+<p>Học có giám sát gồm bốn mảnh:</p>
+<table>
+<thead>
+<tr>
+<th>Mảnh</th>
+<th>Ý nghĩa</th>
+<th>Ví dụ giá nhà</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Dữ liệu</td>
+<td>N cặp (xᵢ, yᵢ): đặc trưng và đáp án</td>
+<td>x = diện tích, y = giá</td>
+</tr>
+<tr>
+<td>Model</td>
+<td>hàm ŷ = f(x; θ) có tham số θ</td>
+<td>ŷ = w·x + b</td>
+</tr>
+<tr>
+<td>Loss</td>
+<td>đo dự đoán sai bao nhiêu</td>
+<td>MSE</td>
+</tr>
+<tr>
+<td>Tối ưu</td>
+<td>cách tìm θ làm loss nhỏ</td>
+<td>nghiệm đóng hoặc gradient descent</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>Hồi quy (regression)</strong>: y là số thực (giá nhà, nhiệt độ, doanh thu).</li>
+<li><strong>Phân loại (classification)</strong>: y là một nhãn trong số ít lớp (spam/không spam, chó/mèo).</li>
+</ul>
+<p>Mục tiêu thật không phải loss nhỏ trên dữ liệu đã thấy, mà là dự đoán tốt trên dữ liệu <strong>chưa thấy</strong>. Đó là lý do có tập validation và test ở P1.2.</p>
+<h2 id="lt-2">Hồi quy tuyến tính</h2>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Hồi quy tuyến tính là model đầu tiên nên thử cho mọi bài toán dự đoán số: nhanh, dễ giải thích ("mỗi m² thêm 29 triệu"), và là baseline để biết model phức tạp hơn có đáng không.</p>
+</div>
+<h3>Model</h3>
+<div class="hl"><pre><span></span><code>ŷ = w₁x₁ + w₂x₂ + … + wₙxₙ + b = w · x + b
 </code></pre></div>
 
-<p>Ranh giới quyết định là nơi p = 0.5, tức z = 0: một <strong>đường thẳng</strong> (siêu phẳng) trong không gian đặc trưng. Đó là lý do logistic không tách được dữ liệu hình vòng tròn, còn mạng nơ-ron có lớp ẩn thì tách được.</p>
-<h2 id="lt-4">Binary cross-entropy và gradient đẹp</h2>
+<p>Mỗi trọng số wⱼ nói: <strong>giữ các đặc trưng khác cố định</strong>, tăng xⱼ một đơn vị thì ŷ tăng wⱼ. Bias b là giá trị dự đoán khi mọi x bằng 0.</p>
+<h3>Loss: MSE</h3>
+<div class="hl"><pre><span></span><code>MSE = (1/N) Σ (ŷᵢ − yᵢ)²
+</code></pre></div>
+
+<p>Phần ŷᵢ − yᵢ gọi là <strong>phần dư (residual)</strong>. Bình phương để sai số âm và dương không triệt tiêu nhau, và để phạt nặng lỗi lớn: sai 2 bị phạt 4, sai 10 bị phạt 100.</p>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>Năm căn nhà (diện tích m², giá tỷ đồng): (50, 1.5), (60, 1.8), (80, 2.4), (100, 2.9), (120, 3.6). Đường thẳng khớp nhất là:</p>
+<div class="hl"><pre><span></span><code>ŷ = 0.02945·x + 0.025
+</code></pre></div>
+
+<p>Nghĩa là mỗi m² thêm khoảng <strong>29.5 triệu đồng</strong>. Nhà 90 m² được dự đoán 0.02945 × 90 + 0.025 ≈ <strong>2.68 tỷ</strong>. Phần dư lớn nhất chỉ khoảng 0.07 tỷ, MSE ≈ 0.0014.</p>
+<div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">numpy</span><span class="tk-w"> </span><span class="tk-k">as</span><span class="tk-w"> </span><span class="tk-nn">np</span>
+<span class="tk-n">x</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">array</span><span class="tk-p">([</span><span class="tk-mi">50</span><span class="tk-p">,</span> <span class="tk-mi">60</span><span class="tk-p">,</span> <span class="tk-mi">80</span><span class="tk-p">,</span> <span class="tk-mi">100</span><span class="tk-p">,</span> <span class="tk-mf">120.</span><span class="tk-p">]);</span> <span class="tk-n">y</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">array</span><span class="tk-p">([</span><span class="tk-mf">1.5</span><span class="tk-p">,</span> <span class="tk-mf">1.8</span><span class="tk-p">,</span> <span class="tk-mf">2.4</span><span class="tk-p">,</span> <span class="tk-mf">2.9</span><span class="tk-p">,</span> <span class="tk-mf">3.6</span><span class="tk-p">])</span>
+<span class="tk-n">w</span><span class="tk-p">,</span> <span class="tk-n">b</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">polyfit</span><span class="tk-p">(</span><span class="tk-n">x</span><span class="tk-p">,</span> <span class="tk-n">y</span><span class="tk-p">,</span> <span class="tk-mi">1</span><span class="tk-p">)</span>      <span class="tk-c1"># w ≈ 0.02945, b ≈ 0.025</span>
+<span class="tk-p">((</span><span class="tk-n">w</span> <span class="tk-o">*</span> <span class="tk-n">x</span> <span class="tk-o">+</span> <span class="tk-n">b</span> <span class="tk-o">-</span> <span class="tk-n">y</span><span class="tk-p">)</span> <span class="tk-o">**</span> <span class="tk-mi">2</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">mean</span><span class="tk-p">()</span>   <span class="tk-c1"># MSE ≈ 0.0014</span>
+</code></pre></div>
+
+</div>
+<figure class="fig"><img src="../assets/fig/p1-1-residual.svg" alt="Đường hồi quy và phần dư. Hồi quy tuyến tính chọn đường làm tổng bình phương các đoạn cam nhỏ nhất." loading="lazy"><figcaption>Đường hồi quy và phần dư. Hồi quy tuyến tính chọn đường làm tổng bình phương các đoạn cam nhỏ nhất.</figcaption></figure>
+
+<h3>MSE hay MAE</h3>
+<p><strong>MAE</strong> = (1/N) Σ |ŷᵢ − yᵢ| phạt tuyến tính, nên ít bị ảnh hưởng bởi điểm ngoại lai.</p>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>Giả sử căn 80 m² bị nhập nhầm giá 6.0 tỷ thay vì 2.4. Fit bằng MSE: đường bị kéo lên, b từ 0.025 thành 0.925, mọi dự đoán lệch lên gần 0.9 tỷ. Fit bằng MAE: ŷ = 0.03·x, gần như không đổi so với dữ liệu sạch.</p>
+</div>
+<figure class="fig"><img src="../assets/fig/p1-1-outlier.svg" alt="Một điểm nhập sai đủ kéo cả đường MSE lên. MAE (dự đoán trung vị) gần như bỏ qua nó." loading="lazy"><figcaption>Một điểm nhập sai đủ kéo cả đường MSE lên. MAE (dự đoán trung vị) gần như bỏ qua nó.</figcaption></figure>
+
+<table>
+<thead>
+<tr>
+<th></th>
+<th>MSE</th>
+<th>MAE</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Phạt lỗi lớn</td>
+<td>rất nặng (bình phương)</td>
+<td>tuyến tính</td>
+</tr>
+<tr>
+<td>Với ngoại lai</td>
+<td>nhạy</td>
+<td>bền</td>
+</tr>
+<tr>
+<td>Dự đoán</td>
+<td>trung bình có điều kiện</td>
+<td>trung vị có điều kiện</td>
+</tr>
+<tr>
+<td>Đạo hàm</td>
+<td>trơn, dễ tối ưu</td>
+<td>không trơn tại 0</td>
+</tr>
+</tbody>
+</table>
+<p>Trong thực tế: làm sạch dữ liệu trước (P0.1), rồi dùng MSE; nếu ngoại lai là thật và không bỏ được thì dùng MAE hoặc <strong>Huber loss</strong> (giống MSE khi lỗi nhỏ, giống MAE khi lỗi lớn).</p>
+<div class="box check">
+<div class="box-h">Tự kiểm tra nhanh</div>
+<p>Model dự đoán [3, 5, 2] cho đáp án [2, 5, 4].</p>
+<div class="ans" id="p1-1-t-b60-a1">
+<div class="ans-fields"><label>MSE<input inputmode="decimal" data-ans="1.6667" data-tol="0.001" autocomplete="off"></label><label>MAE<input inputmode="decimal" data-ans="1.0" data-tol="0.001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div>
+<div aria-live="polite" class="ans-fb"></div>
+</div>
+</div>
+<h2 id="lt-3">Hai cách tìm w: nghiệm đóng và gradient descent</h2>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Hồi quy tuyến tính là một trong số ít model có công thức giải đúng một phát. Nhưng công thức đó không mở rộng được cho mạng nơ-ron, nên bạn cần hiểu cả cách "đi từng bước" mà mọi model lớn dùng.</p>
+</div>
+<h3>Nghiệm đóng</h3>
+<p>Đặt gradient của MSE bằng 0 rồi giải. Với một biến:</p>
+<div class="hl"><pre><span></span><code>w = Σ(x − x̄)(y − ȳ) / Σ(x − x̄)²        b = ȳ − w·x̄
+</code></pre></div>
+
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>Với 5 căn nhà ở trên: x̄ = 82, ȳ = 2.44.</p>
+<ul>
+<li>Σ(x − x̄)(y − ȳ) = 96.6</li>
+<li>Σ(x − x̄)² = 3280</li>
+<li>w = 96.6 / 3280 ≈ 0.02945, b = 2.44 − 0.02945 × 82 ≈ 0.025 ✓</li>
+</ul>
+</div>
+<p>Tổng quát với nhiều đặc trưng (X có thêm một cột toàn 1 cho bias):</p>
+<div class="hl"><pre><span></span><code>w = (XᵀX)⁻¹ Xᵀy        (normal equation)
+</code></pre></div>
+
+<p>Nghiệm đóng chính xác nhưng phải nghịch đảo ma trận n × n (n là số đặc trưng), chi phí khoảng n³. Với vài trăm đặc trưng thì tốt; với hàng triệu tham số của mạng nơ-ron thì không thể.</p>
+<h3>Gradient descent</h3>
+<p>Lặp đi lặp lại: tính gradient của loss, bước một đoạn ngược hướng gradient.</p>
+<div class="hl"><pre><span></span><code>ŷ = Xw + b
+∂MSE/∂w = (2/N) Xᵀ(ŷ − y)
+∂MSE/∂b = (2/N) Σ(ŷ − y)
+w ← w − η · ∂MSE/∂w,   b ← b − η · ∂MSE/∂b
+</code></pre></div>
+
+<p>Gradient theo w là "lỗi nhân với đầu vào": mẫu nào sai nhiều và có đặc trưng lớn sẽ kéo trọng số mạnh nhất.</p>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>Chuẩn hóa diện tích về trung bình 0, độ lệch chuẩn 1, bắt đầu w = b = 0, η = 0.1:</p>
+<table>
+<thead>
+<tr>
+<th>Bước</th>
+<th>w</th>
+<th>b</th>
+<th>MSE</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>6.52</td>
+</tr>
+<tr>
+<td>1</td>
+<td>0.151</td>
+<td>0.488</td>
+<td>4.18</td>
+</tr>
+<tr>
+<td>2</td>
+<td>0.272</td>
+<td>0.878</td>
+<td>2.67</td>
+</tr>
+<tr>
+<td>3</td>
+<td>0.368</td>
+<td>1.191</td>
+<td>1.71</td>
+</tr>
+</tbody>
+</table>
+<p>MSE giảm đều mỗi bước. Sau khoảng 100 bước, w và b hội tụ về nghiệm đóng (tính trên thang đã chuẩn hóa).</p>
+</div>
+<h3>Vì sao phải chuẩn hóa đặc trưng</h3>
+<p>Nếu một đặc trưng là diện tích (50–500) và một là số phòng (1–5), loss rất "dốc" theo hướng diện tích và rất "phẳng" theo hướng số phòng. Learning rate đủ nhỏ để không văng theo hướng dốc thì lại quá nhỏ cho hướng phẳng: gradient descent đi zig-zag và rất chậm.</p>
+<figure class="fig"><img src="../assets/fig/p1-1-zigzag.svg" alt="Cùng thuật toán, cùng số bước. Trái: thang đo lệch nhau, đường đi zig-zag. Phải: đã chuẩn hóa, đường đồng mức tròn, đi thẳng về đáy." loading="lazy"><figcaption>Cùng thuật toán, cùng số bước. Trái: thang đo lệch nhau, đường đi zig-zag. Phải: đã chuẩn hóa, đường đồng mức tròn, đi thẳng về đáy.</figcaption></figure>
+
+<div class="keep">
+<p><strong>Ghi nhớ:</strong> chuẩn hóa đặc trưng (trừ mean, chia std, tính trên <strong>tập train</strong>) trước khi chạy gradient descent. Dùng đúng mean và std đó cho tập validation và test.</p>
+</div>
+<div class="box pitfall">
+<div class="box-h">Lỗi hay gặp</div>
+<p><strong>Chuẩn hóa bằng thống kê của cả tập dữ liệu.</strong> Nếu tính mean/std trên toàn bộ dữ liệu (gồm cả test) rồi mới chia train/test, thông tin của tập test đã "rò" vào quá trình train. Kết quả test sẽ lạc quan hơn thực tế. Luôn <code>fit</code> bộ chuẩn hóa trên train, rồi <code>transform</code> cho val/test (<code>StandardScaler</code> trong scikit-learn làm đúng việc này).</p>
+</div>
+<h2 id="lt-4">Hồi quy logistic</h2>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Rất nhiều bài toán thực tế là có/không: khách có rời đi không, giao dịch có gian lận không, email có phải spam không. Hồi quy logistic cho ra <strong>xác suất</strong>, không chỉ nhãn, nên bạn chọn được ngưỡng theo chi phí sai lầm. Nó cũng chính là một neuron với hàm kích hoạt sigmoid.</p>
+</div>
+<h3>Từ điểm số tới xác suất</h3>
+<p>Tính điểm tuyến tính như hồi quy, rồi ép về khoảng (0, 1) bằng <strong>sigmoid</strong>:</p>
+<div class="hl"><pre><span></span><code>z = w · x + b                  logit, có thể là bất kỳ số thực nào
+p = σ(z) = 1 / (1 + e⁻ᶻ)       xác suất thuộc lớp 1
+</code></pre></div>
+
+<figure class="fig"><img src="../assets/fig/p1-1-sigmoid.svg" alt="σ(0) = 0.5, σ(1) ≈ 0.731, σ(−3) ≈ 0.047. Sigmoid đối xứng: σ(−z) = 1 − σ(z)." loading="lazy"><figcaption>σ(0) = 0.5, σ(1) ≈ 0.731, σ(−3) ≈ 0.047. Sigmoid đối xứng: σ(−z) = 1 − σ(z).</figcaption></figure>
+
+<p>Diễn giải trọng số: tăng xⱼ một đơn vị làm <strong>log-odds</strong> log(p/(1−p)) tăng wⱼ. Trọng số dương đẩy xác suất lớp 1 lên.</p>
+<h3>Ranh giới quyết định</h3>
+<p>Dự đoán lớp 1 khi p ≥ 0.5, tức z ≥ 0. Tập điểm z = w·x + b = 0 là một <strong>đường thẳng</strong> (trong 2D), mặt phẳng (3D), siêu phẳng (nhiều chiều).</p>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>Model w = (1, 1), b = −4.5 với hai đặc trưng (giờ học, giờ làm bài tập):</p>
+<table>
+<thead>
+<tr>
+<th>x</th>
+<th>z = x₁ + x₂ − 4.5</th>
+<th>p</th>
+<th>Dự đoán</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>(1, 2)</td>
+<td>−1.5</td>
+<td>0.182</td>
+<td>trượt</td>
+</tr>
+<tr>
+<td>(3, 4)</td>
+<td>2.5</td>
+<td>0.924</td>
+<td>đỗ</td>
+</tr>
+<tr>
+<td>(4, 4)</td>
+<td>3.5</td>
+<td>0.971</td>
+<td>đỗ</td>
+</tr>
+</tbody>
+</table>
+<p>Ranh giới là đường x₁ + x₂ = 4.5. Điểm nằm xa ranh giới có xác suất gần 0 hoặc 1; điểm sát ranh giới có xác suất gần 0.5.</p>
+</div>
+<figure class="fig"><img src="../assets/fig/p1-1-boundary.svg" alt="Màu nền là xác suất model dự đoán. Đường đen p = 0.5 là đường thẳng: logistic chỉ tách được dữ liệu tách được bằng đường thẳng." loading="lazy"><figcaption>Màu nền là xác suất model dự đoán. Đường đen p = 0.5 là đường thẳng: logistic chỉ tách được dữ liệu tách được bằng đường thẳng.</figcaption></figure>
+
+<p>Đó là lý do logistic không tách được dữ liệu hình vòng tròn hay hình XOR, còn mạng nơ-ron có lớp ẩn thì tách được: lớp ẩn "uốn" không gian trước khi lớp cuối kẻ đường thẳng.</p>
+<div class="box pitfall">
+<div class="box-h">Lỗi hay gặp</div>
+<p><strong>Ngưỡng 0.5 không phải luật.</strong> Với phát hiện gian lận, bỏ sót một vụ gian lận đắt hơn nhiều so với kiểm tra nhầm một giao dịch, nên ngưỡng có thể là 0.2. Logistic cho ra xác suất chính là để bạn chọn ngưỡng theo bài toán (P1.2 dạy cách chọn bằng đường precision–recall).</p>
+</div>
+<h2 id="lt-5">Binary cross-entropy và gradient đẹp</h2>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Không dùng MSE cho phân loại vì kết hợp với sigmoid, MSE cho gradient rất nhỏ khi model sai mà tự tin, nên học chậm. Cross-entropy sinh ra từ maximum likelihood (P0.2) và cho gradient đơn giản đến bất ngờ.</p>
+</div>
+<h3>Công thức</h3>
 <div class="hl"><pre><span></span><code>BCE = −[ y·log p + (1 − y)·log(1 − p) ]
-∂BCE/∂z = p − y
-∂BCE/∂w = (p − y) · x
 </code></pre></div>
 
-<p>Gradient theo z chỉ là "dự đoán trừ đáp án", giống hệt softmax + cross-entropy ở Bài 1. Không phải trùng hợp: logistic chính là softmax với hai lớp.</p>
-<h2 id="lt-5">Regularization L1 và L2</h2>
-<p>Khi có nhiều đặc trưng, model dễ học thuộc nhiễu. Ta phạt trọng số lớn:</p>
+<p>Chỉ một trong hai số hạng hoạt động: y = 1 thì loss = −log p; y = 0 thì loss = −log(1 − p). Tức là <strong>−log của xác suất model gán cho đáp án đúng</strong>.</p>
+<table>
+<thead>
+<tr>
+<th>p (khi y = 1)</th>
+<th>0.99</th>
+<th>0.9</th>
+<th>0.6</th>
+<th>0.5</th>
+<th>0.1</th>
+<th>0.01</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>loss = −log p</td>
+<td>0.010</td>
+<td>0.105</td>
+<td>0.511</td>
+<td>0.693</td>
+<td>2.303</td>
+<td>4.605</td>
+</tr>
+</tbody>
+</table>
+<figure class="fig"><img src="../assets/fig/p1-1-bce.svg" alt="Đoán đúng mà tự tin: loss gần 0. Đoán sai mà tự tin (p = 0.01 khi y = 1): loss 4.6 và tăng tới vô cùng." loading="lazy"><figcaption>Đoán đúng mà tự tin: loss gần 0. Đoán sai mà tự tin (p = 0.01 khi y = 1): loss 4.6 và tăng tới vô cùng.</figcaption></figure>
+
+<h3>Gradient: dự đoán trừ đáp án</h3>
+<p>Dùng quy tắc dây chuyền với σ′(z) = σ(z)(1 − σ(z)):</p>
+<div class="hl"><pre><span></span><code>∂BCE/∂p = −y/p + (1 − y)/(1 − p)
+∂p/∂z  = p(1 − p)
+∂BCE/∂z = ∂BCE/∂p · ∂p/∂z = p − y          (mọi thứ rút gọn đẹp)
+∂BCE/∂w = (p − y) · x,   ∂BCE/∂b = p − y
+</code></pre></div>
+
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>Một mẫu x = (2, 1), y = 0, bắt đầu w = (0, 0), b = 0, η = 0.5:</p>
+<ul>
+<li>z = 0, p = 0.5, lỗi p − y = <strong>0.5</strong> (model nghiêng quá về lớp 1)</li>
+<li>w₁ ← 0 − 0.5 × 0.5 × 2 = −0.5</li>
+<li>w₂ ← 0 − 0.5 × 0.5 × 1 = −0.25</li>
+<li>b ← 0 − 0.5 × 0.5 = −0.25</li>
+</ul>
+<p>Trọng số giảm để kéo p về gần 0. Đặc trưng lớn hơn (x₁ = 2) bị chỉnh mạnh hơn. Bài tập 3 cho bạn tự làm một bước như vậy với số khác.</p>
+</div>
+<p>Gradient "dự đoán trừ đáp án" giống hệt softmax + cross-entropy ở Bài 1. Không phải trùng hợp: logistic chính là softmax với hai lớp, và MSE với hồi quy tuyến tính cũng cho gradient dạng (ŷ − y)·x.</p>
+<details class="fold deep">
+<summary>Đào sâu thêm</summary>
+<p><strong>Nhiều lớp: softmax regression.</strong> Với K lớp, thay sigmoid bằng softmax: tính K điểm zₖ = wₖ·x + bₖ, rồi pₖ = e^(zₖ) / Σ e^(zⱼ). Loss là −log p của lớp đúng, gradient theo zₖ là pₖ − [k là lớp đúng]. Trong scikit-learn, <code>LogisticRegression</code> tự chuyển sang softmax khi có nhiều hơn 2 lớp. Đây chính là lớp cuối của mọi mạng phân loại ảnh ở P2.</p>
+</details>
+<div class="box check">
+<div class="box-h">Tự kiểm tra nhanh</div>
+<p>y = 0, model cho p = 0.7.</p>
+<div class="ans" id="p1-1-t-b173-a1">
+<div class="ans-fields"><label>BCE<input inputmode="decimal" data-ans="1.204" data-tol="0.001" autocomplete="off"></label><label>∂BCE/∂z<input inputmode="decimal" data-ans="0.7" data-tol="0.001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div>
+<div aria-live="polite" class="ans-fb"></div>
+</div>
+</div>
+<h2 id="lt-6">Regularization L1 và L2</h2>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Khi có nhiều đặc trưng mà ít dữ liệu, model khớp luôn cả nhiễu: trọng số phình to để đi qua từng điểm train, rồi dự đoán tệ trên dữ liệu mới. Regularization thêm một "chi phí" cho trọng số lớn, buộc model chọn lời giải đơn giản hơn.</p>
+</div>
+<h3>Phạt trọng số</h3>
 <table>
 <thead>
 <tr>
@@ -83,10 +388,162 @@ p = σ(z) = 1 / (1 + e⁻ᶻ)       σ(0) = 0.5, σ(z) → 1 khi z → +∞
 </tr>
 </tbody>
 </table>
-<p>Trong <code>LogisticRegression</code>, tham số <code>C = 1/λ</code>: <strong>C nhỏ thì phạt mạnh</strong>. Đây là nguồn nhầm lẫn kinh điển. Weight decay trong AdamW ở Bài 2 chính là L2.</p>
+<p>λ (lambda) điều khiển mức phạt: λ = 0 là hồi quy thường; λ rất lớn thì mọi trọng số về 0.</p>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>Dữ liệu giả lập 100 mẫu, 10 đặc trưng, nhưng chỉ 3 đặc trưng đầu thật sự ảnh hưởng (hệ số thật 3, −2, 1.5, còn lại 0):</p>
+<table>
+<thead>
+<tr>
+<th>Model</th>
+<th>Hệ số học được (làm tròn)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Hồi quy thường</td>
+<td>3.19, −2.17, 1.39, −0.04, −0.00, −0.11, −0.08, 0.09, 0.01, 0.11</td>
+</tr>
+<tr>
+<td>Ridge (λ = 10)</td>
+<td>2.83, −1.90, 1.20, −0.03, −0.02, −0.09, −0.09, 0.12, 0.01, 0.03</td>
+</tr>
+<tr>
+<td>Lasso (λ = 0.2)</td>
+<td>2.94, −1.86, 1.15, <strong>0, 0, 0, 0, 0, 0, 0</strong></td>
+</tr>
+</tbody>
+</table>
+<p>Lasso tự tìm ra đúng 3 đặc trưng quan trọng và gán 0 cho 7 đặc trưng nhiễu.</p>
+</div>
+<figure class="fig"><img src="../assets/fig/p1-1-regpath.svg" alt="Đường đi của hệ số khi tăng λ. Ba đặc trưng thật (màu) giữ lâu nhất; các đặc trưng nhiễu (xám) bị Lasso đưa về đúng 0 rất sớm." loading="lazy"><figcaption>Đường đi của hệ số khi tăng λ. Ba đặc trưng thật (màu) giữ lâu nhất; các đặc trưng nhiễu (xám) bị Lasso đưa về đúng 0 rất sớm.</figcaption></figure>
+
+<h3>Vì sao L1 tạo ra số 0</h3>
+<p>Đạo hàm của λw² là 2λw: càng gần 0 thì lực kéo càng yếu, nên trọng số tiến gần 0 nhưng hiếm khi đúng bằng 0. Đạo hàm của λ|w| là ±λ: lực kéo không đổi dù w đã rất nhỏ, nên w bị đẩy hẳn về 0 nếu đặc trưng đó không đủ hữu ích để chống lại.</p>
+<div class="box pitfall">
+<div class="box-h">Lỗi hay gặp</div>
+<p><strong><code>C</code> trong <code>LogisticRegression</code> là nghịch đảo của λ.</strong> <code>C = 1/λ</code>, nên <strong>C nhỏ thì phạt mạnh</strong>. <code>LogisticRegression(C=0.01)</code> là model rất "bị bó", <code>C=100</code> gần như không regularize. Ngược chiều với <code>Ridge(alpha=...)</code>, và là nguồn nhầm lẫn kinh điển khi tinh chỉnh.</p>
+</div>
+<p>Weight decay trong AdamW ở Bài 2 chính là L2. Dropout và early stopping (P2) là những cách regularize khác dành cho mạng nơ-ron.</p>
 <div class="keep">
-<p><strong>Ghi nhớ:</strong> λ quá lớn thì underfit (model quá đơn giản), quá nhỏ thì overfit. Chọn λ bằng validation, không bao giờ bằng tập test.</p>
-</div></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p1.1:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 4</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Giá trị sigmoid</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><div class="ans" id="p1-1-e1-a1"><div class="ans-fields"><label>σ(0)<input inputmode="decimal" data-ans="0.5" data-tol="0.001" autocomplete="off"></label><label>σ(2)<input inputmode="decimal" data-ans="0.8808" data-tol="0.001" autocomplete="off"></label><label>σ(−2)<input inputmode="decimal" data-ans="0.1192" data-tol="0.001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+<p><strong>Ghi nhớ:</strong> λ quá lớn thì underfit (model quá đơn giản), quá nhỏ thì overfit. Chọn λ bằng validation, không bao giờ bằng tập test. Nhớ chuẩn hóa đặc trưng trước khi regularize, nếu không đặc trưng có thang đo lớn sẽ bị phạt ít một cách vô lý.</p>
+</div>
+<div class="box check">
+<div class="box-h">Tự kiểm tra nhanh</div>
+<p>Hai trọng số w = (3, −4), λ = 0.1.</p>
+<div class="ans" id="p1-1-t-b202-a1">
+<div class="ans-fields"><label>Phần phạt L2: λ·Σw²<input inputmode="decimal" data-ans="2.5" data-tol="0.001" autocomplete="off"></label><label>Phần phạt L1: λ·Σ abs(w)<input inputmode="decimal" data-ans="0.7" data-tol="0.001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div>
+<div aria-live="polite" class="ans-fb"></div>
+</div>
+</div>
+<h2 id="lt-7">Tóm tắt bài và thuật ngữ</h2>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Hồi quy tuyến tính</th>
+<th>Hồi quy logistic</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Đầu ra</td>
+<td>số thực ŷ = w·x + b</td>
+<td>xác suất p = σ(w·x + b)</td>
+</tr>
+<tr>
+<td>Loss</td>
+<td>MSE (hoặc MAE, Huber)</td>
+<td>binary cross-entropy</td>
+</tr>
+<tr>
+<td>Gradient theo w</td>
+<td>(2/N)·Xᵀ(ŷ − y)</td>
+<td>(p − y)·x</td>
+</tr>
+<tr>
+<td>Lời giải</td>
+<td>nghiệm đóng hoặc gradient descent</td>
+<td>gradient descent (không có nghiệm đóng)</td>
+</tr>
+<tr>
+<td>Ranh giới / dạng</td>
+<td>đường thẳng khớp dữ liệu</td>
+<td>đường thẳng tách hai lớp</td>
+</tr>
+<tr>
+<td>Regularization</td>
+<td>Ridge, Lasso</td>
+<td>tham số C = 1/λ</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Thuật ngữ</th>
+<th>Nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>supervised learning</td>
+<td>học có giám sát: học từ dữ liệu có đáp án</td>
+</tr>
+<tr>
+<td>regression / classification</td>
+<td>dự đoán số thực / dự đoán nhãn</td>
+</tr>
+<tr>
+<td>feature</td>
+<td>đặc trưng, một cột đầu vào</td>
+</tr>
+<tr>
+<td>weight, bias</td>
+<td>trọng số, hệ số chặn</td>
+</tr>
+<tr>
+<td>residual</td>
+<td>phần dư ŷ − y</td>
+</tr>
+<tr>
+<td>MSE / MAE</td>
+<td>sai số bình phương trung bình / tuyệt đối trung bình</td>
+</tr>
+<tr>
+<td>normal equation</td>
+<td>công thức nghiệm đóng (XᵀX)⁻¹Xᵀy</td>
+</tr>
+<tr>
+<td>standardization</td>
+<td>chuẩn hóa về trung bình 0, độ lệch chuẩn 1</td>
+</tr>
+<tr>
+<td>sigmoid / logit</td>
+<td>hàm ép về (0, 1) / điểm trước sigmoid</td>
+</tr>
+<tr>
+<td>decision boundary</td>
+<td>ranh giới quyết định, nơi p = 0.5</td>
+</tr>
+<tr>
+<td>binary cross-entropy</td>
+<td>loss −log xác suất đáp án đúng, hai lớp</td>
+</tr>
+<tr>
+<td>regularization</td>
+<td>phạt độ phức tạp để chống overfit</td>
+</tr>
+<tr>
+<td>Ridge / Lasso</td>
+<td>hồi quy với phạt L2 / L1</td>
+</tr>
+<tr>
+<td>underfit / overfit</td>
+<td>model quá đơn giản / học thuộc cả nhiễu</td>
+</tr>
+</tbody>
+</table></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p1.1:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 4</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Giá trị sigmoid</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><div class="ans" id="p1-1-e1-a1"><div class="ans-fields"><label>σ(0)<input inputmode="decimal" data-ans="0.5" data-tol="0.001" autocomplete="off"></label><label>σ(2)<input inputmode="decimal" data-ans="0.8808" data-tol="0.001" autocomplete="off"></label><label>σ(−2)<input inputmode="decimal" data-ans="0.1192" data-tol="0.001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
 
 <details class="fold hint">
 <summary>Gợi ý</summary>
@@ -196,7 +653,7 @@ p = σ(z) = 1 / (1 + e⁻ᶻ)       σ(0) = 0.5, σ(z) → 1 khi z → +∞
     </div>
     <aside class="aside">
       <div class="abox"><h4>Tiến độ bài này</h4><div class="ring"><svg viewBox="0 0 64 64" aria-hidden="true"><circle class="bg" cx="32" cy="32" r="28"/><circle class="fg" cx="32" cy="32" r="28" stroke-dasharray="176" stroke-dashoffset="176"/></svg><div><b id="ring-n">0/3</b><span id="ring-sub">phần đã xong</span></div></div></div>
-      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Hồi quy tuyến tính</a></li><li><a href="#lt-2">Hai cách tìm w: nghiệm đóng và gradient descent</a></li><li><a href="#lt-3">Hồi quy logistic</a></li><li><a href="#lt-4">Binary cross-entropy và gradient đẹp</a></li><li><a href="#lt-5">Regularization L1 và L2</a></li></ol></div>
+      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Bài toán học có giám sát</a></li><li><a href="#lt-2">Hồi quy tuyến tính</a></li><li><a href="#lt-3">Hai cách tìm w: nghiệm đóng và gradient descent</a></li><li><a href="#lt-4">Hồi quy logistic</a></li><li><a href="#lt-5">Binary cross-entropy và gradient đẹp</a></li><li><a href="#lt-6">Regularization L1 và L2</a></li><li><a href="#lt-7">Tóm tắt bài và thuật ngữ</a></li></ol></div>
       
       <div class="abox"><h4>Cùng giai đoạn</h4><ul><li><span class=cur>Hồi quy tuyến tính và logistic</span></li><li><a href="p1-2.html">Đánh giá model đúng cách</a></li><li><a href="p1-3.html">Cây quyết định và ensemble</a></li><li><a href="p1-4.html">Học không giám sát và feature engineering</a></li></ul></div>
     </aside>

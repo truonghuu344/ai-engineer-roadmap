@@ -24,64 +24,233 @@
   <section class="lhero"><div class="code">P1.2</div><h1>Đánh giá model đúng cách</h1><div class="lmeta"><span class="m">Giai đoạn P1 · Machine Learning cổ điển</span><span class="m">Tuần 4–7</span><span class="chip ready"><span class="dot"></span>Có nội dung đầy đủ</span></div>
     <div class="intro"><p>Một model 97% accuracy có thể vô dụng, còn model 80% có thể tuyệt vời. Mọi thứ phụ thuộc vào cách bạn chia dữ liệu, chọn metric và kiểm tra rò rỉ. Đây là phần hay bị hỏi nhất khi phỏng vấn ML, và cũng là phần phân biệt người làm thật với người chỉ chạy <code>model.fit()</code>.</p></div></section>
   
-  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">6 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
+  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">7 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
   <div class="lgrid" style="margin-top:22px">
     <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">Train, validation, test</h2>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Điều bạn muốn biết là: model chạy trên dữ liệu <strong>mới</strong> (khách hàng tháng sau, ảnh người dùng gửi lên) tốt đến đâu. Dữ liệu mới thì chưa có, nên ta giả lập bằng cách giấu một phần dữ liệu đi. Cách giấu quyết định con số bạn báo cáo có đáng tin hay không.</p>
+</div>
+<h3>Ba tập, ba vai trò</h3>
 <table>
 <thead>
 <tr>
 <th>Tập</th>
 <th>Dùng để</th>
 <th>Được nhìn bao nhiêu lần</th>
+<th>Tỉ lệ thường dùng</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td>Train</td>
-<td>học tham số</td>
+<td>học tham số (w, b, trọng số mạng)</td>
 <td>thoải mái</td>
+<td>60–80%</td>
 </tr>
 <tr>
 <td>Validation</td>
 <td>chọn siêu tham số, chọn model, early stopping</td>
 <td>nhiều lần</td>
+<td>10–20%</td>
 </tr>
 <tr>
 <td>Test</td>
 <td>báo cáo kết quả cuối</td>
 <td><strong>một lần</strong></td>
+<td>10–20%</td>
 </tr>
 </tbody>
 </table>
-<p>Mỗi lần bạn chỉnh model dựa trên điểm test, tập test bị "học" một chút và con số báo cáo trở nên lạc quan giả tạo.</p>
-<p><strong>Cross-validation k-fold:</strong> chia train thành k phần, lần lượt lấy mỗi phần làm validation, train trên k − 1 phần còn lại, rồi lấy trung bình. Dùng khi dữ liệu ít. Với dữ liệu phân loại mất cân bằng, dùng <code>StratifiedKFold</code> để mỗi fold giữ tỉ lệ các lớp.</p>
-<h2 id="lt-2">Rò rỉ dữ liệu (data leakage)</h2>
-<p>Rò rỉ là khi thông tin từ validation/test hoặc từ "tương lai" lọt vào lúc train. Kết quả validation đẹp nhưng chạy thật thì sụp. Các dạng hay gặp:</p>
-<ul>
-<li><strong>Chuẩn hóa trước khi chia:</strong> <code>StandardScaler().fit(X)</code> trên toàn bộ dữ liệu rồi mới chia train/test. Đúng ra phải fit trên train, transform cả hai. Dùng <code>Pipeline</code> để tránh hẳn lỗi này.</li>
-<li><strong>Dữ liệu thời gian chia ngẫu nhiên:</strong> dự đoán doanh thu tháng 6 nhưng train có dữ liệu tháng 7. Phải chia theo thời gian.</li>
-<li><strong>Đặc trưng chứa đáp án:</strong> cột "ngày hoàn tiền" khi dự đoán "khách có hoàn hàng không".</li>
-<li><strong>Trùng lặp:</strong> cùng một ảnh (hoặc gần giống) xuất hiện ở cả train và test.</li>
-<li><strong>Nhóm:</strong> nhiều ảnh của cùng một bệnh nhân nằm ở cả train và test. Dùng <code>GroupKFold</code>.</li>
-</ul>
-<div class="keep">
-<p><strong>Ghi nhớ:</strong> nếu kết quả tốt đến mức khó tin, hãy đi tìm rò rỉ trước khi ăn mừng.</p>
+<p><strong>Tham số</strong> (parameter) là thứ model tự học từ dữ liệu. <strong>Siêu tham số</strong> (hyperparameter) là thứ bạn chọn trước khi train: learning rate, λ của regularization, độ sâu cây, số lớp. Bạn chọn siêu tham số bằng cách thử nhiều giá trị và xem điểm validation.</p>
+<h3>Vì sao test chỉ được nhìn một lần</h3>
+<p>Mỗi lần bạn chỉnh model dựa trên điểm test, tập test bị "học" một chút. Thử 50 cấu hình rồi chọn cái có điểm test cao nhất thì bạn đã dùng test làm validation: con số báo cáo sẽ lạc quan hơn thực tế, vì một phần cái "tốt" đó chỉ là may mắn trên đúng mẫu test này.</p>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>Một nhóm thử 100 bộ siêu tham số, mỗi lần nhìn điểm test, chọn bộ tốt nhất: 85.3%. Khi triển khai, accuracy thật khoảng 82%. 3 điểm chênh đó không phải lỗi của model mà là do quy trình đánh giá. Nếu họ chọn trên validation rồi đo test một lần, con số báo cáo sẽ gần 82%.</p>
 </div>
-<h2 id="lt-3">Overfitting, underfitting, bias và variance</h2>
-<ul>
-<li><strong>Underfitting (bias cao):</strong> train tệ, val tệ. Model quá đơn giản. Giải pháp: model mạnh hơn, thêm đặc trưng, train lâu hơn.</li>
-<li><strong>Overfitting (variance cao):</strong> train rất tốt, val tệ. Model học thuộc nhiễu. Giải pháp: thêm dữ liệu, regularization, augmentation, model đơn giản hơn, early stopping.</li>
-</ul>
-<p><strong>Learning curve</strong> (điểm train và val theo kích thước tập train) cho biết bạn đang ở trường hợp nào. Hai đường cách xa nhau thì thêm dữ liệu sẽ giúp. Hai đường sát nhau mà đều thấp thì thêm dữ liệu vô ích, cần model mạnh hơn.</p>
-<h2 id="lt-4">Metric phân loại</h2>
-<p>Từ ma trận nhầm lẫn với TP, FP, FN, TN:</p>
-<div class="hl"><pre><span></span><code>Accuracy  = (TP + TN) / tổng
-Precision = TP / (TP + FP)      trong những gì model báo dương, bao nhiêu đúng
-Recall    = TP / (TP + FN)      trong những ca dương thật, model bắt được bao nhiêu
-F1        = 2·P·R / (P + R)     trung bình điều hòa, phạt khi một trong hai thấp
+<h3>Cross-validation k-fold</h3>
+<p>Khi dữ liệu ít (vài trăm đến vài nghìn mẫu), một tập validation 20% quá nhỏ và quá "may rủi". <strong>k-fold</strong> chia phần train thành k phần, lần lượt lấy mỗi phần làm validation, train trên k − 1 phần còn lại, rồi lấy trung bình k điểm.</p>
+<figure class="fig"><img src="../assets/fig/p1-2-kfold.svg" alt="5-fold: mỗi mẫu được làm validation đúng một lần. Tập test vẫn đứng ngoài, dùng một lần ở cuối." loading="lazy"><figcaption>5-fold: mỗi mẫu được làm validation đúng một lần. Tập test vẫn đứng ngoài, dùng một lần ở cuối.</figcaption></figure>
+
+<div class="hl"><pre><span></span><code><span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">sklearn.model_selection</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">cross_val_score</span><span class="tk-p">,</span> <span class="tk-n">StratifiedKFold</span>
+<span class="tk-n">cv</span> <span class="tk-o">=</span> <span class="tk-n">StratifiedKFold</span><span class="tk-p">(</span><span class="tk-n">n_splits</span><span class="tk-o">=</span><span class="tk-mi">5</span><span class="tk-p">,</span> <span class="tk-n">shuffle</span><span class="tk-o">=</span><span class="tk-kc">True</span><span class="tk-p">,</span> <span class="tk-n">random_state</span><span class="tk-o">=</span><span class="tk-mi">0</span><span class="tk-p">)</span>
+<span class="tk-n">scores</span> <span class="tk-o">=</span> <span class="tk-n">cross_val_score</span><span class="tk-p">(</span><span class="tk-n">model</span><span class="tk-p">,</span> <span class="tk-n">X_train</span><span class="tk-p">,</span> <span class="tk-n">y_train</span><span class="tk-p">,</span> <span class="tk-n">cv</span><span class="tk-o">=</span><span class="tk-n">cv</span><span class="tk-p">,</span> <span class="tk-n">scoring</span><span class="tk-o">=</span><span class="tk-s2">"f1"</span><span class="tk-p">)</span>
+<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-n">scores</span><span class="tk-o">.</span><span class="tk-n">mean</span><span class="tk-p">(),</span> <span class="tk-n">scores</span><span class="tk-o">.</span><span class="tk-n">std</span><span class="tk-p">())</span>   <span class="tk-c1"># báo cáo cả độ lệch: 0.81 ± 0.02 khác hẳn 0.81 ± 0.09</span>
 </code></pre></div>
 
-<p><strong>ROC-AUC</strong> đo khả năng xếp hạng ca dương cao hơn ca âm, không phụ thuộc ngưỡng. Khi lớp dương rất hiếm (gian lận, bệnh hiếm), <strong>PR-AUC</strong> phản ánh đúng hơn ROC-AUC.</p>
+<p>Các kiểu chia cần biết:</p>
+<table>
+<thead>
+<tr>
+<th>Kiểu</th>
+<th>Khi nào</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>KFold</code></td>
+<td>hồi quy, dữ liệu độc lập</td>
+</tr>
+<tr>
+<td><code>StratifiedKFold</code></td>
+<td>phân loại, nhất là khi lớp mất cân bằng: mỗi fold giữ đúng tỉ lệ lớp</td>
+</tr>
+<tr>
+<td><code>GroupKFold</code></td>
+<td>nhiều mẫu thuộc cùng một nhóm (cùng bệnh nhân, cùng người dùng, cùng video)</td>
+</tr>
+<tr>
+<td><code>TimeSeriesSplit</code></td>
+<td>dữ liệu theo thời gian: luôn train trên quá khứ, validate trên tương lai</td>
+</tr>
+</tbody>
+</table>
+<div class="box check">
+<div class="box-h">Tự kiểm tra nhanh</div>
+<p>1.200 mẫu train, 4-fold.</p>
+<div class="ans" id="p1-2-t-b43-a1">
+<div class="ans-fields"><label>Số mẫu validation mỗi fold<input inputmode="decimal" data-ans="300.0" data-tol="0.0" autocomplete="off"></label><label>Mỗi mẫu được dùng để train bao nhiêu lần<input inputmode="decimal" data-ans="3.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div>
+<div aria-live="polite" class="ans-fb"></div>
+</div>
+</div>
+<h2 id="lt-2">Rò rỉ dữ liệu (data leakage)</h2>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Rò rỉ là lỗi nguy hiểm nhất trong ML vì nó <strong>không báo lỗi</strong>: mọi thứ chạy, điểm rất đẹp, và chỉ sụp khi lên production. Nhiều cuộc thi Kaggle và nhiều bài báo đã phải rút lại kết quả vì rò rỉ.</p>
+</div>
+<p>Rò rỉ là khi thông tin từ validation/test, hoặc từ "tương lai", lọt vào lúc train. Các dạng hay gặp:</p>
+<table>
+<thead>
+<tr>
+<th>Dạng</th>
+<th>Ví dụ</th>
+<th>Cách tránh</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Tiền xử lý trên toàn bộ dữ liệu</td>
+<td><code>StandardScaler().fit(X)</code> hoặc chọn đặc trưng trước khi chia</td>
+<td>fit trên train, dùng <code>Pipeline</code></td>
+</tr>
+<tr>
+<td>Chia ngẫu nhiên dữ liệu thời gian</td>
+<td>dự đoán doanh thu tháng 6 nhưng train có tháng 7</td>
+<td>chia theo thời gian</td>
+</tr>
+<tr>
+<td>Đặc trưng chứa đáp án</td>
+<td>cột "ngày hoàn tiền" khi dự đoán "có hoàn hàng không"</td>
+<td>hỏi: lúc dự đoán thật, cột này đã có chưa?</td>
+</tr>
+<tr>
+<td>Trùng lặp</td>
+<td>cùng một ảnh (hoặc ảnh crop/resize) ở cả train và test</td>
+<td>khử trùng trước khi chia</td>
+</tr>
+<tr>
+<td>Nhóm</td>
+<td>nhiều ảnh của cùng bệnh nhân ở cả train và test</td>
+<td><code>GroupKFold</code>, chia theo nhóm</td>
+</tr>
+</tbody>
+</table>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p><strong>Rò rỉ từ chọn đặc trưng, trên dữ liệu hoàn toàn ngẫu nhiên.</strong> 100 mẫu, 5.000 đặc trưng là nhiễu thuần, nhãn tung đồng xu. Không có gì để học, accuracy đúng phải khoảng 50%.</p>
+<div class="hl"><pre><span></span><code><span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">sklearn.feature_selection</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">SelectKBest</span><span class="tk-p">,</span> <span class="tk-n">f_classif</span>
+<span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">sklearn.pipeline</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">make_pipeline</span>
+
+<span class="tk-c1"># SAI: chọn 20 đặc trưng "tốt nhất" trên toàn bộ dữ liệu, rồi mới cross-validate</span>
+<span class="tk-n">Xs</span> <span class="tk-o">=</span> <span class="tk-n">SelectKBest</span><span class="tk-p">(</span><span class="tk-n">f_classif</span><span class="tk-p">,</span> <span class="tk-n">k</span><span class="tk-o">=</span><span class="tk-mi">20</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">fit_transform</span><span class="tk-p">(</span><span class="tk-n">X</span><span class="tk-p">,</span> <span class="tk-n">y</span><span class="tk-p">)</span>
+<span class="tk-n">cross_val_score</span><span class="tk-p">(</span><span class="tk-n">LogisticRegression</span><span class="tk-p">(),</span> <span class="tk-n">Xs</span><span class="tk-p">,</span> <span class="tk-n">y</span><span class="tk-p">,</span> <span class="tk-n">cv</span><span class="tk-o">=</span><span class="tk-n">cv</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">mean</span><span class="tk-p">()</span>        <span class="tk-c1"># 0.87 (!)</span>
+
+<span class="tk-c1"># ĐÚNG: việc chọn đặc trưng nằm trong pipeline, chạy lại trên từng fold train</span>
+<span class="tk-n">pipe</span> <span class="tk-o">=</span> <span class="tk-n">make_pipeline</span><span class="tk-p">(</span><span class="tk-n">SelectKBest</span><span class="tk-p">(</span><span class="tk-n">f_classif</span><span class="tk-p">,</span> <span class="tk-n">k</span><span class="tk-o">=</span><span class="tk-mi">20</span><span class="tk-p">),</span> <span class="tk-n">LogisticRegression</span><span class="tk-p">())</span>
+<span class="tk-n">cross_val_score</span><span class="tk-p">(</span><span class="tk-n">pipe</span><span class="tk-p">,</span> <span class="tk-n">X</span><span class="tk-p">,</span> <span class="tk-n">y</span><span class="tk-p">,</span> <span class="tk-n">cv</span><span class="tk-o">=</span><span class="tk-n">cv</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">mean</span><span class="tk-p">()</span>                          <span class="tk-c1"># 0.50</span>
+</code></pre></div>
+
+<p>87% trên dữ liệu ngẫu nhiên: bước chọn đặc trưng đã "nhìn" nhãn của cả các mẫu validation, nên tìm được 20 cột nhiễu tình cờ khớp với nhãn.</p>
+</div>
+<div class="keep">
+<p><strong>Ghi nhớ:</strong> mọi bước học từ dữ liệu (chuẩn hóa, điền thiếu, chọn đặc trưng, giảm chiều) phải nằm <strong>bên trong</strong> vòng cross-validation. <code>Pipeline</code> của scikit-learn đảm bảo điều đó. Nếu kết quả tốt đến mức khó tin, hãy đi tìm rò rỉ trước khi ăn mừng.</p>
+</div>
+<div class="box pitfall">
+<div class="box-h">Lỗi hay gặp</div>
+<p><strong>Dữ liệu thời gian chia ngẫu nhiên.</strong> Dự đoán giá cổ phiếu ngày mai, chia ngẫu nhiên 80/20: model thấy ngày 15 và ngày 17 trong train, đoán ngày 16 trong test rất dễ. Chạy thật thì không có ngày 17. Với mọi dữ liệu có thời gian (doanh số, log hệ thống, giao dịch), luôn train trên quá khứ, test trên giai đoạn sau đó.</p>
+</div>
+<h2 id="lt-3">Overfitting, underfitting, bias và variance</h2>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Khi model chưa tốt, bạn cần biết nên làm gì tiếp: thêm dữ liệu, đổi model mạnh hơn, hay regularize? Chẩn đoán đúng bias hay variance tiết kiệm hàng tuần thử mò.</p>
+</div>
+<h3>Hai kiểu thất bại</h3>
+<ul>
+<li><strong>Underfitting (bias cao):</strong> train tệ, val tệ. Model quá đơn giản để nắm quy luật. Ví dụ dùng đường thẳng cho dữ liệu hình sóng.</li>
+<li><strong>Overfitting (variance cao):</strong> train rất tốt, val tệ. Model học thuộc cả nhiễu của tập train, đổi tập train một chút là đổi hẳn dự đoán.</li>
+</ul>
+<figure class="fig"><img src="../assets/fig/p1-2-fit.svg" alt="Cùng 18 điểm dữ liệu (đường chấm là quy luật thật). Bậc 1 quá cứng, bậc 15 đi qua gần mọi điểm nhưng dao động điên cuồng giữa các điểm." loading="lazy"><figcaption>Cùng 18 điểm dữ liệu (đường chấm là quy luật thật). Bậc 1 quá cứng, bậc 15 đi qua gần mọi điểm nhưng dao động điên cuồng giữa các điểm.</figcaption></figure>
+
+<table>
+<thead>
+<tr>
+<th>Triệu chứng</th>
+<th>Chẩn đoán</th>
+<th>Nên làm</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>train thấp, val thấp, gần nhau</td>
+<td>underfit</td>
+<td>model mạnh hơn, thêm đặc trưng, train lâu hơn, giảm regularization</td>
+</tr>
+<tr>
+<td>train cao, val thấp hơn nhiều</td>
+<td>overfit</td>
+<td>thêm dữ liệu, augmentation, regularization, model đơn giản hơn, early stopping</td>
+</tr>
+<tr>
+<td>train cao, val cao, test thấp</td>
+<td>val bị "học" hoặc test khác phân phối</td>
+<td>xem lại quy trình chia, kiểm tra rò rỉ</td>
+</tr>
+</tbody>
+</table>
+<h3>Learning curve</h3>
+<p>Vẽ điểm train và validation theo <strong>kích thước tập train</strong> để chẩn đoán:</p>
+<figure class="fig"><img src="../assets/fig/p1-2-learning.svg" alt="Trái: cây quyết định sâu 3 trên bộ chữ số viết tay: hai đường sát nhau ở mức thấp, thêm dữ liệu không giúp gì. Phải: cây không giới hạn: train 100%, val tăng dần theo dữ liệu, khoảng cách còn lớn." loading="lazy"><figcaption>Trái: cây quyết định sâu 3 trên bộ chữ số viết tay: hai đường sát nhau ở mức thấp, thêm dữ liệu không giúp gì. Phải: cây không giới hạn: train 100%, val tăng dần theo dữ liệu, khoảng cách còn lớn.</figcaption></figure>
+
+<ul>
+<li>Hai đường cách xa nhau và val còn đang đi lên: <strong>thêm dữ liệu sẽ giúp</strong>.</li>
+<li>Hai đường sát nhau mà đều thấp: thêm dữ liệu <strong>vô ích</strong>, cần model mạnh hơn.</li>
+</ul>
+<details class="fold deep">
+<summary>Đào sâu thêm</summary>
+<p><strong>Phân rã bias–variance.</strong> Với MSE, sai số kỳ vọng trên dữ liệu mới tách được thành ba phần: <strong>bias²</strong> (model trung bình lệch khỏi quy luật thật bao nhiêu), <strong>variance</strong> (dự đoán dao động bao nhiêu khi đổi tập train), và <strong>nhiễu</strong> không thể giảm. Model phức tạp hơn giảm bias nhưng tăng variance. Deep learning hiện đại phức tạp hơn bức tranh này một chút (mạng rất lớn vẫn tổng quát tốt khi đủ dữ liệu và regularization), nhưng cách chẩn đoán bằng train/val ở trên vẫn đúng.</p>
+</details>
+<h2 id="lt-4">Metric phân loại</h2>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Accuracy dễ hiểu nhưng thường đánh lừa. Một bộ lọc gian lận luôn trả lời "không gian lận" đạt 99% accuracy nếu chỉ 1% giao dịch là gian lận, và nó hoàn toàn vô dụng. Bạn cần metric nói được model bắt được bao nhiêu ca quan trọng và báo nhầm bao nhiêu.</p>
+</div>
+<h3>Ma trận nhầm lẫn</h3>
+<p>Mọi metric phân loại nhị phân đều tính từ bốn ô:</p>
+<figure class="fig"><img src="../assets/fig/p1-2-confusion.svg" alt="Ví dụ 1.000 mẫu, 60 ca dương thật. Model báo dương 75 ca, trong đó 45 đúng." loading="lazy"><figcaption>Ví dụ 1.000 mẫu, 60 ca dương thật. Model báo dương 75 ca, trong đó 45 đúng.</figcaption></figure>
+
+<div class="hl"><pre><span></span><code>Accuracy  = (TP + TN) / tổng                 tỉ lệ đoán đúng nói chung
+Precision = TP / (TP + FP)                   trong những gì model báo dương, bao nhiêu đúng
+Recall    = TP / (TP + FN)                   trong những ca dương thật, model bắt được bao nhiêu
+F1        = 2·P·R / (P + R)                  trung bình điều hòa, thấp nếu một trong hai thấp
+</code></pre></div>
+
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>Với ma trận ở hình: accuracy = (45 + 910)/1000 = <strong>95.5%</strong>, nghe rất tốt. Nhưng precision = 45/75 = <strong>60%</strong> (cứ 5 lần báo động thì 2 lần nhầm) và recall = 45/60 = <strong>75%</strong> (bỏ sót một phần tư số ca dương). F1 = 2 × 0.6 × 0.75 / (0.6 + 0.75) ≈ <strong>0.667</strong>.</p>
+<p>So với model "luôn báo âm": accuracy = 940/1000 = 94%, chỉ kém 1.5 điểm, nhưng recall = 0. Accuracy gần như không phân biệt được hai model; recall thì có.</p>
+</div>
+<h3>Chọn metric theo chi phí sai lầm</h3>
 <table>
 <thead>
 <tr>
@@ -94,28 +263,256 @@ F1        = 2·P·R / (P + R)     trung bình điều hòa, phạt khi một tro
 <tr>
 <td>Lọc thư rác</td>
 <td>precision</td>
-<td>báo nhầm thư quan trọng là rác thì rất hại</td>
+<td>báo nhầm thư công việc là rác thì rất hại</td>
 </tr>
 <tr>
 <td>Tầm soát ung thư</td>
 <td>recall</td>
-<td>bỏ sót ca bệnh nguy hiểm hơn báo nhầm</td>
+<td>bỏ sót ca bệnh nguy hiểm hơn cho đi xét nghiệm thêm</td>
 </tr>
 <tr>
 <td>Chống gian lận</td>
 <td>PR-AUC, recall ở precision cố định</td>
-<td>lớp dương cực hiếm</td>
+<td>lớp dương cực hiếm, đội kiểm tra có giới hạn</td>
+</tr>
+<tr>
+<td>Phân loại nhiều lớp cân bằng</td>
+<td>accuracy, macro-F1</td>
+<td>các lớp quan trọng như nhau</td>
 </tr>
 </tbody>
 </table>
+<h3>ROC-AUC và PR-AUC</h3>
+<p>Hai metric không phụ thuộc ngưỡng, đo khả năng <strong>xếp hạng</strong>:</p>
+<ul>
+<li><strong>ROC-AUC</strong>: xác suất một ca dương ngẫu nhiên được chấm điểm cao hơn một ca âm ngẫu nhiên. 0.5 là đoán bừa, 1.0 là hoàn hảo.</li>
+<li><strong>PR-AUC</strong> (average precision): diện tích dưới đường precision–recall. Mức đoán bừa bằng <strong>tỉ lệ lớp dương</strong>, nên phản ánh đúng hơn khi lớp dương hiếm.</li>
+</ul>
+<figure class="fig"><img src="../assets/fig/p1-2-curves.svg" alt="Bộ dữ liệu 11% dương. ROC-AUC 0.93 nghe rất cao; PR-AUC 0.87 cho thấy rõ hơn: precision bắt đầu sụp khi đòi recall trên 85%." loading="lazy"><figcaption>Bộ dữ liệu 11% dương. ROC-AUC 0.93 nghe rất cao; PR-AUC 0.87 cho thấy rõ hơn: precision bắt đầu sụp khi đòi recall trên 85%.</figcaption></figure>
+
+<h3>Nhiều lớp: macro và micro</h3>
+<p>Với K lớp, tính precision/recall/F1 cho từng lớp (coi lớp đó là dương, còn lại là âm), rồi gộp:</p>
+<ul>
+<li><strong>macro</strong>: trung bình cộng các lớp, mỗi lớp nặng như nhau. Lớp hiếm làm kém sẽ kéo điểm xuống.</li>
+<li><strong>weighted</strong>: trung bình có trọng số theo số mẫu mỗi lớp.</li>
+<li><strong>micro</strong>: gộp TP, FP, FN của mọi lớp rồi tính, bằng accuracy với phân loại đơn nhãn.</li>
+</ul>
+<p><code>classification_report(y_true, y_pred)</code> của scikit-learn in tất cả cùng lúc.</p>
+<div class="box pitfall">
+<div class="box-h">Lỗi hay gặp</div>
+<p><strong>Báo cáo accuracy trên dữ liệu mất cân bằng.</strong> Luôn in kèm tỉ lệ lớp và một baseline ngây thơ (luôn đoán lớp đông nhất). "Model đạt 96%" vô nghĩa nếu baseline đã đạt 95%.</p>
+</div>
+<div class="box check">
+<div class="box-h">Tự kiểm tra nhanh</div>
+<p>Model tầm soát bệnh: 80 ca bệnh thật, model bắt được 72, và báo nhầm 48 người khỏe.</p>
+<div class="ans" id="p1-2-t-b142-a1">
+<div class="ans-fields"><label>Recall<input inputmode="decimal" data-ans="0.9" data-tol="0.001" autocomplete="off"></label><label>Precision<input inputmode="decimal" data-ans="0.6" data-tol="0.001" autocomplete="off"></label><label>F1<input inputmode="decimal" data-ans="0.72" data-tol="0.001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div>
+<div aria-live="polite" class="ans-fb"></div>
+</div>
+</div>
 <h2 id="lt-5">Metric hồi quy</h2>
-<div class="hl"><pre><span></span><code>MAE  = mean(|ŷ − y|)        cùng đơn vị với y, bền với ngoại lai
-RMSE = √mean((ŷ − y)²)      phạt nặng lỗi lớn
-R²   = 1 − SS_res / SS_tot  tỉ lệ phương sai giải thích được, 1 là hoàn hảo
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Với hồi quy, metric phải trả lời câu hỏi nghiệp vụ: "trung bình model sai bao nhiêu đồng?", "có hay sai rất nặng không?", "có tốt hơn đoán bằng trung bình không?".</p>
+</div>
+<div class="hl"><pre><span></span><code>MAE  = mean(|ŷ − y|)             sai trung bình, cùng đơn vị với y, bền với ngoại lai
+RMSE = √mean((ŷ − y)²)           phạt nặng lỗi lớn, cùng đơn vị với y
+R²   = 1 − SS_res / SS_tot       tỉ lệ phương sai giải thích được
+       SS_res = Σ(y − ŷ)², SS_tot = Σ(y − ȳ)²
+MAPE = mean(|ŷ − y| / |y|)       sai theo phần trăm, hỏng khi y gần 0
 </code></pre></div>
 
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>Đáp án y = [3, 5, 2, 8], dự đoán ŷ = [2.5, 5.5, 2, 6]. Sai số: [−0.5, 0.5, 0, −2].</p>
+<ul>
+<li>MAE = (0.5 + 0.5 + 0 + 2)/4 = <strong>0.75</strong></li>
+<li>RMSE = √((0.25 + 0.25 + 0 + 4)/4) = √1.125 ≈ <strong>1.06</strong></li>
+<li>ȳ = 4.5, SS_tot = 2.25 + 0.25 + 6.25 + 12.25 = 21, SS_res = 4.5, R² = 1 − 4.5/21 ≈ <strong>0.786</strong></li>
+</ul>
+<p>RMSE lớn hơn MAE khá nhiều vì có một lỗi lớn (−2). Khi RMSE ≫ MAE, hãy xem các mẫu bị sai nặng.</p>
+</div>
+<p>R² = 0 nghĩa là model không hơn việc luôn đoán bằng trung bình; R² âm nghĩa là còn tệ hơn thế. R² gần 1 chưa chắc tốt nếu dữ liệu có xu hướng thời gian mạnh (đoán "giống hôm qua" cũng ra R² cao).</p>
 <h2 id="lt-6">Ngưỡng quyết định</h2>
-<p>Model trả về xác suất; ngưỡng 0.5 chỉ là mặc định. Hạ ngưỡng thì recall tăng, precision giảm. Chọn ngưỡng trên <strong>validation</strong> theo mục tiêu kinh doanh, ví dụ "recall ≥ 95%, precision cao nhất có thể", rồi giữ nguyên ngưỡng đó khi đo trên test.</p></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p1.2:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 3</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Metric từ ma trận nhầm lẫn</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Model phát hiện gian lận trên 1000 giao dịch: TP = 40, FP = 10, FN = 20, TN = 930.</p>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Model cho ra xác suất; quyết định cuối cùng (chặn giao dịch, gửi đi xét nghiệm) cần một ngưỡng. Ngưỡng 0.5 chỉ là mặc định, hiếm khi là lựa chọn tốt nhất cho bài toán của bạn.</p>
+</div>
+<p>Hạ ngưỡng → model báo dương nhiều hơn → recall tăng, precision giảm. Nâng ngưỡng thì ngược lại.</p>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>Cùng model ở hình ROC/PR, tập test 2.000 mẫu, 211 ca dương:</p>
+<table>
+<thead>
+<tr>
+<th>Ngưỡng</th>
+<th>TP</th>
+<th>FP</th>
+<th>FN</th>
+<th>Precision</th>
+<th>Recall</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0.2</td>
+<td>179</td>
+<td>15</td>
+<td>32</td>
+<td>0.923</td>
+<td>0.848</td>
+</tr>
+<tr>
+<td>0.3</td>
+<td>177</td>
+<td>6</td>
+<td>34</td>
+<td>0.967</td>
+<td>0.839</td>
+</tr>
+<tr>
+<td>0.5</td>
+<td>163</td>
+<td>5</td>
+<td>48</td>
+<td>0.970</td>
+<td>0.773</td>
+</tr>
+<tr>
+<td>0.7</td>
+<td>154</td>
+<td>3</td>
+<td>57</td>
+<td>0.981</td>
+<td>0.730</td>
+</tr>
+</tbody>
+</table>
+<p>Từ 0.5 xuống 0.3: bắt thêm 14 ca dương, chỉ báo nhầm thêm 1. Nếu bỏ sót đắt hơn báo nhầm, 0.3 tốt hơn hẳn mặc định.</p>
+</div>
+<p>Quy trình đúng:</p>
+<ol>
+<li>Viết mục tiêu bằng con số, ví dụ "recall ≥ 95%, precision cao nhất có thể" hoặc "chi phí = 10 × FN + 1 × FP nhỏ nhất".</li>
+<li>Quét ngưỡng trên <strong>validation</strong>, chọn ngưỡng đạt mục tiêu.</li>
+<li>Giữ nguyên ngưỡng đó, đo <strong>một lần</strong> trên test.</li>
+</ol>
+<div class="box pitfall">
+<div class="box-h">Lỗi hay gặp</div>
+<p><strong>Chọn ngưỡng trên test.</strong> Giống chọn siêu tham số trên test: con số báo cáo sẽ lạc quan. Ngưỡng là một siêu tham số.</p>
+</div>
+<div class="box check">
+<div class="box-h">Tự kiểm tra nhanh</div>
+<p>Chi phí: bỏ sót một ca gian lận tốn 500 nghìn đồng, kiểm tra nhầm một giao dịch tốn 20 nghìn đồng. Ngưỡng A cho FN = 30, FP = 100; ngưỡng B cho FN = 20, FP = 300.</p>
+<div class="ans" id="p1-2-t-b176-a1">
+<div class="ans-fields"><label>Chi phí ngưỡng A (nghìn đồng)<input inputmode="decimal" data-ans="17000.0" data-tol="0.0" autocomplete="off"></label><label>Chi phí ngưỡng B (nghìn đồng)<input inputmode="decimal" data-ans="16000.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div>
+<div aria-live="polite" class="ans-fb"></div>
+</div>
+</div>
+<h2 id="lt-7">Tóm tắt bài và thuật ngữ</h2>
+<table>
+<thead>
+<tr>
+<th>Câu hỏi</th>
+<th>Trả lời ngắn</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Chọn siêu tham số trên tập nào?</td>
+<td>validation (hoặc cross-validation trên train)</td>
+</tr>
+<tr>
+<td>Test dùng mấy lần?</td>
+<td>một lần, ở cuối</td>
+</tr>
+<tr>
+<td>Tránh rò rỉ thế nào?</td>
+<td>mọi bước học từ dữ liệu nằm trong <code>Pipeline</code>; chia theo thời gian/nhóm khi cần</td>
+</tr>
+<tr>
+<td>Train cao, val thấp?</td>
+<td>overfit: thêm dữ liệu, regularize, model đơn giản hơn</td>
+</tr>
+<tr>
+<td>Train thấp, val thấp?</td>
+<td>underfit: model mạnh hơn, đặc trưng tốt hơn</td>
+</tr>
+<tr>
+<td>Lớp mất cân bằng?</td>
+<td>precision, recall, F1, PR-AUC, kèm baseline</td>
+</tr>
+<tr>
+<td>Chọn ngưỡng?</td>
+<td>theo chi phí nghiệp vụ, trên validation</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Thuật ngữ</th>
+<th>Nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>hyperparameter</td>
+<td>siêu tham số, chọn trước khi train</td>
+</tr>
+<tr>
+<td>cross-validation</td>
+<td>đánh giá xoay vòng qua k phần dữ liệu</td>
+</tr>
+<tr>
+<td>stratified</td>
+<td>giữ tỉ lệ lớp khi chia</td>
+</tr>
+<tr>
+<td>data leakage</td>
+<td>thông tin ngoài tập train lọt vào lúc train</td>
+</tr>
+<tr>
+<td>pipeline</td>
+<td>chuỗi bước tiền xử lý + model được fit cùng nhau</td>
+</tr>
+<tr>
+<td>bias / variance</td>
+<td>lệch hệ thống / dao động theo tập train</td>
+</tr>
+<tr>
+<td>learning curve</td>
+<td>điểm train và val theo kích thước dữ liệu</td>
+</tr>
+<tr>
+<td>confusion matrix</td>
+<td>bảng TP, FP, FN, TN</td>
+</tr>
+<tr>
+<td>precision / recall</td>
+<td>độ chính xác khi báo dương / độ phủ ca dương</td>
+</tr>
+<tr>
+<td>F1</td>
+<td>trung bình điều hòa của precision và recall</td>
+</tr>
+<tr>
+<td>ROC-AUC / PR-AUC</td>
+<td>diện tích dưới đường ROC / precision–recall</td>
+</tr>
+<tr>
+<td>macro / micro average</td>
+<td>trung bình theo lớp / gộp mọi lớp</td>
+</tr>
+<tr>
+<td>MAE / RMSE / R²</td>
+<td>các metric hồi quy</td>
+</tr>
+<tr>
+<td>threshold</td>
+<td>ngưỡng biến xác suất thành quyết định</td>
+</tr>
+</tbody>
+</table></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p1.2:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 3</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Metric từ ma trận nhầm lẫn</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Model phát hiện gian lận trên 1000 giao dịch: TP = 40, FP = 10, FN = 20, TN = 930.</p>
 <div class="ans" id="p1-2-e1-a1"><div class="ans-fields"><label>Accuracy<input inputmode="decimal" data-ans="0.97" data-tol="0.001" autocomplete="off"></label><label>Precision<input inputmode="decimal" data-ans="0.8" data-tol="0.001" autocomplete="off"></label><label>Recall<input inputmode="decimal" data-ans="0.6667" data-tol="0.001" autocomplete="off"></label><label>F1<input inputmode="decimal" data-ans="0.7273" data-tol="0.001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
 
 <details class="fold solution">
@@ -230,7 +627,7 @@ R²   = 1 − SS_res / SS_tot  tỉ lệ phương sai giải thích được, 1 
     </div>
     <aside class="aside">
       <div class="abox"><h4>Tiến độ bài này</h4><div class="ring"><svg viewBox="0 0 64 64" aria-hidden="true"><circle class="bg" cx="32" cy="32" r="28"/><circle class="fg" cx="32" cy="32" r="28" stroke-dasharray="176" stroke-dashoffset="176"/></svg><div><b id="ring-n">0/3</b><span id="ring-sub">phần đã xong</span></div></div></div>
-      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Train, validation, test</a></li><li><a href="#lt-2">Rò rỉ dữ liệu (data leakage)</a></li><li><a href="#lt-3">Overfitting, underfitting, bias và variance</a></li><li><a href="#lt-4">Metric phân loại</a></li><li><a href="#lt-5">Metric hồi quy</a></li><li><a href="#lt-6">Ngưỡng quyết định</a></li></ol></div>
+      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Train, validation, test</a></li><li><a href="#lt-2">Rò rỉ dữ liệu (data leakage)</a></li><li><a href="#lt-3">Overfitting, underfitting, bias và variance</a></li><li><a href="#lt-4">Metric phân loại</a></li><li><a href="#lt-5">Metric hồi quy</a></li><li><a href="#lt-6">Ngưỡng quyết định</a></li><li><a href="#lt-7">Tóm tắt bài và thuật ngữ</a></li></ol></div>
       
       <div class="abox"><h4>Cùng giai đoạn</h4><ul><li><a href="p1-1.html">Hồi quy tuyến tính và logistic</a></li><li><span class=cur>Đánh giá model đúng cách</span></li><li><a href="p1-3.html">Cây quyết định và ensemble</a></li><li><a href="p1-4.html">Học không giám sát và feature engineering</a></li></ul></div>
     </aside>

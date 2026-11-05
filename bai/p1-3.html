@@ -22,63 +22,467 @@
 <main class="container">
   <div class="crumbs"><a href="../bai-hoc.html">Bài học</a><span>/</span><a href="../bai-hoc.html#p1">P1 · Machine Learning cổ điển</a><span>/</span><span>P1.3</span></div>
   <section class="lhero"><div class="code">P1.3</div><h1>Cây quyết định và ensemble</h1><div class="lmeta"><span class="m">Giai đoạn P1 · Machine Learning cổ điển</span><span class="m">Tuần 4–7</span><span class="chip ready"><span class="dot"></span>Có nội dung đầy đủ</span></div>
-    <div class="intro"><p>Với dữ liệu dạng bảng (đơn hàng, khách hàng, giao dịch), các model cây như <strong>XGBoost</strong> và <strong>LightGBM</strong> vẫn thường thắng deep learning, lại train nhanh trên CPU. Hầu hết các cuộc thi Kaggle dạng bảng đều có gradient boosting trong top. Bài này đi từ một cây quyết định tới rừng cây và boosting.</p></div></section>
+    <div class="intro"><p>Với dữ liệu dạng bảng (đơn hàng, khách hàng, giao dịch), các model cây như <strong>XGBoost</strong> và <strong>LightGBM</strong> vẫn thường thắng deep learning, lại train nhanh trên CPU. Hầu hết các cuộc thi Kaggle dạng bảng đều có gradient boosting trong top. Bài này đi từ một cây quyết định tới rừng cây và boosting, kèm cách đọc "model dùng đặc trưng nào".</p></div></section>
   
-  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">5 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
+  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">6 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
   <div class="lgrid" style="margin-top:22px">
     <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">Cây quyết định</h2>
-<p>Cây hỏi liên tiếp các câu có/không về đặc trưng: "thu nhập &gt; 50 triệu?", "tuổi &lt; 30?". Mỗi lá trả về một dự đoán: lớp chiếm đa số (phân loại) hoặc trung bình y (hồi quy).</p>
-<p>Ở mỗi nút, cây thử mọi đặc trưng và mọi ngưỡng, chọn cách tách làm <strong>các nút con thuần nhất</strong>. Độ "lẫn lộn" của một nút đo bằng:</p>
-<div class="hl"><pre><span></span><code>Gini    = 1 − Σ pₖ²          (pₖ: tỉ lệ lớp k trong nút)
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Cây quyết định là model dễ giải thích nhất: một chuỗi câu hỏi có/không mà người không làm ML cũng đọc được. Nó tự xử lý đặc trưng ở các thang đo khác nhau, quan hệ phi tuyến và tương tác giữa đặc trưng, không cần chuẩn hóa. Và nó là viên gạch của random forest và gradient boosting.</p>
+</div>
+<h3>Cây hỏi gì</h3>
+<p>Cây hỏi liên tiếp các câu có/không về đặc trưng: "thu nhập &gt; 27.5 triệu?", "tuổi &lt; 30?". Mỗi đường đi từ gốc tới <strong>lá</strong> là một nhóm mẫu. Lá trả về dự đoán: lớp chiếm đa số (phân loại) hoặc trung bình y (hồi quy).</p>
+<p>Vì mỗi câu hỏi chỉ so <strong>một đặc trưng với một ngưỡng</strong>, ranh giới quyết định của cây luôn gồm các đoạn song song với trục: không gian bị cắt thành các hình chữ nhật.</p>
+<h3>Đo độ "lẫn lộn" của một nút</h3>
+<p>Ở mỗi nút, cây thử mọi đặc trưng và mọi ngưỡng, chọn cách tách làm <strong>các nút con thuần nhất</strong>. Độ lẫn lộn đo bằng:</p>
+<div class="hl"><pre><span></span><code>Gini    = 1 − Σ pₖ²            (pₖ: tỉ lệ lớp k trong nút)
 Entropy = −Σ pₖ log₂ pₖ
-Gain    = độ lẫn của nút cha − trung bình có trọng số độ lẫn của các nút con
+Gain    = độ lẫn của nút cha − Σ (nᵢ/n) · độ lẫn của nút con i
 </code></pre></div>
 
-<p>Nút toàn một lớp có Gini = 0. Nút hai lớp chia đôi 50/50 có Gini = 0.5 và entropy = 1 bit.</p>
+<table>
+<thead>
+<tr>
+<th>Tỉ lệ hai lớp trong nút</th>
+<th>Gini</th>
+<th>Entropy (bit)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>100% / 0% (thuần)</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr>
+<td>90% / 10%</td>
+<td>0.18</td>
+<td>0.469</td>
+</tr>
+<tr>
+<td>60% / 40%</td>
+<td>0.48</td>
+<td>0.971</td>
+</tr>
+<tr>
+<td>50% / 50% (lẫn nhất)</td>
+<td>0.5</td>
+<td>1</td>
+</tr>
+</tbody>
+</table>
+<p>Gini và entropy gần như luôn chọn cùng một cách tách; scikit-learn mặc định dùng Gini vì tính nhanh hơn (không có log).</p>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>10 khách hàng, cột thu nhập (triệu/tháng) và có mua hay không:</p>
+<div class="hl"><pre><span></span><code>thu nhập: 8  12  15  20  25  30  35  40  50  60
+mua:      0   0   0   1   0   1   1   1   1   1
+</code></pre></div>
+
+<p>Nút gốc có 6 mua, 4 không: Gini = 1 − (0.6² + 0.4²) = <strong>0.48</strong>.</p>
+<p>Cây thử mọi ngưỡng nằm giữa hai giá trị liên tiếp. Hai ứng viên tốt nhất:</p>
+<table>
+<thead>
+<tr>
+<th>Ngưỡng</th>
+<th>Nhánh trái</th>
+<th>Nhánh phải</th>
+<th>Gini có trọng số</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>17.5</td>
+<td>3 khách, 0 mua (Gini 0)</td>
+<td>7 khách, 6 mua (Gini 0.245)</td>
+<td>0.7 × 0.245 = 0.171</td>
+</tr>
+<tr>
+<td><strong>27.5</strong></td>
+<td>5 khách, 1 mua (Gini 0.32)</td>
+<td>5 khách, 5 mua (Gini 0)</td>
+<td>0.5 × 0.32 = <strong>0.160</strong></td>
+</tr>
+</tbody>
+</table>
+<p>Ngưỡng 27.5 thắng, gain = 0.48 − 0.16 = <strong>0.32</strong>.</p>
+</div>
+<figure class="fig"><img src="../assets/fig/p1-3-split.svg" alt="Lần tách đầu tiên. Nhánh phải đã thuần (Gini 0) nên thành lá &quot;mua&quot;; nhánh trái còn 1 người mua, cây có thể tách tiếp." loading="lazy"><figcaption>Lần tách đầu tiên. Nhánh phải đã thuần (Gini 0) nên thành lá &quot;mua&quot;; nhánh trái còn 1 người mua, cây có thể tách tiếp.</figcaption></figure>
+
+<div class="hl"><pre><span></span><code><span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">sklearn.tree</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">DecisionTreeClassifier</span><span class="tk-p">,</span> <span class="tk-n">export_text</span>
+<span class="tk-n">tree</span> <span class="tk-o">=</span> <span class="tk-n">DecisionTreeClassifier</span><span class="tk-p">(</span><span class="tk-n">max_depth</span><span class="tk-o">=</span><span class="tk-mi">3</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">fit</span><span class="tk-p">(</span><span class="tk-n">X_train</span><span class="tk-p">,</span> <span class="tk-n">y_train</span><span class="tk-p">)</span>
+<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-n">export_text</span><span class="tk-p">(</span><span class="tk-n">tree</span><span class="tk-p">,</span> <span class="tk-n">feature_names</span><span class="tk-o">=</span><span class="tk-nb">list</span><span class="tk-p">(</span><span class="tk-n">X_train</span><span class="tk-o">.</span><span class="tk-n">columns</span><span class="tk-p">)))</span>   <span class="tk-c1"># in cây dạng chữ</span>
+</code></pre></div>
+
+<div class="box check">
+<div class="box-h">Tự kiểm tra nhanh</div>
+<p>Một nút có 8 mẫu lớp A và 2 mẫu lớp B.</p>
+<div class="ans" id="p1-3-t-b40-a1">
+<div class="ans-fields"><label>Gini<input inputmode="decimal" data-ans="0.32" data-tol="0.001" autocomplete="off"></label><label>Entropy (bit)<input inputmode="decimal" data-ans="0.7219" data-tol="0.001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div>
+<div aria-live="polite" class="ans-fb"></div>
+</div>
+</div>
 <h2 id="lt-2">Độ sâu và overfitting</h2>
-<p>Cây không giới hạn sẽ tách tới khi mỗi lá chỉ còn một mẫu: train đúng 100%, test tệ. Các tham số kìm cây:</p>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Cây là model "tham lam": nếu để tự do, nó tách tới khi mỗi lá chỉ còn một mẫu và học thuộc toàn bộ tập train, kể cả nhiễu. Biết cách kìm cây là biết cách dùng nó.</p>
+</div>
+<p>Cây không giới hạn đạt 100% trên train nhưng ranh giới của nó lởm chởm, đầy những "hòn đảo" nhỏ bao quanh từng điểm nhiễu.</p>
+<figure class="fig"><img src="../assets/fig/p1-3-regions.svg" alt="Cùng bộ dữ liệu hai vầng trăng có nhiễu. Cây sâu 1 chỉ có một nhát cắt. Cây không giới hạn tạo ra các dải hẹp quanh điểm nhiễu. Random forest trung bình 300 cây cho ranh giới mượt và hợp lý hơn." loading="lazy"><figcaption>Cùng bộ dữ liệu hai vầng trăng có nhiễu. Cây sâu 1 chỉ có một nhát cắt. Cây không giới hạn tạo ra các dải hẹp quanh điểm nhiễu. Random forest trung bình 300 cây cho ranh giới mượt và hợp lý hơn.</figcaption></figure>
+
+<p>Các tham số kìm cây (đều chọn bằng validation):</p>
 <table>
 <thead>
 <tr>
 <th>Tham số</th>
 <th>Tác dụng</th>
+<th>Giá trị thường thử</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td><code>max_depth</code></td>
 <td>độ sâu tối đa</td>
+<td>3–12</td>
 </tr>
 <tr>
 <td><code>min_samples_leaf</code></td>
 <td>mỗi lá phải có ít nhất n mẫu</td>
+<td>1, 5, 20, 50</td>
+</tr>
+<tr>
+<td><code>min_samples_split</code></td>
+<td>nút phải có ít nhất n mẫu mới được tách</td>
+<td>2–100</td>
 </tr>
 <tr>
 <td><code>max_features</code></td>
 <td>mỗi lần tách chỉ xét một phần đặc trưng</td>
+<td><code>"sqrt"</code>, 0.5</td>
+</tr>
+<tr>
+<td><code>ccp_alpha</code></td>
+<td>cắt tỉa sau khi train, phạt số lá</td>
+<td>quét bằng <code>cost_complexity_pruning_path</code></td>
 </tr>
 </tbody>
 </table>
-<p>Một cây đơn có <strong>variance cao</strong>: đổi vài mẫu dữ liệu là cây đổi hẳn. Hai cách khắc phục là bagging và boosting.</p>
+<p>Một cây đơn có <strong>variance cao</strong>: đổi vài mẫu dữ liệu là lần tách đầu tiên có thể đổi, kéo theo cả cây đổi hẳn. Hai cách khắc phục là <strong>bagging</strong> (nhiều cây song song, lấy trung bình) và <strong>boosting</strong> (nhiều cây nối tiếp, sửa lỗi nhau).</p>
+<div class="box pitfall">
+<div class="box-h">Lỗi hay gặp</div>
+<p><strong>Đọc cây sâu như đọc luật.</strong> Cây sâu 3 là một bộ luật dễ hiểu. Cây sâu 15 có hàng nghìn lá, không ai đọc được, và các lần tách ở dưới sâu thường chỉ là nhiễu. Nếu cần giải thích cho người khác, giới hạn độ sâu hoặc dùng các công cụ giải thích ở mục cuối.</p>
+</div>
 <h2 id="lt-3">Bagging và random forest</h2>
-<p><strong>Bagging:</strong> train nhiều cây, mỗi cây trên một mẫu bootstrap (rút có hoàn lại) của dữ liệu, rồi lấy trung bình hoặc bỏ phiếu. Trung bình nhiều model độc lập làm giảm variance.</p>
-<p><strong>Random forest</strong> = bagging + mỗi lần tách chỉ xét ngẫu nhiên một tập con đặc trưng. Nhờ vậy các cây khác nhau hơn và trung bình hiệu quả hơn. Random forest gần như không cần tuning, là baseline tốt đầu tiên cho mọi bài toán bảng.</p>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Random forest là baseline đầu tiên nên chạy cho mọi bài toán bảng: gần như không cần tuning, khó overfit nặng, cho luôn ước lượng độ quan trọng của đặc trưng. Nếu random forest không hơn được hồi quy logistic, vấn đề thường nằm ở dữ liệu chứ không phải model.</p>
+</div>
+<h3>Bagging</h3>
+<p><strong>Bootstrap aggregating</strong>: train nhiều cây, mỗi cây trên một <strong>mẫu bootstrap</strong> (rút ngẫu nhiên n mẫu <strong>có hoàn lại</strong> từ n mẫu gốc), rồi lấy trung bình (hồi quy) hoặc bỏ phiếu (phân loại).</p>
+<p>Vì rút có hoàn lại, mỗi mẫu bootstrap chứa khoảng <strong>63.2%</strong> mẫu gốc khác nhau (1 − (1 − 1/n)ⁿ → 1 − 1/e). Khoảng 36.8% còn lại gọi là <strong>out-of-bag (OOB)</strong>, dùng để đánh giá miễn phí: <code>RandomForestClassifier(oob_score=True)</code>.</p>
+<p>Lý do trung bình giúp: nếu có B model mỗi model có phương sai σ² và <strong>độc lập</strong>, trung bình của chúng có phương sai σ²/B. Các cây không hoàn toàn độc lập (cùng dữ liệu gốc), nên lợi ích bị giới hạn bởi độ tương quan giữa chúng.</p>
+<h3>Random forest</h3>
+<p><strong>Random forest</strong> = bagging + mỗi lần tách chỉ xét ngẫu nhiên một tập con đặc trưng (mặc định √(số đặc trưng) cho phân loại). Nếu có một đặc trưng rất mạnh, mọi cây bagging đều tách nó trước và trở nên giống nhau; random forest buộc nhiều cây phải thử đặc trưng khác, nên các cây ít tương quan hơn và trung bình hiệu quả hơn.</p>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>Bộ dữ liệu giả lập 3.000 mẫu, 20 đặc trưng, 5% nhãn nhiễu. Accuracy 5-fold:</p>
+<table>
+<thead>
+<tr>
+<th>Model</th>
+<th>Accuracy (± độ lệch)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Một cây không giới hạn</td>
+<td>0.864 ± 0.009</td>
+</tr>
+<tr>
+<td>Một cây sâu 5</td>
+<td>0.867 ± 0.008</td>
+</tr>
+<tr>
+<td>Bagging 200 cây</td>
+<td>0.927 ± 0.006</td>
+</tr>
+<tr>
+<td>Random forest 300 cây</td>
+<td><strong>0.938 ± 0.005</strong></td>
+</tr>
+<tr>
+<td>Gradient boosting (HistGradientBoosting)</td>
+<td>0.936 ± 0.005</td>
+</tr>
+</tbody>
+</table>
+<p>Từ một cây lên rừng cây: tăng 7 điểm, và độ lệch giữa các fold giảm một nửa.</p>
+</div>
+<div class="hl"><pre><span></span><code><span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">sklearn.ensemble</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">RandomForestClassifier</span>
+<span class="tk-n">rf</span> <span class="tk-o">=</span> <span class="tk-n">RandomForestClassifier</span><span class="tk-p">(</span><span class="tk-n">n_estimators</span><span class="tk-o">=</span><span class="tk-mi">500</span><span class="tk-p">,</span> <span class="tk-n">min_samples_leaf</span><span class="tk-o">=</span><span class="tk-mi">2</span><span class="tk-p">,</span> <span class="tk-n">n_jobs</span><span class="tk-o">=-</span><span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-n">oob_score</span><span class="tk-o">=</span><span class="tk-kc">True</span><span class="tk-p">,</span> <span class="tk-n">random_state</span><span class="tk-o">=</span><span class="tk-mi">0</span><span class="tk-p">)</span>
+<span class="tk-n">rf</span><span class="tk-o">.</span><span class="tk-n">fit</span><span class="tk-p">(</span><span class="tk-n">X_train</span><span class="tk-p">,</span> <span class="tk-n">y_train</span><span class="tk-p">)</span>
+<span class="tk-n">rf</span><span class="tk-o">.</span><span class="tk-n">oob_score_</span>          <span class="tk-c1"># ước lượng accuracy không cần tập validation riêng</span>
+</code></pre></div>
+
+<p>Thêm cây gần như không bao giờ làm random forest tệ đi, chỉ tốn thêm thời gian. 300–1000 cây là đủ cho hầu hết bài toán.</p>
 <h2 id="lt-4">Gradient boosting</h2>
-<p>Boosting train các cây <strong>nối tiếp</strong>: cây sau học sửa lỗi của tổng các cây trước.</p>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Gradient boosting (XGBoost, LightGBM, CatBoost) là model mạnh nhất hiện nay cho dữ liệu bảng cỡ vừa. Nếu bạn làm dự án phân tích khách hàng, dự đoán doanh số hay chấm điểm rủi ro, đây gần như chắc chắn là model sẽ dùng.</p>
+</div>
+<h3>Ý tưởng: cây sau sửa lỗi cây trước</h3>
+<p>Boosting train các cây <strong>nối tiếp</strong>. Mỗi cây mới nhỏ (thường sâu 3–8) và học <strong>phần còn sai</strong> của tổng các cây trước:</p>
 <div class="hl"><pre><span></span><code>F₀(x) = trung bình y
 lặp m = 1..M:
-    rₘ = y − Fₘ₋₁(x)              phần dư (với MSE, đúng bằng −gradient)
+    rₘ = y − Fₘ₋₁(x)              phần dư (với MSE, đúng bằng −gradient của loss)
     hₘ = cây nhỏ fit vào rₘ
     Fₘ(x) = Fₘ₋₁(x) + η · hₘ(x)  η là learning rate, thường 0.01–0.1
 </code></pre></div>
 
-<p>Đây chính là gradient descent, nhưng mỗi "bước" là một cây trong không gian hàm. <strong>XGBoost</strong>, <strong>LightGBM</strong>, <strong>CatBoost</strong> là ba cài đặt nhanh, có regularization và xử lý giá trị thiếu sẵn.</p>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>Ba mẫu có y = 4, 6, 14, learning rate η = 0.1:</p>
+<ol>
+<li>F₀ = (4 + 6 + 14)/3 = <strong>8</strong> cho mọi mẫu.</li>
+<li>Phần dư r₁ = (−4, −2, <strong>6</strong>).</li>
+<li>Giả sử cây h₁ học đúng phần dư. Mẫu thứ 3: F₁ = 8 + 0.1 × 6 = <strong>8.6</strong>, tiến gần 14 thêm một chút.</li>
+<li>Phần dư mới của mẫu 3 là 5.4; cây h₂ lại học tiếp phần đó.</li>
+</ol>
+<p>Mỗi bước chỉ sửa 10% lỗi nên cần nhiều cây, nhưng nhờ bước nhỏ mà ít bị cuốn theo nhiễu.</p>
+</div>
+<figure class="fig"><img src="../assets/fig/p1-3-boost.svg" alt="Boosting trên dữ liệu 1 chiều. Sau 1 cây: một bậc thang thô. Sau 5 cây: đã có hình dạng. Sau 25 cây: bám sát quy luật, và bắt đầu bám cả nhiễu nếu tiếp tục." loading="lazy"><figcaption>Boosting trên dữ liệu 1 chiều. Sau 1 cây: một bậc thang thô. Sau 5 cây: đã có hình dạng. Sau 25 cây: bám sát quy luật, và bắt đầu bám cả nhiễu nếu tiếp tục.</figcaption></figure>
+
+<h3>Vì sao gọi là "gradient"</h3>
+<p>Với loss bất kỳ L(y, F), thay phần dư bằng <strong>âm gradient</strong> của loss theo dự đoán: rₘ = −∂L/∂F. Với MSE, −∂L/∂F đúng bằng y − F (phần dư). Với log loss (phân loại), nó là y − p. Nghĩa là boosting chính là <strong>gradient descent, nhưng mỗi bước là một cây</strong> trong không gian các hàm, thay vì một bước trên vector trọng số.</p>
+<h3>XGBoost, LightGBM, CatBoost</h3>
+<p>Ba thư viện cài đặt gradient boosting nhanh, thêm regularization (phạt số lá, phạt giá trị lá), xử lý giá trị thiếu sẵn, và chạy song song.</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Điểm mạnh</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>XGBoost</td>
+<td>phổ biến lâu nhất, ổn định, nhiều tài liệu</td>
+</tr>
+<tr>
+<td>LightGBM</td>
+<td>rất nhanh trên dữ liệu lớn (histogram, cây mọc theo lá)</td>
+</tr>
+<tr>
+<td>CatBoost</td>
+<td>xử lý đặc trưng dạng chữ (categorical) tốt mà không cần mã hóa</td>
+</tr>
+<tr>
+<td><code>HistGradientBoosting</code> (scikit-learn)</td>
+<td>không cần cài thêm, đủ tốt cho phần lớn bài toán</td>
+</tr>
+</tbody>
+</table>
+<div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">lightgbm</span><span class="tk-w"> </span><span class="tk-k">as</span><span class="tk-w"> </span><span class="tk-nn">lgb</span>
+<span class="tk-n">model</span> <span class="tk-o">=</span> <span class="tk-n">lgb</span><span class="tk-o">.</span><span class="tk-n">LGBMClassifier</span><span class="tk-p">(</span><span class="tk-n">n_estimators</span><span class="tk-o">=</span><span class="tk-mi">5000</span><span class="tk-p">,</span> <span class="tk-n">learning_rate</span><span class="tk-o">=</span><span class="tk-mf">0.03</span><span class="tk-p">,</span> <span class="tk-n">num_leaves</span><span class="tk-o">=</span><span class="tk-mi">31</span><span class="tk-p">)</span>
+<span class="tk-n">model</span><span class="tk-o">.</span><span class="tk-n">fit</span><span class="tk-p">(</span><span class="tk-n">X_tr</span><span class="tk-p">,</span> <span class="tk-n">y_tr</span><span class="tk-p">,</span> <span class="tk-n">eval_set</span><span class="tk-o">=</span><span class="tk-p">[(</span><span class="tk-n">X_val</span><span class="tk-p">,</span> <span class="tk-n">y_val</span><span class="tk-p">)],</span>
+          <span class="tk-n">callbacks</span><span class="tk-o">=</span><span class="tk-p">[</span><span class="tk-n">lgb</span><span class="tk-o">.</span><span class="tk-n">early_stopping</span><span class="tk-p">(</span><span class="tk-mi">100</span><span class="tk-p">)])</span>     <span class="tk-c1"># dừng khi 100 cây liền không cải thiện val</span>
+<span class="tk-n">model</span><span class="tk-o">.</span><span class="tk-n">best_iteration_</span>                              <span class="tk-c1"># số cây thật sự dùng</span>
+</code></pre></div>
+
 <div class="keep">
-<p><strong>Ghi nhớ:</strong> learning rate nhỏ thì cần nhiều cây hơn nhưng thường tổng quát tốt hơn. Dùng <code>early_stopping_rounds</code> trên validation để tự chọn số cây.</p>
+<p><strong>Ghi nhớ:</strong> learning rate nhỏ thì cần nhiều cây hơn nhưng thường tổng quát tốt hơn. Đặt <code>n_estimators</code> lớn và dùng early stopping trên validation để tự chọn số cây.</p>
+</div>
+<div class="box pitfall">
+<div class="box-h">Lỗi hay gặp</div>
+<p><strong>Random forest và boosting phản ứng khác nhau với số cây.</strong> Random forest thêm cây chỉ tốn thời gian. Boosting thêm cây quá nhiều thì <strong>overfit</strong> vì mỗi cây học tiếp phần dư, kể cả phần dư là nhiễu. Không có early stopping, boosting 5.000 cây có thể tệ hơn 500 cây.</p>
+</div>
+<div class="box check">
+<div class="box-h">Tự kiểm tra nhanh</div>
+<p>Ba mẫu y = 2, 4, 9, η = 0.2. Giả sử cây đầu tiên học đúng phần dư.</p>
+<div class="ans" id="p1-3-t-b138-a1">
+<div class="ans-fields"><label>F₀<input inputmode="decimal" data-ans="5.0" data-tol="0.0" autocomplete="off"></label><label>Phần dư mẫu 1<input inputmode="decimal" data-ans="-3.0" data-tol="0.0" autocomplete="off"></label><label>F₁ của mẫu 1<input inputmode="decimal" data-ans="4.4" data-tol="0.001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div>
+<div aria-live="polite" class="ans-fb"></div>
+</div>
 </div>
 <h2 id="lt-5">Feature importance và tuning</h2>
-<p><code>feature_importances_</code> cho biết đặc trưng nào được dùng để tách nhiều. Nhưng nó thiên vị đặc trưng có nhiều giá trị khác nhau (ví dụ ID). <strong>Permutation importance</strong> (xáo một cột rồi đo điểm tụt bao nhiêu) đáng tin hơn.</p>
-<p>Tham số quan trọng của LightGBM theo thứ tự nên tune: <code>learning_rate</code> và <code>n_estimators</code> (với early stopping), <code>num_leaves</code>, <code>min_child_samples</code>, <code>feature_fraction</code>, <code>bagging_fraction</code>, <code>lambda_l2</code>. Dùng <strong>Optuna</strong> để tìm tự động thay vì grid search.</p></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p1.3:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 3</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Gini và information gain</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Nút cha có 10 mẫu: 6 dương, 4 âm. Một phép tách cho nút trái (4 dương, 0 âm) và nút phải (2 dương, 4 âm).</p>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Sau khi có model tốt, câu hỏi tiếp theo luôn là "model dựa vào đâu để quyết định?". Đó là câu hỏi của người làm sản phẩm, của sếp, và là cách bạn phát hiện rò rỉ (một cột quan trọng bất thường thường là cột chứa đáp án).</p>
+</div>
+<h3>Hai loại importance</h3>
+<ul>
+<li><strong>Impurity importance</strong> (<code>feature_importances_</code>): cộng tổng gain mà mỗi đặc trưng mang lại qua mọi lần tách. Tính nhanh, nhưng <strong>thiên vị</strong> đặc trưng có nhiều giá trị khác nhau (ID, số liên tục), vì chúng có nhiều ngưỡng để thử nên dễ tình cờ tìm được nhát cắt tốt trên train.</li>
+<li><strong>Permutation importance</strong>: xáo trộn ngẫu nhiên một cột trên tập <strong>validation/test</strong>, đo điểm tụt bao nhiêu. Cột không quan trọng thì xáo cũng chẳng sao.</li>
+</ul>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>Thêm cột <code>customer_id</code> (số ngẫu nhiên, không liên quan gì tới nhãn) vào dữ liệu có 5 đặc trưng thật:</p>
+<table>
+<thead>
+<tr>
+<th>Cột</th>
+<th>Impurity importance</th>
+<th>Permutation importance</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>f1</td>
+<td>0.524</td>
+<td>0.310</td>
+</tr>
+<tr>
+<td>f5</td>
+<td>0.202</td>
+<td>0.110</td>
+</tr>
+<tr>
+<td>f3</td>
+<td>0.130</td>
+<td>0.092</td>
+</tr>
+<tr>
+<td>f4</td>
+<td>0.049</td>
+<td>−0.002</td>
+</tr>
+<tr>
+<td>customer_id</td>
+<td><strong>0.047</strong></td>
+<td><strong>−0.006</strong></td>
+</tr>
+<tr>
+<td>f2</td>
+<td>0.047</td>
+<td>−0.005</td>
+</tr>
+</tbody>
+</table>
+<p>Impurity importance cho <code>customer_id</code> ngang với f2, f4. Permutation importance cho đúng bằng 0: xáo ID không làm model tệ đi.</p>
+</div>
+<figure class="fig"><img src="../assets/fig/p1-3-importance.svg" alt="Cột ID ngẫu nhiên (cam) &quot;có vẻ&quot; quan trọng theo impurity, nhưng permutation importance cho thấy nó vô dụng." loading="lazy"><figcaption>Cột ID ngẫu nhiên (cam) &quot;có vẻ&quot; quan trọng theo impurity, nhưng permutation importance cho thấy nó vô dụng.</figcaption></figure>
+
+<div class="hl"><pre><span></span><code><span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">sklearn.inspection</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">permutation_importance</span>
+<span class="tk-n">r</span> <span class="tk-o">=</span> <span class="tk-n">permutation_importance</span><span class="tk-p">(</span><span class="tk-n">model</span><span class="tk-p">,</span> <span class="tk-n">X_val</span><span class="tk-p">,</span> <span class="tk-n">y_val</span><span class="tk-p">,</span> <span class="tk-n">n_repeats</span><span class="tk-o">=</span><span class="tk-mi">10</span><span class="tk-p">,</span> <span class="tk-n">random_state</span><span class="tk-o">=</span><span class="tk-mi">0</span><span class="tk-p">)</span>
+<span class="tk-nb">sorted</span><span class="tk-p">(</span><span class="tk-nb">zip</span><span class="tk-p">(</span><span class="tk-n">r</span><span class="tk-o">.</span><span class="tk-n">importances_mean</span><span class="tk-p">,</span> <span class="tk-n">X_val</span><span class="tk-o">.</span><span class="tk-n">columns</span><span class="tk-p">),</span> <span class="tk-n">reverse</span><span class="tk-o">=</span><span class="tk-kc">True</span><span class="tk-p">)[:</span><span class="tk-mi">10</span><span class="tk-p">]</span>
+</code></pre></div>
+
+<details class="fold deep">
+<summary>Đào sâu thêm</summary>
+<p><strong>SHAP: giải thích từng dự đoán.</strong> Importance cho biết đặc trưng nào quan trọng <strong>nói chung</strong>. SHAP (thư viện <code>shap</code>) chia nhỏ <strong>một</strong> dự đoán thành đóng góp của từng đặc trưng: "khách này được dự đoán rời đi 0.82 vì: 3 tháng không mua (+0.25), vừa khiếu nại (+0.18), là khách lâu năm (−0.06)…". Với model cây, <code>shap.TreeExplainer</code> tính rất nhanh. Đây là công cụ hay được hỏi khi phỏng vấn cho vị trí làm với dữ liệu bảng.</p>
+</details>
+<h3>Tuning gradient boosting</h3>
+<p>Thứ tự nên tune (LightGBM), mỗi bước giữ các tham số khác cố định:</p>
+<ol>
+<li><code>learning_rate</code> khoảng 0.03–0.1, <code>n_estimators</code> lớn với early stopping.</li>
+<li><code>num_leaves</code> (độ phức tạp mỗi cây): 15–255.</li>
+<li><code>min_child_samples</code> (mẫu tối thiểu mỗi lá): 10–100, tăng nếu overfit.</li>
+<li><code>feature_fraction</code>, <code>bagging_fraction</code>: 0.6–0.9, thêm ngẫu nhiên như random forest.</li>
+<li><code>lambda_l2</code>: 0–10.</li>
+</ol>
+<p>Dùng <strong>Optuna</strong> để tìm tự động thay vì grid search: nó thử các vùng hứa hẹn nhiều hơn, thường cần ít lần thử hơn hẳn.</p>
+<div class="box pitfall">
+<div class="box-h">Lỗi hay gặp</div>
+<p><strong>Tuning quá tay trên một tập validation nhỏ.</strong> Thử 500 cấu hình và chọn cái tốt nhất trên 300 mẫu validation là đang overfit tập validation. Dùng cross-validation khi dữ liệu ít, và kỳ vọng cải thiện từ tuning thường chỉ vài phần trăm; đặc trưng tốt hơn thường giúp nhiều hơn.</p>
+</div>
+<h2 id="lt-6">Tóm tắt bài và thuật ngữ</h2>
+<table>
+<thead>
+<tr>
+<th>Model</th>
+<th>Cách kết hợp cây</th>
+<th>Giảm</th>
+<th>Cần tuning</th>
+<th>Dùng khi</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Cây quyết định</td>
+<td>một cây</td>
+<td>—</td>
+<td>độ sâu</td>
+<td>cần luật dễ giải thích</td>
+</tr>
+<tr>
+<td>Random forest</td>
+<td>song song, trung bình</td>
+<td>variance</td>
+<td>rất ít</td>
+<td>baseline mạnh, nhanh có kết quả</td>
+</tr>
+<tr>
+<td>Gradient boosting</td>
+<td>nối tiếp, sửa lỗi</td>
+<td>bias (và variance nhờ η nhỏ)</td>
+<td>vừa phải, cần early stopping</td>
+<td>muốn điểm cao nhất trên dữ liệu bảng</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Thuật ngữ</th>
+<th>Nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>decision tree</td>
+<td>cây quyết định</td>
+</tr>
+<tr>
+<td>node / leaf</td>
+<td>nút hỏi / lá trả lời</td>
+</tr>
+<tr>
+<td>Gini impurity / entropy</td>
+<td>hai cách đo độ lẫn lộn của nút</td>
+</tr>
+<tr>
+<td>information gain</td>
+<td>độ lẫn giảm được sau một lần tách</td>
+</tr>
+<tr>
+<td>bootstrap</td>
+<td>rút mẫu có hoàn lại</td>
+</tr>
+<tr>
+<td>bagging</td>
+<td>train nhiều model trên các mẫu bootstrap rồi gộp</td>
+</tr>
+<tr>
+<td>out-of-bag (OOB)</td>
+<td>mẫu không được rút vào bootstrap, dùng để đánh giá</td>
+</tr>
+<tr>
+<td>random forest</td>
+<td>bagging + chọn ngẫu nhiên đặc trưng mỗi lần tách</td>
+</tr>
+<tr>
+<td>boosting</td>
+<td>train nối tiếp, model sau sửa lỗi model trước</td>
+</tr>
+<tr>
+<td>early stopping</td>
+<td>dừng thêm cây khi validation không cải thiện</td>
+</tr>
+<tr>
+<td>feature importance</td>
+<td>mức độ model dựa vào một đặc trưng</td>
+</tr>
+<tr>
+<td>permutation importance</td>
+<td>điểm tụt khi xáo trộn một cột</td>
+</tr>
+<tr>
+<td>SHAP</td>
+<td>phân rã một dự đoán thành đóng góp từng đặc trưng</td>
+</tr>
+</tbody>
+</table></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p1.3:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 3</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Gini và information gain</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Nút cha có 10 mẫu: 6 dương, 4 âm. Một phép tách cho nút trái (4 dương, 0 âm) và nút phải (2 dương, 4 âm).</p>
 <div class="ans" id="p1-3-e1-a1"><div class="ans-fields"><label>Gini nút cha<input inputmode="decimal" data-ans="0.48" data-tol="0.001" autocomplete="off"></label><label>Gini nút phải<input inputmode="decimal" data-ans="0.4444" data-tol="0.001" autocomplete="off"></label><label>Gini có trọng số sau tách<input inputmode="decimal" data-ans="0.2667" data-tol="0.001" autocomplete="off"></label><label>Gain<input inputmode="decimal" data-ans="0.2133" data-tol="0.001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
 
 <details class="fold solution">
@@ -208,7 +612,7 @@ lặp m = 1..M:
     </div>
     <aside class="aside">
       <div class="abox"><h4>Tiến độ bài này</h4><div class="ring"><svg viewBox="0 0 64 64" aria-hidden="true"><circle class="bg" cx="32" cy="32" r="28"/><circle class="fg" cx="32" cy="32" r="28" stroke-dasharray="176" stroke-dashoffset="176"/></svg><div><b id="ring-n">0/3</b><span id="ring-sub">phần đã xong</span></div></div></div>
-      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Cây quyết định</a></li><li><a href="#lt-2">Độ sâu và overfitting</a></li><li><a href="#lt-3">Bagging và random forest</a></li><li><a href="#lt-4">Gradient boosting</a></li><li><a href="#lt-5">Feature importance và tuning</a></li></ol></div>
+      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Cây quyết định</a></li><li><a href="#lt-2">Độ sâu và overfitting</a></li><li><a href="#lt-3">Bagging và random forest</a></li><li><a href="#lt-4">Gradient boosting</a></li><li><a href="#lt-5">Feature importance và tuning</a></li><li><a href="#lt-6">Tóm tắt bài và thuật ngữ</a></li></ol></div>
       
       <div class="abox"><h4>Cùng giai đoạn</h4><ul><li><a href="p1-1.html">Hồi quy tuyến tính và logistic</a></li><li><a href="p1-2.html">Đánh giá model đúng cách</a></li><li><span class=cur>Cây quyết định và ensemble</span></li><li><a href="p1-4.html">Học không giám sát và feature engineering</a></li></ul></div>
     </aside>
