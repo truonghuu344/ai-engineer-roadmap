@@ -22,86 +22,573 @@
 <main class="container">
   <div class="crumbs"><a href="../bai-hoc.html">Bài học</a><span>/</span><a href="../bai-hoc.html#p0">P0 · Nền móng</a><span>/</span><span>P0.2</span></div>
   <section class="lhero"><div class="code">P0.2</div><h1>Toán cho AI: đại số tuyến tính, giải tích, xác suất</h1><div class="lmeta"><span class="m">Giai đoạn P0 · Nền móng</span><span class="m">Tuần 1–3</span><span class="chip ready"><span class="dot"></span>Có nội dung đầy đủ</span></div>
-    <div class="intro"><p>Ba nhánh toán chống lưng cho mọi model: <strong>đại số tuyến tính</strong> (dữ liệu và trọng số là ma trận), <strong>giải tích</strong> (gradient cho biết sửa trọng số theo hướng nào), <strong>xác suất</strong> (loss và dữ liệu nhiễu). Bài này chỉ dạy phần bạn thật sự dùng, và mỗi công thức đều kiểm chứng được bằng vài dòng numpy.</p></div></section>
+    <div class="intro"><p>Ba nhánh toán chống lưng cho mọi model: <strong>đại số tuyến tính</strong> (dữ liệu và trọng số là ma trận), <strong>giải tích</strong> (gradient cho biết sửa trọng số theo hướng nào), <strong>xác suất</strong> (loss và dữ liệu nhiễu). Bài này chỉ dạy phần bạn thật sự dùng, đi từ trực giác tới công thức, và mỗi công thức đều kiểm chứng được bằng vài dòng numpy.</p></div></section>
   
-  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">6 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">6 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
+  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">7 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">6 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
   <div class="lgrid" style="margin-top:22px">
     <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">Vector và tích vô hướng</h2>
-<p>Vector là một danh sách số, ví dụ một ảnh đã duỗi phẳng hoặc embedding của một câu. <strong>Tích vô hướng</strong> nhân từng cặp rồi cộng:</p>
-<div class="hl"><pre><span></span><code>u · v = u₁v₁ + u₂v₂ + … + uₙvₙ
-‖u‖ = √(u · u)                    độ dài (norm L2)
-cos(u, v) = (u · v) / (‖u‖ ‖v‖)   độ giống nhau về hướng, từ −1 đến 1
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Trong ML, mọi thứ đều thành vector: một ảnh 28×28 là vector 784 số, một câu văn là embedding 1024 số, một khách hàng là vector các đặc trưng (tuổi, số đơn, tổng chi). Khi đã là vector, "hai thứ giống nhau đến đâu" trở thành một phép tính: tích vô hướng.</p>
+</div>
+<h3>Vector là gì</h3>
+<p>Vector là một danh sách số có thứ tự. Với 2 hoặc 3 số, bạn có thể hình dung nó là <strong>mũi tên</strong> từ gốc tọa độ: <code>u = (3, 4)</code> là mũi tên đi 3 bước sang phải, 4 bước lên trên. Với 784 số thì không vẽ được, nhưng mọi công thức vẫn y nguyên.</p>
+<p>Các phép cơ bản làm <strong>từng phần tử</strong>:</p>
+<div class="hl"><pre><span></span><code>u + v = (u₁ + v₁, u₂ + v₂, …)      cộng hai mũi tên nối đuôi nhau
+c · u = (c·u₁, c·u₂, …)            kéo dài hoặc thu ngắn mũi tên
 </code></pre></div>
 
-<p>Cosine similarity là cách so sánh embedding trong RAG và tìm kiếm ngữ nghĩa ở P4. Một neuron cũng chỉ là một tích vô hướng giữa đầu vào và trọng số, cộng bias.</p>
+<h3>Độ dài (norm)</h3>
+<div class="hl"><pre><span></span><code>‖u‖₂ = √(u₁² + u₂² + … + uₙ²)      norm L2: độ dài thật (Pythagore)
+‖u‖₁ = |u₁| + |u₂| + … + |uₙ|      norm L1: tổng giá trị tuyệt đối
+</code></pre></div>
+
+<p>Với <code>u = (3, 4)</code>: ‖u‖₂ = √(9 + 16) = 5, ‖u‖₁ = 7. Norm xuất hiện trong regularization (phạt trọng số lớn: L2 ở weight decay, L1 làm nhiều trọng số về 0) và trong chuẩn hóa embedding.</p>
+<h3>Tích vô hướng và ý nghĩa hình học</h3>
+<div class="hl"><pre><span></span><code>u · v = u₁v₁ + u₂v₂ + … + uₙvₙ             định nghĩa đại số: nhân từng cặp rồi cộng
+u · v = ‖u‖ · ‖v‖ · cos θ                    định nghĩa hình học: θ là góc giữa hai vector
+cos(u, v) = (u · v) / (‖u‖ ‖v‖)              cosine similarity, từ −1 đến 1
+</code></pre></div>
+
+<p>Hai định nghĩa cho cùng một số. Từ đó suy ra: tích vô hướng <strong>dương</strong> khi hai vector cùng hướng (góc nhọn), <strong>bằng 0</strong> khi vuông góc, <strong>âm</strong> khi ngược hướng.</p>
+<figure class="fig"><img src="../assets/fig/p0-2-vectors.svg" alt="Hai vector gần cùng hướng: góc θ nhỏ nên cos θ = 0.96 gần 1. Đoạn xanh lá là hình chiếu của u lên v, dài u·v / ‖v‖ = 24/5 = 4.8." loading="lazy"><figcaption>Hai vector gần cùng hướng: góc θ nhỏ nên cos θ = 0.96 gần 1. Đoạn xanh lá là hình chiếu của u lên v, dài u·v / ‖v‖ = 24/5 = 4.8.</figcaption></figure>
+
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p><strong>So sánh embedding.</strong> Giả sử một model biến từ thành vector 3 chiều (số thật thì có hàng trăm chiều):</p>
+<div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">numpy</span><span class="tk-w"> </span><span class="tk-k">as</span><span class="tk-w"> </span><span class="tk-nn">np</span>
+<span class="tk-n">e</span> <span class="tk-o">=</span> <span class="tk-p">{</span><span class="tk-s2">"vua"</span><span class="tk-p">:</span>        <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">array</span><span class="tk-p">([</span><span class="tk-mf">0.9</span><span class="tk-p">,</span> <span class="tk-mf">0.8</span><span class="tk-p">,</span> <span class="tk-mf">0.1</span><span class="tk-p">]),</span>
+     <span class="tk-s2">"hoàng hậu"</span><span class="tk-p">:</span>  <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">array</span><span class="tk-p">([</span><span class="tk-mf">0.85</span><span class="tk-p">,</span> <span class="tk-mf">0.75</span><span class="tk-p">,</span> <span class="tk-mf">0.2</span><span class="tk-p">]),</span>
+     <span class="tk-s2">"quả táo"</span><span class="tk-p">:</span>    <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">array</span><span class="tk-p">([</span><span class="tk-mf">0.1</span><span class="tk-p">,</span> <span class="tk-mf">0.2</span><span class="tk-p">,</span> <span class="tk-mf">0.9</span><span class="tk-p">])}</span>
+<span class="tk-n">cos</span> <span class="tk-o">=</span> <span class="tk-k">lambda</span> <span class="tk-n">a</span><span class="tk-p">,</span> <span class="tk-n">b</span><span class="tk-p">:</span> <span class="tk-n">a</span> <span class="tk-o">@</span> <span class="tk-n">b</span> <span class="tk-o">/</span> <span class="tk-p">(</span><span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">linalg</span><span class="tk-o">.</span><span class="tk-n">norm</span><span class="tk-p">(</span><span class="tk-n">a</span><span class="tk-p">)</span> <span class="tk-o">*</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">linalg</span><span class="tk-o">.</span><span class="tk-n">norm</span><span class="tk-p">(</span><span class="tk-n">b</span><span class="tk-p">))</span>
+<span class="tk-n">cos</span><span class="tk-p">(</span><span class="tk-n">e</span><span class="tk-p">[</span><span class="tk-s2">"vua"</span><span class="tk-p">],</span> <span class="tk-n">e</span><span class="tk-p">[</span><span class="tk-s2">"hoàng hậu"</span><span class="tk-p">])</span>   <span class="tk-c1"># 0.996  rất giống</span>
+<span class="tk-n">cos</span><span class="tk-p">(</span><span class="tk-n">e</span><span class="tk-p">[</span><span class="tk-s2">"vua"</span><span class="tk-p">],</span> <span class="tk-n">e</span><span class="tk-p">[</span><span class="tk-s2">"quả táo"</span><span class="tk-p">])</span>     <span class="tk-c1"># 0.303  khác xa</span>
+</code></pre></div>
+
+<p>Đây chính là cách tìm kiếm ngữ nghĩa và RAG ở P4 hoạt động: biến câu hỏi và tài liệu thành vector, lấy các tài liệu có cosine cao nhất.</p>
+</div>
+<h3>Một neuron là một tích vô hướng</h3>
+<p>Neuron nhận đầu vào <code>x</code>, có trọng số <code>w</code> và bias <code>b</code>, tính <code>z = w · x + b</code>. Ví dụ <code>x = (1, 2, 3)</code>, <code>w = (0.5, −1, 2)</code>, <code>b = 0.5</code>: z = 0.5 − 2 + 6 + 0.5 = <strong>5</strong>. Trọng số dương lớn nghĩa là "đặc trưng này đẩy kết quả lên", âm là "kéo xuống". Học máy là đi tìm <code>w</code> và <code>b</code> tốt.</p>
+<div class="box pitfall">
+<div class="box-h">Lỗi hay gặp</div>
+<p><strong>So khoảng cách khi độ dài vector khác nhau.</strong> Hai đoạn văn cùng chủ đề nhưng một đoạn dài gấp đôi có thể cho embedding dài hơn, khiến tích vô hướng lớn hơn dù nghĩa không giống hơn. Cosine chia cho độ dài nên chỉ so <strong>hướng</strong>. Nhiều thư viện chuẩn hóa embedding về độ dài 1 sẵn; khi đó tích vô hướng bằng cosine luôn.</p>
+</div>
+<div class="box check">
+<div class="box-h">Tự kiểm tra nhanh</div>
+<p>Với <code>u = (1, 2, 2)</code> và <code>v = (2, 0, 1)</code>:</p>
+<div class="ans" id="p0-2-t-b45-a1">
+<div class="ans-fields"><label>u · v<input inputmode="decimal" data-ans="4.0" data-tol="0.0" autocomplete="off"></label><label>‖u‖₂<input inputmode="decimal" data-ans="3.0" data-tol="0.001" autocomplete="off"></label><label>‖v‖₁<input inputmode="decimal" data-ans="3.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div>
+<div aria-live="polite" class="ans-fb"></div>
+</div>
+</div>
 <h2 id="lt-2">Ma trận và phép nhân ma trận</h2>
-<p>Ma trận A shape (m, n) nhân B shape (n, p) cho C shape (m, p). Phần tử <code>C[i, j]</code> là tích vô hướng giữa <strong>hàng i của A</strong> và <strong>cột j của B</strong>. Điều kiện bắt buộc: số cột của A bằng số hàng của B.</p>
-<div class="hl"><pre><span></span><code><span class="tk-n">X</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">random</span><span class="tk-o">.</span><span class="tk-n">rand</span><span class="tk-p">(</span><span class="tk-mi">128</span><span class="tk-p">,</span> <span class="tk-mi">784</span><span class="tk-p">)</span>   <span class="tk-c1"># batch 128 ảnh, mỗi ảnh 784 số</span>
-<span class="tk-n">W</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">random</span><span class="tk-o">.</span><span class="tk-n">rand</span><span class="tk-p">(</span><span class="tk-mi">256</span><span class="tk-p">,</span> <span class="tk-mi">784</span><span class="tk-p">)</span>   <span class="tk-c1"># lớp Linear(784, 256) lưu weight (out, in)</span>
-<span class="tk-n">H</span> <span class="tk-o">=</span> <span class="tk-n">X</span> <span class="tk-o">@</span> <span class="tk-n">W</span><span class="tk-o">.</span><span class="tk-n">T</span>                    <span class="tk-c1"># (128, 784) @ (784, 256) → (128, 256)</span>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Một lớp <code>Linear</code> trong mạng nơ-ron là một ma trận trọng số. Đưa một batch 128 ảnh qua lớp đó là <strong>một</strong> phép nhân ma trận, chạy song song trên GPU. Hiểu phép nhân ma trận là hiểu deep learning tính toán gì.</p>
+</div>
+<h3>Ma trận và shape</h3>
+<p>Ma trận là bảng số <code>m</code> hàng × <code>n</code> cột, shape <code>(m, n)</code>. Trong ML có hai cách nhìn:</p>
+<ul>
+<li><strong>Như một bảng dữ liệu</strong>: mỗi hàng là một mẫu, mỗi cột là một đặc trưng. <code>X</code> shape <code>(128, 784)</code> là 128 ảnh, mỗi ảnh 784 điểm ảnh.</li>
+<li><strong>Như một phép biến đổi</strong>: nhân ma trận với vector biến vector đó thành vector khác (kéo giãn, xoay, chiếu sang không gian khác số chiều).</li>
+</ul>
+<h3>Quy tắc nhân</h3>
+<p><code>A</code> shape <code>(m, n)</code> nhân <code>B</code> shape <code>(n, p)</code> cho <code>C</code> shape <code>(m, p)</code>. Phần tử <code>C[i, j]</code> là <strong>tích vô hướng giữa hàng i của A và cột j của B</strong>. Điều kiện bắt buộc: số cột của A bằng số hàng của B (hai số <code>n</code> ở giữa phải khớp, rồi "biến mất").</p>
+<figure class="fig"><img src="../assets/fig/p0-2-matmul.svg" alt="Mỗi ô của C là một tích vô hướng hàng × cột. Ô C[0, 1] lấy hàng 0 của A (xanh) và cột 1 của B (cam)." loading="lazy"><figcaption>Mỗi ô của C là một tích vô hướng hàng × cột. Ô C[0, 1] lấy hàng 0 của A (xanh) và cột 1 của B (cam).</figcaption></figure>
+
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>Tính tay <code>A @ B</code> với <code>A = [[1, 2], [3, 4]]</code>, <code>B = [[5, 6], [7, 8]]</code>:</p>
+<div class="hl"><pre><span></span><code>C[0,0] = 1·5 + 2·7 = 19        C[0,1] = 1·6 + 2·8 = 22
+C[1,0] = 3·5 + 4·7 = 43        C[1,1] = 3·6 + 4·8 = 50
 </code></pre></div>
 
-<p>Thói quen tốt nhất khi đọc code deep learning: viết shape bên cạnh mỗi dòng. Hầu hết lỗi là lỗi shape.</p>
+<div class="hl"><pre><span></span><code><span class="tk-n">A</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">array</span><span class="tk-p">([[</span><span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-mi">2</span><span class="tk-p">],</span> <span class="tk-p">[</span><span class="tk-mi">3</span><span class="tk-p">,</span> <span class="tk-mi">4</span><span class="tk-p">]]);</span> <span class="tk-n">B</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">array</span><span class="tk-p">([[</span><span class="tk-mi">5</span><span class="tk-p">,</span> <span class="tk-mi">6</span><span class="tk-p">],</span> <span class="tk-p">[</span><span class="tk-mi">7</span><span class="tk-p">,</span> <span class="tk-mi">8</span><span class="tk-p">]])</span>
+<span class="tk-n">A</span> <span class="tk-o">@</span> <span class="tk-n">B</span>        <span class="tk-c1"># [[19 22] [43 50]]</span>
+<span class="tk-n">B</span> <span class="tk-o">@</span> <span class="tk-n">A</span>        <span class="tk-c1"># [[23 34] [31 46]]   ← khác! nhân ma trận không giao hoán</span>
+<span class="tk-n">A</span> <span class="tk-o">*</span> <span class="tk-n">B</span>        <span class="tk-c1"># [[ 5 12] [21 32]]   ← * là nhân từng phần tử, không phải nhân ma trận</span>
+</code></pre></div>
+
+</div>
+<h3>Lớp Linear trong code thật</h3>
+<div class="hl"><pre><span></span><code><span class="tk-n">X</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">random</span><span class="tk-o">.</span><span class="tk-n">rand</span><span class="tk-p">(</span><span class="tk-mi">128</span><span class="tk-p">,</span> <span class="tk-mi">784</span><span class="tk-p">)</span>   <span class="tk-c1"># batch 128 ảnh, mỗi ảnh 784 số</span>
+<span class="tk-n">W</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">random</span><span class="tk-o">.</span><span class="tk-n">rand</span><span class="tk-p">(</span><span class="tk-mi">256</span><span class="tk-p">,</span> <span class="tk-mi">784</span><span class="tk-p">)</span>   <span class="tk-c1"># nn.Linear(784, 256) lưu weight shape (out, in)</span>
+<span class="tk-n">b</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">random</span><span class="tk-o">.</span><span class="tk-n">rand</span><span class="tk-p">(</span><span class="tk-mi">256</span><span class="tk-p">)</span>
+<span class="tk-n">H</span> <span class="tk-o">=</span> <span class="tk-n">X</span> <span class="tk-o">@</span> <span class="tk-n">W</span><span class="tk-o">.</span><span class="tk-n">T</span> <span class="tk-o">+</span> <span class="tk-n">b</span>                <span class="tk-c1"># (128, 784) @ (784, 256) → (128, 256), cộng b nhờ broadcasting</span>
+</code></pre></div>
+
+<p>Mỗi hàng của <code>H</code> là 256 neuron tính cho một ảnh; mỗi neuron là một tích vô hướng như ở mục trước. Một phép <code>@</code> làm 128 × 256 = 32.768 tích vô hướng cùng lúc.</p>
+<h3>Ma trận như một phép biến đổi</h3>
+<p>Nhân ma trận <code>(2, 2)</code> với mọi điểm của mặt phẳng là biến đổi cả mặt phẳng. Cột thứ nhất của ma trận cho biết vector <code>(1, 0)</code> đi đâu, cột thứ hai cho biết <code>(0, 1)</code> đi đâu:</p>
+<figure class="fig"><img src="../assets/fig/p0-2-transform.svg" alt="Ma trận [[2, 0], [0, 0.5]] kéo dài trục ngang gấp đôi, nén trục dọc một nửa. Ma trận [[0, −1], [1, 0]] xoay 90°: (1, 0) thành (0, 1)." loading="lazy"><figcaption>Ma trận [[2, 0], [0, 0.5]] kéo dài trục ngang gấp đôi, nén trục dọc một nửa. Ma trận [[0, −1], [1, 0]] xoay 90°: (1, 0) thành (0, 1).</figcaption></figure>
+
+<p>Mạng nơ-ron xếp chồng nhiều phép biến đổi như vậy, xen giữa là hàm phi tuyến (ReLU), để "uốn" không gian dữ liệu tới khi các lớp tách ra được.</p>
+<h3>Vài tính chất cần nhớ</h3>
+<table>
+<thead>
+<tr>
+<th>Tính chất</th>
+<th>Ý nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>(A @ B) @ C = A @ (B @ C)</code></td>
+<td>kết hợp được, nên có thể tính theo thứ tự rẻ hơn</td>
+</tr>
+<tr>
+<td><code>A @ B ≠ B @ A</code></td>
+<td>không giao hoán, thứ tự quan trọng</td>
+</tr>
+<tr>
+<td><code>(A @ B).T = B.T @ A.T</code></td>
+<td>chuyển vị đảo thứ tự, gặp khi tính gradient</td>
+</tr>
+<tr>
+<td><code>I @ A = A</code></td>
+<td>ma trận đơn vị <code>np.eye(n)</code> không đổi gì</td>
+</tr>
+</tbody>
+</table>
 <div class="keep">
-<p><strong>Ghi nhớ:</strong> (m, n) @ (n, p) → (m, p). Chuyển vị <code>.T</code> đổi (m, n) thành (n, m). Nhân ma trận không giao hoán: A @ B ≠ B @ A.</p>
+<p><strong>Ghi nhớ:</strong> (m, n) @ (n, p) → (m, p). Viết shape bên cạnh mỗi dòng code; hầu hết lỗi deep learning là lỗi shape.</p>
+</div>
+<div class="box pitfall">
+<div class="box-h">Lỗi hay gặp</div>
+<p><strong>Dùng <code>*</code> thay cho <code>@</code>.</strong> Với hai ma trận vuông cùng shape, cả hai đều chạy không báo lỗi nhưng cho kết quả khác hẳn. Trong PyTorch cũng vậy: <code>*</code> là nhân từng phần tử, <code>@</code> (hoặc <code>torch.matmul</code>) mới là nhân ma trận.</p>
+</div>
+<details class="fold deep">
+<summary>Đào sâu thêm</summary>
+<p><strong>Chi phí tính toán.</strong> Nhân <code>(m, n) @ (n, p)</code> cần <code>m·n·p</code> phép nhân và gần ấy phép cộng. Lớp Linear(784, 256) với batch 128 tốn khoảng 128 × 784 × 256 ≈ 25,7 triệu phép nhân. Model ngôn ngữ lớn tốn gần như toàn bộ thời gian vào các phép nhân ma trận kiểu này, nên GPU được thiết kế để làm đúng một việc: nhân ma trận thật nhanh. Ở P9 bạn sẽ ước lượng chi phí train model theo đúng cách đếm này.</p>
+</details>
+<div class="box check">
+<div class="box-h">Tự kiểm tra nhanh</div>
+<p><code>X</code> shape <code>(32, 10)</code>, <code>W</code> shape <code>(10, 4)</code>, <code>V</code> shape <code>(4, 1)</code>.</p>
+<div class="ans" id="p0-2-t-b100-a1">
+<div class="ans-fields"><label>Số hàng của X @ W @ V<input inputmode="decimal" data-ans="32.0" data-tol="0.0" autocomplete="off"></label><label>Số cột của X @ W @ V<input inputmode="decimal" data-ans="1.0" data-tol="0.0" autocomplete="off"></label><label>Số phép nhân của X @ W<input inputmode="decimal" data-ans="1280.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div>
+<div aria-live="polite" class="ans-fb"></div>
+</div>
 </div>
 <h2 id="lt-3">Đạo hàm, gradient và quy tắc dây chuyền</h2>
-<p>Đạo hàm f′(x) đo f thay đổi bao nhiêu khi x tăng một chút. Với hàm nhiều biến, <strong>đạo hàm riêng</strong> ∂f/∂xᵢ giữ các biến khác cố định. Gom mọi đạo hàm riêng lại được <strong>gradient</strong> ∇f: vector chỉ hướng f tăng nhanh nhất.</p>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Train một model nghĩa là chỉnh hàng triệu trọng số để loss giảm. Với mỗi trọng số, ta cần biết: tăng nó một chút thì loss tăng hay giảm, và bao nhiêu? Câu trả lời là đạo hàm. Gom đạo hàm của mọi trọng số lại là gradient, và mọi thuật toán train (SGD, Adam) đều đi theo gradient.</p>
+</div>
+<h3>Đạo hàm là độ dốc</h3>
+<p>Đạo hàm f′(x) đo <strong>f thay đổi bao nhiêu khi x tăng một chút</strong>:</p>
+<div class="hl"><pre><span></span><code>f′(x) ≈ (f(x + h) − f(x)) / h       với h rất nhỏ
+</code></pre></div>
+
+<p>Với f(x) = x² tại x = 3: f′(3) = 6. Nghĩa là quanh x = 3, tăng x thêm 0.5 thì f tăng khoảng 6 × 0.5 = 3. Trên đồ thị, đạo hàm là độ dốc của tiếp tuyến.</p>
+<figure class="fig"><img src="../assets/fig/p0-2-slope.svg" alt="Tại x = 3, tiếp tuyến có độ dốc 6. Gần điểm đó, đường cong và tiếp tuyến gần như trùng nhau: đạo hàm là &quot;xấp xỉ tuyến tính&quot; của hàm." loading="lazy"><figcaption>Tại x = 3, tiếp tuyến có độ dốc 6. Gần điểm đó, đường cong và tiếp tuyến gần như trùng nhau: đạo hàm là &quot;xấp xỉ tuyến tính&quot; của hàm.</figcaption></figure>
+
+<h3>Bảng đạo hàm bạn dùng thường xuyên</h3>
 <table>
 <thead>
 <tr>
 <th>Hàm</th>
 <th>Đạo hàm</th>
+<th>Gặp ở đâu</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td>xⁿ</td>
 <td>n·xⁿ⁻¹</td>
+<td>loss bình phương (MSE)</td>
 </tr>
 <tr>
 <td>eˣ</td>
 <td>eˣ</td>
+<td>softmax</td>
 </tr>
 <tr>
 <td>ln x</td>
 <td>1/x</td>
+<td>cross-entropy</td>
 </tr>
 <tr>
-<td>σ(x) = 1/(1+e⁻ˣ)</td>
+<td>σ(x) = 1/(1 + e⁻ˣ)</td>
 <td>σ(x)(1 − σ(x))</td>
+<td>sigmoid, logistic regression</td>
 </tr>
 <tr>
 <td>max(0, x)</td>
 <td>1 nếu x &gt; 0, 0 nếu x &lt; 0</td>
+<td>ReLU</td>
+</tr>
+<tr>
+<td>c · f(x)</td>
+<td>c · f′(x)</td>
+<td>hằng số đi ra ngoài</td>
+</tr>
+<tr>
+<td>f(x) + g(x)</td>
+<td>f′(x) + g′(x)</td>
+<td>đạo hàm của tổng là tổng đạo hàm</td>
 </tr>
 </tbody>
 </table>
-<p><strong>Quy tắc dây chuyền</strong>: nếu L phụ thuộc a, a phụ thuộc w, thì ∂L/∂w = ∂L/∂a · ∂a/∂w. Backpropagation chỉ là áp dụng quy tắc này lặp lại từ loss ngược về từng trọng số.</p>
-<p>Có thể kiểm tra đạo hàm bằng <strong>gradient số</strong>: f′(x) ≈ (f(x + h) − f(x − h)) / 2h với h nhỏ, ví dụ 1e-5. Kỹ sư ML dùng mẹo này để bắt lỗi khi tự viết backward.</p>
+<h3>Đạo hàm riêng và gradient</h3>
+<p>Hàm nhiều biến (loss phụ thuộc mọi trọng số) có <strong>đạo hàm riêng</strong> theo từng biến: giữ các biến khác cố định, đạo hàm theo biến đang xét.</p>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>f(x, y) = x²·y tại (x, y) = (2, 3):</p>
+<ul>
+<li>∂f/∂x: coi y là hằng số → 2x·y = 2·2·3 = <strong>12</strong></li>
+<li>∂f/∂y: coi x là hằng số → x² = 4</li>
+</ul>
+<p><strong>Gradient</strong> gom mọi đạo hàm riêng thành một vector: ∇f(2, 3) = (12, 4). Gradient chỉ <strong>hướng f tăng nhanh nhất</strong>; đi ngược gradient (−∇f) là hướng giảm nhanh nhất.</p>
+</div>
+<figure class="fig"><img src="../assets/fig/p0-2-gradient.svg" alt="Đường đồng mức của f(w₁, w₂) = w₁² + 3w₂². Mũi tên cam là −∇f, luôn vuông góc với đường đồng mức và chỉ vào đáy. Đường xanh: mỗi bước đi một đoạn theo −∇f." loading="lazy"><figcaption>Đường đồng mức của f(w₁, w₂) = w₁² + 3w₂². Mũi tên cam là −∇f, luôn vuông góc với đường đồng mức và chỉ vào đáy. Đường xanh: mỗi bước đi một đoạn theo −∇f.</figcaption></figure>
+
+<h3>Gradient descent: dùng gradient để học</h3>
+<p>Quy tắc cập nhật cốt lõi của mọi thuật toán train:</p>
+<div class="hl"><pre><span></span><code>w ← w − η · ∂L/∂w         η (eta) là learning rate: bước đi dài bao nhiêu
+</code></pre></div>
+
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>Tìm w làm L(w) = (w − 3)² nhỏ nhất, bắt đầu từ w = 0, η = 0.1. Đạo hàm L′(w) = 2(w − 3).</p>
+<table>
+<thead>
+<tr>
+<th>Bước</th>
+<th>w</th>
+<th>L′(w)</th>
+<th>w mới = w − 0.1·L′(w)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>0</td>
+<td>−6</td>
+<td>0.6</td>
+</tr>
+<tr>
+<td>2</td>
+<td>0.6</td>
+<td>−4.8</td>
+<td>1.08</td>
+</tr>
+<tr>
+<td>3</td>
+<td>1.08</td>
+<td>−3.84</td>
+<td>1.464</td>
+</tr>
+</tbody>
+</table>
+<p>w tiến dần về 3, mỗi bước chậm lại vì gradient nhỏ dần khi gần đáy. η quá lớn (ví dụ 1.1) thì w nhảy qua đáy và văng ra xa hơn; η quá nhỏ thì cần hàng nghìn bước.</p>
+</div>
+<h3>Quy tắc dây chuyền</h3>
+<p>Khi L phụ thuộc a, và a phụ thuộc w:</p>
+<div class="hl"><pre><span></span><code>∂L/∂w = ∂L/∂a · ∂a/∂w
+</code></pre></div>
+
+<p>Trực giác: nếu w tăng 1 làm a tăng 2, và a tăng 1 làm L tăng 3, thì w tăng 1 làm L tăng 2 × 3 = 6. Một mạng nơ-ron là chuỗi hàm lồng nhau, nên gradient của trọng số lớp đầu là tích các đạo hàm dọc theo chuỗi. <strong>Backpropagation</strong> chỉ là áp dụng quy tắc này từ loss ngược về từng trọng số, tái sử dụng kết quả trung gian để khỏi tính lại.</p>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>Neuron sigmoid: a = σ(z), z = w·x + b, với w = 2, x = 1, b = −1.</p>
+<ul>
+<li>z = 2·1 − 1 = 1, a = σ(1) ≈ 0.731</li>
+<li>∂a/∂z = σ(1)(1 − σ(1)) ≈ 0.731 × 0.269 ≈ 0.197</li>
+<li>∂z/∂w = x = 1</li>
+<li>∂a/∂w = ∂a/∂z · ∂z/∂w ≈ 0.197</li>
+</ul>
+<p>Nếu x = 2 thì ∂z/∂w = 2 và ∂a/∂w gấp đôi: đầu vào càng lớn, trọng số tương ứng càng được sửa mạnh.</p>
+</div>
+<h3>Kiểm tra gradient bằng số</h3>
+<p>Khi tự viết backward, bạn kiểm tra bằng <strong>gradient số</strong> (sai phân trung tâm):</p>
+<div class="hl"><pre><span></span><code>f′(x) ≈ (f(x + h) − f(x − h)) / 2h
+</code></pre></div>
+
+<div class="hl"><pre><span></span><code><span class="tk-n">f</span> <span class="tk-o">=</span> <span class="tk-k">lambda</span> <span class="tk-n">x</span><span class="tk-p">:</span> <span class="tk-n">x</span> <span class="tk-o">**</span> <span class="tk-mi">2</span>
+<span class="tk-p">(</span><span class="tk-n">f</span><span class="tk-p">(</span><span class="tk-mi">3</span> <span class="tk-o">+</span> <span class="tk-mf">1e-5</span><span class="tk-p">)</span> <span class="tk-o">-</span> <span class="tk-n">f</span><span class="tk-p">(</span><span class="tk-mi">3</span> <span class="tk-o">-</span> <span class="tk-mf">1e-5</span><span class="tk-p">))</span> <span class="tk-o">/</span> <span class="tk-mf">2e-5</span>      <span class="tk-c1"># 6.00000000004  khớp đạo hàm thật 6</span>
+</code></pre></div>
+
+<div class="box pitfall">
+<div class="box-h">Lỗi hay gặp</div>
+<p><strong>Chọn h sai.</strong> h quá lớn thì xấp xỉ kém; h quá nhỏ thì sai số làm tròn của số thực chiếm ưu thế. Với sin tại x = 1: h = 0.1 sai khoảng 9·10⁻⁴, h = 10⁻⁵ sai khoảng 10⁻¹¹ (tốt nhất), h = 10⁻¹² lại sai tới 10⁻⁵. Dùng h khoảng 10⁻⁵ với <code>float64</code>, và đừng kiểm tra gradient bằng <code>float32</code>.</p>
+</div>
+<div class="box check">
+<div class="box-h">Tự kiểm tra nhanh</div>
+<p>L(w, b) = (w·x + b − y)² với x = 2, y = 7, tại w = 1, b = 1. Gợi ý: đặt e = w·x + b − y, rồi dùng quy tắc dây chuyền.</p>
+<div class="ans" id="p0-2-t-b175-a1">
+<div class="ans-fields"><label>e<input inputmode="decimal" data-ans="-4.0" data-tol="0.0" autocomplete="off"></label><label>∂L/∂b<input inputmode="decimal" data-ans="-8.0" data-tol="0.0" autocomplete="off"></label><label>∂L/∂w<input inputmode="decimal" data-ans="-16.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div>
+<div aria-live="polite" class="ans-fb"></div>
+</div>
+</div>
 <h2 id="lt-4">Xác suất và thống kê cơ bản</h2>
-<div class="hl"><pre><span></span><code>Kỳ vọng      E[X] = Σ x · P(x)          (trung bình có trọng số)
-Phương sai   Var(X) = E[(X − E[X])²]     (độ tản ra)
-Độ lệch chuẩn σ = √Var(X)
-Độc lập     Var(aX + bY) = a²Var(X) + b²Var(Y)
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Dữ liệu thật có nhiễu, model trả về xác suất chứ không phải chắc chắn, trọng số được khởi tạo ngẫu nhiên, diffusion cộng nhiễu Gaussian vào ảnh. Xác suất là ngôn ngữ để nói về những thứ không chắc chắn đó, và thống kê là cách đo chúng từ dữ liệu.</p>
+</div>
+<h3>Biến ngẫu nhiên và phân phối</h3>
+<p><strong>Biến ngẫu nhiên</strong> là một đại lượng có thể nhận nhiều giá trị, mỗi giá trị với một xác suất. <strong>Phân phối</strong> cho biết xác suất đó. Ví dụ xúc xắc: X nhận 1 đến 6, mỗi mặt xác suất 1/6. Tổng xác suất mọi giá trị luôn bằng 1.</p>
+<h3>Kỳ vọng, phương sai, độ lệch chuẩn</h3>
+<div class="hl"><pre><span></span><code>Kỳ vọng        E[X] = Σ x · P(x)            trung bình có trọng số theo xác suất
+Phương sai     Var(X) = E[(X − E[X])²]       bình phương khoảng cách tới trung bình, tính trung bình
+Độ lệch chuẩn  σ = √Var(X)                   cùng đơn vị với X, dễ diễn giải hơn
 </code></pre></div>
 
-<p><strong>Phân phối Gaussian</strong> N(μ, σ²) có hình chuông, khoảng 68% giá trị trong μ ± σ và 95% trong μ ± 2σ. Nó xuất hiện ở khởi tạo trọng số, nhiễu trong diffusion, và sai số đo đạc.</p>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>Xúc xắc: E[X] = (1 + 2 + … + 6)/6 = <strong>3.5</strong>. Phương sai = trung bình của (x − 3.5)²:</p>
+<div class="hl"><pre><span></span><code>(2.5² + 1.5² + 0.5² + 0.5² + 1.5² + 2.5²) / 6 = 17.5 / 6 ≈ 2.917
+σ = √2.917 ≈ 1.708
+</code></pre></div>
+
+<p>Từ dữ liệu <code>[2, 4, 4, 4, 5, 5, 7, 9]</code>: trung bình 5, độ lệch chuẩn 2 (chia cho n). Nếu chia cho n − 1 (<code>np.std(x, ddof=1)</code>, "độ lệch chuẩn mẫu") thì ra 2.138. Với dữ liệu lớn hai cách gần như bằng nhau; khi so với thư viện khác, nhớ kiểm tra họ dùng cách nào (<code>pandas.std()</code> mặc định là n − 1, <code>numpy.std()</code> mặc định là n).</p>
+</div>
+<h3>Tính chất hay dùng</h3>
+<div class="hl"><pre><span></span><code>E[aX + b] = a·E[X] + b
+Var(aX + b) = a²·Var(X)                      cộng hằng số không đổi độ tản ra
+Var(X + Y) = Var(X) + Var(Y)                 nếu X, Y độc lập
+</code></pre></div>
+
+<p>Tính chất cuối giải thích vì sao khởi tạo trọng số phải chia cho √n: tổng của n số độc lập có phương sai gấp n lần, nên đầu ra của neuron sẽ "nổ" nếu không thu nhỏ trọng số. Bạn sẽ gặp lại ở P2 (khởi tạo He/Xavier) và P3 (chia √d_k trong attention).</p>
+<h3>Phân phối chuẩn (Gaussian)</h3>
+<p>N(μ, σ²) có hình chuông đối xứng quanh μ. Khoảng <strong>68%</strong> giá trị nằm trong μ ± σ, <strong>95%</strong> trong μ ± 2σ, <strong>99.7%</strong> trong μ ± 3σ. Mô phỏng 100.000 mẫu bằng numpy cho 68.4% và 95.5%, đúng như lý thuyết.</p>
+<figure class="fig"><img src="../assets/fig/p0-2-gaussian.svg" alt="Quy tắc 68–95–99.7 của phân phối chuẩn. Giá trị cách trung bình hơn 3σ rất hiếm, nên hay được dùng làm ngưỡng phát hiện ngoại lai." loading="lazy"><figcaption>Quy tắc 68–95–99.7 của phân phối chuẩn. Giá trị cách trung bình hơn 3σ rất hiếm, nên hay được dùng làm ngưỡng phát hiện ngoại lai.</figcaption></figure>
+
+<p>Gaussian có mặt khắp nơi: khởi tạo trọng số (<code>torch.randn</code>), nhiễu trong diffusion (P5), giả định sai số của hồi quy tuyến tính (P1).</p>
+<details class="fold deep">
+<summary>Đào sâu thêm</summary>
+<p><strong>Vì sao Gaussian phổ biến đến vậy?</strong> Định lý giới hạn trung tâm: tổng (hoặc trung bình) của nhiều đại lượng ngẫu nhiên độc lập có phân phối gần Gaussian, bất kể từng đại lượng phân phối thế nào. Chiều cao, sai số đo, điểm thi đều là tổng của rất nhiều yếu tố nhỏ, nên gần hình chuông. Cũng vì vậy mà đầu ra của một neuron (tổng của nhiều tích wᵢxᵢ) thường gần Gaussian.</p>
+</details>
+<div class="box check">
+<div class="box-h">Tự kiểm tra nhanh</div>
+<p>Thời gian phản hồi của một API có trung bình 200 ms, độ lệch chuẩn 20 ms, phân phối gần chuẩn.</p>
+<div class="ans" id="p0-2-t-b215-a1">
+<div class="ans-fields"><label>Khoảng 95% request nằm dưới bao nhiêu ms<input inputmode="decimal" data-ans="240.0" data-tol="0.0" autocomplete="off"></label><label>Var của thời gian tính bằng giây (đổi đơn vị chia 1000)<input inputmode="decimal" data-ans="0.0004" data-tol="1e-06" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div>
+<div aria-live="polite" class="ans-fb"></div>
+</div>
+</div>
 <h2 id="lt-5">Bayes và xác suất có điều kiện</h2>
-<p>P(A | B) là xác suất A khi đã biết B xảy ra. Công thức Bayes đảo chiều điều kiện:</p>
-<div class="hl"><pre><span></span><code>P(A | B) = P(B | A) · P(A) / P(B)
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>"Model báo email này là spam, khả năng nó thật sự là spam là bao nhiêu?" là câu hỏi xác suất có điều kiện. Hiểu Bayes giúp bạn đọc đúng precision/recall ở P1 và không bị đánh lừa bởi những con số "chính xác 99%".</p>
+</div>
+<h3>Xác suất có điều kiện</h3>
+<p>P(A | B) là xác suất A <strong>khi đã biết</strong> B xảy ra:</p>
+<div class="hl"><pre><span></span><code>P(A | B) = P(A và B) / P(B)
 </code></pre></div>
 
-<p>Bayes giải thích vì sao một xét nghiệm "chính xác 99%" vẫn cho nhiều dương tính giả khi bệnh hiếm. Bài tập 5 tính đúng ví dụ này.</p>
+<p>Biết B nghĩa là thu hẹp "thế giới" về những trường hợp B đúng, rồi đếm trong đó bao nhiêu A cũng đúng.</p>
+<h3>Công thức Bayes</h3>
+<p>Bayes đảo chiều điều kiện, từ thứ dễ đo sang thứ ta cần:</p>
+<div class="hl"><pre><span></span><code>P(A | B) = P(B | A) · P(A) / P(B)
+P(B) = P(B | A)·P(A) + P(B | không A)·P(không A)
+</code></pre></div>
+
+<ul>
+<li>P(A): <strong>prior</strong>, niềm tin ban đầu (tỉ lệ bệnh trong dân số)</li>
+<li>P(B | A): <strong>likelihood</strong>, độ nhạy của xét nghiệm</li>
+<li>P(A | B): <strong>posterior</strong>, niềm tin sau khi thấy bằng chứng</li>
+</ul>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>Bệnh có tỉ lệ 1%. Xét nghiệm phát hiện đúng 99% người bệnh, nhưng báo nhầm dương tính 5% người khỏe. Một người có kết quả dương tính: khả năng họ bị bệnh là bao nhiêu?</p>
+<p>Cách dễ nhất là <strong>đếm người</strong> thay vì nhân xác suất:</p>
+<figure class="fig"><img src="../assets/fig/p0-2-bayes.svg" alt="Hình dung 10.000 người. Người khỏe đông gấp 99 lần, nên 5% báo nhầm của họ (495 người) lấn át 99 người bệnh thật." loading="lazy"><figcaption>Hình dung 10.000 người. Người khỏe đông gấp 99 lần, nên 5% báo nhầm của họ (495 người) lấn át 99 người bệnh thật.</figcaption></figure>
+<p>Bằng công thức: 0.99 × 0.01 / (0.99 × 0.01 + 0.05 × 0.99) ≈ <strong>0.167</strong>. Chỉ 16.7%, dù xét nghiệm "chính xác 99%".</p>
+</div>
+<p>Bài học cho ML: khi lớp cần tìm <strong>hiếm</strong> (gian lận, bệnh hiếm, lỗi sản phẩm), một model có tỉ lệ báo nhầm nhỏ vẫn sinh ra phần lớn cảnh báo là nhầm. Đó là lý do ta cần precision chứ không chỉ accuracy.</p>
+<div class="box check">
+<div class="box-h">Tự kiểm tra nhanh</div>
+<p>20% email là spam. Từ "khuyến mãi" xuất hiện trong 60% email spam và 5% email thường. Một email có từ "khuyến mãi":</p>
+<div class="ans" id="p0-2-t-b248-a1">
+<div class="ans-fields"><label>P(spam khi có từ đó)<input inputmode="decimal" data-ans="0.75" data-tol="0.001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div>
+<div aria-live="polite" class="ans-fb"></div>
+</div>
+</div>
 <h2 id="lt-6">Log, exp và maximum likelihood</h2>
-<p>Model xác suất gán xác suất p(y | x) cho dữ liệu. <strong>Maximum likelihood</strong> chọn tham số làm tích các xác suất đó lớn nhất. Tích nhiều số nhỏ thì tràn số, nên ta lấy log để biến tích thành tổng, rồi đổi dấu để thành bài toán cực tiểu:</p>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Gần như mọi loss phân loại (cross-entropy, negative log-likelihood) và mọi model ngôn ngữ đều được train bằng cùng một nguyên lý: chọn tham số làm dữ liệu quan sát được "có khả năng xảy ra nhất". Mục này cho thấy vì sao nguyên lý đó dẫn tới công thức loss có log.</p>
+</div>
+<h3>Log và exp</h3>
+<table>
+<thead>
+<tr>
+<th>Tính chất</th>
+<th>Ý nghĩa trong ML</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>log(a · b) = log a + log b</td>
+<td>tích nhiều xác suất thành tổng, không tràn số</td>
+</tr>
+<tr>
+<td>log(aⁿ) = n · log a</td>
+<td>số mũ thành hệ số</td>
+</tr>
+<tr>
+<td>log tăng đơn điệu</td>
+<td>cực đại của f và của log f ở cùng chỗ</td>
+</tr>
+<tr>
+<td>log 1 = 0, log p &lt; 0 khi p &lt; 1</td>
+<td>−log p ≥ 0, càng lớn khi p càng nhỏ</td>
+</tr>
+<tr>
+<td>e^(log x) = x</td>
+<td>exp và log là hai phép ngược nhau</td>
+</tr>
+</tbody>
+</table>
+<p>Ví dụ: −log(0.9) ≈ 0.105 (đoán đúng khá chắc, loss nhỏ), −log(0.1) ≈ 2.303 (gán xác suất thấp cho đáp án đúng, loss lớn).</p>
+<h3>Maximum likelihood qua ví dụ đồng xu</h3>
+<p>Tung một đồng xu 10 lần, được 7 ngửa 3 sấp. Xác suất ngửa p bằng bao nhiêu thì hợp lý nhất?</p>
+<p><strong>Likelihood</strong> là xác suất thu được đúng dữ liệu này nếu xác suất ngửa là p:</p>
+<div class="hl"><pre><span></span><code>L(p) = p⁷ · (1 − p)³
+</code></pre></div>
+
+<p>Thử vài giá trị: L(0.5) ≈ 0.00098, L(0.7) ≈ 0.00222, L(0.9) ≈ 0.00048. Giá trị lớn nhất ở <strong>p = 0.7</strong>, đúng bằng tỉ lệ ngửa quan sát được.</p>
+<figure class="fig"><img src="../assets/fig/p0-2-mle.svg" alt="Trái: likelihood đạt đỉnh tại p = 0.7. Phải: lấy −log biến bài toán tìm đỉnh thành tìm đáy, và đáy vẫn ở p = 0.7. Đây chính là một &quot;loss&quot;." loading="lazy"><figcaption>Trái: likelihood đạt đỉnh tại p = 0.7. Phải: lấy −log biến bài toán tìm đỉnh thành tìm đáy, và đáy vẫn ở p = 0.7. Đây chính là một &quot;loss&quot;.</figcaption></figure>
+
+<h3>Từ likelihood tới loss</h3>
+<p>Với n mẫu độc lập, likelihood là tích n xác suất. Tích nhiều số nhỏ nhanh chóng tràn về 0 trên máy tính (tích 1.100 số 0.5 đã thành đúng 0.0). Nên ta lấy log để biến tích thành tổng, rồi đổi dấu để thành bài toán <strong>cực tiểu</strong>:</p>
 <div class="hl"><pre><span></span><code>max Π p(yᵢ | xᵢ)   ⟺   min −Σ log p(yᵢ | xᵢ)
 </code></pre></div>
 
-<p>Vế phải chính là <strong>cross-entropy loss</strong> ở Bài 1. Mọi loss phân loại đều có gốc từ đây.</p>
+<p>Vế phải là <strong>negative log-likelihood</strong>, và với phân loại nó chính là <strong>cross-entropy loss</strong>: với mỗi mẫu, lấy xác suất model gán cho đáp án đúng, cộng −log của nó. Ở ví dụ đồng xu, NLL tại p = 0.7 là 6.109, tại p = 0.5 là 6.931: p = 0.7 có loss thấp hơn.</p>
 <div class="keep">
-<p><strong>Ghi nhớ:</strong> log biến tích thành tổng và giữ nguyên vị trí cực trị. Vì vậy loss gần như luôn có log.</p>
-</div></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p0.2:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 5</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Nhân ma trận bằng tay</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>A = <code>[[1, 2, 0], [0, 1, 3]]</code> (2×3), B = <code>[[1, 0], [2, 1], [0, 4]]</code> (3×2). Tính C = A @ B.</p>
+<p><strong>Ghi nhớ:</strong> log biến tích thành tổng và giữ nguyên vị trí cực trị. Vì vậy loss gần như luôn có log, và "train model" nghĩa là "làm dữ liệu thật có xác suất cao nhất dưới model".</p>
+</div>
+<details class="fold deep">
+<summary>Đào sâu thêm</summary>
+<p><strong>Tính softmax cho ổn định.</strong> Softmax tính eˣⁱ / Σ eˣʲ. Với x = (1000, 1001, 1002), e¹⁰⁰⁰ tràn thành vô cùng và kết quả là <code>nan</code>. Mẹo: trừ đi giá trị lớn nhất trước (eˣ⁻ᵐ / Σ eˣʲ⁻ᵐ cho cùng kết quả vì e⁻ᵐ triệt tiêu ở tử và mẫu), được (0.090, 0.245, 0.665). PyTorch làm sẵn điều này trong <code>F.cross_entropy</code>, và đó là lý do bạn nên đưa <strong>logits</strong> vào hàm loss thay vì tự tính softmax rồi lấy log.</p>
+</details>
+<div class="box check">
+<div class="box-h">Tự kiểm tra nhanh</div>
+<p>Model phân loại 3 lớp gán xác suất cho đáp án đúng của 2 mẫu lần lượt là 0.9 và 0.5.</p>
+<div class="ans" id="p0-2-t-b294-a1">
+<div class="ans-fields"><label>Tổng NLL (log tự nhiên)<input inputmode="decimal" data-ans="0.7985" data-tol="0.001" autocomplete="off"></label><label>NLL trung bình<input inputmode="decimal" data-ans="0.3992" data-tol="0.001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div>
+<div aria-live="polite" class="ans-fb"></div>
+</div>
+</div>
+<h2 id="lt-7">Tóm tắt bài và thuật ngữ</h2>
+<table>
+<thead>
+<tr>
+<th>Chủ đề</th>
+<th>Công thức cốt lõi</th>
+<th>Dùng ở đâu</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Tích vô hướng</td>
+<td>u·v = Σuᵢvᵢ = ‖u‖‖v‖cos θ</td>
+<td>neuron, cosine similarity, attention</td>
+</tr>
+<tr>
+<td>Nhân ma trận</td>
+<td>(m, n) @ (n, p) → (m, p)</td>
+<td>lớp Linear, cả batch một lúc</td>
+</tr>
+<tr>
+<td>Đạo hàm</td>
+<td>độ dốc, f′(x) ≈ (f(x+h) − f(x−h))/2h</td>
+<td>gradient check</td>
+</tr>
+<tr>
+<td>Gradient descent</td>
+<td>w ← w − η·∂L/∂w</td>
+<td>mọi thuật toán train</td>
+</tr>
+<tr>
+<td>Dây chuyền</td>
+<td>∂L/∂w = ∂L/∂a · ∂a/∂w</td>
+<td>backpropagation</td>
+</tr>
+<tr>
+<td>Thống kê</td>
+<td>E[X], Var, σ, quy tắc 68–95</td>
+<td>chuẩn hóa, khởi tạo, phát hiện ngoại lai</td>
+</tr>
+<tr>
+<td>Bayes</td>
+<td>P(A|B) = P(B|A)P(A)/P(B)</td>
+<td>precision, lớp hiếm</td>
+</tr>
+<tr>
+<td>Maximum likelihood</td>
+<td>min −Σ log p(yᵢ|xᵢ)</td>
+<td>cross-entropy, model ngôn ngữ</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Thuật ngữ</th>
+<th>Nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>dot product</td>
+<td>tích vô hướng</td>
+</tr>
+<tr>
+<td>norm L1 / L2</td>
+<td>tổng giá trị tuyệt đối / độ dài Euclid</td>
+</tr>
+<tr>
+<td>cosine similarity</td>
+<td>độ giống về hướng, từ −1 đến 1</td>
+</tr>
+<tr>
+<td>matrix multiplication</td>
+<td>nhân ma trận, ký hiệu <code>@</code></td>
+</tr>
+<tr>
+<td>transpose</td>
+<td>chuyển vị, đổi hàng thành cột</td>
+</tr>
+<tr>
+<td>derivative / partial derivative</td>
+<td>đạo hàm / đạo hàm riêng</td>
+</tr>
+<tr>
+<td>gradient</td>
+<td>vector các đạo hàm riêng, hướng tăng nhanh nhất</td>
+</tr>
+<tr>
+<td>learning rate</td>
+<td>độ dài bước cập nhật η</td>
+</tr>
+<tr>
+<td>chain rule</td>
+<td>quy tắc dây chuyền</td>
+</tr>
+<tr>
+<td>expectation / variance</td>
+<td>kỳ vọng / phương sai</td>
+</tr>
+<tr>
+<td>prior / likelihood / posterior</td>
+<td>niềm tin trước / khả năng của dữ liệu / niềm tin sau</td>
+</tr>
+<tr>
+<td>maximum likelihood (MLE)</td>
+<td>chọn tham số làm dữ liệu có xác suất cao nhất</td>
+</tr>
+<tr>
+<td>negative log-likelihood (NLL)</td>
+<td>−Σ log p, tên khác của cross-entropy khi phân loại</td>
+</tr>
+<tr>
+<td>logits</td>
+<td>điểm thô trước softmax</td>
+</tr>
+</tbody>
+</table></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p0.2:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 5</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Nhân ma trận bằng tay</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>A = <code>[[1, 2, 0], [0, 1, 3]]</code> (2×3), B = <code>[[1, 0], [2, 1], [0, 4]]</code> (3×2). Tính C = A @ B.</p>
 <div class="ans" id="p0-2-e1-a1"><div class="ans-fields"><label>C[0,0]<input inputmode="decimal" data-ans="5.0" data-tol="0.0" autocomplete="off"></label><label>C[0,1]<input inputmode="decimal" data-ans="2.0" data-tol="0.0" autocomplete="off"></label><label>C[1,1]<input inputmode="decimal" data-ans="13.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
 
 <details class="fold solution">
@@ -215,7 +702,7 @@ Phương sai   Var(X) = E[(X − E[X])²]     (độ tản ra)
     </div>
     <aside class="aside">
       <div class="abox"><h4>Tiến độ bài này</h4><div class="ring"><svg viewBox="0 0 64 64" aria-hidden="true"><circle class="bg" cx="32" cy="32" r="28"/><circle class="fg" cx="32" cy="32" r="28" stroke-dasharray="176" stroke-dashoffset="176"/></svg><div><b id="ring-n">0/3</b><span id="ring-sub">phần đã xong</span></div></div></div>
-      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Vector và tích vô hướng</a></li><li><a href="#lt-2">Ma trận và phép nhân ma trận</a></li><li><a href="#lt-3">Đạo hàm, gradient và quy tắc dây chuyền</a></li><li><a href="#lt-4">Xác suất và thống kê cơ bản</a></li><li><a href="#lt-5">Bayes và xác suất có điều kiện</a></li><li><a href="#lt-6">Log, exp và maximum likelihood</a></li></ol></div>
+      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Vector và tích vô hướng</a></li><li><a href="#lt-2">Ma trận và phép nhân ma trận</a></li><li><a href="#lt-3">Đạo hàm, gradient và quy tắc dây chuyền</a></li><li><a href="#lt-4">Xác suất và thống kê cơ bản</a></li><li><a href="#lt-5">Bayes và xác suất có điều kiện</a></li><li><a href="#lt-6">Log, exp và maximum likelihood</a></li><li><a href="#lt-7">Tóm tắt bài và thuật ngữ</a></li></ol></div>
       
       <div class="abox"><h4>Cùng giai đoạn</h4><ul><li><a href="p0-1.html">Python cho ML: numpy, pandas, matplotlib</a></li><li><span class=cur>Toán cho AI: đại số tuyến tính, giải tích, xác suất</span></li><li><a href="p0-3.html">Công cụ: Git, GitHub, terminal, Colab</a></li></ul></div>
     </aside>

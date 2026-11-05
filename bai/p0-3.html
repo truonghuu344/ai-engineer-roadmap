@@ -22,12 +22,107 @@
 <main class="container">
   <div class="crumbs"><a href="../bai-hoc.html">Bài học</a><span>/</span><a href="../bai-hoc.html#p0">P0 · Nền móng</a><span>/</span><span>P0.3</span></div>
   <section class="lhero"><div class="code">P0.3</div><h1>Công cụ: Git, GitHub, terminal, Colab</h1><div class="lmeta"><span class="m">Giai đoạn P0 · Nền móng</span><span class="m">Tuần 1–3</span><span class="chip ready"><span class="dot"></span>Có nội dung đầy đủ</span></div>
-    <div class="intro"><p>Code ML không chỉ chạy trong notebook. Bạn cần lưu lịch sử thay đổi (Git), chia sẻ và nhận góp ý (GitHub), điều khiển máy chủ GPU (terminal), và train trên GPU miễn phí (Colab). Nhà tuyển dụng nhìn GitHub của bạn trước khi đọc CV.</p></div></section>
+    <div class="intro"><p>Code ML không chỉ chạy trong notebook. Bạn cần điều khiển máy chủ GPU (terminal), lưu lịch sử thay đổi (Git), chia sẻ và nhận góp ý (GitHub), và train trên GPU miễn phí (Colab). Nhà tuyển dụng nhìn GitHub của bạn trước khi đọc CV, nên bài này cũng là bước đầu xây hồ sơ.</p></div></section>
   
-  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">5 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
+  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">7 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
   <div class="lgrid" style="margin-top:22px">
-    <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">Git hoạt động thế nào</h2>
-<p>Git chụp "ảnh" toàn bộ dự án mỗi lần bạn <strong>commit</strong>. Có ba khu vực:</p>
+    <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">Terminal Linux đủ dùng</h2>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Máy GPU thuê trên cloud (RunPod, Lambda, máy chủ trường) không có giao diện đồ họa: bạn chỉ có một cửa sổ terminal qua SSH. Biết khoảng 20 lệnh là đủ để cài môi trường, chạy train, theo dõi log và dọn ổ đĩa mà không phải tải file về máy.</p>
+</div>
+<h3>Cấu trúc thư mục và đường dẫn</h3>
+<p>Linux có một cây thư mục duy nhất bắt đầu từ <code>/</code>. Thư mục nhà của bạn là <code>~</code> (ví dụ <code>/home/truong</code>). Đường dẫn <strong>tuyệt đối</strong> bắt đầu bằng <code>/</code>; đường dẫn <strong>tương đối</strong> tính từ thư mục hiện tại, với <code>.</code> là "ở đây" và <code>..</code> là "thư mục cha".</p>
+<div class="hl"><pre><span></span><code><span class="tk-nb">pwd</span><span class="tk-w">                      </span><span class="tk-c1"># đang ở đâu: /home/truong/project</span>
+ls<span class="tk-w"> </span>-lh<span class="tk-w">                   </span><span class="tk-c1"># liệt kê, -l chi tiết, -h dung lượng dễ đọc (12K, 3.4G)</span>
+<span class="tk-nb">cd</span><span class="tk-w"> </span>data/raw<span class="tk-w">              </span><span class="tk-c1"># vào thư mục con (tương đối)</span>
+<span class="tk-nb">cd</span><span class="tk-w"> </span>..<span class="tk-w">                    </span><span class="tk-c1"># lên một cấp</span>
+<span class="tk-nb">cd</span><span class="tk-w"> </span>~<span class="tk-w">                     </span><span class="tk-c1"># về thư mục nhà</span>
+mkdir<span class="tk-w"> </span>-p<span class="tk-w"> </span>runs/exp1<span class="tk-w">       </span><span class="tk-c1"># tạo thư mục, -p tạo luôn thư mục cha nếu chưa có</span>
+cp<span class="tk-w"> </span>a.py<span class="tk-w"> </span>b.py<span class="tk-p">;</span><span class="tk-w"> </span>mv<span class="tk-w"> </span>b.py<span class="tk-w"> </span>src/<span class="tk-p">;</span><span class="tk-w"> </span>rm<span class="tk-w"> </span>old.log<span class="tk-w">   </span><span class="tk-c1"># chép, di chuyển/đổi tên, xóa</span>
+rm<span class="tk-w"> </span>-r<span class="tk-w"> </span>tmp/<span class="tk-w">               </span><span class="tk-c1"># xóa cả thư mục (không có thùng rác, cẩn thận)</span>
+</code></pre></div>
+
+<h3>Đọc và tìm trong file</h3>
+<div class="hl"><pre><span></span><code>cat<span class="tk-w"> </span>config.yaml<span class="tk-w">          </span><span class="tk-c1"># in cả file</span>
+head<span class="tk-w"> </span>-n<span class="tk-w"> </span><span class="tk-m">20</span><span class="tk-w"> </span>train.csv<span class="tk-w">     </span><span class="tk-c1"># 20 dòng đầu: xem nhanh cấu trúc CSV</span>
+tail<span class="tk-w"> </span>-n<span class="tk-w"> </span><span class="tk-m">50</span><span class="tk-w"> </span>train.log<span class="tk-w">     </span><span class="tk-c1"># 50 dòng cuối</span>
+tail<span class="tk-w"> </span>-f<span class="tk-w"> </span>train.log<span class="tk-w">        </span><span class="tk-c1"># theo dõi log đang được ghi (Ctrl+C để thoát)</span>
+grep<span class="tk-w"> </span><span class="tk-s2">"val_acc"</span><span class="tk-w"> </span>train.log<span class="tk-w"> </span><span class="tk-c1"># chỉ in dòng có chuỗi "val_acc"</span>
+grep<span class="tk-w"> </span>-c<span class="tk-w"> </span>ERROR<span class="tk-w"> </span>train.log<span class="tk-w">  </span><span class="tk-c1"># đếm số dòng khớp</span>
+grep<span class="tk-w"> </span>-v<span class="tk-w"> </span>ERROR<span class="tk-w"> </span>train.log<span class="tk-w">  </span><span class="tk-c1"># in các dòng KHÔNG khớp</span>
+wc<span class="tk-w"> </span>-l<span class="tk-w"> </span>train.csv<span class="tk-w">          </span><span class="tk-c1"># đếm số dòng (số mẫu + 1 dòng tiêu đề)</span>
+</code></pre></div>
+
+<h3>Pipe: ghép lệnh nhỏ thành công cụ lớn</h3>
+<p>Dấu <code>|</code> đưa <strong>đầu ra</strong> của lệnh trước làm <strong>đầu vào</strong> của lệnh sau. Mỗi lệnh làm một việc nhỏ; ghép lại giải được bài khó.</p>
+<figure class="fig"><img src="../assets/fig/p0-3-pipe.svg" alt="cat in nội dung, grep lọc dòng có ERROR, wc -l đếm: kết quả là số dòng lỗi." loading="lazy"><figcaption>cat in nội dung, grep lọc dòng có ERROR, wc -l đếm: kết quả là số dòng lỗi.</figcaption></figure>
+
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>Một file <code>train.log</code> có 6 dòng:</p>
+<div class="hl"><pre><span></span><code>epoch 1 loss 2.31
+epoch 2 loss 1.85
+ERROR CUDA out of memory
+epoch 3 loss 1.52
+ERROR checkpoint not found
+done
+</code></pre></div>
+
+<ul>
+<li><code>cat train.log | grep ERROR | wc -l</code> → <strong>2</strong> (hai dòng lỗi)</li>
+<li><code>grep -c epoch train.log</code> → <strong>3</strong></li>
+<li><code>grep -v ERROR train.log | wc -l</code> → <strong>4</strong> (6 dòng trừ 2 dòng lỗi)</li>
+<li><code>grep loss train.log | tail -n 1</code> → <code>epoch 3 loss 1.52</code> (loss mới nhất)</li>
+</ul>
+<p>Thêm vài lệnh nối pipe hay dùng: <code>sort</code> (sắp xếp), <code>sort -n</code> (theo số), <code>uniq -c</code> (đếm dòng trùng liên tiếp), <code>cut -d, -f2</code> (lấy cột 2 của CSV). Ví dụ đếm số mẫu mỗi nhãn: <code>cut -d, -f2 train.csv | sort | uniq -c</code>.</p>
+</div>
+<h3>Chuyển hướng đầu ra</h3>
+<div class="hl"><pre><span></span><code>python<span class="tk-w"> </span>train.py<span class="tk-w"> </span>&gt;<span class="tk-w"> </span>train.log<span class="tk-w">          </span><span class="tk-c1"># ghi đầu ra vào file (ghi đè)</span>
+python<span class="tk-w"> </span>train.py<span class="tk-w"> </span>&gt;&gt;<span class="tk-w"> </span>train.log<span class="tk-w">         </span><span class="tk-c1"># ghi nối vào cuối file</span>
+python<span class="tk-w"> </span>train.py<span class="tk-w"> </span>&gt;<span class="tk-w"> </span>train.log<span class="tk-w"> </span><span class="tk-m">2</span>&gt;<span class="tk-p">&amp;</span><span class="tk-m">1</span><span class="tk-w">     </span><span class="tk-c1"># gộp cả lỗi (stderr, kênh 2) vào cùng file</span>
+</code></pre></div>
+
+<h3>Theo dõi máy và chạy lâu</h3>
+<div class="hl"><pre><span></span><code>nvidia-smi<span class="tk-w">                           </span><span class="tk-c1"># có GPU nào, đang dùng bao nhiêu VRAM, tiến trình nào</span>
+watch<span class="tk-w"> </span>-n<span class="tk-w"> </span><span class="tk-m">2</span><span class="tk-w"> </span>nvidia-smi<span class="tk-w">                </span><span class="tk-c1"># cập nhật mỗi 2 giây</span>
+df<span class="tk-w"> </span>-h<span class="tk-w">                                </span><span class="tk-c1"># ổ đĩa còn trống bao nhiêu</span>
+du<span class="tk-w"> </span>-sh<span class="tk-w"> </span>data/*<span class="tk-w"> </span><span class="tk-p">|</span><span class="tk-w"> </span>sort<span class="tk-w"> </span>-h<span class="tk-w">              </span><span class="tk-c1"># dung lượng từng thư mục, sắp tăng dần</span>
+htop<span class="tk-w">                                 </span><span class="tk-c1"># CPU, RAM, tiến trình (q để thoát)</span>
+nohup<span class="tk-w"> </span>python<span class="tk-w"> </span>train.py<span class="tk-w"> </span>&gt;<span class="tk-w"> </span>train.log<span class="tk-w"> </span><span class="tk-m">2</span>&gt;<span class="tk-p">&amp;</span><span class="tk-m">1</span><span class="tk-w"> </span><span class="tk-p">&amp;</span><span class="tk-w">   </span><span class="tk-c1"># chạy nền, đóng terminal vẫn chạy</span>
+tmux<span class="tk-w"> </span>new<span class="tk-w"> </span>-s<span class="tk-w"> </span>train<span class="tk-w">                    </span><span class="tk-c1"># phiên terminal "sống" kể cả khi mất kết nối SSH</span>
+</code></pre></div>
+
+<p><code>nohup ... &amp;</code> và <code>tmux</code> giải cùng một vấn đề: train mất 10 tiếng nhưng kết nối SSH của bạn đứt sau 1 tiếng. Với <code>tmux</code>, gõ <code>Ctrl+B</code> rồi <code>D</code> để rời phiên, <code>tmux attach -t train</code> để quay lại.</p>
+<h3>Kết nối và quyền</h3>
+<div class="hl"><pre><span></span><code>ssh<span class="tk-w"> </span>user@1.2.3.4<span class="tk-w">                     </span><span class="tk-c1"># đăng nhập máy chủ</span>
+scp<span class="tk-w"> </span>model.pt<span class="tk-w"> </span>user@1.2.3.4:~/models/<span class="tk-w">  </span><span class="tk-c1"># chép file lên máy chủ</span>
+chmod<span class="tk-w"> </span>+x<span class="tk-w"> </span>run.sh<span class="tk-w"> </span><span class="tk-o">&amp;&amp;</span><span class="tk-w"> </span>./run.sh<span class="tk-w">          </span><span class="tk-c1"># cho phép chạy script rồi chạy</span>
+<span class="tk-nb">export</span><span class="tk-w"> </span><span class="tk-nv">CUDA_VISIBLE_DEVICES</span><span class="tk-o">=</span><span class="tk-m">0</span><span class="tk-w">        </span><span class="tk-c1"># biến môi trường: chỉ dùng GPU số 0</span>
+</code></pre></div>
+
+<div class="box pitfall">
+<div class="box-h">Lỗi hay gặp</div>
+<p><strong><code>rm -rf</code> không có thùng rác.</strong> Một dấu cách sai (<code>rm -rf data /</code> thay vì <code>rm -rf data/</code>) có thể xóa thứ bạn không muốn. Trước khi xóa, chạy <code>ls</code> với cùng đường dẫn để xem đúng những gì sẽ bị xóa. Với dữ liệu quan trọng, luôn có bản sao ở nơi khác.</p>
+</div>
+<div class="box check">
+<div class="box-h">Tự kiểm tra nhanh</div>
+<p>File <code>results.csv</code> có dòng tiêu đề và 1.000 dòng dữ liệu.</p>
+<div class="ans" id="p0-3-t-b74-a1">
+<div class="ans-fields"><label>Kết quả của wc -l results.csv<input inputmode="decimal" data-ans="1001.0" data-tol="0.0" autocomplete="off"></label><label>Số dòng in ra khi nối tail -n 5 results.csv sang wc -l<input inputmode="decimal" data-ans="5.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div>
+<div aria-live="polite" class="ans-fb"></div>
+</div>
+</div>
+<h2 id="lt-2">Git hoạt động thế nào</h2>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Không có Git, bạn sẽ có <code>train_final.py</code>, <code>train_final2.py</code>, <code>train_final_THAT_SU.py</code> và không nhớ cái nào cho accuracy 82%. Git lưu mọi phiên bản, cho biết ai đổi gì khi nào, cho phép quay lại phiên bản cũ, và là cách duy nhất để làm việc nhóm trên cùng một codebase.</p>
+</div>
+<h3>Commit là một bức ảnh chụp</h3>
+<p>Mỗi <strong>commit</strong> là ảnh chụp toàn bộ dự án tại một thời điểm, kèm lời nhắn, tác giả, thời gian, và một mã định danh (hash) như <code>a3f9c21</code>. Lịch sử dự án là chuỗi các commit nối nhau.</p>
+<h3>Ba khu vực (và một khu vực từ xa)</h3>
+<figure class="fig"><img src="../assets/fig/p0-3-areas.svg" alt="Thay đổi đi từ thư mục làm việc vào vùng chuẩn bị (git add), vào lịch sử (git commit), rồi lên GitHub (git push)." loading="lazy"><figcaption>Thay đổi đi từ thư mục làm việc vào vùng chuẩn bị (git add), vào lịch sử (git commit), rồi lên GitHub (git push).</figcaption></figure>
+
 <table>
 <thead>
 <tr>
@@ -44,75 +139,399 @@
 </tr>
 <tr>
 <td>Staging area</td>
-<td>những thay đổi sẽ vào commit tiếp theo</td>
+<td>những thay đổi <strong>sẽ</strong> vào commit tiếp theo</td>
 <td><code>git add &lt;file&gt;</code></td>
 </tr>
 <tr>
 <td>Repository</td>
-<td>lịch sử các commit</td>
+<td>lịch sử các commit, nằm trong thư mục <code>.git</code></td>
 <td><code>git commit -m "..."</code></td>
+</tr>
+<tr>
+<td>Remote</td>
+<td>bản sao trên GitHub</td>
+<td><code>git push</code></td>
 </tr>
 </tbody>
 </table>
-<div class="hl"><pre><span></span><code>git<span class="tk-w"> </span>init<span class="tk-w">                      </span><span class="tk-c1"># tạo repo mới</span>
-git<span class="tk-w"> </span>status<span class="tk-w">                    </span><span class="tk-c1"># xem file nào đã sửa, đã stage</span>
-git<span class="tk-w"> </span>add<span class="tk-w"> </span>train.py<span class="tk-w">              </span><span class="tk-c1"># stage một file</span>
-git<span class="tk-w"> </span>commit<span class="tk-w"> </span>-m<span class="tk-w"> </span><span class="tk-s2">"Thêm vòng lặp train có checkpoint"</span>
-git<span class="tk-w"> </span>log<span class="tk-w"> </span>--oneline<span class="tk-w">             </span><span class="tk-c1"># lịch sử ngắn</span>
-git<span class="tk-w"> </span>diff<span class="tk-w">                      </span><span class="tk-c1"># xem thay đổi chưa stage</span>
+<p>Vùng staging tồn tại để bạn <strong>chọn</strong> những gì vào commit. Bạn sửa 5 file nhưng chỉ 2 file liên quan đến việc "thêm checkpoint" thì chỉ <code>add</code> 2 file đó, commit, rồi xử lý 3 file kia ở commit khác. Lịch sử sẽ dễ đọc và dễ quay lui.</p>
+<h3>Vòng làm việc hằng ngày</h3>
+<div class="hl"><pre><span></span><code>git<span class="tk-w"> </span>init<span class="tk-w">                      </span><span class="tk-c1"># tạo repo mới (một lần)</span>
+git<span class="tk-w"> </span>status<span class="tk-w">                    </span><span class="tk-c1"># xem file nào đã sửa, đã stage — chạy lệnh này liên tục</span>
+git<span class="tk-w"> </span>diff<span class="tk-w">                      </span><span class="tk-c1"># xem chi tiết thay đổi chưa stage</span>
+git<span class="tk-w"> </span>add<span class="tk-w"> </span>train.py<span class="tk-w"> </span>utils.py<span class="tk-w">     </span><span class="tk-c1"># stage hai file</span>
+git<span class="tk-w"> </span>diff<span class="tk-w"> </span>--staged<span class="tk-w">             </span><span class="tk-c1"># xem chính xác những gì sắp được commit</span>
+git<span class="tk-w"> </span>commit<span class="tk-w"> </span>-m<span class="tk-w"> </span><span class="tk-s2">"Thêm checkpoint và resume cho vòng lặp train"</span>
+git<span class="tk-w"> </span>log<span class="tk-w"> </span>--oneline<span class="tk-w"> </span>-5<span class="tk-w">          </span><span class="tk-c1"># 5 commit gần nhất, mỗi commit một dòng</span>
 </code></pre></div>
 
-<p>Viết commit message ở thì hiện tại, nói <strong>làm gì và vì sao</strong>: "Sửa lỗi rò dữ liệu khi chia train/val" tốt hơn "update".</p>
-<h2 id="lt-2">Branch, merge và pull request</h2>
-<p><strong>Branch</strong> là một dòng phát triển riêng. Bạn thử ý tưởng mới trên branch mà không phá nhánh chính.</p>
-<div class="hl"><pre><span></span><code>git<span class="tk-w"> </span>switch<span class="tk-w"> </span>-c<span class="tk-w"> </span>feature/augmentation<span class="tk-w">   </span><span class="tk-c1"># tạo và chuyển sang branch mới</span>
-<span class="tk-c1"># ... sửa code, commit ...</span>
-git<span class="tk-w"> </span>push<span class="tk-w"> </span>-u<span class="tk-w"> </span>origin<span class="tk-w"> </span>feature/augmentation
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>Bạn sửa <code>train.py</code>, <code>model.py</code>, <code>README.md</code>, rồi chạy:</p>
+<div class="hl"><pre><span></span><code>git<span class="tk-w"> </span>add<span class="tk-w"> </span>train.py<span class="tk-w"> </span>model.py
+git<span class="tk-w"> </span>commit<span class="tk-w"> </span>-m<span class="tk-w"> </span><span class="tk-s2">"Đổi optimizer sang AdamW"</span>
+git<span class="tk-w"> </span>status
 </code></pre></div>
 
-<p>Trên GitHub, mở <strong>pull request</strong> (PR) để đề nghị gộp branch vào <code>main</code>. PR là nơi người khác review code, CI chạy test, rồi bấm Merge. Ngay cả khi làm một mình, dùng PR giúp bạn tự review và giữ lịch sử sạch.</p>
-<h2 id="lt-3">.gitignore cho dự án ML</h2>
-<p>Không bao giờ commit dữ liệu lớn, checkpoint, môi trường ảo hay khóa API. GitHub chặn file lớn hơn 100 MB, và khóa API lộ ra sẽ bị quét lấy trong vài phút.</p>
-<div class="hl"><pre><span></span><code>.venv/
+<p>Commit chứa <strong>2 file</strong> (<code>train.py</code>, <code>model.py</code>). <code>README.md</code> vẫn ở trạng thái "modified" chưa stage, chờ commit sau. Nếu sau commit bạn lại sửa tiếp <code>train.py</code>, nó cũng hiện là "modified" lần nữa: Git theo dõi thay đổi so với commit gần nhất.</p>
+</div>
+<h3>Viết commit message tốt</h3>
+<p>Một dòng tóm tắt (dưới khoảng 70 ký tự), nói <strong>làm gì</strong>, nếu cần thì thêm đoạn <strong>vì sao</strong>:</p>
+<table>
+<thead>
+<tr>
+<th>Kém</th>
+<th>Tốt</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>update</code></td>
+<td><code>Sửa rò dữ liệu khi chia train/val theo người dùng</code></td>
+</tr>
+<tr>
+<td><code>fix bug</code></td>
+<td><code>Chặn NaN khi batch toàn nhãn 0 trong focal loss</code></td>
+</tr>
+<tr>
+<td><code>final</code></td>
+<td><code>Thêm script đánh giá trên tập test, ghi kết quả ra JSON</code></td>
+</tr>
+</tbody>
+</table>
+<p>Nhìn lịch sử commit, người khác (và bạn 3 tháng sau) phải hiểu dự án tiến triển thế nào.</p>
+<h3>Quay lui khi lỡ tay</h3>
+<div class="hl"><pre><span></span><code>git<span class="tk-w"> </span>restore<span class="tk-w"> </span>train.py<span class="tk-w">                 </span><span class="tk-c1"># bỏ thay đổi chưa stage, về bản commit gần nhất</span>
+git<span class="tk-w"> </span>restore<span class="tk-w"> </span>--staged<span class="tk-w"> </span>train.py<span class="tk-w">        </span><span class="tk-c1"># bỏ stage (thay đổi vẫn còn trong file)</span>
+git<span class="tk-w"> </span>commit<span class="tk-w"> </span>--amend<span class="tk-w"> </span>-m<span class="tk-w"> </span><span class="tk-s2">"Lời nhắn mới"</span><span class="tk-w"> </span><span class="tk-c1"># sửa commit vừa tạo (chỉ khi chưa push)</span>
+git<span class="tk-w"> </span>revert<span class="tk-w"> </span>a3f9c21<span class="tk-w">                   </span><span class="tk-c1"># tạo commit mới đảo ngược commit cũ (an toàn khi đã push)</span>
+git<span class="tk-w"> </span>log<span class="tk-w"> </span>-p<span class="tk-w"> </span>train.py<span class="tk-w">                  </span><span class="tk-c1"># xem lịch sử thay đổi của một file</span>
+</code></pre></div>
+
+<div class="box pitfall">
+<div class="box-h">Lỗi hay gặp</div>
+<p><strong><code>git add .</code> mọi thứ.</strong> Lệnh này stage tất cả, kể cả file dữ liệu 2 GB, checkpoint, thư mục <code>.venv</code>, file <code>.env</code> chứa khóa API. Khi đã commit và push, xóa khỏi lịch sử rất mất công. Luôn có <code>.gitignore</code> trước (mục dưới) và chạy <code>git status</code> trước khi commit.</p>
+</div>
+<h2 id="lt-3">Branch, merge và pull request</h2>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Bạn muốn thử augmentation mới nhưng không chắc nó tốt hơn. Branch cho phép thử trên một "dòng thời gian" riêng: hỏng thì bỏ, tốt thì gộp vào. Pull request là cách các đội làm phần mềm (và đội ML) review code trước khi gộp.</p>
+</div>
+<figure class="fig"><img src="../assets/fig/p0-3-branch.svg" alt="Branch tách ra từ main, có 3 commit thử nghiệm, rồi được merge trở lại qua pull request." loading="lazy"><figcaption>Branch tách ra từ main, có 3 commit thử nghiệm, rồi được merge trở lại qua pull request.</figcaption></figure>
+
+<div class="hl"><pre><span></span><code>git<span class="tk-w"> </span>switch<span class="tk-w"> </span>-c<span class="tk-w"> </span>feature/augmentation<span class="tk-w">   </span><span class="tk-c1"># tạo branch mới và chuyển sang</span>
+<span class="tk-c1"># ... sửa code, commit vài lần ...</span>
+git<span class="tk-w"> </span>push<span class="tk-w"> </span>-u<span class="tk-w"> </span>origin<span class="tk-w"> </span>feature/augmentation<span class="tk-w">   </span><span class="tk-c1"># đẩy branch lên GitHub lần đầu</span>
+git<span class="tk-w"> </span>switch<span class="tk-w"> </span>main<span class="tk-w">                      </span><span class="tk-c1"># quay về nhánh chính</span>
+git<span class="tk-w"> </span>pull<span class="tk-w">                             </span><span class="tk-c1"># lấy thay đổi mới nhất từ GitHub</span>
+git<span class="tk-w"> </span>merge<span class="tk-w"> </span>feature/augmentation<span class="tk-w">       </span><span class="tk-c1"># gộp (hoặc làm qua pull request trên web)</span>
+git<span class="tk-w"> </span>branch<span class="tk-w"> </span>-d<span class="tk-w"> </span>feature/augmentation<span class="tk-w">   </span><span class="tk-c1"># xóa branch đã gộp</span>
+</code></pre></div>
+
+<h3>Pull request (PR)</h3>
+<p>Trên GitHub, bạn mở <strong>pull request</strong> để đề nghị gộp branch vào <code>main</code>. Trang PR hiển thị toàn bộ thay đổi, cho phép bình luận từng dòng, và chạy kiểm tra tự động (CI, học ở P8). Một PR tốt có:</p>
+<ul>
+<li>Tiêu đề rõ như commit message.</li>
+<li>Mô tả: thay đổi gì, vì sao, đã kiểm tra thế nào (ví dụ "val acc 81.2% → 83.0%, 3 seed").</li>
+<li>Kích thước vừa phải: dưới vài trăm dòng thì người review đọc kỹ được.</li>
+</ul>
+<p>Ngay cả khi làm một mình, dùng PR giúp bạn tự đọc lại thay đổi trước khi gộp và để lại dấu vết dễ hiểu trên GitHub.</p>
+<h3>Xung đột (conflict)</h3>
+<p>Khi hai branch cùng sửa <strong>một dòng</strong>, Git không tự quyết được và đánh dấu trong file:</p>
+<div class="hl"><pre><span></span><code>&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD
+lr = 3e-4
+=======
+lr = 1e-3
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; feature/augmentation
+</code></pre></div>
+
+<p>Bạn sửa file giữ lại dòng đúng, xóa các dấu <code>&lt;&lt;&lt;&lt;&lt;&lt;&lt;</code>, <code>=======</code>, <code>&gt;&gt;&gt;&gt;&gt;&gt;&gt;</code>, rồi <code>git add</code> và <code>git commit</code>. Xung đột là chuyện bình thường, không phải lỗi.</p>
+<div class="box check">
+<div class="box-h">Tự kiểm tra nhanh</div>
+<p>Bạn đang ở <code>main</code> có 4 commit. Bạn tạo branch <code>exp</code>, commit thêm 3 lần trên <code>exp</code>, rồi quay về <code>main</code> và merge <code>exp</code> (không có commit mới nào trên <code>main</code> trong lúc đó).</p>
+<div class="ans" id="p0-3-t-b175-a1">
+<div class="ans-fields"><label>Số commit trên exp trước khi merge<input inputmode="decimal" data-ans="7.0" data-tol="0.0" autocomplete="off"></label><label>Số commit thấy được từ main sau khi merge (fast-forward)<input inputmode="decimal" data-ans="7.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div>
+<div aria-live="polite" class="ans-fb"></div>
+</div>
+</div>
+<h2 id="lt-4">.gitignore và bí mật cho dự án ML</h2>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Repo ML khác repo web: có dữ liệu hàng GB, checkpoint hàng trăm MB, log thí nghiệm, và khóa API để gọi LLM. Thứ nào trong số đó vào Git là rắc rối: GitHub chặn file trên 100 MB, repo phình to làm <code>clone</code> chậm, và khóa API lộ ra sẽ bị bot quét lấy trong vài phút.</p>
+</div>
+<p>File <code>.gitignore</code> liệt kê những gì Git bỏ qua. Mẫu cho dự án ML:</p>
+<div class="hl"><pre><span></span><code># môi trường và cache
+.venv/
 __pycache__/
-*.ipynb_checkpoints
+.ipynb_checkpoints/
+
+# dữ liệu, model, log
 data/
 checkpoints/
 *.pt
 *.ckpt
+*.safetensors
 wandb/
+runs/
+
+# bí mật
 .env
 </code></pre></div>
 
-<p>Dữ liệu và model lớn thì lưu ở Google Drive, Hugging Face Hub hoặc dùng DVC (học ở P8).</p>
+<p>Một dòng <code>data/</code> bỏ qua cả thư mục; <code>*.pt</code> bỏ qua mọi file đuôi <code>.pt</code>; dòng bắt đầu bằng <code>#</code> là chú thích; thêm <code>!data/README.md</code> để vẫn giữ lại một file cụ thể.</p>
+<h3>Giữ khóa API ngoài code</h3>
+<div class="hl"><pre><span></span><code><span class="tk-c1"># .env (không commit)</span>
+<span class="tk-c1"># ANTHROPIC_API_KEY=sk-ant-...</span>
+
+<span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">os</span>
+<span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">dotenv</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">load_dotenv</span>     <span class="tk-c1"># pip install python-dotenv</span>
+<span class="tk-n">load_dotenv</span><span class="tk-p">()</span>                      <span class="tk-c1"># đọc .env vào biến môi trường</span>
+<span class="tk-n">key</span> <span class="tk-o">=</span> <span class="tk-n">os</span><span class="tk-o">.</span><span class="tk-n">environ</span><span class="tk-p">[</span><span class="tk-s2">"ANTHROPIC_API_KEY"</span><span class="tk-p">]</span>
+</code></pre></div>
+
+<p>Trong repo, thêm file <code>.env.example</code> có tên biến nhưng không có giá trị thật, để người khác biết cần đặt biến gì.</p>
+<h3>Dữ liệu và model lớn để ở đâu</h3>
+<table>
+<thead>
+<tr>
+<th>Thứ</th>
+<th>Nơi lưu</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Dữ liệu công khai</td>
+<td>link tải + script tải trong repo (<code>scripts/download_data.py</code>)</td>
+</tr>
+<tr>
+<td>Dữ liệu riêng, nhỏ</td>
+<td>Google Drive, đọc từ Colab</td>
+</tr>
+<tr>
+<td>Model đã train</td>
+<td>Hugging Face Hub (có model card)</td>
+</tr>
+<tr>
+<td>Phiên bản dữ liệu theo thí nghiệm</td>
+<td>DVC (học ở P8)</td>
+</tr>
+</tbody>
+</table>
 <div class="keep">
-<p><strong>Ghi nhớ:</strong> khóa API đặt trong file <code>.env</code>, đọc bằng <code>os.environ</code>, và <code>.env</code> luôn nằm trong <code>.gitignore</code>.</p>
+<p><strong>Ghi nhớ:</strong> khóa API đặt trong file <code>.env</code>, đọc bằng <code>os.environ</code>, và <code>.env</code> luôn nằm trong <code>.gitignore</code>. Nếu lỡ push khóa lên GitHub, <strong>thu hồi khóa ngay</strong> ở trang quản lý của nhà cung cấp; xóa commit thôi là không đủ vì khóa đã bị quét.</p>
 </div>
-<h2 id="lt-4">Terminal Linux đủ dùng</h2>
-<p>Máy GPU trên cloud không có giao diện. Bạn điều khiển bằng terminal.</p>
-<div class="hl"><pre><span></span><code>pwd<span class="tk-p">;</span><span class="tk-w"> </span>ls<span class="tk-w"> </span>-lh<span class="tk-p">;</span><span class="tk-w"> </span><span class="tk-nb">cd</span><span class="tk-w"> </span>project/<span class="tk-w">          </span><span class="tk-c1"># đang ở đâu, có gì, chuyển thư mục</span>
-cat<span class="tk-w"> </span>log.txt<span class="tk-w"> </span><span class="tk-p">|</span><span class="tk-w"> </span>grep<span class="tk-w"> </span>ERROR<span class="tk-w"> </span><span class="tk-p">|</span><span class="tk-w"> </span>wc<span class="tk-w"> </span>-l<span class="tk-w">  </span><span class="tk-c1"># pipe: đếm số dòng có ERROR</span>
-tail<span class="tk-w"> </span>-f<span class="tk-w"> </span>train.log<span class="tk-w">                 </span><span class="tk-c1"># theo dõi log đang ghi</span>
-du<span class="tk-w"> </span>-sh<span class="tk-w"> </span>data/*<span class="tk-w">                     </span><span class="tk-c1"># dung lượng từng thư mục</span>
-nvidia-smi<span class="tk-w">                        </span><span class="tk-c1"># GPU nào, đang dùng bao nhiêu VRAM</span>
-nohup<span class="tk-w"> </span>python<span class="tk-w"> </span>train.py<span class="tk-w"> </span>&gt;<span class="tk-w"> </span>train.log<span class="tk-w"> </span><span class="tk-m">2</span>&gt;<span class="tk-p">&amp;</span><span class="tk-m">1</span><span class="tk-w"> </span><span class="tk-p">&amp;</span><span class="tk-w">   </span><span class="tk-c1"># chạy nền, đóng terminal vẫn chạy</span>
-ssh<span class="tk-w"> </span>user@server<span class="tk-w">                   </span><span class="tk-c1"># đăng nhập máy chủ</span>
-chmod<span class="tk-w"> </span>+x<span class="tk-w"> </span>run.sh<span class="tk-w">                   </span><span class="tk-c1"># cho phép chạy script</span>
+<div class="box pitfall">
+<div class="box-h">Lỗi hay gặp</div>
+<p><strong>Thêm <code>.gitignore</code> sau khi đã commit file.</strong> <code>.gitignore</code> chỉ có tác dụng với file <strong>chưa</strong> được Git theo dõi. Nếu <code>data/</code> đã nằm trong một commit, phải gỡ khỏi Git (giữ lại trên máy) bằng <code>git rm -r --cached data/</code> rồi commit.</p>
+</div>
+<h2 id="lt-5">GitHub như một hồ sơ</h2>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Với vị trí AI Engineer, đặc biệt là việc remote, GitHub là bằng chứng bạn làm được việc. Người tuyển dụng mở 2–3 repo ghim đầu trang, đọc README trong vài chục giây, và quyết định có đọc tiếp không.</p>
+</div>
+<p>Mỗi repo dự án cần một <strong>README</strong> trả lời được 5 câu hỏi trong 30 giây đầu:</p>
+<ol>
+<li>Dự án làm gì? (một câu)</li>
+<li>Kết quả thế nào? (bảng số, ảnh hoặc GIF)</li>
+<li>Chạy thế nào? (3–5 lệnh copy được)</li>
+<li>Cấu trúc code ra sao?</li>
+<li>Hạn chế và hướng phát triển?</li>
+</ol>
+<div class="hl"><pre><span></span><code><span class="tk-gh"># Phân loại ảnh CIFAR-10 từ con số 0</span>
+
+CNN tự viết bằng PyTorch, đạt 82.4% trên tập test sau 30 epoch trên GPU T4.
+
+| Model | Tham số | Test acc |
+|---|---|---|
+| MLP | 1.6M | 52.1% |
+| CNN 3 lớp | 0.3M | 82.4% |
+
+<span class="tk-gu">### Chạy</span>
+pip install -r requirements.txt
+python train.py --epochs 30
 </code></pre></div>
 
-<p>Dấu <code>|</code> (pipe) đưa đầu ra của lệnh trước làm đầu vào lệnh sau. Ghép các lệnh nhỏ bằng pipe là kỹ năng mạnh nhất của terminal.</p>
-<h2 id="lt-5">Colab và VS Code</h2>
-<p><strong>Colab</strong> cho GPU miễn phí (thường là T4 16 GB) nhưng phiên bị ngắt sau vài giờ hoặc khi bỏ máy lâu. Ba thói quen bắt buộc:</p>
+<p>Commit đều đặn (lịch sử xanh trên trang cá nhân), mỗi repo có mô tả ngắn và topics, và một <strong>profile README</strong> giới thiệu bạn. Bài P10.2 đi sâu phần này.</p>
+<h2 id="lt-6">Colab và VS Code</h2>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Không phải ai cũng có GPU. Colab cho GPU miễn phí đủ để làm gần hết lộ trình này, còn VS Code là nơi bạn viết code "thật" có cấu trúc, có test, có Git. Biết khi nào dùng cái nào giúp bạn không bị kẹt trong notebook rối.</p>
+</div>
+<h3>Colab</h3>
+<p>Colab là Jupyter notebook chạy trên máy của Google, có GPU miễn phí (thường là T4 16 GB VRAM). Đổi sang GPU: <strong>Runtime → Change runtime type → T4 GPU</strong>. Hạn chế: phiên bị ngắt sau vài giờ hoặc khi bạn bỏ máy lâu, và mọi file trong <code>/content</code> mất khi phiên kết thúc.</p>
+<p>Ba thói quen bắt buộc ở ô đầu tiên của mọi notebook:</p>
 <div class="hl"><pre><span></span><code><span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">google.colab</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">drive</span>
-<span class="tk-n">drive</span><span class="tk-o">.</span><span class="tk-n">mount</span><span class="tk-p">(</span><span class="tk-s2">"/content/drive"</span><span class="tk-p">)</span>                  <span class="tk-c1"># 1. lưu checkpoint vào Drive, không lưu trong /content</span>
+<span class="tk-n">drive</span><span class="tk-o">.</span><span class="tk-n">mount</span><span class="tk-p">(</span><span class="tk-s2">"/content/drive"</span><span class="tk-p">)</span>                  <span class="tk-c1"># 1. lưu checkpoint, kết quả vào Drive</span>
 <span class="tk-err">!</span><span class="tk-n">nvidia</span><span class="tk-o">-</span><span class="tk-n">smi</span>                                    <span class="tk-c1"># 2. kiểm tra đã có GPU chưa</span>
-<span class="tk-err">!</span><span class="tk-n">pip</span> <span class="tk-n">install</span> <span class="tk-o">-</span><span class="tk-n">q</span> <span class="tk-n">transformers</span> <span class="tk-n">datasets</span>          <span class="tk-c1"># 3. cài thư viện ở ô đầu notebook</span>
+<span class="tk-err">!</span><span class="tk-n">pip</span> <span class="tk-n">install</span> <span class="tk-o">-</span><span class="tk-n">q</span> <span class="tk-n">transformers</span> <span class="tk-n">datasets</span>          <span class="tk-c1"># 3. cài thư viện thiếu ngay từ đầu</span>
 </code></pre></div>
 
-<p>Dùng <strong>VS Code</strong> cho code dài (module <code>.py</code>, test, Git tích hợp), notebook cho thí nghiệm và trực quan hóa. Code tái sử dụng nên chuyển dần từ notebook sang file <code>.py</code>.</p>
+<p>Dấu <code>!</code> chạy lệnh terminal ngay trong ô notebook, nên mọi lệnh ở mục Terminal đều dùng được trong Colab.</p>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p><strong>Train sống sót qua việc bị ngắt.</strong> Lưu checkpoint mỗi epoch vào Drive, và khi khởi động lại thì nạp checkpoint mới nhất nếu có:</p>
+<div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">os</span><span class="tk-o">,</span><span class="tk-w"> </span><span class="tk-nn">torch</span>
+<span class="tk-n">CKPT</span> <span class="tk-o">=</span> <span class="tk-s2">"/content/drive/MyDrive/runs/exp1/last.pt"</span>
+<span class="tk-n">start_epoch</span> <span class="tk-o">=</span> <span class="tk-mi">0</span>
+<span class="tk-k">if</span> <span class="tk-n">os</span><span class="tk-o">.</span><span class="tk-n">path</span><span class="tk-o">.</span><span class="tk-n">exists</span><span class="tk-p">(</span><span class="tk-n">CKPT</span><span class="tk-p">):</span>
+    <span class="tk-n">state</span> <span class="tk-o">=</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">load</span><span class="tk-p">(</span><span class="tk-n">CKPT</span><span class="tk-p">)</span>
+    <span class="tk-n">model</span><span class="tk-o">.</span><span class="tk-n">load_state_dict</span><span class="tk-p">(</span><span class="tk-n">state</span><span class="tk-p">[</span><span class="tk-s2">"model"</span><span class="tk-p">]);</span> <span class="tk-n">opt</span><span class="tk-o">.</span><span class="tk-n">load_state_dict</span><span class="tk-p">(</span><span class="tk-n">state</span><span class="tk-p">[</span><span class="tk-s2">"opt"</span><span class="tk-p">])</span>
+    <span class="tk-n">start_epoch</span> <span class="tk-o">=</span> <span class="tk-n">state</span><span class="tk-p">[</span><span class="tk-s2">"epoch"</span><span class="tk-p">]</span> <span class="tk-o">+</span> <span class="tk-mi">1</span>
+<span class="tk-k">for</span> <span class="tk-n">epoch</span> <span class="tk-ow">in</span> <span class="tk-nb">range</span><span class="tk-p">(</span><span class="tk-n">start_epoch</span><span class="tk-p">,</span> <span class="tk-mi">30</span><span class="tk-p">):</span>
+    <span class="tk-n">train_one_epoch</span><span class="tk-p">(</span><span class="tk-n">model</span><span class="tk-p">,</span> <span class="tk-n">opt</span><span class="tk-p">)</span>
+    <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">save</span><span class="tk-p">({</span><span class="tk-s2">"model"</span><span class="tk-p">:</span> <span class="tk-n">model</span><span class="tk-o">.</span><span class="tk-n">state_dict</span><span class="tk-p">(),</span> <span class="tk-s2">"opt"</span><span class="tk-p">:</span> <span class="tk-n">opt</span><span class="tk-o">.</span><span class="tk-n">state_dict</span><span class="tk-p">(),</span> <span class="tk-s2">"epoch"</span><span class="tk-p">:</span> <span class="tk-n">epoch</span><span class="tk-p">},</span> <span class="tk-n">CKPT</span><span class="tk-p">)</span>
+</code></pre></div>
+
+<p>Lưu cả trạng thái optimizer, không chỉ model: Adam có "bộ nhớ" riêng, thiếu nó thì train tiếp sẽ khác với train liền một mạch.</p>
+</div>
+<h3>VS Code và khi nào rời notebook</h3>
+<table>
+<thead>
+<tr>
+<th>Dùng notebook khi</th>
+<th>Dùng file <code>.py</code> trong VS Code khi</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>khám phá dữ liệu, vẽ biểu đồ</td>
+<td>code được dùng lại nhiều lần (model, dataset, train loop)</td>
+</tr>
+<tr>
+<td>thử nhanh một ý tưởng</td>
+<td>cần test, cần chạy bằng lệnh trên máy chủ</td>
+</tr>
+<tr>
+<td>trình bày kết quả có hình</td>
+<td>làm việc nhóm, review qua pull request</td>
+</tr>
+</tbody>
+</table>
+<p>Cách làm phổ biến: notebook <code>import</code> các hàm từ thư mục <code>src/</code>, chỉ giữ phần khám phá và trình bày. Repo vừa gọn vừa chạy lại được.</p>
 <div class="keep">
-<p><strong>Ghi nhớ:</strong> trên Colab, mọi thứ không nằm trong Drive sẽ mất khi phiên kết thúc.</p>
-</div></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p0.3:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 2</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Đếm bằng pipe</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>File <code>train.log</code> có 6 dòng dưới đây. Mỗi lệnh in ra số mấy?</p>
+<p><strong>Ghi nhớ:</strong> trên Colab, mọi thứ không nằm trong Drive sẽ mất khi phiên kết thúc. Lưu checkpoint gồm model, optimizer và số epoch.</p>
+</div>
+<div class="box check">
+<div class="box-h">Tự kiểm tra nhanh</div>
+<p>Phiên Colab của bạn bị ngắt ở giữa epoch 18 của 30 epoch. Bạn lưu checkpoint vào Drive sau mỗi epoch theo đoạn code trên.</p>
+<div class="ans" id="p0-3-t-b293-a1">
+<div class="ans-fields"><label>start_epoch khi chạy lại<input inputmode="decimal" data-ans="17.0" data-tol="0.0" autocomplete="off"></label><label>Số epoch còn phải train<input inputmode="decimal" data-ans="13.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div>
+<div aria-live="polite" class="ans-fb"></div>
+</div>
+</div>
+<h2 id="lt-7">Tóm tắt bài và thuật ngữ</h2>
+<table>
+<thead>
+<tr>
+<th>Việc</th>
+<th>Lệnh</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Xem đang ở đâu, có gì</td>
+<td><code>pwd</code>, <code>ls -lh</code></td>
+</tr>
+<tr>
+<td>Đọc log</td>
+<td><code>tail -f</code>, <code>grep</code>, <code>wc -l</code></td>
+</tr>
+<tr>
+<td>Ghép lệnh</td>
+<td><code>cmd1 \| cmd2</code>, <code>&gt; file 2&gt;&amp;1</code></td>
+</tr>
+<tr>
+<td>Theo dõi GPU, ổ đĩa</td>
+<td><code>nvidia-smi</code>, <code>df -h</code>, <code>du -sh</code></td>
+</tr>
+<tr>
+<td>Chạy lâu</td>
+<td><code>nohup ... &amp;</code>, <code>tmux</code></td>
+</tr>
+<tr>
+<td>Lưu một phiên bản</td>
+<td><code>git add</code> → <code>git commit -m</code></td>
+</tr>
+<tr>
+<td>Thử nghiệm riêng</td>
+<td><code>git switch -c</code>, pull request</td>
+</tr>
+<tr>
+<td>Không commit</td>
+<td>dữ liệu, checkpoint, <code>.venv</code>, <code>.env</code></td>
+</tr>
+<tr>
+<td>Colab</td>
+<td>mount Drive, kiểm tra GPU, lưu checkpoint đầy đủ</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Thuật ngữ</th>
+<th>Nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>terminal / shell</td>
+<td>cửa sổ gõ lệnh / chương trình hiểu lệnh (bash)</td>
+</tr>
+<tr>
+<td>path (absolute / relative)</td>
+<td>đường dẫn tuyệt đối từ <code>/</code> / tương đối từ thư mục hiện tại</td>
+</tr>
+<tr>
+<td>pipe</td>
+<td><code>\|</code>, nối đầu ra lệnh trước vào đầu vào lệnh sau</td>
+</tr>
+<tr>
+<td>stdout / stderr</td>
+<td>kênh đầu ra thường / kênh báo lỗi</td>
+</tr>
+<tr>
+<td>SSH</td>
+<td>đăng nhập máy chủ từ xa qua mạng</td>
+</tr>
+<tr>
+<td>repository (repo)</td>
+<td>thư mục dự án có lịch sử Git</td>
+</tr>
+<tr>
+<td>commit</td>
+<td>ảnh chụp dự án kèm lời nhắn</td>
+</tr>
+<tr>
+<td>staging area</td>
+<td>vùng chọn thay đổi cho commit tiếp theo</td>
+</tr>
+<tr>
+<td>branch / merge</td>
+<td>nhánh phát triển riêng / gộp nhánh</td>
+</tr>
+<tr>
+<td>pull request (PR)</td>
+<td>đề nghị gộp nhánh, kèm review</td>
+</tr>
+<tr>
+<td>remote / origin</td>
+<td>bản repo trên máy chủ (GitHub) / tên mặc định của nó</td>
+</tr>
+<tr>
+<td>conflict</td>
+<td>hai nhánh cùng sửa một chỗ, cần chọn tay</td>
+</tr>
+<tr>
+<td>.gitignore</td>
+<td>danh sách file Git bỏ qua</td>
+</tr>
+<tr>
+<td>runtime (Colab)</td>
+<td>máy ảo đang chạy notebook của bạn</td>
+</tr>
+</tbody>
+</table></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p0.3:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 2</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Đếm bằng pipe</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>File <code>train.log</code> có 6 dòng dưới đây. Mỗi lệnh in ra số mấy?</p>
 <ol>
 <li><code>cat train.log | grep ERROR | wc -l</code></li>
 <li><code>grep -c epoch train.log</code></li>
@@ -219,7 +638,7 @@ pip install -r requirements.txt
     </div>
     <aside class="aside">
       <div class="abox"><h4>Tiến độ bài này</h4><div class="ring"><svg viewBox="0 0 64 64" aria-hidden="true"><circle class="bg" cx="32" cy="32" r="28"/><circle class="fg" cx="32" cy="32" r="28" stroke-dasharray="176" stroke-dashoffset="176"/></svg><div><b id="ring-n">0/3</b><span id="ring-sub">phần đã xong</span></div></div></div>
-      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Git hoạt động thế nào</a></li><li><a href="#lt-2">Branch, merge và pull request</a></li><li><a href="#lt-3">.gitignore cho dự án ML</a></li><li><a href="#lt-4">Terminal Linux đủ dùng</a></li><li><a href="#lt-5">Colab và VS Code</a></li></ol></div>
+      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Terminal Linux đủ dùng</a></li><li><a href="#lt-2">Git hoạt động thế nào</a></li><li><a href="#lt-3">Branch, merge và pull request</a></li><li><a href="#lt-4">.gitignore và bí mật cho dự án ML</a></li><li><a href="#lt-5">GitHub như một hồ sơ</a></li><li><a href="#lt-6">Colab và VS Code</a></li><li><a href="#lt-7">Tóm tắt bài và thuật ngữ</a></li></ol></div>
       
       <div class="abox"><h4>Cùng giai đoạn</h4><ul><li><a href="p0-1.html">Python cho ML: numpy, pandas, matplotlib</a></li><li><a href="p0-2.html">Toán cho AI: đại số tuyến tính, giải tích, xác suất</a></li><li><span class=cur>Công cụ: Git, GitHub, terminal, Colab</span></li></ul></div>
     </aside>
