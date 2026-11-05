@@ -22,42 +22,225 @@
 <main class="container">
   <div class="crumbs"><a href="../bai-hoc.html">Bài học</a><span>/</span><a href="../bai-hoc.html#p9">P9 · Nâng cao và nghiên cứu</a><span>/</span><span>P9.3</span></div>
   <section class="lhero"><div class="code">P9.3</div><h1>Kiến trúc và hướng mới</h1><div class="lmeta"><span class="m">Giai đoạn P9 · Nâng cao và nghiên cứu</span><span class="m">Tuần 40–45</span><span class="chip ready"><span class="dot"></span>Có nội dung đầy đủ</span></div>
-    <div class="intro"><p>Bài cuối phần kỹ thuật điểm qua những hướng đang định hình AI: <strong>Mixture of Experts</strong> (model lớn mà chạy rẻ), <strong>state space model</strong> (thay attention cho chuỗi rất dài), kéo dài <strong>context</strong>, và <strong>reasoning model</strong> học suy nghĩ lâu hơn bằng học tăng cường. Mục tiêu không phải nắm hết chi tiết, mà hiểu ý tưởng đủ để đọc bài báo mới và tự làm thí nghiệm nhỏ.</p></div></section>
+    <div class="intro"><p>Bài cuối phần kỹ thuật điểm qua những hướng đang định hình AI: <strong>Mixture of Experts</strong> (model lớn mà chạy rẻ), <strong>state space model</strong> (thay attention cho chuỗi rất dài), kéo dài <strong>context</strong>, và <strong>reasoning model</strong> học suy nghĩ lâu hơn bằng học tăng cường. Mục tiêu không phải nắm hết chi tiết, mà hiểu ý tưởng đủ để đọc bài báo mới và tự làm thí nghiệm nhỏ. Bài có hai thí nghiệm: cân bằng tải trong MoE, và bỏ phiếu đa số so với bộ kiểm tra đáp án.</p></div></section>
   
-  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">5 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
+  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">7 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
   <div class="lgrid" style="margin-top:22px">
-    <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">Mixture of Experts (MoE)</h2>
-<p>Thay lớp feed-forward của mỗi block bằng <strong>nhiều "chuyên gia"</strong> (nhiều FFN) cùng một <strong>router</strong> nhỏ. Với mỗi token, router chọn <strong>top-k</strong> chuyên gia (thường k = 1 hoặc 2), chỉ những chuyên gia đó chạy:</p>
+    <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">Bức tranh chung</h2>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Các model mới ra mỗi tháng đều kết hợp vài ý tưởng trong bài này: DeepSeek, Qwen3, Mixtral dùng MoE; các model "thinking" dùng RL với phần thưởng kiểm chứng được; nhiều model kéo context lên hàng trăm nghìn token. Hiểu ý tưởng giúp bạn đọc model card, chọn model đúng cho bài toán (một model MoE "30B" chạy nhanh như model 3B nhưng vẫn cần bộ nhớ của 30B), và chọn đề tài nghiên cứu.</p>
+</div>
+<p>Hai hướng mở rộng đang chạy song song:</p>
+<table>
+<thead>
+<tr>
+<th>Hướng</th>
+<th>Ý tưởng</th>
+<th>Kỹ thuật trong bài</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Lớn hơn lúc train</td>
+<td>nhiều tham số, nhiều dữ liệu, mà chi phí chạy không tăng tương ứng</td>
+<td>MoE, SSM, context dài</td>
+</tr>
+<tr>
+<td>Nghĩ lâu hơn lúc chạy</td>
+<td>cùng model, dùng thêm tính toán khi trả lời</td>
+<td>reasoning model, best-of-N, bỏ phiếu</td>
+</tr>
+</tbody>
+</table>
+<h2 id="lt-2">Mixture of Experts (MoE)</h2>
+<p>Thay lớp feed-forward của mỗi block Transformer bằng <strong>nhiều "chuyên gia"</strong> (nhiều FFN) cùng một <strong>router</strong> nhỏ. Với mỗi token, router chọn <strong>top-k</strong> chuyên gia (thường k = 1 hoặc 2), chỉ những chuyên gia đó chạy:</p>
 <div class="hl"><pre><span></span><code>g = softmax(W_router · x)               điểm cho từng chuyên gia
 chọn top-k chuyên gia, chuẩn hóa lại trọng số
 y = Σ_{i ∈ top-k} gᵢ · FFNᵢ(x)
 </code></pre></div>
 
 <ul>
-<li><strong>Tổng tham số</strong> lớn (kiến thức nhiều), nhưng <strong>tham số hoạt động</strong> mỗi token nhỏ (tính toán rẻ).</li>
-<li>Phải giữ <strong>cân bằng tải</strong>: thêm loss phụ để router không dồn mọi token vào vài chuyên gia.</li>
+<li><strong>Tổng tham số</strong> lớn (nhiều kiến thức), nhưng <strong>tham số hoạt động</strong> mỗi token nhỏ (tính toán rẻ).</li>
 <li>Toàn bộ chuyên gia vẫn phải nằm trong bộ nhớ, nên MoE tiết kiệm <strong>tính toán</strong>, không tiết kiệm <strong>bộ nhớ</strong>.</li>
 </ul>
-<h2 id="lt-2">State space model</h2>
-<p>Attention tốn chi phí bình phương theo độ dài chuỗi. <strong>State space model</strong> (SSM) như Mamba xử lý chuỗi bằng một trạng thái ẩn cập nhật tuần tự (giống RNN), nhưng được thiết kế để train song song và cho phép trạng thái <strong>chọn lọc</strong> thông tin theo nội dung. Chi phí <strong>tuyến tính</strong> theo độ dài, bộ nhớ khi sinh không tăng theo độ dài (không có KV cache). Đổi lại, khả năng "nhìn lại chính xác" một chi tiết xa kém attention, nên nhiều model hiện đại <strong>lai</strong>: phần lớn lớp SSM, một số lớp attention.</p>
-<h2 id="lt-3">Context dài</h2>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>Model có phần dùng chung (attention, embedding) 1,5 tỉ tham số và 16 chuyên gia, mỗi chuyên gia 0,5 tỉ. Router chọn top-2.</p>
 <ul>
-<li><strong>RoPE scaling:</strong> giãn tần số vị trí để model train ở 4K token dùng được ở 32K–128K, thường kèm một ít fine-tune trên chuỗi dài.</li>
-<li><strong>Attention hiệu quả:</strong> FlashAttention, attention cửa sổ trượt cho một số lớp.</li>
-<li>Context dài không có nghĩa là dùng tốt: model hay bỏ sót thông tin ở giữa context dài. Luôn đo trên tác vụ của bạn (ví dụ "kim trong đống cỏ" cùng câu hỏi thật).</li>
+<li>Tổng tham số: 1,5 + 16 × 0,5 = <strong>9,5 tỉ</strong>: bộ nhớ như model 9,5B (19 GB ở bf16).</li>
+<li>Tham số hoạt động mỗi token: 1,5 + 2 × 0,5 = <strong>2,5 tỉ</strong>: tốc độ gần như model 2,5B.</li>
 </ul>
-<h2 id="lt-4">Reasoning model và RL với phần thưởng kiểm chứng được</h2>
-<p>Model được train để <strong>suy nghĩ từng bước</strong> dài trước khi trả lời, và học điều đó bằng học tăng cường trên các bài có thể <strong>tự động chấm đúng sai</strong>: bài toán có đáp số, code có test.</p>
+<p>Tên model thường ghi cả hai, ví dụ kiểu "30B-A3B": tổng 30 tỉ, hoạt động 3 tỉ.</p>
+</div>
+<h3>Cân bằng tải</h3>
+<p>Router học cùng các chuyên gia, và dễ rơi vào vòng lặp: chuyên gia được chọn nhiều thì học nhanh hơn, nên càng được chọn nhiều; chuyên gia ít được chọn thì không học được gì. Cách xử lý phổ biến là <strong>loss phụ cân bằng tải</strong> (kiểu Switch Transformer): E · Σᵢ fᵢ · Pᵢ, với fᵢ là tỉ lệ token thật sự đi tới chuyên gia i, Pᵢ là xác suất router trung bình gán cho i. Loss nhỏ nhất khi tải đều.</p>
+<p><strong>Thí nghiệm:</strong> lớp MoE 8 chuyên gia, top-1, train trên dữ liệu gồm 8 cụm, mỗi cụm một hàm mục tiêu khác nhau:</p>
+<figure class="fig"><img src="../assets/fig/p9-3-moe.svg" alt="Không có loss cân bằng: tải lệch mạnh (chuyên gia 5 nhận 26%, chuyên gia 6 chỉ 3%). Có loss cân bằng: tải gần đều quanh 12,5%, nhưng sai số trên dữ liệu test cao hơn (0,112 so với 0,047)." loading="lazy"><figcaption>Không có loss cân bằng: tải lệch mạnh (chuyên gia 5 nhận 26%, chuyên gia 6 chỉ 3%). Có loss cân bằng: tải gần đều quanh 12,5%, nhưng sai số trên dữ liệu test cao hơn (0,112 so với 0,047).</figcaption></figure>
+
+<p>Kết quả cho thấy cân bằng tải <strong>không miễn phí</strong>: ép tải đều buộc router chia token không theo đúng cấu trúc dữ liệu. Vậy sao các model lớn vẫn dùng? Vì ở quy mô lớn, mỗi chuyên gia nằm trên một GPU khác nhau: tải lệch nghĩa là một GPU quá tải còn các GPU khác ngồi chơi, và các chuyên gia bị bỏ quên là tham số lãng phí. Hệ số loss phụ được chọn nhỏ, và các model gần đây còn thử cách cân bằng không cần loss phụ (điều chỉnh độ lệch của router trực tiếp).</p>
+<h2 id="lt-3">State space model</h2>
+<p>Attention tốn chi phí <strong>bình phương</strong> theo độ dài chuỗi (mỗi token nhìn mọi token), và KV cache tăng theo độ dài (P6.3). <strong>State space model</strong> (SSM) như Mamba xử lý chuỗi bằng một <strong>trạng thái ẩn kích thước cố định</strong> cập nhật tuần tự (giống RNN, P3.1), nhưng:</p>
+<ul>
+<li>được thiết kế để <strong>train song song</strong> trên GPU (không phải tuần tự từng bước như RNN cổ điển);</li>
+<li>trạng thái <strong>chọn lọc</strong>: cách cập nhật phụ thuộc nội dung token, nên model quyết định giữ hay quên thông tin.</li>
+</ul>
+<figure class="fig"><img src="../assets/fig/p9-3-cost.svg" alt="Chuỗi dài gấp 32 lần: attention tốn gấp 1024 lần, SSM gấp 32 lần." loading="lazy"><figcaption>Chuỗi dài gấp 32 lần: attention tốn gấp 1024 lần, SSM gấp 32 lần.</figcaption></figure>
+
+<p>Đổi lại, trạng thái cố định phải "nén" toàn bộ quá khứ, nên khả năng nhìn lại <strong>chính xác</strong> một chi tiết xa (một con số ở trang 3 của tài liệu 100 trang) kém attention. Nhiều model hiện đại <strong>lai</strong>: phần lớn lớp SSM (hoặc attention tuyến tính), một số lớp attention đầy đủ.</p>
+<h2 id="lt-4">Context dài</h2>
+<ul>
+<li><strong>RoPE scaling:</strong> giãn tần số mã hóa vị trí (P3.1) để model train ở 4K token dùng được ở 32K–128K, thường kèm một ít fine-tune trên chuỗi dài.</li>
+<li><strong>Attention hiệu quả:</strong> FlashAttention (tính theo khối, không lưu ma trận T×T), attention cửa sổ trượt cho một số lớp.</li>
+<li><strong>Context dài không có nghĩa là dùng tốt:</strong> model hay bỏ sót thông tin nằm ở <strong>giữa</strong> context dài ("lost in the middle"), và chất lượng suy luận giảm khi context đầy chi tiết không liên quan.</li>
+</ul>
+<div class="box pitfall">
+<div class="box-h">Lỗi hay gặp</div>
+<p><strong>Nhồi cả kho tài liệu vào context thay cho RAG.</strong> Context 128K token nghe đủ chứa mọi thứ, nhưng mỗi câu hỏi tốn tiền cho 128K token đầu vào, độ trễ cao, và model có thể bỏ sót đoạn cần thiết. Với tài liệu lớn, RAG lấy đúng vài đoạn (P4.2) thường vừa rẻ vừa chính xác hơn. Luôn đo trên tác vụ của bạn, ví dụ bài "kim trong đống cỏ" với câu hỏi thật ở nhiều vị trí.</p>
+</div>
+<h2 id="lt-5">Reasoning model và RL với phần thưởng kiểm chứng được</h2>
+<p>Model được train để <strong>suy nghĩ từng bước</strong> dài trước khi trả lời, và học điều đó bằng học tăng cường trên các bài có thể <strong>tự động chấm đúng sai</strong>: bài toán có đáp số, code có test, câu đố có lời giải kiểm tra được. Không cần người chấm hay reward model (P6.2): chỉ cần một hàm kiểm tra.</p>
 <div class="hl"><pre><span></span><code>Với mỗi bài: sinh G lời giải → chấm từng lời giải (đúng = 1, sai = 0)
 → tăng xác suất các lời giải tốt hơn trung bình nhóm, giảm các lời giải tệ hơn
 </code></pre></div>
 
-<p><strong>GRPO</strong> tính lợi thế (advantage) của mỗi lời giải bằng cách so với trung bình và độ lệch chuẩn phần thưởng <strong>trong nhóm</strong> G lời giải của cùng bài, không cần một value model riêng như PPO.</p>
-<h2 id="lt-5">Test-time compute</h2>
-<p>Thay vì model lớn hơn, cho model <strong>nghĩ nhiều hơn lúc trả lời</strong>: chuỗi suy luận dài hơn, sinh nhiều lời giải rồi chọn (best-of-N với một bộ kiểm tra), hoặc bỏ phiếu đa số. Với bài có cách kiểm tra đáp án, sinh N lời giải tăng mạnh xác suất có ít nhất một lời giải đúng.</p>
+<p><strong>GRPO</strong> (Group Relative Policy Optimization) tính <strong>lợi thế</strong> (advantage) của mỗi lời giải bằng cách so với trung bình và độ lệch chuẩn phần thưởng <strong>trong nhóm</strong> G lời giải của cùng bài, không cần một value model riêng như PPO.</p>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>Một bài, nhóm 6 lời giải có phần thưởng [1, 0, 0, 0, 1, 0].</p>
+<ol>
+<li>Trung bình: 2/6 ≈ 0,333. Độ lệch chuẩn (chia n): ≈ 0,471.</li>
+<li>Lời giải đúng: (1 − 0,333) / 0,471 ≈ <strong>+1,41</strong>: tăng xác suất mạnh.</li>
+<li>Lời giải sai: (0 − 0,333) / 0,471 ≈ <strong>−0,71</strong>: giảm xác suất nhẹ hơn.</li>
+</ol>
+<p>Vì chỉ 2/6 đúng, mỗi lời giải đúng được thưởng nhiều. Nếu cả nhóm đều đúng (hoặc đều sai), độ lệch chuẩn bằng 0, bài đó không cho tín hiệu học: chọn bài có độ khó vừa phải cho RL.</p>
+</div>
+<p>Điều đáng chú ý trong các báo cáo về reasoning model: hành vi như tự kiểm tra lại, thử cách khác khi bế tắc xuất hiện <strong>tự nhiên</strong> khi chỉ thưởng cho đáp án đúng, không cần dạy mẫu.</p>
+<h2 id="lt-6">Test-time compute</h2>
+<p>Thay vì model lớn hơn, cho model <strong>nghĩ nhiều hơn lúc trả lời</strong>:</p>
+<ul>
+<li>chuỗi suy luận dài hơn (reasoning model);</li>
+<li>sinh N lời giải rồi chọn bằng <strong>bộ kiểm tra</strong> (chạy test, kiểm tra đáp số): best-of-N;</li>
+<li>sinh N lời giải rồi <strong>bỏ phiếu đa số</strong> khi không có bộ kiểm tra.</li>
+</ul>
+<p><strong>Mô phỏng:</strong> 2.000 bài, mỗi bài một xác suất giải đúng khác nhau (có bài dễ, có bài khó); khi sai, đáp án sai rải ngẫu nhiên trong 4 khả năng.</p>
+<figure class="fig"><img src="../assets/fig/p9-3-vote.svg" alt="Có bộ kiểm tra: 45% với 1 lời giải, 90% với 9, 98% với 33. Bỏ phiếu đa số tăng chậm hơn nhiều (70% với 33), và thậm chí giảm nhẹ ở N = 3." loading="lazy"><figcaption>Có bộ kiểm tra: 45% với 1 lời giải, 90% với 9, 98% với 33. Bỏ phiếu đa số tăng chậm hơn nhiều (70% với 33), và thậm chí giảm nhẹ ở N = 3.</figcaption></figure>
+
+<p>Bỏ phiếu chỉ giúp các bài mà model đúng <strong>thường xuyên hơn</strong> mọi đáp án sai: trong mô phỏng, với các bài model đúng hơn một nửa số lần, bỏ phiếu 33 lời giải đạt 100%; với các bài khó, chỉ đạt khoảng 48%. Bộ kiểm tra thì chỉ cần <strong>một</strong> lời giải đúng.</p>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>Mỗi lời giải đúng với xác suất 0,4, độc lập, có bộ kiểm tra hoàn hảo:</p>
+<ul>
+<li>4 lời giải: P(ít nhất một đúng) = 1 − 0,6⁴ ≈ <strong>0,870</strong>.</li>
+<li>Muốn đạt 99%: cần 0,6ⁿ ≤ 0,01, tức n ≥ ln 0,01 / ln 0,6 ≈ 9,02, nghĩa là <strong>10 lời giải</strong>.</li>
+</ul>
+<p>Chi phí tăng tuyến tính theo N. Với sản phẩm, best-of-N đáng dùng khi có bộ kiểm tra rẻ (chạy unit test, kiểm tra JSON, tính lại tổng tiền như P7.2).</p>
+</div>
 <div class="keep">
-<p><strong>Ghi nhớ:</strong> hai hướng mở rộng song song: lớn hơn lúc train (tham số, dữ liệu) và nghĩ lâu hơn lúc chạy. Bài toán của bạn được lợi từ hướng nào tùy vào chi phí và độ trễ chấp nhận được.</p>
-</div></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p9.3:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 4</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Tham số MoE</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Model có phần dùng chung (attention, embedding) 2 tỉ tham số và 8 chuyên gia, mỗi chuyên gia 1 tỉ. Router chọn top-2.</p>
+<p><strong>Ghi nhớ:</strong> hai hướng mở rộng song song: lớn hơn lúc train (tham số, dữ liệu) và nghĩ lâu hơn lúc chạy. Bài toán của bạn được lợi từ hướng nào tùy vào chi phí, độ trễ chấp nhận được, và việc có cách kiểm tra đáp án hay không.</p>
+</div>
+<div class="box check">
+<div class="box-h">Tự kiểm tra nhanh</div>
+<div class="ans" id="p9-3-t-b89-a1">
+<div class="ans-fields"><label>MoE 1,5B dùng chung + 16 chuyên gia × 0,5B, top-2: tham số hoạt động (tỉ)<input inputmode="decimal" data-ans="2.5" data-tol="0.001" autocomplete="off"></label><label>Xác suất đúng 0,4 mỗi lời giải: có ít nhất 1 đúng trong 4 (3 chữ số)<input inputmode="decimal" data-ans="0.87" data-tol="0.001" autocomplete="off"></label><label>GRPO, phần thưởng [1, 0, 0, 0, 1, 0]: advantage của lời giải đúng (2 chữ số)<input inputmode="decimal" data-ans="1.41" data-tol="0.01" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div>
+<div aria-live="polite" class="ans-fb"></div>
+</div>
+</div>
+<h2 id="lt-7">Tóm tắt bài và thuật ngữ</h2>
+<table>
+<thead>
+<tr>
+<th>Hướng</th>
+<th>Ý tưởng</th>
+<th>Đánh đổi</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>MoE</td>
+<td>nhiều chuyên gia, mỗi token dùng vài cái</td>
+<td>rẻ tính toán, không rẻ bộ nhớ; cần cân bằng tải</td>
+</tr>
+<tr>
+<td>SSM</td>
+<td>trạng thái cố định, chi phí tuyến tính</td>
+<td>nhớ chính xác chi tiết xa kém attention</td>
+</tr>
+<tr>
+<td>Context dài</td>
+<td>RoPE scaling, FlashAttention</td>
+<td>đắt; dễ bỏ sót thông tin ở giữa</td>
+</tr>
+<tr>
+<td>Reasoning + RL</td>
+<td>thưởng đáp án kiểm chứng được, GRPO</td>
+<td>cần bài có bộ chấm tự động</td>
+</tr>
+<tr>
+<td>Test-time compute</td>
+<td>best-of-N, bỏ phiếu</td>
+<td>chi phí tăng theo N; bộ kiểm tra hiệu quả hơn bỏ phiếu</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Thuật ngữ</th>
+<th>Nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>MoE</td>
+<td>Mixture of Experts</td>
+</tr>
+<tr>
+<td>router / gating</td>
+<td>mạng nhỏ chọn chuyên gia cho mỗi token</td>
+</tr>
+<tr>
+<td>active parameters</td>
+<td>tham số thực sự chạy cho mỗi token</td>
+</tr>
+<tr>
+<td>load balancing loss</td>
+<td>loss phụ giữ tải đều giữa các chuyên gia</td>
+</tr>
+<tr>
+<td>SSM / Mamba</td>
+<td>state space model / một SSM có trạng thái chọn lọc</td>
+</tr>
+<tr>
+<td>RoPE scaling</td>
+<td>giãn mã hóa vị trí để kéo dài context</td>
+</tr>
+<tr>
+<td>lost in the middle</td>
+<td>bỏ sót thông tin ở giữa context dài</td>
+</tr>
+<tr>
+<td>RLVR</td>
+<td>học tăng cường với phần thưởng kiểm chứng được</td>
+</tr>
+<tr>
+<td>GRPO</td>
+<td>tối ưu chính sách theo lợi thế tương đối trong nhóm</td>
+</tr>
+<tr>
+<td>advantage</td>
+<td>lời giải tốt hơn trung bình bao nhiêu</td>
+</tr>
+<tr>
+<td>best-of-N / majority voting</td>
+<td>chọn bằng bộ kiểm tra / bỏ phiếu đa số</td>
+</tr>
+<tr>
+<td>test-time compute</td>
+<td>tính toán thêm lúc trả lời</td>
+</tr>
+</tbody>
+</table></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p9.3:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 4</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Tham số MoE</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Model có phần dùng chung (attention, embedding) 2 tỉ tham số và 8 chuyên gia, mỗi chuyên gia 1 tỉ. Router chọn top-2.</p>
 <div class="ans" id="p9-3-e1-a1"><div class="ans-fields"><label>Tổng tham số (tỉ)<input inputmode="decimal" data-ans="10.0" data-tol="0.001" autocomplete="off"></label><label>Tham số hoạt động mỗi token (tỉ)<input inputmode="decimal" data-ans="4.0" data-tol="0.001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
 
 <details class="fold solution">
@@ -136,7 +319,7 @@ y = Σ_{i ∈ top-k} gᵢ · FFNᵢ(x)
     </div>
     <aside class="aside">
       <div class="abox"><h4>Tiến độ bài này</h4><div class="ring"><svg viewBox="0 0 64 64" aria-hidden="true"><circle class="bg" cx="32" cy="32" r="28"/><circle class="fg" cx="32" cy="32" r="28" stroke-dasharray="176" stroke-dashoffset="176"/></svg><div><b id="ring-n">0/3</b><span id="ring-sub">phần đã xong</span></div></div></div>
-      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Mixture of Experts (MoE)</a></li><li><a href="#lt-2">State space model</a></li><li><a href="#lt-3">Context dài</a></li><li><a href="#lt-4">Reasoning model và RL với phần thưởng kiểm chứng được</a></li><li><a href="#lt-5">Test-time compute</a></li></ol></div>
+      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Bức tranh chung</a></li><li><a href="#lt-2">Mixture of Experts (MoE)</a></li><li><a href="#lt-3">State space model</a></li><li><a href="#lt-4">Context dài</a></li><li><a href="#lt-5">Reasoning model và RL với phần thưởng kiểm chứng được</a></li><li><a href="#lt-6">Test-time compute</a></li><li><a href="#lt-7">Tóm tắt bài và thuật ngữ</a></li></ol></div>
       
       <div class="abox"><h4>Cùng giai đoạn</h4><ul><li><a href="p9-1.html">Đọc và tái hiện paper</a></li><li><a href="p9-2.html">Train ở quy mô lớn</a></li><li><span class=cur>Kiến trúc và hướng mới</span></li></ul></div>
     </aside>

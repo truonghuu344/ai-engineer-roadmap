@@ -22,89 +22,265 @@
 <main class="container">
   <div class="crumbs"><a href="../bai-hoc.html">Bài học</a><span>/</span><a href="../bai-hoc.html#p9">P9 · Nâng cao và nghiên cứu</a><span>/</span><span>P9.2</span></div>
   <section class="lhero"><div class="code">P9.2</div><h1>Train ở quy mô lớn</h1><div class="lmeta"><span class="m">Giai đoạn P9 · Nâng cao và nghiên cứu</span><span class="m">Tuần 40–45</span><span class="chip ready"><span class="dot"></span>Có nội dung đầy đủ</span></div>
-    <div class="intro"><p>Mọi model bạn đã train đều vừa một GPU. LLM thật có hàng tỉ tham số, train trên hàng nghìn GPU trong nhiều tuần. Bài này dạy các kỹ thuật cho phép train lớn hơn bộ nhớ một GPU và nhanh hơn nhờ nhiều GPU: mixed precision, gradient accumulation, gradient checkpointing, DDP, FSDP/ZeRO, và cách lập kế hoạch tính toán bằng scaling law.</p></div></section>
+    <div class="intro"><p>Mọi model bạn đã train đều vừa một GPU. LLM thật có hàng tỉ tham số, train trên hàng nghìn GPU trong nhiều tuần. Bài này dạy các kỹ thuật cho phép train lớn hơn bộ nhớ một GPU và nhanh hơn nhờ nhiều GPU: mixed precision, gradient accumulation, gradient checkpointing, DDP, FSDP/ZeRO, và cách lập kế hoạch tính toán bằng scaling law. Các kỹ thuật chính đều có kiểm chứng bằng code chạy thật (kể cả DDP trên 2 tiến trình).</p></div></section>
   
-  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">5 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
+  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">7 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
   <div class="lgrid" style="margin-top:22px">
-    <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">Bộ nhớ khi train đi đâu</h2>
+    <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">Vì sao cần biết train phân tán</h2>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Ngay cả khi bạn không train LLM từ đầu, fine-tune model 7B toàn bộ, train model video, hay chỉ train nhanh hơn trên 2 GPU Kaggle miễn phí đều cần các kỹ thuật này. Trong phỏng vấn (đặc biệt vị trí nghiên cứu), câu hỏi "model X cần bao nhiêu bộ nhớ để train, chia thế nào" rất phổ biến, và trả lời được bằng phép nhân.</p>
+</div>
+<h2 id="lt-2">Bộ nhớ khi train đi đâu</h2>
 <p>Với Adam và mixed precision, mỗi tham số tốn khoảng <strong>16 byte</strong> cho trạng thái train:</p>
 <table>
 <thead>
 <tr>
 <th>Thành phần</th>
 <th>Byte/tham số</th>
+<th>Vì sao cần</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td>Trọng số bf16/fp16</td>
 <td>2</td>
+<td>dùng trong forward/backward</td>
 </tr>
 <tr>
 <td>Gradient bf16/fp16</td>
 <td>2</td>
+<td>kết quả backward</td>
 </tr>
 <tr>
 <td>Bản trọng số chính fp32</td>
 <td>4</td>
+<td>cộng những cập nhật rất nhỏ mà fp16 làm tròn mất</td>
 </tr>
 <tr>
 <td>Adam: m và v (fp32)</td>
 <td>8</td>
+<td>trung bình động của gradient và bình phương gradient</td>
 </tr>
 </tbody>
 </table>
-<p>Cộng thêm <strong>activation</strong> (kết quả trung gian của forward, lưu để backward), tỉ lệ với batch × độ dài chuỗi × số lớp. Model 1 tỉ tham số cần khoảng 16 GB chỉ cho trạng thái, chưa tính activation.</p>
-<h2 id="lt-2">Ba kỹ thuật trên một GPU</h2>
+<p>Cộng thêm <strong>activation</strong>: kết quả trung gian của forward, phải lưu lại để backward tính gradient. Activation tỉ lệ với batch × độ dài chuỗi × số lớp × chiều ẩn, và với chuỗi dài thường lớn hơn cả trạng thái.</p>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>Model 3 tỉ tham số:</p>
 <ul>
-<li><strong>Mixed precision (bf16):</strong> tính forward/backward ở 16 bit, nhanh hơn và giảm activation. Đã học ở P2.3.</li>
-<li><strong>Gradient accumulation:</strong> muốn batch 128 nhưng chỉ vừa 16? Chạy 8 lần forward/backward, cộng dồn gradient, rồi mới <code>optimizer.step()</code>. Batch hiệu dụng = batch mỗi bước × số bước tích lũy × số GPU.</li>
-<li><strong>Gradient checkpointing:</strong> không lưu mọi activation, chỉ lưu một số điểm; khi backward thì tính lại phần thiếu. Giảm mạnh bộ nhớ activation, đổi lại chậm hơn khoảng 20–30%.</li>
+<li>Trạng thái train: 3 × 10⁹ × 16 = <strong>48 GB</strong>, không vừa cả GPU 40 GB.</li>
+<li>Chỉ để chạy suy luận ở bf16: 3 × 2 = 6 GB.</li>
 </ul>
-<h2 id="lt-3">Song song dữ liệu: DDP</h2>
-<p><strong>DistributedDataParallel:</strong> mỗi GPU giữ một bản sao đầy đủ của model, xử lý một phần batch khác nhau; sau backward, gradient được <strong>trung bình</strong> giữa các GPU (all-reduce) nên mọi bản sao cập nhật giống hệt nhau. Thông lượng tăng gần tuyến tính theo số GPU. Hạn chế: model phải vừa bộ nhớ một GPU.</p>
+<p>Train cần gấp khoảng 8 lần bộ nhớ so với chạy, chưa tính activation. Đây là lý do LoRA/QLoRA (P6.1) phổ biến: chỉ vài chục triệu tham số cần gradient và trạng thái Adam.</p>
+</div>
+<h2 id="lt-3">Ba kỹ thuật trên một GPU</h2>
+<h3>Mixed precision</h3>
+<p>Tính forward/backward ở 16 bit (bf16 trên GPU mới, fp16 trên T4 kèm loss scaling), giữ bản trọng số chính fp32. Nhanh hơn (tensor core) và giảm bộ nhớ activation một nửa. Đã dùng ở P2.3 với <code>torch.autocast</code>.</p>
+<h3>Gradient accumulation</h3>
+<p>Muốn batch 128 nhưng chỉ vừa 16? Chạy 8 lần forward/backward, <strong>cộng dồn</strong> gradient, rồi mới <code>optimizer.step()</code>.</p>
+<div class="hl"><pre><span></span><code><span class="tk-n">accum</span> <span class="tk-o">=</span> <span class="tk-mi">4</span>
+<span class="tk-n">opt</span><span class="tk-o">.</span><span class="tk-n">zero_grad</span><span class="tk-p">()</span>
+<span class="tk-k">for</span> <span class="tk-n">i</span><span class="tk-p">,</span> <span class="tk-p">(</span><span class="tk-n">x</span><span class="tk-p">,</span> <span class="tk-n">y</span><span class="tk-p">)</span> <span class="tk-ow">in</span> <span class="tk-nb">enumerate</span><span class="tk-p">(</span><span class="tk-n">loader</span><span class="tk-p">):</span>
+    <span class="tk-n">loss</span> <span class="tk-o">=</span> <span class="tk-n">loss_fn</span><span class="tk-p">(</span><span class="tk-n">model</span><span class="tk-p">(</span><span class="tk-n">x</span><span class="tk-p">),</span> <span class="tk-n">y</span><span class="tk-p">)</span> <span class="tk-o">/</span> <span class="tk-n">accum</span>          <span class="tk-c1"># chia số bước tích lũy</span>
+    <span class="tk-n">loss</span><span class="tk-o">.</span><span class="tk-n">backward</span><span class="tk-p">()</span>                              <span class="tk-c1"># gradient cộng dồn vào .grad</span>
+    <span class="tk-k">if</span> <span class="tk-p">(</span><span class="tk-n">i</span> <span class="tk-o">+</span> <span class="tk-mi">1</span><span class="tk-p">)</span> <span class="tk-o">%</span> <span class="tk-n">accum</span> <span class="tk-o">==</span> <span class="tk-mi">0</span><span class="tk-p">:</span>
+        <span class="tk-n">opt</span><span class="tk-o">.</span><span class="tk-n">step</span><span class="tk-p">();</span> <span class="tk-n">opt</span><span class="tk-o">.</span><span class="tk-n">zero_grad</span><span class="tk-p">()</span>
+</code></pre></div>
+
+<p><strong>Kiểm chứng:</strong> với một mạng nhỏ, gradient của 4 micro-batch 8 mẫu (mỗi loss chia 4) khớp gradient của một batch 32 mẫu, sai khác lớn nhất <strong>1,9 × 10⁻⁸</strong> (chỉ là sai số làm tròn). Quên chia 4 thì gradient lớn gấp <strong>đúng 4 lần</strong>, tương đương tăng learning rate 4 lần.</p>
+<p><strong>Batch hiệu dụng</strong> = batch mỗi bước × số bước tích lũy × số GPU.</p>
+<div class="box pitfall">
+<div class="box-h">Lỗi hay gặp</div>
+<p><strong>Gradient accumulation với BatchNorm.</strong> BatchNorm tính thống kê trên từng micro-batch nhỏ, không phải batch hiệu dụng, nên kết quả khác batch lớn thật. Transformer dùng LayerNorm nên không bị; CNN có BatchNorm thì cần micro-batch không quá nhỏ (từ khoảng 16 trở lên) hoặc dùng GroupNorm.</p>
+</div>
+<h3>Gradient checkpointing</h3>
+<p>Không lưu mọi activation, chỉ lưu đầu vào của mỗi khối; khi backward, <strong>tính lại</strong> forward của khối đó để lấy activation cần thiết. Đổi tính toán lấy bộ nhớ.</p>
+<div class="hl"><pre><span></span><code><span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">torch.utils.checkpoint</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">checkpoint</span>
+<span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">forward</span><span class="tk-p">(</span><span class="tk-bp">self</span><span class="tk-p">,</span> <span class="tk-n">x</span><span class="tk-p">):</span>
+    <span class="tk-k">for</span> <span class="tk-n">block</span> <span class="tk-ow">in</span> <span class="tk-bp">self</span><span class="tk-o">.</span><span class="tk-n">blocks</span><span class="tk-p">:</span>
+        <span class="tk-n">x</span> <span class="tk-o">=</span> <span class="tk-n">checkpoint</span><span class="tk-p">(</span><span class="tk-n">block</span><span class="tk-p">,</span> <span class="tk-n">x</span><span class="tk-p">,</span> <span class="tk-n">use_reentrant</span><span class="tk-o">=</span><span class="tk-kc">False</span><span class="tk-p">)</span>   <span class="tk-c1"># không lưu activation bên trong block</span>
+    <span class="tk-k">return</span> <span class="tk-n">x</span>
+<span class="tk-c1"># với model transformers: model.gradient_checkpointing_enable()</span>
+</code></pre></div>
+
+<figure class="fig"><img src="../assets/fig/p9-2-ckpt.svg" alt="Đo thật: mạng 12 khối (chiều 512, MLP 2048), batch 16 × 256 token. Activation lưu cho backward giảm từ 1.116 MB xuống 109 MB (khoảng 10 lần); thời gian mỗi bước tăng 22%." loading="lazy"><figcaption>Đo thật: mạng 12 khối (chiều 512, MLP 2048), batch 16 × 256 token. Activation lưu cho backward giảm từ 1.116 MB xuống 109 MB (khoảng 10 lần); thời gian mỗi bước tăng 22%.</figcaption></figure>
+
+<h2 id="lt-4">Song song dữ liệu: DDP</h2>
+<p><strong>DistributedDataParallel:</strong> mỗi GPU giữ một bản sao đầy đủ của model, xử lý một phần batch khác nhau; trong lúc backward, gradient được <strong>trung bình</strong> giữa các GPU (all-reduce), nên mọi bản sao cập nhật giống hệt nhau.</p>
+<figure class="fig"><img src="../assets/fig/p9-2-ddp.svg" alt="DDP với 4 GPU: dữ liệu chia 4, model sao chép 4, gradient trung bình sau mỗi bước." loading="lazy"><figcaption>DDP với 4 GPU: dữ liệu chia 4, model sao chép 4, gradient trung bình sau mỗi bước.</figcaption></figure>
+
 <div class="hl"><pre><span></span><code>torchrun<span class="tk-w"> </span>--nproc_per_node<span class="tk-o">=</span><span class="tk-m">2</span><span class="tk-w"> </span>train_ddp.py<span class="tk-w">      </span><span class="tk-c1"># 2 GPU trên một máy</span>
 </code></pre></div>
 
-<h2 id="lt-4">Chia nhỏ trạng thái: ZeRO và FSDP</h2>
-<p>Khi model không vừa một GPU, chia trạng thái ra các GPU thay vì sao chép:</p>
+<p>Những điểm phải làm đúng trong script DDP:</p>
+<ul>
+<li><code>dist.init_process_group(...)</code>: backend <code>nccl</code> cho GPU, <code>gloo</code> cho CPU.</li>
+<li><code>DistributedSampler</code> để mỗi tiến trình nhận một phần dữ liệu khác nhau; gọi <code>sampler.set_epoch(epoch)</code> mỗi epoch để xáo trộn khác nhau.</li>
+<li>Chỉ <strong>rank 0</strong> in log, lưu checkpoint, gọi W&B; nếu không, 8 GPU ghi đè cùng một file.</li>
+</ul>
+<p>Đã chạy thử một script DDP tối giản trên CPU với 2 tiến trình (backend gloo): mỗi tiến trình nhận dữ liệu khác nhau, nhưng sau <code>optimizer.step()</code> trọng số của hai tiến trình <strong>giống hệt nhau</strong>.</p>
+<p>Thông lượng tăng gần tuyến tính theo số GPU nếu kết nối giữa các GPU đủ nhanh. Hạn chế: model và trạng thái train phải vừa bộ nhớ <strong>một</strong> GPU.</p>
+<h2 id="lt-5">Chia nhỏ trạng thái: ZeRO và FSDP</h2>
+<p>Trong DDP, mỗi GPU giữ trọn bộ 16 byte/tham số, nghĩa là N bản sao giống nhau: lãng phí. <strong>ZeRO</strong> (DeepSpeed) và <strong>FSDP</strong> (PyTorch) chia trạng thái ra các GPU:</p>
 <table>
 <thead>
 <tr>
 <th>Mức (ZeRO)</th>
 <th>Chia giữa các GPU</th>
-<th>Bộ nhớ trạng thái mỗi GPU (N GPU)</th>
+<th>Byte/tham số mỗi GPU (N GPU)</th>
 </tr>
 </thead>
 <tbody>
 <tr>
+<td>Không chia (DDP)</td>
+<td>không</td>
+<td>16</td>
+</tr>
+<tr>
 <td>Stage 1</td>
 <td>trạng thái optimizer</td>
-<td>giảm phần Adam đi N lần</td>
+<td>2 + 2 + 12/N</td>
 </tr>
 <tr>
 <td>Stage 2</td>
 <td>+ gradient</td>
-<td></td>
+<td>2 + 14/N</td>
 </tr>
 <tr>
 <td>Stage 3 / FSDP</td>
 <td>+ chính trọng số</td>
-<td>khoảng 16·P / N byte</td>
+<td>16/N</td>
 </tr>
 </tbody>
 </table>
-<p>Với Stage 3/FSDP, mỗi lớp được gom đủ trọng số ngay trước khi dùng rồi giải phóng. Tốn thêm băng thông giữa các GPU để đổi lấy khả năng train model lớn hơn nhiều lần. Ngoài ra còn <strong>tensor parallel</strong> (chia từng ma trận) và <strong>pipeline parallel</strong> (chia các lớp) cho model rất lớn.</p>
-<h2 id="lt-5">Scaling law và lập kế hoạch tính toán</h2>
+<figure class="fig"><img src="../assets/fig/p9-2-zero.svg" alt="Model 3B trên 8 GPU: từ 48 GB mỗi GPU (không vừa) xuống 6 GB với ZeRO-3/FSDP." loading="lazy"><figcaption>Model 3B trên 8 GPU: từ 48 GB mỗi GPU (không vừa) xuống 6 GB với ZeRO-3/FSDP.</figcaption></figure>
+
+<p>Với Stage 3/FSDP, mỗi lớp được <strong>gom đủ</strong> trọng số từ các GPU ngay trước khi dùng rồi giải phóng. Tốn thêm băng thông giữa các GPU để đổi lấy khả năng train model lớn hơn nhiều lần. Trong thực tế bạn bật bằng cấu hình (Accelerate, DeepSpeed config, <code>FSDP</code> của PyTorch), không tự viết.</p>
+<p>Model rất lớn còn cần thêm:</p>
 <ul>
-<li><strong>Chi phí train</strong> ≈ 6 · N · D phép tính (N: số tham số, D: số token).</li>
-<li>Nghiên cứu <strong>Chinchilla</strong> cho thấy với một ngân sách tính toán cố định, tối ưu là khoảng <strong>20 token cho mỗi tham số</strong>. Model 1B nên train khoảng 20B token.</li>
-<li>Thực tế nhiều model nhỏ được train <strong>vượt xa</strong> tỉ lệ đó, vì model nhỏ rẻ khi chạy suy luận; train lâu hơn bù lại.</li>
+<li><strong>Tensor parallel:</strong> chia từng ma trận lớn theo cột/hàng giữa các GPU trong một máy.</li>
+<li><strong>Pipeline parallel:</strong> chia các lớp thành nhiều đoạn, mỗi đoạn một nhóm GPU, dữ liệu chảy qua như dây chuyền.</li>
+</ul>
+<h2 id="lt-6">Scaling law và lập kế hoạch tính toán</h2>
+<ul>
+<li><strong>Chi phí train</strong> ≈ 6 · N · D phép tính (N: số tham số, D: số token). Số 6 = 2 (forward: một phép nhân + một phép cộng mỗi tham số mỗi token) × 3 (backward tốn khoảng gấp đôi forward).</li>
+<li><strong>Chinchilla</strong> (Hoffmann và cộng sự, 2022): với một ngân sách tính toán cố định, tối ưu là khoảng <strong>20 token cho mỗi tham số</strong>.</li>
+<li>Thực tế nhiều model nhỏ được train <strong>vượt xa</strong> tỉ lệ đó (hàng nghìn token mỗi tham số), vì model nhỏ rẻ khi chạy suy luận; train lâu hơn bù lại chất lượng.</li>
 <li>Chất lượng và tỉ lệ trộn dữ liệu (code, sách, web, tiếng Việt) ảnh hưởng mạnh như kích thước.</li>
 </ul>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>Model 3 tỉ tham số theo tỉ lệ Chinchilla:</p>
+<ol>
+<li>Số token: 3 × 10⁹ × 20 = <strong>60 tỉ token</strong>.</li>
+<li>Phép tính: 6 × 3 × 10⁹ × 6 × 10¹⁰ = <strong>1,08 × 10²¹</strong>.</li>
+<li>Trên 64 GPU, mỗi GPU đạt thực tế 150 TFLOP/s: 1,08 × 10²¹ / (64 × 1,5 × 10¹⁴) ≈ 112.500 giây ≈ <strong>31 giờ</strong>.</li>
+</ol>
+<p>"Thực tế 150 TFLOP/s" quan trọng: GPU quảng cáo nhiều hơn, nhưng hiệu suất thật khi train (MFU) thường chỉ 30–50% con số trên giấy.</p>
+</div>
 <div class="keep">
 <p><strong>Ghi nhớ:</strong> trước khi train lớn, tính bộ nhớ và số phép tính trên giấy. Thử chạy vài trăm bước ở quy mô nhỏ để đo thông lượng thật, rồi mới ước tính thời gian và chi phí.</p>
-</div></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p9.2:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 3</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Batch hiệu dụng</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>8 mẫu mỗi GPU mỗi bước, 4 GPU, tích lũy gradient 4 bước.</p>
+</div>
+<div class="box check">
+<div class="box-h">Tự kiểm tra nhanh</div>
+<div class="ans" id="p9-2-t-b112-a1">
+<div class="ans-fields"><label>Model 3B, 16 byte/tham số: trạng thái train (GB)<input inputmode="decimal" data-ans="48.0" data-tol="0.001" autocomplete="off"></label><label>Model 3B, ZeRO-2 trên 8 GPU: GB mỗi GPU<input inputmode="decimal" data-ans="11.25" data-tol="0.01" autocomplete="off"></label><label>Model 3B theo Chinchilla: số token (tỉ)<input inputmode="decimal" data-ans="60.0" data-tol="0.001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div>
+<div aria-live="polite" class="ans-fb"></div>
+</div>
+</div>
+<h2 id="lt-7">Tóm tắt bài và thuật ngữ</h2>
+<table>
+<thead>
+<tr>
+<th>Kỹ thuật</th>
+<th>Giải quyết</th>
+<th>Giá phải trả</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Mixed precision</td>
+<td>nhanh hơn, activation nhỏ hơn</td>
+<td>cần loss scaling với fp16</td>
+</tr>
+<tr>
+<td>Gradient accumulation</td>
+<td>batch hiệu dụng lớn khi bộ nhớ ít</td>
+<td>chậm hơn batch lớn thật một chút</td>
+</tr>
+<tr>
+<td>Gradient checkpointing</td>
+<td>activation nhỏ khoảng 10 lần</td>
+<td>chậm khoảng 20–30%</td>
+</tr>
+<tr>
+<td>DDP</td>
+<td>nhân thông lượng theo số GPU</td>
+<td>model phải vừa một GPU</td>
+</tr>
+<tr>
+<td>ZeRO / FSDP</td>
+<td>model lớn hơn bộ nhớ một GPU</td>
+<td>thêm truyền thông giữa GPU</td>
+</tr>
+<tr>
+<td>Scaling law</td>
+<td>ước tính token, phép tính, thời gian</td>
+<td>chỉ là ước lượng, cần đo thật</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Thuật ngữ</th>
+<th>Nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>activation</td>
+<td>kết quả trung gian lưu lại để backward</td>
+</tr>
+<tr>
+<td>micro-batch / effective batch</td>
+<td>batch mỗi lần forward / batch thật khi cập nhật</td>
+</tr>
+<tr>
+<td>all-reduce</td>
+<td>phép tính tổng (trung bình) gửi kết quả về mọi GPU</td>
+</tr>
+<tr>
+<td>rank / world size</td>
+<td>chỉ số tiến trình / tổng số tiến trình</td>
+</tr>
+<tr>
+<td>NCCL / gloo</td>
+<td>thư viện truyền thông GPU / CPU</td>
+</tr>
+<tr>
+<td>ZeRO / FSDP</td>
+<td>chia trạng thái optimizer, gradient, trọng số giữa các GPU</td>
+</tr>
+<tr>
+<td>tensor / pipeline parallel</td>
+<td>chia ma trận / chia các lớp giữa các GPU</td>
+</tr>
+<tr>
+<td>FLOPs</td>
+<td>số phép tính dấu phẩy động</td>
+</tr>
+<tr>
+<td>MFU</td>
+<td>model FLOPs utilization, tỉ lệ sức tính thật sự dùng được</td>
+</tr>
+<tr>
+<td>Chinchilla scaling</td>
+<td>khoảng 20 token cho mỗi tham số</td>
+</tr>
+</tbody>
+</table></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p9.2:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 3</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Batch hiệu dụng</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>8 mẫu mỗi GPU mỗi bước, 4 GPU, tích lũy gradient 4 bước.</p>
 <div class="ans" id="p9-2-e1-a1"><div class="ans-fields"><label>Batch hiệu dụng<input inputmode="decimal" data-ans="128.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
 
 <details class="fold solution">
@@ -187,7 +363,7 @@
     </div>
     <aside class="aside">
       <div class="abox"><h4>Tiến độ bài này</h4><div class="ring"><svg viewBox="0 0 64 64" aria-hidden="true"><circle class="bg" cx="32" cy="32" r="28"/><circle class="fg" cx="32" cy="32" r="28" stroke-dasharray="176" stroke-dashoffset="176"/></svg><div><b id="ring-n">0/3</b><span id="ring-sub">phần đã xong</span></div></div></div>
-      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Bộ nhớ khi train đi đâu</a></li><li><a href="#lt-2">Ba kỹ thuật trên một GPU</a></li><li><a href="#lt-3">Song song dữ liệu: DDP</a></li><li><a href="#lt-4">Chia nhỏ trạng thái: ZeRO và FSDP</a></li><li><a href="#lt-5">Scaling law và lập kế hoạch tính toán</a></li></ol></div>
+      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Vì sao cần biết train phân tán</a></li><li><a href="#lt-2">Bộ nhớ khi train đi đâu</a></li><li><a href="#lt-3">Ba kỹ thuật trên một GPU</a></li><li><a href="#lt-4">Song song dữ liệu: DDP</a></li><li><a href="#lt-5">Chia nhỏ trạng thái: ZeRO và FSDP</a></li><li><a href="#lt-6">Scaling law và lập kế hoạch tính toán</a></li><li><a href="#lt-7">Tóm tắt bài và thuật ngữ</a></li></ol></div>
       
       <div class="abox"><h4>Cùng giai đoạn</h4><ul><li><a href="p9-1.html">Đọc và tái hiện paper</a></li><li><span class=cur>Train ở quy mô lớn</span></li><li><a href="p9-3.html">Kiến trúc và hướng mới</a></li></ul></div>
     </aside>

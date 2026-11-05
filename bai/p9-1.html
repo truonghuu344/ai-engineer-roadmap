@@ -22,11 +22,50 @@
 <main class="container">
   <div class="crumbs"><a href="../bai-hoc.html">Bài học</a><span>/</span><a href="../bai-hoc.html#p9">P9 · Nâng cao và nghiên cứu</a><span>/</span><span>P9.1</span></div>
   <section class="lhero"><div class="code">P9.1</div><h1>Đọc và tái hiện paper</h1><div class="lmeta"><span class="m">Giai đoạn P9 · Nâng cao và nghiên cứu</span><span class="m">Tuần 40–45</span><span class="chip ready"><span class="dot"></span>Có nội dung đầy đủ</span></div>
-    <div class="intro"><p>AI thay đổi nhanh đến mức kiến thức trong khóa học nào cũng cũ sau một năm. Kỹ năng bền nhất là <strong>tự học từ bài báo</strong>: đọc nhanh để biết bài nào đáng đọc kỹ, hiểu đúng kết quả, và tự tái hiện để kiểm chứng. Đây cũng là kỹ năng cốt lõi nếu bạn đi theo hướng nghiên cứu.</p></div></section>
+    <div class="intro"><p>AI thay đổi nhanh đến mức kiến thức trong khóa học nào cũng cũ sau một năm. Kỹ năng bền nhất là <strong>tự học từ bài báo</strong>: đọc nhanh để biết bài nào đáng đọc kỹ, hiểu đúng kết quả, và tự tái hiện để kiểm chứng. Đây cũng là kỹ năng cốt lõi nếu bạn đi theo hướng nghiên cứu. Bài này có quy trình đọc ba lượt, bộ câu hỏi để đọc bảng kết quả (kèm mô phỏng cho thấy vì sao điểm benchmark hay bị phồng), và cách tái hiện một con số.</p></div></section>
   
-  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">4 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
+  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">6 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
   <div class="lgrid" style="margin-top:22px">
-    <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">Đọc bài báo theo ba lượt</h2>
+    <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">Vì sao phải đọc bài báo</h2>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Mọi kỹ thuật trong lộ trình này (DDPM, LoRA, DPO, flow matching, VLA) đều bắt đầu từ một bài báo, và phần lớn công cụ bạn dùng ra đời chưa tới 3 năm. Người đọc được bài báo nắm kỹ thuật mới sớm hơn người chờ tutorial vài tháng. Với hướng nghiên cứu (như thực tập VLA), đọc và tái hiện bài báo <strong>chính là</strong> công việc hằng ngày.</p>
+</div>
+<h3>Tìm bài ở đâu</h3>
+<table>
+<thead>
+<tr>
+<th>Nguồn</th>
+<th>Dùng để</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>arXiv (cs.LG, cs.CL, cs.CV, cs.RO)</td>
+<td>bài mới nhất, bản preprint miễn phí</td>
+</tr>
+<tr>
+<td>Hugging Face Papers</td>
+<td>bài nổi bật mỗi ngày, kèm model và code liên quan</td>
+</tr>
+<tr>
+<td>Hội nghị: NeurIPS, ICML, ICLR, CVPR, ACL, CoRL</td>
+<td>bài đã qua bình duyệt; OpenReview có cả nhận xét của người phản biện</td>
+</tr>
+<tr>
+<td>Mục "Related work" của bài bạn đang đọc</td>
+<td>lần ngược về các bài nền tảng</td>
+</tr>
+<tr>
+<td>Google Scholar, Semantic Scholar</td>
+<td>tìm bài trích dẫn một bài (lần xuôi tới bài mới hơn)</td>
+</tr>
+</tbody>
+</table>
+<p>(Trang Papers with Code từng là nơi tra code và bảng xếp hạng benchmark đã đóng cửa năm 2025.)</p>
+<h2 id="lt-2">Đọc bài báo theo ba lượt</h2>
+<figure class="fig"><img src="../assets/fig/p9-1-passes.svg" alt="Phễu đọc: phần lớn bài chỉ đáng 10 phút. Chọn kỹ bài đáng đọc lượt 3." loading="lazy"><figcaption>Phễu đọc: phần lớn bài chỉ đáng 10 phút. Chọn kỹ bài đáng đọc lượt 3.</figcaption></figure>
+
 <table>
 <thead>
 <tr>
@@ -41,7 +80,7 @@
 <td>1</td>
 <td>10 phút</td>
 <td>tiêu đề, tóm tắt, hình 1, tiêu đề các mục, kết luận</td>
-<td>bài này giải quyết vấn đề gì, có liên quan tới mình không</td>
+<td>bài giải quyết vấn đề gì, có liên quan tới mình không</td>
 </tr>
 <tr>
 <td>2</td>
@@ -57,28 +96,245 @@
 </tr>
 </tbody>
 </table>
-<p>Phần lớn bài chỉ cần lượt 1. Chọn kỹ bài đáng đọc lượt 3.</p>
-<h2 id="lt-2">Đọc bảng kết quả và ablation</h2>
-<ul>
-<li><strong>So với cái gì?</strong> Baseline có mạnh và mới không, có được tune công bằng như phương pháp mới không.</li>
-<li><strong>Cùng điều kiện?</strong> Cùng dữ liệu, cùng lượng tính toán, cùng kích thước model.</li>
-<li><strong>Chênh bao nhiêu và dao động bao nhiêu?</strong> Cải thiện 0.3 điểm trên một seed có thể chỉ là nhiễu. Bài tốt báo nhiều seed hoặc khoảng tin cậy.</li>
-<li><strong>Ablation:</strong> bỏ từng thành phần đi thì kết quả tụt bao nhiêu. Cho biết thành phần nào thật sự quan trọng.</li>
-<li><strong>Đo trên tập nào?</strong> Tập test công khai lâu năm có nguy cơ bị "học thuộc" gián tiếp qua nhiều vòng chọn model.</li>
-</ul>
-<h2 id="lt-3">Tìm code và tái hiện</h2>
+<p><strong>Mẹo cho lượt 1:</strong> hình 1 của bài ML thường là sơ đồ phương pháp hoặc kết quả ấn tượng nhất. Nếu sau 10 phút bạn không nói được bài làm gì trong một câu, hoặc bài nhiều khả năng là một biến thể nhỏ của bài đã biết, dừng ở đó.</p>
+<p><strong>Mẹo cho lượt 2:</strong> đọc với một câu hỏi cụ thể trong đầu ("phương pháp này dùng được cho dữ liệu của mình không?", "khác LoRA ở đâu?"). Đánh dấu thuật ngữ chưa hiểu, tra sau khi đọc hết, không dừng giữa chừng.</p>
+<h2 id="lt-3">Đọc bảng kết quả và ablation</h2>
+<p>Bảng kết quả là nơi bài báo đưa ra <strong>tuyên bố</strong>. Đọc nó như người phản biện:</p>
+<table>
+<thead>
+<tr>
+<th>Câu hỏi</th>
+<th>Vì sao</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>So với cái gì? Baseline có mạnh và mới không?</td>
+<td>thắng một baseline yếu hoặc cũ không nói lên nhiều</td>
+</tr>
+<tr>
+<td>Baseline được tune công bằng không, hay chép số từ bài khác?</td>
+<td>số chép từ bài cũ thường chạy với ít tính toán hơn</td>
+</tr>
+<tr>
+<td>Cùng dữ liệu, cùng lượng tính toán, cùng kích thước model?</td>
+<td>model lớn hơn, train lâu hơn tự nó đã tốt hơn</td>
+</tr>
+<tr>
+<td>Chênh bao nhiêu, dao động bao nhiêu?</td>
+<td>0,3 điểm trên một seed có thể chỉ là nhiễu (P8.2)</td>
+</tr>
+<tr>
+<td>Ablation: bỏ từng thành phần thì tụt bao nhiêu?</td>
+<td>cho biết thành phần nào thật sự tạo ra cải thiện</td>
+</tr>
+<tr>
+<td>Đo trên tập nào, bao nhiêu mẫu?</td>
+<td>tập nhỏ thì sai số lớn; tập công khai lâu năm dễ bị "học thuộc" gián tiếp</td>
+</tr>
+</tbody>
+</table>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>Một bảng <strong>minh họa</strong> (số liệu bịa để luyện đọc):</p>
+<table>
+<thead>
+<tr>
+<th>Phương pháp</th>
+<th>Model nền</th>
+<th>Bước train</th>
+<th>Accuracy</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Baseline (số từ bài 2023)</td>
+<td>1B</td>
+<td>10k</td>
+<td>71,4</td>
+</tr>
+<tr>
+<td>Phương pháp mới</td>
+<td>3B</td>
+<td>30k</td>
+<td><strong>74,1</strong></td>
+</tr>
+<tr>
+<td>Phương pháp mới, bỏ thành phần X</td>
+<td>3B</td>
+<td>30k</td>
+<td>73,8</td>
+</tr>
+</tbody>
+</table>
+<p>Đọc từng dòng:</p>
 <ol>
-<li>Tìm code chính thức (link trong bài, trang Papers with Code, Hugging Face). Không có thì tìm bản cài đặt lại uy tín.</li>
-<li><strong>Tái hiện một con số</strong> trong bảng trước, ở quy mô nhỏ nhất có thể (một dataset nhỏ, một cấu hình).</li>
-<li>Ghi lại mọi khác biệt: phiên bản thư viện, siêu tham số bài không nêu, số GPU.</li>
-<li>Nếu lệch: kiểm tra từng bước so với bài, đọc issue trên GitHub của repo (thường có người gặp cùng vấn đề).</li>
+<li>Tuyên bố "+2,7 điểm" so với baseline, nhưng phương pháp mới dùng model gấp 3 và train lâu gấp 3; baseline chép số từ bài cũ. Không tách được phần nào do phương pháp, phần nào do quy mô.</li>
+<li>Ablation: bỏ thành phần X chỉ tụt 0,3 điểm, không báo seed. Rất có thể X gần như không đóng góp gì; cải thiện chủ yếu đến từ model lớn hơn.</li>
+<li>Thí nghiệm còn thiếu: baseline chạy lại với model 3B, 30k bước; 3 seed cho mỗi dòng.</li>
+</ol>
+</div>
+<h3>Vì sao điểm benchmark hay bị phồng</h3>
+<p><strong>Mô phỏng:</strong> K model có accuracy thật <strong>bằng nhau</strong> (80%). Đánh giá tất cả trên cùng một tập test, báo cáo điểm cao nhất. Lặp lại 4.000 lần:</p>
+<figure class="fig"><img src="../assets/fig/p9-1-bestof.svg" alt="Chọn cái tốt nhất trong 100 cấu hình trên tập test 500 mẫu: điểm báo cáo trung bình 84,4% dù mọi model đều chỉ 80%. Tập test càng lớn, độ phồng càng nhỏ (10.000 mẫu: 81,0%)." loading="lazy"><figcaption>Chọn cái tốt nhất trong 100 cấu hình trên tập test 500 mẫu: điểm báo cáo trung bình 84,4% dù mọi model đều chỉ 80%. Tập test càng lớn, độ phồng càng nhỏ (10.000 mẫu: 81,0%).</figcaption></figure>
+
+<p>Đây là điều xảy ra khi nhiều nhóm nghiên cứu (hoặc một nhóm qua nhiều tháng) cùng chỉnh model trên một tập test công khai: điểm tăng dần mà không chắc model thật sự tốt hơn. Vì vậy hãy tin hơn các kết quả trên <strong>tập test mới</strong>, <strong>nhiều benchmark khác nhau</strong>, hoặc có <strong>khoảng tin cậy</strong>.</p>
+<h3>Cải thiện tuyệt đối và tương đối</h3>
+<p>Bài báo thường chọn cách nói nghe ấn tượng hơn.</p>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>Error rate giảm từ 15% xuống 12%:</p>
+<ul>
+<li>Tuyệt đối: giảm <strong>3 điểm phần trăm</strong>.</li>
+<li>Tương đối: giảm 3 / 15 = <strong>20%</strong> số lỗi.</li>
+</ul>
+<p>"Giảm 20% lỗi" và "tăng accuracy từ 85% lên 88%" là cùng một kết quả. Khi đọc, quy về cả hai để so sánh với các bài khác.</p>
+</div>
+<h2 id="lt-4">Tìm code và tái hiện</h2>
+<ol>
+<li><strong>Tìm code chính thức:</strong> link trong bài (thường ở cuối tóm tắt hoặc chân trang 1), trang của bài trên Hugging Face Papers, GitHub của tác giả. Không có thì tìm bản cài đặt lại có nhiều sao và issue được trả lời.</li>
+<li><strong>Tái hiện một con số</strong> trong bảng trước, ở quy mô nhỏ nhất có thể (một dataset nhỏ, một cấu hình). Viết trước bạn kỳ vọng lệch bao nhiêu.</li>
+<li><strong>Ghi lại mọi khác biệt:</strong> phiên bản thư viện, siêu tham số bài không nêu, số GPU, batch size thật (gradient accumulation).</li>
+<li><strong>Nếu lệch:</strong> kiểm tra từng bước so với bài; đọc issue trên GitHub của repo (thường có người gặp cùng vấn đề); xem phụ lục (siêu tham số hay nằm ở đó).</li>
 </ol>
 <p>Tái hiện được rồi mới thay đổi: thêm một ý tưởng, đổi dữ liệu, chạy ablation của riêng bạn.</p>
-<h2 id="lt-4">Ghi chép và chia sẻ</h2>
-<p>Mỗi bài đọc lượt 2 trở lên, viết <strong>một trang</strong>: vấn đề, ý tưởng chính trong 3 câu, phương pháp, kết quả chính kèm số, điểm yếu, câu hỏi mở, liên hệ với việc của bạn. Sau vài tháng bạn có một kho ghi chú tra cứu được. Viết blog giải thích một bài báo bằng tiếng Anh là cách tốt để vừa hiểu sâu vừa xây hồ sơ.</p>
+<div class="box pitfall">
+<div class="box-h">Lỗi hay gặp</div>
+<p><strong>Kết luận "bài báo sai" sau một lần tái hiện lệch.</strong> Lệch 1–2 điểm thường do seed, phiên bản thư viện, tiền xử lý dữ liệu, hoặc batch size khác. Chạy 3 seed, kiểm tra từng khác biệt, đọc issue của repo, trước khi kết luận. Ngược lại, tái hiện <strong>khớp</strong> một con số cũng chưa chứng minh tuyên bố của bài là đúng (có thể baseline yếu); nó chỉ chứng minh bạn chạy đúng code.</p>
+</div>
+<p>Nhiều tuyên bố của bài báo có thể kiểm tra bằng thí nghiệm rất nhỏ. Trong lộ trình này bạn đã làm vài lần: LoRA rank thấp bằng fine-tune toàn bộ (P5.5), flow matching tốt hơn ở ít bước (P5.6), ViT cần nhiều dữ liệu hơn CNN (P7.1). Mỗi thí nghiệm chạy dưới một phút trên CPU, đủ để hiểu cơ chế.</p>
+<h2 id="lt-5">Ghi chép và chia sẻ</h2>
+<p>Mỗi bài đọc lượt 2 trở lên, viết <strong>một trang</strong> theo khung cố định:</p>
+<table>
+<thead>
+<tr>
+<th>Mục</th>
+<th>Nội dung</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Vấn đề</td>
+<td>bài giải quyết gì, vì sao các cách cũ chưa đủ</td>
+</tr>
+<tr>
+<td>Ý tưởng chính</td>
+<td>3 câu, không thuật ngữ thừa</td>
+</tr>
+<tr>
+<td>Phương pháp</td>
+<td>sơ đồ hoặc công thức cốt lõi</td>
+</tr>
+<tr>
+<td>Kết quả chính</td>
+<td>kèm số cụ thể từ bảng</td>
+</tr>
+<tr>
+<td>Điểm yếu</td>
+<td>nhận xét của bạn, không chép mục Limitations</td>
+</tr>
+<tr>
+<td>Câu hỏi mở</td>
+<td>điều bài chưa trả lời</td>
+</tr>
+<tr>
+<td>Liên hệ</td>
+<td>dùng được gì cho việc của bạn</td>
+</tr>
+</tbody>
+</table>
+<p>Sau vài tháng bạn có một kho ghi chú tra cứu được. Viết blog giải thích một bài báo bằng tiếng Anh (kèm thí nghiệm tái hiện nhỏ) là cách tốt để vừa hiểu sâu vừa xây hồ sơ: nhà tuyển dụng và giáo sư đọc được cách bạn suy nghĩ.</p>
 <div class="keep">
 <p><strong>Ghi nhớ:</strong> con số trong bài báo là một tuyên bố cần kiểm chứng, không phải sự thật. Tái hiện là cách học sâu nhất.</p>
-</div></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p9.1:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 2</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Cải thiện tương đối</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Baseline có error rate 8%, phương pháp mới 6%.</p>
+</div>
+<div class="box check">
+<div class="box-h">Tự kiểm tra nhanh</div>
+<div class="ans" id="p9-1-t-b91-a1">
+<div class="ans-fields"><label>Error rate 15% → 12%: giảm tương đối (%)<input inputmode="decimal" data-ans="20.0" data-tol="0.001" autocomplete="off"></label><label>Mô phỏng: chọn tốt nhất trong 100 cấu hình, test 500 mẫu, accuracy thật 80%: điểm báo cáo trung bình (%, làm tròn 1 chữ số)<input inputmode="decimal" data-ans="84.4" data-tol="0.1" autocomplete="off"></label><label>Bảng minh họa: bỏ thành phần X làm tụt bao nhiêu điểm<input inputmode="decimal" data-ans="0.3" data-tol="0.001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div>
+<div aria-live="polite" class="ans-fb"></div>
+</div>
+</div>
+<h2 id="lt-6">Tóm tắt bài và thuật ngữ</h2>
+<table>
+<thead>
+<tr>
+<th>Chủ đề</th>
+<th>Ý chính</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Tìm bài</td>
+<td>arXiv, Hugging Face Papers, hội nghị, Related work, Scholar</td>
+</tr>
+<tr>
+<td>Ba lượt</td>
+<td>10 phút → 1 giờ → vài giờ; phần lớn bài dừng ở lượt 1</td>
+</tr>
+<tr>
+<td>Đọc bảng</td>
+<td>baseline, cùng điều kiện, dao động, ablation, tập test</td>
+</tr>
+<tr>
+<td>Điểm phồng</td>
+<td>chọn tốt nhất trên cùng tập test làm điểm tăng giả</td>
+</tr>
+<tr>
+<td>Tái hiện</td>
+<td>một con số, quy mô nhỏ, ghi khác biệt, 3 seed, đọc issue</td>
+</tr>
+<tr>
+<td>Ghi chép</td>
+<td>một trang, khung cố định; blog tiếng Anh</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Thuật ngữ</th>
+<th>Nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>preprint</td>
+<td>bản thảo đăng trước khi bình duyệt (arXiv)</td>
+</tr>
+<tr>
+<td>peer review</td>
+<td>bình duyệt</td>
+</tr>
+<tr>
+<td>baseline</td>
+<td>phương pháp làm mốc so sánh</td>
+</tr>
+<tr>
+<td>ablation study</td>
+<td>bỏ từng thành phần để đo đóng góp</td>
+</tr>
+<tr>
+<td>SOTA</td>
+<td>state of the art, kết quả tốt nhất hiện tại</td>
+</tr>
+<tr>
+<td>benchmark</td>
+<td>bộ dữ liệu và thước đo chuẩn để so sánh</td>
+</tr>
+<tr>
+<td>reproducibility</td>
+<td>khả năng tái hiện</td>
+</tr>
+<tr>
+<td>absolute / relative improvement</td>
+<td>cải thiện tuyệt đối / tương đối</td>
+</tr>
+<tr>
+<td>test set overfitting</td>
+<td>chỉnh model theo tập test làm điểm phồng</td>
+</tr>
+</tbody>
+</table></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p9.1:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 2</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Cải thiện tương đối</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Baseline có error rate 8%, phương pháp mới 6%.</p>
 <div class="ans" id="p9-1-e1-a1"><div class="ans-fields"><label>Giảm tuyệt đối (điểm %)<input inputmode="decimal" data-ans="2.0" data-tol="0.001" autocomplete="off"></label><label>Giảm tương đối (%)<input inputmode="decimal" data-ans="25.0" data-tol="0.001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
 
 <details class="fold solution">
@@ -134,7 +390,7 @@
     </div>
     <aside class="aside">
       <div class="abox"><h4>Tiến độ bài này</h4><div class="ring"><svg viewBox="0 0 64 64" aria-hidden="true"><circle class="bg" cx="32" cy="32" r="28"/><circle class="fg" cx="32" cy="32" r="28" stroke-dasharray="176" stroke-dashoffset="176"/></svg><div><b id="ring-n">0/3</b><span id="ring-sub">phần đã xong</span></div></div></div>
-      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Đọc bài báo theo ba lượt</a></li><li><a href="#lt-2">Đọc bảng kết quả và ablation</a></li><li><a href="#lt-3">Tìm code và tái hiện</a></li><li><a href="#lt-4">Ghi chép và chia sẻ</a></li></ol></div>
+      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Vì sao phải đọc bài báo</a></li><li><a href="#lt-2">Đọc bài báo theo ba lượt</a></li><li><a href="#lt-3">Đọc bảng kết quả và ablation</a></li><li><a href="#lt-4">Tìm code và tái hiện</a></li><li><a href="#lt-5">Ghi chép và chia sẻ</a></li><li><a href="#lt-6">Tóm tắt bài và thuật ngữ</a></li></ol></div>
       
       <div class="abox"><h4>Cùng giai đoạn</h4><ul><li><span class=cur>Đọc và tái hiện paper</span></li><li><a href="p9-2.html">Train ở quy mô lớn</a></li><li><a href="p9-3.html">Kiến trúc và hướng mới</a></li></ul></div>
     </aside>
