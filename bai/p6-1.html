@@ -22,11 +22,18 @@
 <main class="container">
   <div class="crumbs"><a href="../bai-hoc.html">Bài học</a><span>/</span><a href="../bai-hoc.html#p6">P6 · Fine-tuning và tối ưu LLM</a><span>/</span><span>P6.1</span></div>
   <section class="lhero"><div class="code">P6.1</div><h1>Bài 8a · SFT và PEFT</h1><div class="lmeta"><span class="m">Giai đoạn P6 · Fine-tuning và tối ưu LLM</span><span class="m">Tuần 26–30</span><span class="chip ready"><span class="dot"></span>Có nội dung đầy đủ</span></div>
-    <div class="intro"><p>Prompting và RAG giải quyết được phần lớn bài toán. Nhưng khi cần model nhỏ chạy rẻ cho một tác vụ hẹp, cần định dạng đầu ra rất ổn định, hay cần văn phong riêng, <strong>fine-tune</strong> là công cụ đúng. Bài này dạy supervised fine-tuning (SFT) cho LLM, cách làm với GPU nhỏ bằng <strong>LoRA/QLoRA</strong>, chuẩn bị dữ liệu dạng hội thoại, và các bẫy thường gặp.</p></div></section>
+    <div class="intro"><p>Prompting và RAG giải quyết được phần lớn bài toán. Nhưng khi cần model nhỏ chạy rẻ cho một tác vụ hẹp, cần định dạng đầu ra rất ổn định, hay cần văn phong riêng, <strong>fine-tune</strong> là công cụ đúng. Bài này dạy khi nào nên fine-tune, supervised fine-tuning (SFT) cho LLM, cách làm với GPU nhỏ bằng <strong>LoRA/QLoRA</strong> (kèm tính bộ nhớ cụ thể), chuẩn bị dữ liệu dạng hội thoại, và các bẫy thường gặp.</p></div></section>
   
-  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">5 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
+  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">6 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
   <div class="lgrid" style="margin-top:22px">
     <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">Khi nào fine-tune</h2>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>"Có nên fine-tune không?" là câu khách hàng hỏi nhiều nhất về LLM, và câu trả lời đúng thường là "chưa". Biết khi nào <strong>không</strong> fine-tune giúp khách tiết kiệm hàng tuần và hàng nghìn đô; biết làm đúng khi cần thì bạn nhận được những dự án khó hơn, trả cao hơn.</p>
+</div>
+<p>Fine-tune thay đổi <strong>hành vi</strong> của model (cách làm, định dạng, văn phong), không phải cách tốt để nạp <strong>kiến thức</strong> mới. Thử theo thứ tự rẻ tới đắt:</p>
+<figure class="fig"><img src="../assets/fig/p6-1-decide.svg" alt="Thứ tự thử: prompt tốt, rồi RAG nếu thiếu kiến thức, chỉ fine-tune khi vẫn sai cách làm hoặc quá đắt. Mỗi bước đều đo trên cùng một tập test." loading="lazy"><figcaption>Thứ tự thử: prompt tốt, rồi RAG nếu thiếu kiến thức, chỉ fine-tune khi vẫn sai cách làm hoặc quá đắt. Mỗi bước đều đo trên cùng một tập test.</figcaption></figure>
+
 <table>
 <thead>
 <tr>
@@ -41,7 +48,7 @@
 </tr>
 <tr>
 <td>Model không làm theo định dạng, văn phong</td>
-<td>prompt tốt hơn, ví dụ few-shot</td>
+<td>prompt tốt hơn, ví dụ few-shot, structured output</td>
 </tr>
 <tr>
 <td>Tác vụ hẹp lặp lại hàng triệu lần, cần rẻ và nhanh</td>
@@ -57,16 +64,93 @@
 </tr>
 </tbody>
 </table>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>Một shop phân loại 300.000 tin nhắn khách mỗi ngày vào 8 nhóm (đổi hàng, hỏi giá, khiếu nại…). Đang dùng LLM lớn qua API với prompt 1.500 token gồm định nghĩa nhóm và 20 ví dụ.</p>
+<ul>
+<li>Mỗi ngày: 300.000 × 1.500 = 450 triệu token đầu vào chỉ cho phần prompt cố định.</li>
+<li>Fine-tune một model 0,5–1,5 tỉ tham số trên 2.000 ví dụ (gán nhãn bằng chính LLM lớn, kiểm tra lại bằng người): prompt chỉ còn tin nhắn, chạy trên một GPU nhỏ của shop.</li>
+</ul>
+<p>Đây là trường hợp fine-tune đáng làm: tác vụ hẹp, lặp lại rất nhiều, prompt dài vì phải "dạy". Ngược lại, chatbot trả lời theo chính sách đổi mỗi tháng thì dùng RAG: fine-tune sẽ lỗi thời sau một tháng.</p>
+</div>
 <p>Luôn có <strong>baseline prompting</strong> (zero-shot, few-shot) đo trên cùng tập test trước. Fine-tune chỉ đáng khi vượt baseline rõ rệt.</p>
 <h2 id="lt-2">Supervised fine-tuning</h2>
-<p>SFT tiếp tục train model đã pretrain bằng next-token prediction, nhưng trên dữ liệu dạng <strong>(yêu cầu, câu trả lời mong muốn)</strong>. Hai điểm kỹ thuật quan trọng:</p>
-<ul>
-<li><strong>Chat template:</strong> mỗi model có định dạng hội thoại riêng (token đặc biệt đánh dấu system, user, assistant). Dùng <code>tokenizer.apply_chat_template</code> để định dạng dữ liệu đúng như lúc model được instruction-tune, nếu không model "lạ" với định dạng và học kém.</li>
-<li><strong>Chỉ tính loss trên câu trả lời:</strong> phần prompt không nên đóng góp vào loss, nếu không model học cách sinh ra câu hỏi thay vì câu trả lời. Thư viện TRL có tùy chọn chỉ tính loss trên phần của assistant.</li>
-</ul>
+<p>SFT tiếp tục train model đã pretrain bằng đúng bài toán đoán token tiếp theo (P3.3), nhưng trên dữ liệu dạng <strong>(yêu cầu, câu trả lời mong muốn)</strong>. Model "instruct" bạn dùng hằng ngày đã qua SFT trên hàng trăm nghìn ví dụ; bạn SFT thêm trên vài nghìn ví dụ của tác vụ của mình.</p>
+<h3>Chat template</h3>
+<p>Mỗi model có định dạng hội thoại riêng, dùng token đặc biệt đánh dấu vai trò. Với Qwen:</p>
+<div class="hl"><pre><span></span><code>&lt;|im_start|&gt;system
+Trích xuất ý định và mã đơn từ tin nhắn. Chỉ trả JSON.&lt;|im_end|&gt;
+&lt;|im_start|&gt;user
+Tôi muốn đổi size áo đơn DH1024&lt;|im_end|&gt;
+&lt;|im_start|&gt;assistant
+{"intent": "đổi hàng", "order": "DH1024"}&lt;|im_end|&gt;
+</code></pre></div>
+
+<p>Llama, Gemma, Mistral dùng token khác. Luôn tạo chuỗi bằng <code>tokenizer.apply_chat_template(messages, tokenize=False)</code> thay vì tự ghép, để dữ liệu fine-tune có <strong>đúng</strong> định dạng model đã thấy lúc instruction-tune và lúc chạy thật.</p>
+<div class="box pitfall">
+<div class="box-h">Lỗi hay gặp</div>
+<p><strong>Lệch template giữa train và chạy thật.</strong> Train bằng chuỗi tự ghép "### Câu hỏi: … ### Trả lời: …" rồi khi chạy lại dùng <code>apply_chat_template</code> (hoặc ngược lại) làm model fine-tune kém hẳn, đôi khi sinh lan man không dừng vì không học được token kết thúc <code>&lt;|im_end|&gt;</code>.</p>
+</div>
+<h3>Chỉ tính loss trên câu trả lời</h3>
+<p>Phần system và user là <strong>đầu vào</strong>; model không cần học cách sinh ra chúng. Nếu tính loss trên cả chuỗi, phần lớn tín hiệu học là "chép lại câu hỏi".</p>
+<figure class="fig"><img src="../assets/fig/p6-1-mask.svg" alt="Nhãn của mọi token thuộc prompt được đặt bằng -100 (PyTorch bỏ qua khi tính cross-entropy); chỉ câu trả lời và token kết thúc được tính loss." loading="lazy"><figcaption>Nhãn của mọi token thuộc prompt được đặt bằng -100 (PyTorch bỏ qua khi tính cross-entropy); chỉ câu trả lời và token kết thúc được tính loss.</figcaption></figure>
+
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>Một ví dụ có 220 token prompt (system dài + tin nhắn) và 60 token câu trả lời. Nếu tính loss trên cả chuỗi, chỉ 60 / 280 ≈ <strong>21%</strong> tín hiệu đến từ câu trả lời; 79% còn lại dạy model lặp lại system prompt.</p>
+</div>
+<p>Trong thư viện TRL (đã kiểm tra mã nguồn bản 1.17), cách đơn giản nhất là lưu dữ liệu dạng <strong>prompt / completion</strong>: với loại dữ liệu này <code>SFTTrainer</code> mặc định chỉ tính loss trên phần completion. Dữ liệu chỉ có cột <code>messages</code> thì mặc định tính loss trên <strong>toàn bộ</strong> chuỗi.</p>
+<div class="hl"><pre><span></span><code><span class="tk-c1"># một dòng trong train.jsonl, dạng prompt/completion hội thoại</span>
+<span class="tk-p">{</span><span class="tk-s2">"prompt"</span><span class="tk-p">:</span> <span class="tk-p">[{</span><span class="tk-s2">"role"</span><span class="tk-p">:</span> <span class="tk-s2">"system"</span><span class="tk-p">,</span> <span class="tk-s2">"content"</span><span class="tk-p">:</span> <span class="tk-s2">"Trích xuất ý định và mã đơn. Chỉ trả JSON."</span><span class="tk-p">},</span>
+            <span class="tk-p">{</span><span class="tk-s2">"role"</span><span class="tk-p">:</span> <span class="tk-s2">"user"</span><span class="tk-p">,</span> <span class="tk-s2">"content"</span><span class="tk-p">:</span> <span class="tk-s2">"Tôi muốn đổi size áo đơn DH1024"</span><span class="tk-p">}],</span>
+ <span class="tk-s2">"completion"</span><span class="tk-p">:</span> <span class="tk-p">[{</span><span class="tk-s2">"role"</span><span class="tk-p">:</span> <span class="tk-s2">"assistant"</span><span class="tk-p">,</span> <span class="tk-s2">"content"</span><span class="tk-p">:</span> <span class="tk-s2">"{</span><span class="tk-se">\"</span><span class="tk-s2">intent</span><span class="tk-se">\"</span><span class="tk-s2">: </span><span class="tk-se">\"</span><span class="tk-s2">đổi hàng</span><span class="tk-se">\"</span><span class="tk-s2">, </span><span class="tk-se">\"</span><span class="tk-s2">order</span><span class="tk-se">\"</span><span class="tk-s2">: </span><span class="tk-se">\"</span><span class="tk-s2">DH1024</span><span class="tk-se">\"</span><span class="tk-s2">}"</span><span class="tk-p">}]}</span>
+</code></pre></div>
+
 <h2 id="lt-3">LoRA và QLoRA cho LLM</h2>
-<p>Fine-tune toàn bộ với Adam tốn khoảng 16 byte mỗi tham số (trọng số, gradient, hai trạng thái Adam ở fp32): model 1,5 tỉ tham số cần khoảng 24 GB chỉ cho phần đó. <strong>LoRA</strong> (như ở P5.5) đóng băng model và train ma trận hạng thấp, thường gắn vào mọi lớp Linear trong attention và MLP.</p>
-<p><strong>QLoRA</strong> nạp model đóng băng ở <strong>4 bit</strong> (NF4), giảm bộ nhớ trọng số gần 4 lần so với fp16, còn LoRA vẫn train ở độ chính xác cao hơn. Nhờ đó fine-tune model 7–8 tỉ tham số được trên một GPU 16–24 GB.</p>
+<h3>Bộ nhớ khi fine-tune toàn bộ</h3>
+<p>Fine-tune toàn bộ với Adam (mixed precision) tốn khoảng 16 byte mỗi tham số: trọng số và gradient, cộng hai trạng thái Adam và bản sao trọng số fp32. Chưa tính activation (phụ thuộc độ dài chuỗi và batch).</p>
+<figure class="fig"><img src="../assets/fig/p6-1-memory.svg" alt="Model 7 tỉ tham số: fine-tune toàn bộ cần khoảng 112 GB, vượt cả A100 80 GB. LoRA trên nền fp16: khoảng 14,7 GB. QLoRA (nền 4 bit): khoảng 4,4 GB, vừa thoải mái T4 16 GB miễn phí." loading="lazy"><figcaption>Model 7 tỉ tham số: fine-tune toàn bộ cần khoảng 112 GB, vượt cả A100 80 GB. LoRA trên nền fp16: khoảng 14,7 GB. QLoRA (nền 4 bit): khoảng 4,4 GB, vừa thoải mái T4 16 GB miễn phí.</figcaption></figure>
+
+<h3>LoRA</h3>
+<p>Giống P5.5: đóng băng model, train hai ma trận mỏng B·A gắn vào các lớp Linear. Với LLM, gắn vào <strong>mọi lớp Linear</strong> trong attention (q, k, v, o) và MLP (gate, up, down) cho kết quả tốt hơn chỉ gắn vào q, v.</p>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>Qwen2.5-7B có 28 lớp, chiều ẩn 3584, MLP 18.944, k và v chiếu xuống 512 (do dùng grouped-query attention). LoRA r = 16 gắn vào 7 ma trận mỗi lớp:</p>
+<table>
+<thead>
+<tr>
+<th>Ma trận</th>
+<th>Kích thước</th>
+<th>Tham số LoRA = 16 × (vào + ra)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>q, o</td>
+<td>3584 → 3584</td>
+<td>16 × 7168 = 114.688 mỗi cái</td>
+</tr>
+<tr>
+<td>k, v</td>
+<td>3584 → 512</td>
+<td>16 × 4096 = 65.536 mỗi cái</td>
+</tr>
+<tr>
+<td>gate, up</td>
+<td>3584 → 18.944</td>
+<td>16 × 22.528 = 360.448 mỗi cái</td>
+</tr>
+<tr>
+<td>down</td>
+<td>18.944 → 3584</td>
+<td>360.448</td>
+</tr>
+</tbody>
+</table>
+<p>Mỗi lớp: 1.441.792; cả 28 lớp: khoảng <strong>40,4 triệu</strong> tham số, tức 0,53% của 7,6 tỉ. Với 16 byte mỗi tham số train, phần LoRA cần khoảng 0,65 GB.</p>
+</div>
+<h3>QLoRA</h3>
+<p><strong>QLoRA</strong> (Dettmers và cộng sự, 2023) nạp model đóng băng ở <strong>4 bit</strong> (định dạng NF4), giảm bộ nhớ trọng số gần 4 lần so với fp16. Khi tính toán, từng khối trọng số được giải nén tạm thời lên bf16/fp16; LoRA vẫn train ở độ chính xác cao. Chất lượng gần như bằng LoRA trên nền fp16, đổi lại chạy chậm hơn một chút vì phải giải nén.</p>
 <table>
 <thead>
 <tr>
@@ -87,6 +171,11 @@
 <td></td>
 </tr>
 <tr>
+<td>lora_dropout</td>
+<td>0.05</td>
+<td>chống overfit nhẹ</td>
+</tr>
+<tr>
 <td>target_modules</td>
 <td>"all-linear"</td>
 <td>tốt hơn chỉ q, v</td>
@@ -94,7 +183,7 @@
 <tr>
 <td>learning rate</td>
 <td>1e-4 – 2e-4</td>
-<td>cao hơn full fine-tune nhiều</td>
+<td>cao hơn full fine-tune khoảng 10 lần</td>
 </tr>
 <tr>
 <td>epoch</td>
@@ -103,22 +192,150 @@
 </tr>
 </tbody>
 </table>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>1.200 ví dụ, chia 80/10/10 → 960 train, 120 val, 120 test. Batch 8, gradient accumulation 2 (batch hiệu dụng 16):</p>
+<ul>
+<li>Mỗi epoch: 960 / 16 = <strong>60 bước</strong>.</li>
+<li>3 epoch: <strong>180 bước</strong>. Đánh giá trên val sau mỗi epoch, giữ checkpoint tốt nhất.</li>
+</ul>
+</div>
 <h2 id="lt-4">Dữ liệu</h2>
+<p>Dữ liệu quyết định kết quả nhiều hơn mọi siêu tham số.</p>
 <ul>
 <li><strong>Chất lượng hơn số lượng:</strong> 500–2.000 ví dụ sạch, nhất quán thường đủ cho tác vụ hẹp. Một vài ví dụ sai định dạng sẽ dạy model sai định dạng.</li>
-<li><strong>Đa dạng</strong> đầu vào như dữ liệu thật: độ dài, cách viết, lỗi chính tả, ca khó.</li>
-<li><strong>Chia train/val/test</strong> trước khi làm gì khác; test không bao giờ dùng để chọn checkpoint.</li>
-<li>Có thể dùng LLM lớn <strong>sinh dữ liệu</strong> rồi lọc bằng người hoặc bằng quy tắc, nhưng đọc giấy phép của model sinh dữ liệu.</li>
+<li><strong>Đa dạng</strong> đầu vào như dữ liệu thật: độ dài, cách viết, viết tắt, không dấu, lỗi chính tả, ca khó và ca mơ hồ.</li>
+<li><strong>Nhất quán</strong> đầu ra: cùng một loại đầu vào phải có cùng kiểu đáp án. Hai người gán nhãn theo hai cách thì model học được trung bình mơ hồ.</li>
+<li><strong>Chia train/val/test</strong> trước khi làm gì khác; test không bao giờ dùng để chọn checkpoint hay chỉnh prompt.</li>
+<li><strong>Sinh dữ liệu bằng LLM lớn</strong> rồi lọc (bằng người hoặc bằng quy tắc) là cách phổ biến và hiệu quả; đọc điều khoản của nhà cung cấp về việc dùng đầu ra để train model khác.</li>
 </ul>
+<div class="box pitfall">
+<div class="box-h">Lỗi hay gặp</div>
+<p><strong>Rò rỉ test vào train.</strong> Sinh dữ liệu bằng LLM thường tạo ra các câu gần giống nhau. Chia train/test ngẫu nhiên thì những câu "anh em" nằm ở cả hai bên, điểm test cao giả tạo. Loại câu gần trùng (so khớp sau khi chuẩn hóa, hoặc embedding cosine rất cao) trước khi chia, hoặc chia theo nguồn/khách hàng.</p>
+</div>
 <h2 id="lt-5">Bẫy thường gặp</h2>
-<ul>
-<li><strong>Overfitting:</strong> loss train giảm mãi, loss val tăng. Giảm epoch, tăng dữ liệu, early stopping.</li>
-<li><strong>Catastrophic forgetting:</strong> model giỏi tác vụ mới nhưng quên khả năng chung. LoRA ít bị hơn full fine-tune; trộn thêm một ít dữ liệu tổng quát nếu cần.</li>
-<li><strong>Đánh giá sai:</strong> chỉ nhìn loss. Phải đo bằng metric của tác vụ trên tập test, so với baseline prompting.</li>
-</ul>
+<table>
+<thead>
+<tr>
+<th>Bẫy</th>
+<th>Dấu hiệu</th>
+<th>Cách xử lý</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Overfitting</td>
+<td>loss train giảm mãi, loss val tăng; model lặp nguyên văn ví dụ train</td>
+<td>giảm epoch, tăng dữ liệu, lấy checkpoint có val tốt nhất</td>
+</tr>
+<tr>
+<td>Catastrophic forgetting</td>
+<td>giỏi tác vụ mới nhưng trả lời câu hỏi chung kém hẳn</td>
+<td>LoRA ít bị hơn full fine-tune; trộn 5–10% dữ liệu tổng quát; giảm lr</td>
+</tr>
+<tr>
+<td>Đánh giá sai</td>
+<td>chỉ nhìn loss</td>
+<td>đo bằng metric của tác vụ (độ chính xác trường JSON, F1) trên test, so với baseline</td>
+</tr>
+<tr>
+<td>Không dừng sinh</td>
+<td>model sinh tiếp mãi sau câu trả lời</td>
+<td>kiểm tra token kết thúc có trong completion và được tính loss</td>
+</tr>
+</tbody>
+</table>
 <div class="keep">
 <p><strong>Ghi nhớ:</strong> fine-tune dạy <strong>cách làm</strong>, RAG cung cấp <strong>kiến thức</strong>. Nhiều hệ thống tốt dùng cả hai.</p>
-</div></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p6.1:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 3</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Tham số LoRA</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Model có 24 lớp, d = 2048. LoRA r = 16 gắn vào q_proj và v_proj (mỗi cái 2048×2048).</p>
+</div>
+<div class="box check">
+<div class="box-h">Tự kiểm tra nhanh</div>
+<div class="ans" id="p6-1-t-b111-a1">
+<div class="ans-fields"><label>Ví dụ 220 token prompt + 60 token câu trả lời: tỉ lệ token tính loss (2 chữ số thập phân)<input inputmode="decimal" data-ans="0.21" data-tol="0.01" autocomplete="off"></label><label>960 ví dụ train, batch hiệu dụng 16, 3 epoch: tổng số bước<input inputmode="decimal" data-ans="180.0" data-tol="0.0" autocomplete="off"></label><label>Ma trận 3584 → 512, LoRA r = 16: số tham số<input inputmode="decimal" data-ans="65536.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div>
+<div aria-live="polite" class="ans-fb"></div>
+</div>
+</div>
+<h2 id="lt-6">Tóm tắt bài và thuật ngữ</h2>
+<table>
+<thead>
+<tr>
+<th>Chủ đề</th>
+<th>Ý chính</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Khi nào</td>
+<td>prompt → RAG → fine-tune; luôn so với baseline trên cùng test</td>
+</tr>
+<tr>
+<td>SFT</td>
+<td>đoán token tiếp theo trên cặp (yêu cầu, câu trả lời)</td>
+</tr>
+<tr>
+<td>Chat template</td>
+<td>dùng <code>apply_chat_template</code>, giống lúc chạy thật</td>
+</tr>
+<tr>
+<td>Loss mask</td>
+<td>chỉ tính loss trên câu trả lời; TRL: dữ liệu prompt/completion</td>
+</tr>
+<tr>
+<td>LoRA / QLoRA</td>
+<td>train 0,5% tham số; nền 4 bit để vừa GPU nhỏ</td>
+</tr>
+<tr>
+<td>Dữ liệu</td>
+<td>sạch, đa dạng đầu vào, nhất quán đầu ra, chia trước, chống rò rỉ</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Thuật ngữ</th>
+<th>Nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SFT</td>
+<td>supervised fine-tuning, fine-tune có giám sát</td>
+</tr>
+<tr>
+<td>instruction tuning</td>
+<td>SFT trên nhiều loại chỉ dẫn để model biết làm theo yêu cầu</td>
+</tr>
+<tr>
+<td>chat template</td>
+<td>định dạng hội thoại với token đặc biệt của từng model</td>
+</tr>
+<tr>
+<td>loss masking (-100)</td>
+<td>bỏ qua token khi tính loss</td>
+</tr>
+<tr>
+<td>QLoRA</td>
+<td>LoRA trên model nền lượng tử hóa 4 bit</td>
+</tr>
+<tr>
+<td>NF4</td>
+<td>định dạng 4 bit "normal float" của QLoRA</td>
+</tr>
+<tr>
+<td>gradient accumulation</td>
+<td>cộng gradient nhiều batch nhỏ trước khi cập nhật</td>
+</tr>
+<tr>
+<td>catastrophic forgetting</td>
+<td>quên khả năng cũ khi học tác vụ mới</td>
+</tr>
+<tr>
+<td>adapter</td>
+<td>phần trọng số LoRA lưu riêng, gắn vào model nền</td>
+</tr>
+</tbody>
+</table></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p6.1:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 3</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Tham số LoRA</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Model có 24 lớp, d = 2048. LoRA r = 16 gắn vào q_proj và v_proj (mỗi cái 2048×2048).</p>
 <div class="ans" id="p6-1-e1-a1"><div class="ans-fields"><label>Tham số LoRA một ma trận<input inputmode="decimal" data-ans="65536.0" data-tol="0.0" autocomplete="off"></label><label>Tổng tham số LoRA<input inputmode="decimal" data-ans="3145728.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
 
 <details class="fold solution">
@@ -176,7 +393,7 @@
 <ol>
 <li>Tạo 800–1.500 ví dụ (tự viết, hoặc sinh bằng LLM lớn rồi kiểm tra), chia 80/10/10.</li>
 <li><strong>Baseline:</strong> Qwen2.5-0.5B-Instruct (hoặc 1.5B) zero-shot và few-shot (5 ví dụ) trên tập test. Ghi metric.</li>
-<li>Fine-tune bằng TRL <code>SFTTrainer</code> + LoRA (r 16, all-linear, lr 2e-4, 2–3 epoch). Trên T4 dùng fp16; model 1.5B nạp 4 bit nếu thiếu bộ nhớ.</li>
+<li>Fine-tune bằng TRL <code>SFTTrainer</code> + LoRA (r 16, all-linear, lr 2e-4, 2–3 epoch). Lưu dữ liệu dạng <code>prompt</code>/<code>completion</code> (xem phần lý thuyết) để loss chỉ tính trên câu trả lời. Trên T4 dùng fp16; model 1.5B nạp 4 bit nếu thiếu bộ nhớ.</li>
 <li>Đánh giá model fine-tune trên cùng tập test. Thêm 20 câu hỏi tổng quát để kiểm tra model có quên khả năng chung không.</li>
 <li>Phân tích lỗi: đọc mọi câu sai, phân nhóm.</li>
 <li>Đẩy adapter LoRA lên Hub kèm model card.</li>
@@ -209,7 +426,7 @@
     </div>
     <aside class="aside">
       <div class="abox"><h4>Tiến độ bài này</h4><div class="ring"><svg viewBox="0 0 64 64" aria-hidden="true"><circle class="bg" cx="32" cy="32" r="28"/><circle class="fg" cx="32" cy="32" r="28" stroke-dasharray="176" stroke-dashoffset="176"/></svg><div><b id="ring-n">0/3</b><span id="ring-sub">phần đã xong</span></div></div></div>
-      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Khi nào fine-tune</a></li><li><a href="#lt-2">Supervised fine-tuning</a></li><li><a href="#lt-3">LoRA và QLoRA cho LLM</a></li><li><a href="#lt-4">Dữ liệu</a></li><li><a href="#lt-5">Bẫy thường gặp</a></li></ol></div>
+      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Khi nào fine-tune</a></li><li><a href="#lt-2">Supervised fine-tuning</a></li><li><a href="#lt-3">LoRA và QLoRA cho LLM</a></li><li><a href="#lt-4">Dữ liệu</a></li><li><a href="#lt-5">Bẫy thường gặp</a></li><li><a href="#lt-6">Tóm tắt bài và thuật ngữ</a></li></ol></div>
       
       <div class="abox"><h4>Cùng giai đoạn</h4><ul><li><span class=cur>Bài 8a · SFT và PEFT</span></li><li><a href="p6-2.html">Bài 8b · Preference tuning</a></li><li><a href="p6-3.html">Quantization và inference nhanh</a></li></ul></div>
     </aside>

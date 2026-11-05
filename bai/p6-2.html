@@ -22,53 +22,352 @@
 <main class="container">
   <div class="crumbs"><a href="../bai-hoc.html">Bài học</a><span>/</span><a href="../bai-hoc.html#p6">P6 · Fine-tuning và tối ưu LLM</a><span>/</span><span>P6.2</span></div>
   <section class="lhero"><div class="code">P6.2</div><h1>Bài 8b · Preference tuning</h1><div class="lmeta"><span class="m">Giai đoạn P6 · Fine-tuning và tối ưu LLM</span><span class="m">Tuần 26–30</span><span class="chip ready"><span class="dot"></span>Có nội dung đầy đủ</span></div>
-    <div class="intro"><p>SFT dạy model bắt chước câu trả lời mẫu. Nhưng với nhiều tác vụ, viết ra câu trả lời "hoàn hảo" thì khó, còn <strong>so sánh</strong> hai câu trả lời xem cái nào tốt hơn thì dễ. <strong>Preference tuning</strong> học từ những so sánh đó. Đây là bước biến một model biết làm theo hướng dẫn thành một trợ lý hữu ích, trung thực và an toàn hơn. Bài này giải thích RLHF ở mức ý tưởng và đi sâu vào <strong>DPO</strong>, cách làm phổ biến và đơn giản nhất hiện nay.</p></div></section>
+    <div class="intro"><p>SFT dạy model bắt chước câu trả lời mẫu. Nhưng với nhiều tác vụ, viết ra câu trả lời "hoàn hảo" thì khó, còn <strong>so sánh</strong> hai câu trả lời xem cái nào tốt hơn thì dễ. <strong>Preference tuning</strong> học từ những so sánh đó. Đây là bước biến một model biết làm theo hướng dẫn thành một trợ lý hữu ích, trung thực và an toàn hơn. Bài này giải thích RLHF ở mức ý tưởng, đi sâu vào <strong>DPO</strong> (kèm mô phỏng cho thấy tác dụng của β và bẫy "thích câu dài"), và cách đo kết quả.</p></div></section>
   
-  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">5 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
+  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">7 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
   <div class="lgrid" style="margin-top:22px">
-    <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">Dữ liệu ưu tiên</h2>
-<p>Mỗi mẫu gồm một prompt và hai câu trả lời: <strong>chosen</strong> (được ưa hơn) và <strong>rejected</strong>. Nguồn:</p>
+    <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">Vì sao cần học từ so sánh</h2>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Sau SFT, chatbot chăm sóc khách hàng trả lời đúng định dạng nhưng đôi khi dài dòng, giọng cứng, hoặc từ chối những câu hỏi bình thường. Viết lại hàng nghìn câu trả lời mẫu "hoàn hảo" thì tốn kém; để nhân viên chọn "câu A hay câu B tốt hơn" thì nhanh gấp nhiều lần. Preference tuning biến những lựa chọn đó thành tín hiệu train. Đây cũng là kỹ thuật đứng sau ChatGPT, Claude, Llama-Instruct.</p>
+</div>
+<p>Hai lý do so sánh tốt hơn viết mẫu:</p>
 <ul>
-<li>Người gán nhãn so sánh hai câu trả lời của model.</li>
-<li>Phản hồi thật của người dùng (thích/không thích, chọn phiên bản).</li>
-<li>Model mạnh làm giám khảo (AI feedback), có kiểm tra lại bằng người.</li>
+<li><strong>Dễ hơn cho người gán nhãn:</strong> nhận ra câu tốt hơn dễ hơn nhiều so với tự viết câu tốt nhất (giống chấm bài dễ hơn làm bài).</li>
+<li><strong>Dạy cả điều không nên làm:</strong> SFT chỉ thấy câu tốt. Dữ liệu so sánh có câu bị loại, nên model học được rõ "dài dòng là xấu", "từ chối thừa là xấu".</li>
 </ul>
-<p>So sánh giữa hai câu trả lời <strong>của chính model</strong> đang được tune hiệu quả hơn so sánh với câu trả lời từ nguồn khác.</p>
-<h2 id="lt-2">RLHF ở mức ý tưởng</h2>
-<div class="hl"><pre><span></span><code>1. SFT: model biết làm theo hướng dẫn
-2. Train reward model: đọc (prompt, câu trả lời) → điểm, sao cho chosen &gt; rejected
-3. Tối ưu model bằng học tăng cường (PPO): sinh câu trả lời, nhận điểm thưởng,
-   cập nhật để tăng điểm, kèm phạt KL để không đi quá xa model SFT ban đầu
+<h2 id="lt-2">Dữ liệu ưu tiên</h2>
+<p>Mỗi mẫu gồm một prompt và hai câu trả lời: <strong>chosen</strong> (được ưa hơn, ký hiệu y_w) và <strong>rejected</strong> (y_l).</p>
+<div class="hl"><pre><span></span><code><span class="tk-p">{</span><span class="tk-s2">"prompt"</span><span class="tk-p">:</span>   <span class="tk-p">[{</span><span class="tk-s2">"role"</span><span class="tk-p">:</span> <span class="tk-s2">"user"</span><span class="tk-p">,</span> <span class="tk-s2">"content"</span><span class="tk-p">:</span> <span class="tk-s2">"Đơn DH2051 giao chậm 3 ngày rồi, shop xử lý sao?"</span><span class="tk-p">}],</span>
+ <span class="tk-s2">"chosen"</span><span class="tk-p">:</span>   <span class="tk-p">[{</span><span class="tk-s2">"role"</span><span class="tk-p">:</span> <span class="tk-s2">"assistant"</span><span class="tk-p">,</span> <span class="tk-s2">"content"</span><span class="tk-p">:</span> <span class="tk-s2">"Xin lỗi anh/chị vì đơn DH2051 bị chậm. Em đã kiểm tra: ..."</span><span class="tk-p">}],</span>
+ <span class="tk-s2">"rejected"</span><span class="tk-p">:</span> <span class="tk-p">[{</span><span class="tk-s2">"role"</span><span class="tk-p">:</span> <span class="tk-s2">"assistant"</span><span class="tk-p">,</span> <span class="tk-s2">"content"</span><span class="tk-p">:</span> <span class="tk-s2">"Cảm ơn quý khách đã liên hệ. Chúng tôi luôn trân trọng ..."</span><span class="tk-p">}]}</span>
 </code></pre></div>
 
-<p>RLHF mạnh nhưng phức tạp: bốn model cùng lúc (policy, reference, reward, value), dễ mất ổn định, và model có thể "hack" reward model (câu trả lời dài dòng được điểm cao dù không tốt hơn).</p>
-<h2 id="lt-3">DPO: bỏ reward model</h2>
-<p><strong>Direct Preference Optimization</strong> chứng minh có thể tối ưu thẳng trên dữ liệu ưu tiên bằng một loss phân loại, không cần reward model hay RL:</p>
+<p>Nguồn dữ liệu:</p>
+<table>
+<thead>
+<tr>
+<th>Nguồn</th>
+<th>Ưu</th>
+<th>Nhược</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Người gán nhãn so sánh hai câu của model</td>
+<td>chất lượng cao, theo đúng tiêu chí</td>
+<td>tốn thời gian</td>
+</tr>
+<tr>
+<td>Phản hồi thật (thích/không thích, chọn bản nháp)</td>
+<td>rẻ, đúng người dùng thật</td>
+<td>nhiễu, lệch theo người hay phản hồi</td>
+</tr>
+<tr>
+<td>LLM mạnh làm giám khảo (AI feedback)</td>
+<td>rất rẻ, nhanh</td>
+<td>mang thiên lệch của giám khảo (thích câu dài, thích giọng của chính nó)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Lấy câu trả lời từ chính model đang tune</strong> (sinh 2 câu với temperature 0.7–1.0) hiệu quả hơn so sánh với câu từ nguồn khác: model học sửa đúng những lỗi nó hay mắc.</p>
+<h2 id="lt-3">RLHF ở mức ý tưởng</h2>
+<figure class="fig"><img src="../assets/fig/p6-2-pipeline.svg" alt="RLHF cần train riêng một reward model rồi tối ưu bằng học tăng cường. DPO gộp hai bước đó thành một loss train như SFT." loading="lazy"><figcaption>RLHF cần train riêng một reward model rồi tối ưu bằng học tăng cường. DPO gộp hai bước đó thành một loss train như SFT.</figcaption></figure>
+
+<ol>
+<li><strong>SFT:</strong> model biết làm theo hướng dẫn.</li>
+<li><strong>Reward model:</strong> một mạng đọc (prompt, câu trả lời) và cho điểm, train sao cho điểm của chosen cao hơn rejected.</li>
+<li><strong>PPO:</strong> model sinh câu trả lời, nhận điểm từ reward model, cập nhật để tăng điểm, kèm <strong>phạt KL</strong> để không đi quá xa model SFT ban đầu.</li>
+</ol>
+<p>RLHF mạnh nhưng phức tạp: bốn model cùng lúc (policy, reference, reward, value), nhiều siêu tham số, dễ mất ổn định, và model có thể <strong>"hack" reward model</strong>: tìm ra kiểu câu trả lời được điểm cao dù không thật sự tốt hơn (dài dòng, lặp ý, khen người hỏi).</p>
+<h2 id="lt-4">DPO: bỏ reward model</h2>
+<p><strong>Direct Preference Optimization</strong> (Rafailov và cộng sự, 2023) chứng minh có thể tối ưu thẳng trên dữ liệu ưu tiên bằng một loss giống phân loại nhị phân, không cần reward model hay RL:</p>
 <div class="hl"><pre><span></span><code>L = −log σ( β · [ (log π(y_w|x) − log π_ref(y_w|x)) − (log π(y_l|x) − log π_ref(y_l|x)) ] )
 </code></pre></div>
 
+<p>Đọc từng phần:</p>
+<table>
+<thead>
+<tr>
+<th>Phần</th>
+<th>Ý nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>π</td>
+<td>model đang train</td>
+</tr>
+<tr>
+<td>π_ref</td>
+<td>bản SFT đóng băng, làm mốc</td>
+</tr>
+<tr>
+<td>log π(y_w) − log π_ref(y_w)</td>
+<td>model hiện tại tăng xác suất chosen so với mốc bao nhiêu (log-ratio)</td>
+</tr>
+<tr>
+<td>ngoặc vuông</td>
+<td><strong>lề</strong>: log-ratio của chosen trừ log-ratio của rejected</td>
+</tr>
+<tr>
+<td>β</td>
+<td>hệ số, thường 0.1; điều khiển mức được phép đi xa khỏi π_ref</td>
+</tr>
+<tr>
+<td>−log σ(·)</td>
+<td>giống loss phân loại: lề càng dương, loss càng nhỏ</td>
+</tr>
+</tbody>
+</table>
+<p>Lúc bắt đầu π = π_ref, mọi log-ratio bằng 0, lề bằng 0, loss = −log σ(0) = ln 2 ≈ <strong>0.693</strong>. Loss giảm khi model tăng xác suất câu chosen <strong>nhiều hơn</strong> câu rejected, tính tương đối so với model gốc.</p>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>β = 0.1. Sau một thời gian train, với một cặp: log-ratio của chosen là +1.5 (model tăng xác suất chosen), của rejected là −2.5 (model giảm xác suất rejected).</p>
+<ol>
+<li>Lề = 1.5 − (−2.5) = 4.</li>
+<li>β · lề = 0.4.</li>
+<li>Loss = −log σ(0.4) = ln(1 + e^−0.4) ≈ <strong>0.513</strong>, giảm từ 0.693.</li>
+</ol>
+<p>Chú ý: DPO chỉ quan tâm <strong>hiệu</strong> giữa hai log-ratio. Model có thể giảm xác suất của cả hai câu, miễn là giảm câu rejected nhiều hơn.</p>
+</div>
+<p>Chỉ cần hai model (một đang train, một đóng băng làm tham chiếu; với LoRA thì tham chiếu chính là model nền khi tắt adapter, không tốn thêm bộ nhớ), train như SFT, ổn định hơn PPO nhiều.</p>
+<h3>Mô phỏng: β làm gì</h3>
+<p>Mô phỏng nhỏ để thấy rõ cơ chế: một prompt có 6 câu trả lời khả dĩ với chất lượng khác nhau. Model SFT chọn mỗi câu với xác suất 15–20%. Sinh 3.000 cặp từ model SFT, giám khảo công bằng chọn câu tốt hơn (có nhiễu), rồi train DPO với ba giá trị β:</p>
+<figure class="fig"><img src="../assets/fig/p6-2-beta.svg" alt="β = 2: chỉ dịch nhẹ khỏi model gốc. β = 0.5: dồn phần lớn xác suất vào hai câu đúng, vẫn giữ chút đa dạng. β = 0.1: gần như chỉ còn hai câu đúng, xa model gốc nhất." loading="lazy"><figcaption>β = 2: chỉ dịch nhẹ khỏi model gốc. β = 0.5: dồn phần lớn xác suất vào hai câu đúng, vẫn giữ chút đa dạng. β = 0.1: gần như chỉ còn hai câu đúng, xa model gốc nhất.</figcaption></figure>
+
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Chất lượng trung bình</th>
+<th>KL tới model SFT</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Model SFT</td>
+<td>0.40</td>
+<td>0</td>
+</tr>
+<tr>
+<td>DPO β = 2</td>
+<td>0.63</td>
+<td>0.11</td>
+</tr>
+<tr>
+<td>DPO β = 0.5</td>
+<td>0.91</td>
+<td>0.70</td>
+</tr>
+<tr>
+<td>DPO β = 0.1</td>
+<td>1.00</td>
+<td>1.21</td>
+</tr>
+</tbody>
+</table>
+<p>β nhỏ thì học mạnh từ dữ liệu ưu tiên và đi xa khỏi model gốc; β lớn thì thận trọng. Đi xa không phải lúc nào cũng tốt: với model thật, đi quá xa khỏi model SFT dễ làm mất khả năng chung và khuếch đại thiên lệch của dữ liệu ưu tiên.</p>
+<details class="fold deep">
+<summary>Đào sâu thêm</summary>
+<p><strong>Vì sao gọi là "reward model ngầm".</strong> Bài báo DPO chỉ ra: với phần thưởng r(x, y) và phạt KL hệ số β, chính sách tối ưu có dạng đóng π<em>(y|x) ∝ π_ref(y|x) · exp(r(x, y)/β). Đảo ngược công thức, r(x, y) = β · log(π</em>(y|x)/π_ref(y|x)) + hằng số. Thay vào mô hình so sánh Bradley–Terry (xác suất y_w thắng = σ(r_w − r_l)), hằng số triệt tiêu và ra đúng loss DPO. Trong mô phỏng trên, phân phối học được khớp công thức đóng: với β = 0.5, hai câu đúng nhận 0.434 và 0.407 so với lý thuyết 0.427 mỗi câu.</p>
+</details>
+<h3>Bẫy: giám khảo thích câu dài</h3>
+<p>Lặp lại mô phỏng nhưng giám khảo có thiên lệch: ngoài chất lượng, cộng thêm điểm cho câu dài (đúng thói quen của nhiều LLM-as-judge).</p>
+<figure class="fig"><img src="../assets/fig/p6-2-length.svg" alt="β = 0.5. Với giám khảo thích dài, model dồn 83% xác suất vào câu &quot;đúng, dài&quot; (giám khảo công bằng chia đều cho câu đúng ngắn và đúng dài). Độ dài trung bình tăng từ 100 lên 153 token, chất lượng thật gần như không đổi (0.91 so với 0.94)." loading="lazy"><figcaption>β = 0.5. Với giám khảo thích dài, model dồn 83% xác suất vào câu &quot;đúng, dài&quot; (giám khảo công bằng chia đều cho câu đúng ngắn và đúng dài). Độ dài trung bình tăng từ 100 lên 153 token, chất lượng thật gần như không đổi (0.91 so với 0.94).</figcaption></figure>
+
+<p>DPO học <strong>đúng thứ dữ liệu ưu tiên thưởng</strong>, kể cả thiên lệch. Câu trả lời dài hơn 50% mà không tốt hơn nghĩa là người dùng đọc lâu hơn, chi phí token cao hơn.</p>
+<div class="box pitfall">
+<div class="box-h">Lỗi hay gặp</div>
+<p><strong>Chỉ báo win rate do LLM giám khảo chấm.</strong> Giám khảo LLM thích câu dài và câu giống văn phong của chính nó, nên win rate có thể tăng chỉ vì model nói dài hơn. Luôn báo kèm độ dài trung bình trước/sau, dùng win rate có kiểm soát độ dài (length-controlled), và đọc tay một mẫu.</p>
+</div>
+<h3>Các biến thể</h3>
+<table>
+<thead>
+<tr>
+<th>Phương pháp</th>
+<th>Khác DPO ở đâu</th>
+<th>Khi nào dùng</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>IPO</td>
+<td>loss bình phương, chống overfit khi dữ liệu ít nhiễu</td>
+<td>dữ liệu nhỏ, sạch</td>
+</tr>
+<tr>
+<td>KTO</td>
+<td>chỉ cần nhãn thích / không thích <strong>từng câu</strong>, không cần cặp</td>
+<td>có sẵn nút 👍👎</td>
+</tr>
+<tr>
+<td>ORPO</td>
+<td>gộp SFT và preference vào một bước, không cần model tham chiếu</td>
+<td>muốn một bước, tiết kiệm bộ nhớ</td>
+</tr>
+<tr>
+<td>SimPO</td>
+<td>dùng log-prob chuẩn hóa theo độ dài, không cần tham chiếu</td>
+<td>giảm thiên lệch độ dài</td>
+</tr>
+</tbody>
+</table>
+<h2 id="lt-5">Khi nào cần preference tuning</h2>
 <ul>
-<li>y_w là chosen, y_l là rejected; π là model đang train, π_ref là bản SFT đóng băng.</li>
-<li>Ngoặc vuông là <strong>lề</strong>: model hiện tại tăng xác suất của chosen so với bản gốc <strong>nhiều hơn</strong> của rejected bao nhiêu.</li>
-<li>β (thường 0.1) điều khiển mức được phép đi xa khỏi π_ref: β nhỏ cho phép thay đổi nhiều hơn.</li>
-<li>Lúc bắt đầu π = π_ref, lề bằng 0, loss = −log σ(0) = ln 2 ≈ 0.693.</li>
+<li><strong>Cần:</strong> đã SFT, model đúng định dạng nhưng chất lượng câu trả lời chưa ổn: dài dòng, giọng không phù hợp, từ chối thừa, chưa đủ an toàn. Và có cách thu thập so sánh rẻ.</li>
+<li><strong>Không cần:</strong> tác vụ có đáp án đúng/sai rõ ràng (trích xuất, phân loại). SFT và eval chính xác là đủ; DPO không thêm gì ngoài rủi ro.</li>
 </ul>
-<p>Chỉ cần hai model (một đang train, một đóng băng làm tham chiếu), train như SFT, ổn định hơn PPO nhiều. Các biến thể như IPO, KTO (chỉ cần nhãn thích/không thích từng câu), ORPO (gộp SFT và preference vào một bước) đều xuất phát từ ý tưởng này.</p>
-<h2 id="lt-4">Khi nào cần preference tuning</h2>
+<h3>Siêu tham số khởi đầu</h3>
+<table>
+<thead>
+<tr>
+<th>Tham số</th>
+<th>Giá trị</th>
+<th>Ghi chú</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>β</td>
+<td>0.1</td>
+<td>thử thêm 0.05 và 0.3</td>
+</tr>
+<tr>
+<td>learning rate</td>
+<td>5e-7 – 5e-6 (full), 5e-6 – 5e-5 (LoRA)</td>
+<td>thấp hơn SFT nhiều; quá cao làm model "vỡ"</td>
+</tr>
+<tr>
+<td>epoch</td>
+<td>1–2</td>
+<td></td>
+</tr>
+<tr>
+<td>số cặp</td>
+<td>500 – vài nghìn</td>
+<td>chất lượng nhãn quan trọng hơn số lượng</td>
+</tr>
+</tbody>
+</table>
+<div class="hl"><pre><span></span><code><span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">trl</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">DPOTrainer</span><span class="tk-p">,</span> <span class="tk-n">DPOConfig</span>
+<span class="tk-n">args</span> <span class="tk-o">=</span> <span class="tk-n">DPOConfig</span><span class="tk-p">(</span><span class="tk-n">output_dir</span><span class="tk-o">=</span><span class="tk-s2">"qwen-dpo"</span><span class="tk-p">,</span> <span class="tk-n">beta</span><span class="tk-o">=</span><span class="tk-mf">0.1</span><span class="tk-p">,</span> <span class="tk-n">learning_rate</span><span class="tk-o">=</span><span class="tk-mf">2e-5</span><span class="tk-p">,</span> <span class="tk-n">num_train_epochs</span><span class="tk-o">=</span><span class="tk-mi">1</span><span class="tk-p">)</span>
+<span class="tk-n">trainer</span> <span class="tk-o">=</span> <span class="tk-n">DPOTrainer</span><span class="tk-p">(</span><span class="tk-n">model</span><span class="tk-o">=</span><span class="tk-n">model</span><span class="tk-p">,</span> <span class="tk-n">ref_model</span><span class="tk-o">=</span><span class="tk-kc">None</span><span class="tk-p">,</span> <span class="tk-n">args</span><span class="tk-o">=</span><span class="tk-n">args</span><span class="tk-p">,</span> <span class="tk-n">train_dataset</span><span class="tk-o">=</span><span class="tk-n">ds</span><span class="tk-p">[</span><span class="tk-s2">"train"</span><span class="tk-p">],</span>
+                     <span class="tk-n">processing_class</span><span class="tk-o">=</span><span class="tk-n">tok</span><span class="tk-p">,</span> <span class="tk-n">peft_config</span><span class="tk-o">=</span><span class="tk-n">lora_cfg</span><span class="tk-p">)</span>   <span class="tk-c1"># ref_model=None + LoRA: tham chiếu = model nền</span>
+</code></pre></div>
+
+<p>(Tên tham số đã kiểm tra với TRL 1.17.)</p>
+<h2 id="lt-6">Đo kết quả</h2>
 <ul>
-<li>Đã SFT, model làm đúng định dạng nhưng chất lượng câu trả lời chưa ổn: dài dòng, giọng không phù hợp, đôi khi từ chối thừa.</li>
-<li>Có cách thu thập so sánh rẻ (người dùng chọn giữa hai bản nháp).</li>
-<li>Không cần cho tác vụ có đáp án đúng/sai rõ ràng (trích xuất, phân loại): SFT và eval chính xác là đủ.</li>
+<li><strong>Tỉ lệ thắng (win rate):</strong> cho model sau DPO và trước DPO trả lời cùng prompt test, giám khảo (LLM hoặc người) chọn bên tốt hơn, đổi vị trí ngẫu nhiên, không ghi tên model. Tính hòa là nửa thắng.</li>
+<li><strong>Độ dài:</strong> báo cáo độ dài trung bình trước/sau.</li>
+<li><strong>Khả năng chung và metric tác vụ:</strong> kiểm tra không bị tụt (DPO có thể làm hỏng định dạng đã SFT).</li>
+<li><strong>Độ đồng thuận của nhãn:</strong> cho 2 người chấm cùng 10% số cặp; nếu chỉ đồng ý dưới khoảng 70% thì tiêu chí chưa rõ, dữ liệu đang dạy model điều mơ hồ.</li>
 </ul>
-<h2 id="lt-5">Đo kết quả</h2>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>150 prompt test: model sau DPO thắng 81, thua 51, hòa 18.</p>
 <ul>
-<li><strong>Tỉ lệ thắng (win rate):</strong> cho model sau DPO và trước DPO trả lời cùng prompt, giám khảo (LLM hoặc người) chọn bên tốt hơn, đổi vị trí ngẫu nhiên. Tính hòa là nửa thắng.</li>
-<li>Kiểm tra <strong>độ dài</strong>: DPO hay làm câu trả lời dài hơn, mà giám khảo LLM thích câu dài. So win rate có kiểm soát độ dài, hoặc đọc tay.</li>
-<li>Kiểm tra <strong>khả năng chung</strong> không bị suy giảm.</li>
+<li>Win rate = (81 + 18/2) / 150 = 90 / 150 = <strong>0.60</strong>.</li>
+<li>Độ dài trung bình: 142 → 168 token (+18%). Cần đọc tay vài chục cặp để chắc rằng 0.60 không chỉ do câu dài hơn.</li>
 </ul>
+</div>
 <div class="keep">
-<p><strong>Ghi nhớ:</strong> SFT dạy "trả lời thế này", preference tuning dạy "trong hai cách trả lời, cách này tốt hơn". Dữ liệu ưu tiên tốt quan trọng hơn thuật toán.</p>
-</div></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p6.2:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 2</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Loss DPO</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>β = 0.1.</p>
+<p><strong>Ghi nhớ:</strong> SFT dạy "trả lời thế này", preference tuning dạy "trong hai cách trả lời, cách này tốt hơn". Dữ liệu ưu tiên tốt quan trọng hơn thuật toán: model sẽ học cả thiên lệch của người (hoặc model) chấm.</p>
+</div>
+<div class="box check">
+<div class="box-h">Tự kiểm tra nhanh</div>
+<p>β = 0.1.</p>
+<div class="ans" id="p6-2-t-b135-a1">
+<div class="ans-fields"><label>Loss DPO lúc bắt đầu (3 chữ số thập phân)<input inputmode="decimal" data-ans="0.693" data-tol="0.001" autocomplete="off"></label><label>Log-ratio chosen +1.5, rejected −2.5. Loss<input inputmode="decimal" data-ans="0.513" data-tol="0.001" autocomplete="off"></label><label>Thắng 81, thua 51, hòa 18 trên 150 prompt. Win rate<input inputmode="decimal" data-ans="0.6" data-tol="0.001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div>
+<div aria-live="polite" class="ans-fb"></div>
+</div>
+</div>
+<h2 id="lt-7">Tóm tắt bài và thuật ngữ</h2>
+<table>
+<thead>
+<tr>
+<th>Chủ đề</th>
+<th>Ý chính</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Dữ liệu</td>
+<td>prompt + chosen + rejected, tốt nhất sinh từ chính model đang tune</td>
+</tr>
+<tr>
+<td>RLHF</td>
+<td>reward model + PPO + phạt KL; mạnh nhưng phức tạp</td>
+</tr>
+<tr>
+<td>DPO</td>
+<td>loss phân loại trên lề log-ratio; 2 model; ổn định</td>
+</tr>
+<tr>
+<td>β</td>
+<td>nhỏ: đi xa khỏi model gốc; lớn: thận trọng</td>
+</tr>
+<tr>
+<td>Bẫy</td>
+<td>model học cả thiên lệch của giám khảo (câu dài)</td>
+</tr>
+<tr>
+<td>Đo</td>
+<td>win rate mù + độ dài + metric tác vụ + đồng thuận nhãn</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Thuật ngữ</th>
+<th>Nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>preference data</td>
+<td>dữ liệu so sánh chosen / rejected</td>
+</tr>
+<tr>
+<td>RLHF</td>
+<td>học tăng cường từ phản hồi của người</td>
+</tr>
+<tr>
+<td>reward model</td>
+<td>model chấm điểm câu trả lời</td>
+</tr>
+<tr>
+<td>PPO</td>
+<td>thuật toán học tăng cường dùng trong RLHF</td>
+</tr>
+<tr>
+<td>KL penalty</td>
+<td>phạt khi đi xa model tham chiếu</td>
+</tr>
+<tr>
+<td>DPO</td>
+<td>tối ưu trực tiếp trên dữ liệu ưu tiên</td>
+</tr>
+<tr>
+<td>reference model (π_ref)</td>
+<td>model SFT đóng băng làm mốc</td>
+</tr>
+<tr>
+<td>reward hacking</td>
+<td>tối ưu điểm thưởng mà không tốt hơn thật</td>
+</tr>
+<tr>
+<td>Bradley–Terry</td>
+<td>mô hình xác suất thắng dựa trên hiệu điểm</td>
+</tr>
+<tr>
+<td>length bias</td>
+<td>thiên lệch ưu tiên câu dài</td>
+</tr>
+</tbody>
+</table></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p6.2:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 2</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Loss DPO</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>β = 0.1.</p>
 <div class="ans" id="p6-2-e1-a1"><div class="ans-fields"><label>Loss lúc bắt đầu (π = π_ref)<input inputmode="decimal" data-ans="0.6931" data-tol="0.001" autocomplete="off"></label><label>Lề log-ratio: chosen +2, rejected −1. Loss<input inputmode="decimal" data-ans="0.5544" data-tol="0.001" autocomplete="off"></label><label>Lề ngược: chosen −1, rejected +2. Loss<input inputmode="decimal" data-ans="0.8544" data-tol="0.001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
 
 <details class="fold solution">
@@ -146,7 +445,7 @@
     </div>
     <aside class="aside">
       <div class="abox"><h4>Tiến độ bài này</h4><div class="ring"><svg viewBox="0 0 64 64" aria-hidden="true"><circle class="bg" cx="32" cy="32" r="28"/><circle class="fg" cx="32" cy="32" r="28" stroke-dasharray="176" stroke-dashoffset="176"/></svg><div><b id="ring-n">0/3</b><span id="ring-sub">phần đã xong</span></div></div></div>
-      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Dữ liệu ưu tiên</a></li><li><a href="#lt-2">RLHF ở mức ý tưởng</a></li><li><a href="#lt-3">DPO: bỏ reward model</a></li><li><a href="#lt-4">Khi nào cần preference tuning</a></li><li><a href="#lt-5">Đo kết quả</a></li></ol></div>
+      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Vì sao cần học từ so sánh</a></li><li><a href="#lt-2">Dữ liệu ưu tiên</a></li><li><a href="#lt-3">RLHF ở mức ý tưởng</a></li><li><a href="#lt-4">DPO: bỏ reward model</a></li><li><a href="#lt-5">Khi nào cần preference tuning</a></li><li><a href="#lt-6">Đo kết quả</a></li><li><a href="#lt-7">Tóm tắt bài và thuật ngữ</a></li></ol></div>
       
       <div class="abox"><h4>Cùng giai đoạn</h4><ul><li><a href="p6-1.html">Bài 8a · SFT và PEFT</a></li><li><span class=cur>Bài 8b · Preference tuning</span></li><li><a href="p6-3.html">Quantization và inference nhanh</a></li></ul></div>
     </aside>

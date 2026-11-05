@@ -22,11 +22,43 @@
 <main class="container">
   <div class="crumbs"><a href="../bai-hoc.html">Bài học</a><span>/</span><a href="../bai-hoc.html#p6">P6 · Fine-tuning và tối ưu LLM</a><span>/</span><span>P6.3</span></div>
   <section class="lhero"><div class="code">P6.3</div><h1>Quantization và inference nhanh</h1><div class="lmeta"><span class="m">Giai đoạn P6 · Fine-tuning và tối ưu LLM</span><span class="m">Tuần 26–30</span><span class="chip ready"><span class="dot"></span>Có nội dung đầy đủ</span></div>
-    <div class="intro"><p>Model tốt mà chạy chậm và đắt thì không đưa vào sản phẩm được. Bài này dạy hai nhóm kỹ thuật: <strong>lượng tử hóa</strong> (quantization) để model nhỏ đi và chạy được trên GPU yếu hơn, và <strong>tối ưu suy luận</strong> (KV cache, batching, vLLM) để phục vụ nhiều người dùng nhanh hơn. Bạn cũng sẽ học cách tự tính bộ nhớ và tốc độ, kỹ năng rất hay được hỏi khi phỏng vấn.</p></div></section>
+    <div class="intro"><p>Model tốt mà chạy chậm và đắt thì không đưa vào sản phẩm được. Bài này dạy hai nhóm kỹ thuật: <strong>lượng tử hóa</strong> (quantization) để model nhỏ đi và chạy được trên GPU yếu hơn, và <strong>tối ưu suy luận</strong> (KV cache, batching, vLLM) để phục vụ nhiều người dùng nhanh hơn. Bạn cũng sẽ học cách tự tính bộ nhớ và tốc độ, kỹ năng rất hay được hỏi khi phỏng vấn, kèm thí nghiệm đo sai số lượng tử hóa.</p></div></section>
   
-  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">4 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
+  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">7 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
   <div class="lgrid" style="margin-top:22px">
-    <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">Các định dạng số</h2>
+    <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">Vì sao suy luận là bài toán riêng</h2>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Train một lần, chạy hàng triệu lần. Với sản phẩm dùng LLM tự host, chi phí GPU lúc chạy thường lớn hơn chi phí train nhiều lần. Câu hỏi "GPU 24 GB có chạy được model 8B cho 50 người không, mỗi giây ra bao nhiêu token" là câu hỏi thật của khách hàng, và bạn sẽ trả lời được bằng phép nhân đơn giản sau bài này.</p>
+</div>
+<p>Ba con số cần biết về một GPU:</p>
+<table>
+<thead>
+<tr>
+<th>Thông số</th>
+<th>Ý nghĩa</th>
+<th>Ví dụ T4 / L4 / A100 80GB</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Bộ nhớ (VRAM)</td>
+<td>chứa trọng số + KV cache + activation</td>
+<td>16 / 24 / 80 GB</td>
+</tr>
+<tr>
+<td>Băng thông bộ nhớ</td>
+<td>tốc độ đọc dữ liệu từ VRAM</td>
+<td>khoảng 320 / 300 / 2000 GB/s</td>
+</tr>
+<tr>
+<td>Sức tính FP16</td>
+<td>số phép tính mỗi giây</td>
+<td>khoảng 65 / 121 / 312 TFLOPS</td>
+</tr>
+</tbody>
+</table>
+<h2 id="lt-2">Các định dạng số</h2>
 <table>
 <thead>
 <tr>
@@ -58,42 +90,254 @@
 </tr>
 </tbody>
 </table>
-<p>Bộ nhớ trọng số ≈ số tham số × số byte. Model 7 tỉ tham số: 14 GB ở FP16, khoảng 3,5 GB ở INT4.</p>
-<h2 id="lt-2">Lượng tử hóa hoạt động thế nào</h2>
-<p>Lượng tử hóa đối xứng 8 bit cho một nhóm trọng số:</p>
-<div class="hl"><pre><span></span><code>scale = max|w| / 127
-q = round(w / scale)          số nguyên trong [−127, 127]
-w ≈ q · scale                 khi tính toán
+<p>Bộ nhớ trọng số ≈ số tham số × số byte.</p>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>Qwen2.5-7B thực ra có 7,6 tỉ tham số:</p>
+<ul>
+<li>FP16: 7,6 × 2 = <strong>15,2 GB</strong>: không vừa T4 16 GB (còn cần chỗ cho KV cache và activation).</li>
+<li>INT4: 7,6 × 0,5 = 3,8 GB, cộng thêm scale của từng nhóm và vài lớp giữ nguyên độ chính xác (embedding, lớp cuối) thành khoảng <strong>4,3–4,5 GB</strong>: vừa thoải mái.</li>
+</ul>
+</div>
+<h2 id="lt-3">Lượng tử hóa hoạt động thế nào</h2>
+<p>Ý tưởng: lưu mỗi trọng số bằng một số nguyên nhỏ, kèm một hệ số <strong>scale</strong> chung cho cả nhóm.</p>
+<div class="hl"><pre><span></span><code>scale = max|w| / 127              (8 bit đối xứng: số nguyên trong [−127, 127])
+q = round(w / scale)
+w ≈ q · scale                      khi tính toán
 </code></pre></div>
 
-<p>Một giá trị ngoại lai lớn làm scale lớn và mọi giá trị nhỏ mất độ chính xác. Các phương pháp hiện đại chia trọng số thành <strong>nhóm nhỏ</strong> (ví dụ 128 giá trị) mỗi nhóm một scale, và xử lý riêng các kênh ngoại lai:</p>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>Nhóm w = [0.8, −0.35, 0.04, −2.54], lượng tử hóa 8 bit:</p>
+<ol>
+<li>max|w| = 2.54, scale = 2.54 / 127 = <strong>0.02</strong>.</li>
+<li>w / scale = [40, −17.5, 2, −127] → làm tròn q = [40, −18, 2, −127] (Python làm tròn −17.5 về số chẵn −18).</li>
+<li>Khôi phục: [0.8, −0.36, 0.04, −2.54]. Chỉ −0.35 bị lệch 0.01.</li>
+</ol>
+<p>Lưu 4 số nguyên 1 byte + 1 scale thay vì 4 số 2 byte. Với nhóm 128 giá trị, chi phí của scale gần như không đáng kể.</p>
+</div>
+<h3>Vấn đề ngoại lai</h3>
+<p>Một giá trị rất lớn làm scale lớn, và mọi giá trị nhỏ bị làm tròn về 0. LLM thật có đúng hiện tượng này: một vài kênh có giá trị lớn gấp hàng chục lần phần còn lại.</p>
+<p><strong>Thí nghiệm:</strong> ma trận 4096×4096 trọng số ngẫu nhiên, nhân 25 lần ở 8 kênh để giả lập ngoại lai. Lượng tử hóa làm tròn đơn giản rồi đo sai số tương đối của đầu ra x·Wᵀ trên 64 vector đầu vào:</p>
+<figure class="fig"><img src="../assets/fig/p6-3-quant.svg" alt="Một scale cho cả ma trận: INT8 sai 15%, INT4 sai 67% (gần như mọi trọng số thành 0). Chia nhóm 128 giá trị, mỗi nhóm một scale: INT8 còn 1,9%, INT4 còn 23%; nhóm 32: INT4 còn 13%." loading="lazy"><figcaption>Một scale cho cả ma trận: INT8 sai 15%, INT4 sai 67% (gần như mọi trọng số thành 0). Chia nhóm 128 giá trị, mỗi nhóm một scale: INT8 còn 1,9%, INT4 còn 23%; nhóm 32: INT4 còn 13%.</figcaption></figure>
+
+<p>Cùng thí nghiệm trên ma trận <strong>không</strong> có ngoại lai: INT8 cả ma trận chỉ sai 1,3%, INT4 nhóm 128 sai 11,7%. Ngoại lai là kẻ thù chính của lượng tử hóa, và <strong>nhóm nhỏ</strong> là vũ khí đầu tiên.</p>
+<h3>Các phương pháp hiện đại</h3>
+<p>Thí nghiệm trên dùng làm tròn đơn giản (round-to-nearest). Các phương pháp thật làm tốt hơn nhiều:</p>
+<table>
+<thead>
+<tr>
+<th>Phương pháp</th>
+<th>Cách làm</th>
+<th>Dùng khi</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>bitsandbytes (NF4, INT8)</td>
+<td>lượng tử hóa lúc nạp model; NF4 đặt 16 mức theo phân phối chuẩn</td>
+<td>QLoRA, thử nhanh; không nhanh nhất</td>
+</tr>
+<tr>
+<td>GPTQ</td>
+<td>lượng tử hóa từng cột, điều chỉnh các cột còn lại để bù sai số, dùng 128–512 câu hiệu chỉnh</td>
+<td>phục vụ 4 bit trên GPU</td>
+</tr>
+<tr>
+<td>AWQ</td>
+<td>tìm kênh quan trọng theo activation, nhân scale bảo vệ chúng trước khi lượng tử hóa</td>
+<td>phục vụ 4 bit, thường giữ chất lượng tốt nhất</td>
+</tr>
+<tr>
+<td>GGUF (llama.cpp)</td>
+<td>nhiều mức bit (Q4_K_M, Q5_K_M, Q8_0), chạy CPU và Mac</td>
+<td>máy cá nhân, không GPU</td>
+</tr>
+<tr>
+<td>FP8</td>
+<td>số thực 8 bit, GPU mới (H100, L4) hỗ trợ phần cứng</td>
+<td>phục vụ nhanh, gần như không mất chất lượng</td>
+</tr>
+</tbody>
+</table>
+<div class="box pitfall">
+<div class="box-h">Lỗi hay gặp</div>
+<p><strong>Tin rằng "4 bit mất 1–2% chất lượng" cho mọi tác vụ.</strong> Con số trung bình trên benchmark chung không áp dụng cho tác vụ của bạn. Tác vụ cần suy luận nhiều bước, toán, hoặc tiếng Việt (ít trong dữ liệu hiệu chỉnh) có thể tụt nhiều hơn. Luôn chạy lại bộ eval của chính bạn sau khi lượng tử hóa.</p>
+</div>
+<h2 id="lt-4">Hai giai đoạn của suy luận</h2>
+<figure class="fig"><img src="../assets/fig/p6-3-phases.svg" alt="Prefill xử lý cả prompt một lần; decode sinh từng token. Hai giai đoạn bị giới hạn bởi hai thứ khác nhau." loading="lazy"><figcaption>Prefill xử lý cả prompt một lần; decode sinh từng token. Hai giai đoạn bị giới hạn bởi hai thứ khác nhau.</figcaption></figure>
+
 <ul>
-<li><strong>bitsandbytes (NF4, INT8):</strong> lượng tử hóa lúc nạp model, dùng cho QLoRA, tiện nhưng không nhanh nhất.</li>
-<li><strong>GPTQ, AWQ:</strong> lượng tử hóa trước bằng một tập dữ liệu hiệu chỉnh nhỏ, giữ chất lượng tốt ở 4 bit, có kernel nhanh.</li>
-<li><strong>GGUF (llama.cpp):</strong> định dạng chạy trên CPU và máy cá nhân, nhiều mức bit.</li>
+<li><strong>Prefill:</strong> xử lý toàn bộ prompt một lần, song song. Nhiều phép tính trên mỗi byte trọng số đọc vào, nên bị giới hạn bởi <strong>sức tính</strong>. Quyết định <strong>thời gian tới token đầu</strong> (time to first token, TTFT).</li>
+<li><strong>Decode:</strong> sinh từng token. Mỗi token mới phải đọc <strong>toàn bộ trọng số</strong> từ VRAM để làm rất ít phép tính, nên bị giới hạn bởi <strong>băng thông bộ nhớ</strong>. Quyết định <strong>token/giây</strong>.</li>
 </ul>
-<h2 id="lt-3">Hai giai đoạn của suy luận và KV cache</h2>
+<p><strong>Ước lượng tốc độ decode tối đa với một người dùng:</strong> băng thông / kích thước trọng số.</p>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>T4 có băng thông khoảng 320 GB/s.</p>
 <ul>
-<li><strong>Prefill:</strong> xử lý toàn bộ prompt một lần, song song, bị giới hạn bởi <strong>sức tính</strong> của GPU.</li>
-<li><strong>Decode:</strong> sinh từng token một. Mỗi token mới phải đọc toàn bộ trọng số từ bộ nhớ GPU, nên bị giới hạn bởi <strong>băng thông bộ nhớ</strong>.</li>
+<li>Model 7,6B ở FP16 (15,2 GB): tối đa 320 / 15,2 ≈ <strong>21 token/giây</strong> (nếu vừa bộ nhớ).</li>
+<li>Ở INT4 (khoảng 4,4 GB): tối đa 320 / 4,4 ≈ <strong>73 token/giây</strong>.</li>
 </ul>
-<p><strong>KV cache</strong> lưu key và value của mọi token đã xử lý để không tính lại ở mỗi bước decode. Nó tốn bộ nhớ:</p>
+<p>Thực tế thấp hơn giới hạn này (giải nén trọng số, overhead), nhưng tỉ lệ cho thấy vì sao lượng tử hóa <strong>tăng tốc</strong> decode chứ không chỉ tiết kiệm bộ nhớ.</p>
+</div>
+<h2 id="lt-5">KV cache</h2>
+<p>Khi sinh token thứ 501, attention cần key và value của 500 token trước. Tính lại chúng ở mỗi bước là lãng phí, nên ta lưu lại: đó là <strong>KV cache</strong>.</p>
 <div class="hl"><pre><span></span><code>KV cache = 2 (K và V) × số lớp × số đầu KV × head_dim × số token × byte mỗi số
 </code></pre></div>
 
-<p>Các model hiện đại dùng <strong>grouped-query attention</strong> (ít đầu KV hơn đầu Q) để giảm KV cache.</p>
-<p>Ước lượng tốc độ decode tối đa với batch 1: <strong>băng thông bộ nhớ / kích thước trọng số</strong>. GPU 300 GB/s, model 14 GB: tối đa khoảng 21 token/giây. Lượng tử hóa 4 bit giảm kích thước trọng số nên <strong>tăng tốc decode</strong> gần tương ứng.</p>
-<h2 id="lt-4">Phục vụ nhiều người dùng</h2>
-<ul>
-<li><strong>Batching:</strong> mỗi bước decode đọc trọng số một lần nhưng sinh token cho nhiều yêu cầu cùng lúc, nên tổng thông lượng tăng gần tuyến tính theo batch tới khi chạm giới hạn tính toán.</li>
-<li><strong>Continuous batching:</strong> yêu cầu mới vào batch ngay khi có chỗ trống, không chờ cả batch xong.</li>
-<li><strong>PagedAttention (vLLM):</strong> quản lý KV cache theo trang như bộ nhớ ảo, gần như không lãng phí, nên chứa được nhiều yêu cầu đồng thời hơn.</li>
-<li><strong>FlashAttention:</strong> tính attention theo khối trong bộ nhớ nhanh của GPU, không lưu ma trận T×T.</li>
-<li><strong>Speculative decoding:</strong> model nhỏ đoán trước vài token, model lớn kiểm tra cả cụm trong một lần, giữ nguyên chất lượng mà nhanh hơn.</li>
-</ul>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>Qwen2.5-7B: 28 lớp, 4 đầu KV (grouped-query attention: 28 đầu Q dùng chung 4 đầu KV), head_dim 128, FP16.</p>
+<ol>
+<li>Mỗi token: 2 × 28 × 4 × 128 × 2 = <strong>57.344 byte</strong> (khoảng 57 KB).</li>
+<li>Một hội thoại 8.192 token: 57.344 × 8.192 ≈ <strong>0,47 GB</strong>.</li>
+<li>20 người dùng, mỗi người 8.192 token: khoảng <strong>9,4 GB</strong>, nhiều hơn gấp đôi trọng số INT4.</li>
+</ol>
+<p>Nếu model không dùng grouped-query attention (28 đầu KV), mọi con số trên nhân 7.</p>
+</div>
+<p>Khi phục vụ nhiều người, KV cache thường là thứ chiếm bộ nhớ nhiều nhất và quyết định <strong>số người phục vụ được cùng lúc</strong>. Các cách giảm: grouped-query attention (do thiết kế model), lượng tử hóa KV cache về FP8, giới hạn độ dài hội thoại, tóm tắt lịch sử.</p>
+<h2 id="lt-6">Phục vụ nhiều người dùng</h2>
+<h3>Batching</h3>
+<p>Mỗi bước decode đọc trọng số <strong>một lần</strong> nhưng có thể sinh token cho <strong>nhiều</strong> yêu cầu cùng lúc. Đọc trọng số là phần tốn thời gian, nên tổng thông lượng tăng gần tuyến tính theo batch, cho tới khi hết bộ nhớ cho KV cache hoặc chạm giới hạn sức tính.</p>
+<figure class="fig"><img src="../assets/fig/p6-3-batch.svg" alt="Ước lượng từ băng thông và sức tính của L4 (300 GB/s, 121 TFLOPS), mỗi chuỗi 2048 token. Batch 1: FP16 khoảng 20 token/giây, INT4 khoảng 68. FP16 hết bộ nhớ ở 58 yêu cầu (khoảng 790 token/giây tổng); INT4 chứa được 151 yêu cầu (khoảng 2.060 token/giây)." loading="lazy"><figcaption>Ước lượng từ băng thông và sức tính của L4 (300 GB/s, 121 TFLOPS), mỗi chuỗi 2048 token. Batch 1: FP16 khoảng 20 token/giây, INT4 khoảng 68. FP16 hết bộ nhớ ở 58 yêu cầu (khoảng 790 token/giây tổng); INT4 chứa được 151 yêu cầu (khoảng 2.060 token/giây).</figcaption></figure>
+
+<p>Hình cho thấy lợi ích thứ hai của lượng tử hóa khi phục vụ: trọng số nhỏ hơn thì còn nhiều chỗ cho KV cache, nên phục vụ được nhiều người hơn. Đường cong cong xuống vì mỗi bước còn phải đọc KV cache của mọi chuỗi trong batch.</p>
+<h3>Các kỹ thuật của server suy luận</h3>
+<table>
+<thead>
+<tr>
+<th>Kỹ thuật</th>
+<th>Giải quyết vấn đề</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Continuous batching</strong></td>
+<td>yêu cầu mới vào batch ngay khi có chỗ trống, không chờ cả batch xong; yêu cầu ngắn không phải chờ yêu cầu dài</td>
+</tr>
+<tr>
+<td><strong>PagedAttention</strong> (vLLM)</td>
+<td>KV cache cấp phát theo trang nhỏ như bộ nhớ ảo, gần như không lãng phí, chứa nhiều yêu cầu hơn</td>
+</tr>
+<tr>
+<td><strong>Prefix caching</strong></td>
+<td>các yêu cầu có chung system prompt dùng lại KV cache của phần chung</td>
+</tr>
+<tr>
+<td><strong>FlashAttention</strong></td>
+<td>tính attention theo khối trong bộ nhớ nhanh của GPU, không tạo ma trận T×T</td>
+</tr>
+<tr>
+<td><strong>Speculative decoding</strong></td>
+<td>model nhỏ đoán trước vài token, model lớn kiểm tra cả cụm trong một lần; chất lượng giữ nguyên, nhanh hơn</td>
+</tr>
+</tbody>
+</table>
+<p>Trong thực tế, bạn không tự viết những thứ này mà dùng server có sẵn: <strong>vLLM</strong>, SGLang, TGI (Hugging Face), llama.cpp / Ollama cho máy cá nhân. vLLM cung cấp API tương thích OpenAI, nên code ở P4.1 chỉ cần đổi <code>base_url</code>.</p>
+<div class="box pitfall">
+<div class="box-h">Lỗi hay gặp</div>
+<p><strong>Đo tốc độ bằng một yêu cầu rồi kết luận cho cả hệ thống.</strong> Token/giây của một người dùng và tổng thông lượng khi 50 người dùng là hai con số khác nhau hàng chục lần. Đo cả hai, kèm độ trễ p95 của token đầu, ở đúng mức tải bạn dự kiến.</p>
+</div>
 <div class="keep">
-<p><strong>Ghi nhớ:</strong> decode bị giới hạn bởi băng thông bộ nhớ, không phải sức tính. Muốn nhanh hơn với một người dùng: model nhỏ hơn hoặc lượng tử hóa. Muốn phục vụ nhiều người: batching và vLLM.</p>
-</div></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p6.3:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 4</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Bộ nhớ trọng số</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Model 7 tỉ tham số (1 GB = 10⁹ byte).</p>
+<p><strong>Ghi nhớ:</strong> decode bị giới hạn bởi băng thông bộ nhớ, không phải sức tính. Muốn nhanh hơn với một người dùng: model nhỏ hơn hoặc lượng tử hóa. Muốn phục vụ nhiều người: batching, vLLM, và để dành bộ nhớ cho KV cache.</p>
+</div>
+<div class="box check">
+<div class="box-h">Tự kiểm tra nhanh</div>
+<div class="ans" id="p6-3-t-b111-a1">
+<div class="ans-fields"><label>Lượng tử hóa 8 bit nhóm [0.8, −0.35, 0.04, −2.54]: scale<input inputmode="decimal" data-ans="0.02" data-tol="1e-05" autocomplete="off"></label><label>KV cache một token của Qwen2.5-7B ở FP16 (byte)<input inputmode="decimal" data-ans="57344.0" data-tol="0.0" autocomplete="off"></label><label>T4 320 GB/s, trọng số 15,2 GB: token/giây tối đa (batch 1)<input inputmode="decimal" data-ans="21.05" data-tol="0.05" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div>
+<div aria-live="polite" class="ans-fb"></div>
+</div>
+</div>
+<h2 id="lt-7">Tóm tắt bài và thuật ngữ</h2>
+<table>
+<thead>
+<tr>
+<th>Chủ đề</th>
+<th>Ý chính</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Bộ nhớ trọng số</td>
+<td>số tham số × byte; INT4 nhỏ hơn FP16 4 lần</td>
+</tr>
+<tr>
+<td>Lượng tử hóa</td>
+<td>số nguyên + scale; nhóm nhỏ chống ngoại lai; GPTQ/AWQ tốt hơn làm tròn đơn giản</td>
+</tr>
+<tr>
+<td>Prefill / decode</td>
+<td>prefill giới hạn bởi sức tính (TTFT), decode bởi băng thông (token/giây)</td>
+</tr>
+<tr>
+<td>KV cache</td>
+<td>2 × lớp × đầu KV × head_dim × token × byte; quyết định số người cùng lúc</td>
+</tr>
+<tr>
+<td>Phục vụ</td>
+<td>batching, continuous batching, PagedAttention, prefix caching; dùng vLLM</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Thuật ngữ</th>
+<th>Nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>quantization</td>
+<td>lượng tử hóa, biểu diễn trọng số bằng ít bit</td>
+</tr>
+<tr>
+<td>scale / group size</td>
+<td>hệ số nhân / số giá trị dùng chung một scale</td>
+</tr>
+<tr>
+<td>outlier</td>
+<td>giá trị ngoại lai</td>
+</tr>
+<tr>
+<td>calibration data</td>
+<td>dữ liệu hiệu chỉnh dùng khi lượng tử hóa</td>
+</tr>
+<tr>
+<td>prefill / decode</td>
+<td>xử lý prompt / sinh từng token</td>
+</tr>
+<tr>
+<td>TTFT</td>
+<td>time to first token, thời gian tới token đầu</td>
+</tr>
+<tr>
+<td>memory-bound / compute-bound</td>
+<td>bị giới hạn bởi băng thông / sức tính</td>
+</tr>
+<tr>
+<td>KV cache</td>
+<td>lưu key, value của các token đã xử lý</td>
+</tr>
+<tr>
+<td>GQA</td>
+<td>grouped-query attention, nhiều đầu Q chung ít đầu KV</td>
+</tr>
+<tr>
+<td>continuous batching</td>
+<td>thêm yêu cầu vào batch liên tục</td>
+</tr>
+<tr>
+<td>PagedAttention</td>
+<td>quản lý KV cache theo trang (vLLM)</td>
+</tr>
+<tr>
+<td>speculative decoding</td>
+<td>model nhỏ đoán, model lớn kiểm tra</td>
+</tr>
+</tbody>
+</table></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p6.3:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 4</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Bộ nhớ trọng số</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Model 7 tỉ tham số (1 GB = 10⁹ byte).</p>
 <div class="ans" id="p6-3-e1-a1"><div class="ans-fields"><label>FP16 (GB)<input inputmode="decimal" data-ans="14.0" data-tol="0.001" autocomplete="off"></label><label>INT8 (GB)<input inputmode="decimal" data-ans="7.0" data-tol="0.001" autocomplete="off"></label><label>INT4 (GB)<input inputmode="decimal" data-ans="3.5" data-tol="0.001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
 
 <details class="fold solution">
@@ -173,7 +417,7 @@ w ≈ q · scale                 khi tính toán
     </div>
     <aside class="aside">
       <div class="abox"><h4>Tiến độ bài này</h4><div class="ring"><svg viewBox="0 0 64 64" aria-hidden="true"><circle class="bg" cx="32" cy="32" r="28"/><circle class="fg" cx="32" cy="32" r="28" stroke-dasharray="176" stroke-dashoffset="176"/></svg><div><b id="ring-n">0/3</b><span id="ring-sub">phần đã xong</span></div></div></div>
-      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Các định dạng số</a></li><li><a href="#lt-2">Lượng tử hóa hoạt động thế nào</a></li><li><a href="#lt-3">Hai giai đoạn của suy luận và KV cache</a></li><li><a href="#lt-4">Phục vụ nhiều người dùng</a></li></ol></div>
+      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Vì sao suy luận là bài toán riêng</a></li><li><a href="#lt-2">Các định dạng số</a></li><li><a href="#lt-3">Lượng tử hóa hoạt động thế nào</a></li><li><a href="#lt-4">Hai giai đoạn của suy luận</a></li><li><a href="#lt-5">KV cache</a></li><li><a href="#lt-6">Phục vụ nhiều người dùng</a></li><li><a href="#lt-7">Tóm tắt bài và thuật ngữ</a></li></ol></div>
       
       <div class="abox"><h4>Cùng giai đoạn</h4><ul><li><a href="p6-1.html">Bài 8a · SFT và PEFT</a></li><li><a href="p6-2.html">Bài 8b · Preference tuning</a></li><li><span class=cur>Quantization và inference nhanh</span></li></ul></div>
     </aside>
