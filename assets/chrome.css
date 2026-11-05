@@ -148,7 +148,7 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
 .fx-tilt { transform-style: preserve-3d; will-change: transform; }
 
 /* click ripple */
-.fx-rip { position: relative; overflow: hidden; }
+.fx-rip { overflow: hidden; }
 .fx-rip .rip { position: absolute; border-radius: 50%; pointer-events: none; background: currentColor; opacity: .22; transform: scale(0); animation: rip .6s ease-out forwards; }
 @keyframes rip { to { transform: scale(1); opacity: 0; } }
 

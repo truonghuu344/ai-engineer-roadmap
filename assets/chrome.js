@@ -137,8 +137,8 @@
 
   /* click ripple */
   if (!reduce) document.addEventListener("pointerdown", (e) => {
-    const el = e.target.closest && e.target.closest(".btn, .sh-cta, .btn-check, .tab, .fchip, .fx-top"); if (!el) return;
-    el.classList.add("fx-rip");
+    const el = e.target.closest && e.target.closest(".btn, .sh-cta, .btn-check, .tab, .fchip"); if (!el) return;
+    if (!el.classList.contains("fx-rip")) { if (getComputedStyle(el).position === "static") el.style.position = "relative"; el.classList.add("fx-rip"); }
     const r = el.getBoundingClientRect(), s = Math.max(r.width, r.height) * 2.2, sp = document.createElement("span");
     sp.className = "rip"; sp.style.cssText = `width:${s}px;height:${s}px;left:${e.clientX - r.left - s / 2}px;top:${e.clientY - r.top - s / 2}px`;
     el.appendChild(sp); setTimeout(() => sp.remove(), 650);
