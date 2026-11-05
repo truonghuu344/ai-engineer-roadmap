@@ -251,11 +251,11 @@
 
   /* answer boxes */
   const parse = (s) => parseFloat(String(s).trim().replace(",", ".").replace("−", "-"));
-  const allAns = [...document.querySelectorAll(".ans")];
+  const allAns = [...document.querySelectorAll(".ans")], exAns = allAns.filter((a) => a.closest("#bai-tap"));
   function score() {
-    const ok = allAns.filter((a) => solved[a.id]).length;
+    const ok = exAns.filter((a) => solved[a.id]).length;
     const el = document.getElementById("ex-score");
-    if (el) { el.querySelector("b").textContent = `${ok} / ${allAns.length}`; el.querySelector(".bar i").style.width = (allAns.length ? ok / allAns.length * 100 : 0) + "%"; }
+    if (el) { el.querySelector("b").textContent = `${ok} / ${exAns.length}`; el.querySelector(".bar i").style.width = (exAns.length ? ok / exAns.length * 100 : 0) + "%"; }
     document.querySelectorAll(".excard").forEach((c) => { const as = [...c.querySelectorAll(".ans")]; c.classList.toggle("solved", as.length > 0 && as.every((a) => solved[a.id])); });
   }
   allAns.forEach((box) => {
@@ -274,7 +274,7 @@
         const first = !solved[box.id];
         solved[box.id] = true; saveSolved(); mark(); box.classList.remove("pop"); void box.offsetWidth; box.classList.add("pop"); score();
         if (first && AIE.confettiAt) {
-          if (allAns.every((a) => solved[a.id])) AIE.confetti(innerWidth / 2, innerHeight * .35, 120);
+          if (box.closest("#bai-tap") && exAns.every((a) => solved[a.id])) AIE.confetti(innerWidth / 2, innerHeight * .35, 120);
           else AIE.confettiAt(box.querySelector(".btn-check"), 28);
         }
       }

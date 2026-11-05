@@ -14,6 +14,24 @@
 @media (prefers-reduced-motion: no-preference) { .panel.enter { animation: fadeUp .35s ease both; } }
 @keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } }
 
+
+/* theory boxes */
+.box { margin-top: 18px; padding: 14px 18px 16px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); }
+.box > :first-child + * { margin-top: 6px; }
+.box-h { display: flex; align-items: center; gap: 8px; font: 700 12px/1 var(--f-body); letter-spacing: .1em; text-transform: uppercase; }
+.box-h::before { width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; font-size: 12px; letter-spacing: 0; }
+.box.example { border-color: color-mix(in srgb, var(--accent) 30%, transparent); background: color-mix(in srgb, var(--accent-soft) 45%, var(--surface)); }
+.box.example .box-h { color: var(--accent); } .box.example .box-h::before { content: "▶"; background: var(--accent); color: #fff; font-size: 9px; }
+.box.pitfall { border-color: color-mix(in srgb, var(--hot) 35%, transparent); background: color-mix(in srgb, var(--hot-soft) 55%, var(--surface)); }
+.box.pitfall .box-h { color: var(--hot); } .box.pitfall .box-h::before { content: "!"; background: var(--hot); color: #fff; }
+.box.check { border-color: color-mix(in srgb, var(--side) 35%, transparent); background: color-mix(in srgb, var(--side-soft) 55%, var(--surface)); }
+.box.check .box-h { color: var(--side); } .box.check .box-h::before { content: "?"; background: var(--side); color: #fff; }
+.box.why { border-left: 4px solid var(--ink); border-radius: 4px 12px 12px 4px; }
+.box.why .box-h { color: var(--ink); } .box.why .box-h::before { content: "→"; background: var(--ink); color: #fff; }
+.box .ans { margin-top: 12px; background: var(--surface); }
+.box pre { margin-top: 10px; }
+details.fold.deep > summary { color: var(--side); }
+details.fold.answer > summary { color: var(--ok); }
 /* effects: sliding tab pill, copy button on code */
 .tabs { position: sticky; }
 .tabs .pill { position: absolute; top: 6px; left: 0; height: calc(100% - 12px); width: 0; border-radius: 8px; background: var(--ink); z-index: 0; pointer-events: none; }

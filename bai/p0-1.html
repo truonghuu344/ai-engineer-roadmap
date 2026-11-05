@@ -24,98 +24,532 @@
   <section class="lhero"><div class="code">P0.1</div><h1>Python cho ML: numpy, pandas, matplotlib</h1><div class="lmeta"><span class="m">Giai đoạn P0 · Nền móng</span><span class="m">Tuần 1–3</span><span class="chip ready"><span class="dot"></span>Có nội dung đầy đủ</span></div>
     <div class="intro"><p>Mọi model bạn train sau này đều nhận dữ liệu dưới dạng mảng số. Bài này luyện ba thư viện bạn sẽ dùng hằng ngày: <strong>numpy</strong> để tính trên mảng, <strong>pandas</strong> để làm sạch bảng dữ liệu, <strong>matplotlib</strong> để nhìn dữ liệu. Kỹ năng quan trọng nhất của bài là <strong>vector hóa</strong>: viết phép tính trên cả mảng thay cho vòng <code>for</code>.</p></div></section>
   
-  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">6 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
+  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">7 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
   <div class="lgrid" style="margin-top:22px">
     <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">Python đủ dùng cho ML</h2>
-<p>Bạn không cần biết hết Python, chỉ cần dùng thạo vài thứ sau.</p>
-<div class="hl"><pre><span></span><code><span class="tk-n">squares</span> <span class="tk-o">=</span> <span class="tk-p">[</span><span class="tk-n">x</span> <span class="tk-o">*</span> <span class="tk-n">x</span> <span class="tk-k">for</span> <span class="tk-n">x</span> <span class="tk-ow">in</span> <span class="tk-nb">range</span><span class="tk-p">(</span><span class="tk-mi">5</span><span class="tk-p">)]</span>               <span class="tk-c1"># list comprehension</span>
-<span class="tk-n">by_len</span> <span class="tk-o">=</span> <span class="tk-p">{</span><span class="tk-n">w</span><span class="tk-p">:</span> <span class="tk-nb">len</span><span class="tk-p">(</span><span class="tk-n">w</span><span class="tk-p">)</span> <span class="tk-k">for</span> <span class="tk-n">w</span> <span class="tk-ow">in</span> <span class="tk-p">[</span><span class="tk-s2">"mèo"</span><span class="tk-p">,</span> <span class="tk-s2">"chó"</span><span class="tk-p">]}</span>      <span class="tk-c1"># dict comprehension</span>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Code ML hiếm khi dùng Python "khó". Nhưng có khoảng chục cấu trúc xuất hiện ở mọi notebook, mọi repo: comprehension, hàm, class có <code>__len__</code>/<code>__getitem__</code>, <code>zip</code>, <code>enumerate</code>, f-string. Thạo chúng thì bạn đọc được code PyTorch hay Hugging Face mà không bị khựng.</p>
+</div>
+<h3>Comprehension: tạo list và dict trong một dòng</h3>
+<p>Comprehension là cách viết gọn của vòng <code>for</code> khi mục đích là <strong>tạo ra một tập hợp mới</strong>:</p>
+<div class="hl"><pre><span></span><code><span class="tk-n">squares</span> <span class="tk-o">=</span> <span class="tk-p">[</span><span class="tk-n">x</span> <span class="tk-o">*</span> <span class="tk-n">x</span> <span class="tk-k">for</span> <span class="tk-n">x</span> <span class="tk-ow">in</span> <span class="tk-nb">range</span><span class="tk-p">(</span><span class="tk-mi">5</span><span class="tk-p">)]</span>               <span class="tk-c1"># [0, 1, 4, 9, 16]</span>
+<span class="tk-n">evens</span> <span class="tk-o">=</span> <span class="tk-p">[</span><span class="tk-n">x</span> <span class="tk-k">for</span> <span class="tk-n">x</span> <span class="tk-ow">in</span> <span class="tk-nb">range</span><span class="tk-p">(</span><span class="tk-mi">10</span><span class="tk-p">)</span> <span class="tk-k">if</span> <span class="tk-n">x</span> <span class="tk-o">%</span> <span class="tk-mi">2</span> <span class="tk-o">==</span> <span class="tk-mi">0</span><span class="tk-p">]</span>      <span class="tk-c1"># có điều kiện lọc: [0, 2, 4, 6, 8]</span>
+<span class="tk-n">by_len</span> <span class="tk-o">=</span> <span class="tk-p">{</span><span class="tk-n">w</span><span class="tk-p">:</span> <span class="tk-nb">len</span><span class="tk-p">(</span><span class="tk-n">w</span><span class="tk-p">)</span> <span class="tk-k">for</span> <span class="tk-n">w</span> <span class="tk-ow">in</span> <span class="tk-p">[</span><span class="tk-s2">"mèo"</span><span class="tk-p">,</span> <span class="tk-s2">"chó"</span><span class="tk-p">]}</span>      <span class="tk-c1"># dict: {'mèo': 3, 'chó': 3}</span>
+</code></pre></div>
 
-<span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">accuracy</span><span class="tk-p">(</span><span class="tk-n">pred</span><span class="tk-p">,</span> <span class="tk-n">true</span><span class="tk-p">):</span>                          <span class="tk-c1"># hàm có giá trị trả về</span>
+<p>Đọc từ trái sang phải: "lấy <code>x * x</code>, với mỗi <code>x</code> trong <code>range(5)</code>". Khi vòng lặp có nhiều bước phức tạp, cứ viết <code>for</code> bình thường cho dễ đọc.</p>
+<h3>zip, enumerate, sorted: ba công cụ duyệt dữ liệu</h3>
+<div class="hl"><pre><span></span><code><span class="tk-n">words</span> <span class="tk-o">=</span> <span class="tk-p">[</span><span class="tk-s2">"mèo"</span><span class="tk-p">,</span> <span class="tk-s2">"chó"</span><span class="tk-p">,</span> <span class="tk-s2">"gà"</span><span class="tk-p">,</span> <span class="tk-s2">"vịt"</span><span class="tk-p">]</span>
+<span class="tk-p">[</span><span class="tk-sa">f</span><span class="tk-s2">"</span><span class="tk-si">{</span><span class="tk-n">i</span><span class="tk-si">}</span><span class="tk-s2">:</span><span class="tk-si">{</span><span class="tk-n">w</span><span class="tk-si">}</span><span class="tk-s2">"</span> <span class="tk-k">for</span> <span class="tk-n">i</span><span class="tk-p">,</span> <span class="tk-n">w</span> <span class="tk-ow">in</span> <span class="tk-nb">enumerate</span><span class="tk-p">(</span><span class="tk-n">words</span><span class="tk-p">)]</span>   <span class="tk-c1"># ['0:mèo', '1:chó', '2:gà', '3:vịt']  (kèm chỉ số)</span>
+<span class="tk-nb">sorted</span><span class="tk-p">(</span><span class="tk-n">words</span><span class="tk-p">,</span> <span class="tk-n">key</span><span class="tk-o">=</span><span class="tk-nb">len</span><span class="tk-p">)</span>                       <span class="tk-c1"># ['gà', 'mèo', 'chó', 'vịt']        (sắp theo độ dài)</span>
+<span class="tk-nb">list</span><span class="tk-p">(</span><span class="tk-nb">zip</span><span class="tk-p">([</span><span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-mi">2</span><span class="tk-p">,</span> <span class="tk-mi">3</span><span class="tk-p">],</span> <span class="tk-p">[</span><span class="tk-s2">"a"</span><span class="tk-p">,</span> <span class="tk-s2">"b"</span><span class="tk-p">,</span> <span class="tk-s2">"c"</span><span class="tk-p">]))</span>        <span class="tk-c1"># [(1, 'a'), (2, 'b'), (3, 'c')]    (ghép từng cặp)</span>
+</code></pre></div>
+
+<p><code>zip</code> dùng khi có hai danh sách song song (dự đoán và nhãn thật). <code>key=</code> trong <code>sorted</code>, <code>max</code>, <code>min</code> nhận một hàm, rất hay dùng để lấy "phần tử có điểm cao nhất".</p>
+<h3>Hàm và class</h3>
+<div class="hl"><pre><span></span><code><span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">accuracy</span><span class="tk-p">(</span><span class="tk-n">pred</span><span class="tk-p">,</span> <span class="tk-n">true</span><span class="tk-p">):</span>
+<span class="tk-w">    </span><span class="tk-sd">"""Tỉ lệ dự đoán đúng."""</span>
     <span class="tk-k">return</span> <span class="tk-nb">sum</span><span class="tk-p">(</span><span class="tk-n">p</span> <span class="tk-o">==</span> <span class="tk-n">t</span> <span class="tk-k">for</span> <span class="tk-n">p</span><span class="tk-p">,</span> <span class="tk-n">t</span> <span class="tk-ow">in</span> <span class="tk-nb">zip</span><span class="tk-p">(</span><span class="tk-n">pred</span><span class="tk-p">,</span> <span class="tk-n">true</span><span class="tk-p">))</span> <span class="tk-o">/</span> <span class="tk-nb">len</span><span class="tk-p">(</span><span class="tk-n">true</span><span class="tk-p">)</span>
 
-<span class="tk-k">class</span><span class="tk-w"> </span><span class="tk-nc">Dataset</span><span class="tk-p">:</span>                                     <span class="tk-c1"># class: Dataset của PyTorch có đúng 2 hàm này</span>
-    <span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-fm">__init__</span><span class="tk-p">(</span><span class="tk-bp">self</span><span class="tk-p">,</span> <span class="tk-n">rows</span><span class="tk-p">):</span> <span class="tk-bp">self</span><span class="tk-o">.</span><span class="tk-n">rows</span> <span class="tk-o">=</span> <span class="tk-n">rows</span>
-    <span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-fm">__len__</span><span class="tk-p">(</span><span class="tk-bp">self</span><span class="tk-p">):</span> <span class="tk-k">return</span> <span class="tk-nb">len</span><span class="tk-p">(</span><span class="tk-bp">self</span><span class="tk-o">.</span><span class="tk-n">rows</span><span class="tk-p">)</span>
-    <span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-fm">__getitem__</span><span class="tk-p">(</span><span class="tk-bp">self</span><span class="tk-p">,</span> <span class="tk-n">i</span><span class="tk-p">):</span> <span class="tk-k">return</span> <span class="tk-bp">self</span><span class="tk-o">.</span><span class="tk-n">rows</span><span class="tk-p">[</span><span class="tk-n">i</span><span class="tk-p">]</span>
+<span class="tk-n">accuracy</span><span class="tk-p">([</span><span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-mi">0</span><span class="tk-p">,</span> <span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-mi">1</span><span class="tk-p">],</span> <span class="tk-p">[</span><span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-mi">0</span><span class="tk-p">])</span>   <span class="tk-c1"># 0.5</span>
+
+<span class="tk-k">class</span><span class="tk-w"> </span><span class="tk-nc">Dataset</span><span class="tk-p">:</span>                          <span class="tk-c1"># đúng khung mà torch.utils.data.Dataset yêu cầu</span>
+    <span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-fm">__init__</span><span class="tk-p">(</span><span class="tk-bp">self</span><span class="tk-p">,</span> <span class="tk-n">rows</span><span class="tk-p">):</span>
+        <span class="tk-bp">self</span><span class="tk-o">.</span><span class="tk-n">rows</span> <span class="tk-o">=</span> <span class="tk-n">rows</span>
+    <span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-fm">__len__</span><span class="tk-p">(</span><span class="tk-bp">self</span><span class="tk-p">):</span>                  <span class="tk-c1"># len(ds) gọi hàm này</span>
+        <span class="tk-k">return</span> <span class="tk-nb">len</span><span class="tk-p">(</span><span class="tk-bp">self</span><span class="tk-o">.</span><span class="tk-n">rows</span><span class="tk-p">)</span>
+    <span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-fm">__getitem__</span><span class="tk-p">(</span><span class="tk-bp">self</span><span class="tk-p">,</span> <span class="tk-n">i</span><span class="tk-p">):</span>           <span class="tk-c1"># ds[i] gọi hàm này</span>
+        <span class="tk-k">return</span> <span class="tk-bp">self</span><span class="tk-o">.</span><span class="tk-n">rows</span><span class="tk-p">[</span><span class="tk-n">i</span><span class="tk-p">]</span>
+
+<span class="tk-n">ds</span> <span class="tk-o">=</span> <span class="tk-n">Dataset</span><span class="tk-p">([</span><span class="tk-s2">"a"</span><span class="tk-p">,</span> <span class="tk-s2">"b"</span><span class="tk-p">,</span> <span class="tk-s2">"c"</span><span class="tk-p">])</span>
+<span class="tk-nb">len</span><span class="tk-p">(</span><span class="tk-n">ds</span><span class="tk-p">),</span> <span class="tk-n">ds</span><span class="tk-p">[</span><span class="tk-mi">1</span><span class="tk-p">]</span>                          <span class="tk-c1"># (3, 'b')</span>
 </code></pre></div>
 
-<p>Mỗi dự án nên có <strong>môi trường ảo</strong> riêng để thư viện không đá nhau: <code>python -m venv .venv</code>, kích hoạt, rồi <code>pip install numpy pandas matplotlib</code>. Ghi phiên bản vào <code>requirements.txt</code> để người khác chạy lại được.</p>
+<p>Các hàm có hai dấu gạch dưới (<code>__len__</code>, <code>__getitem__</code>) là <strong>dunder method</strong>: Python tự gọi chúng khi bạn dùng <code>len(...)</code> hay <code>[...]</code>. PyTorch dựa vào đúng cơ chế này để lấy dữ liệu theo batch ở P2.</p>
+<h3>Phép chia và kiểu số</h3>
+<p><code>7 / 2</code> cho <code>3.5</code> (luôn ra số thực), <code>7 // 2</code> cho <code>3</code> (chia lấy phần nguyên), <code>7 % 2</code> cho <code>1</code> (phần dư). Phép <code>%</code> hay dùng để làm gì đó "mỗi 100 bước": <code>if step % 100 == 0: print(loss)</code>.</p>
+<h3>Môi trường ảo và thư viện</h3>
+<p>Mỗi dự án nên có <strong>môi trường ảo</strong> riêng để phiên bản thư viện của dự án này không phá dự án khác:</p>
+<div class="hl"><pre><span></span><code>python<span class="tk-w"> </span>-m<span class="tk-w"> </span>venv<span class="tk-w"> </span>.venv<span class="tk-w">                 </span><span class="tk-c1"># tạo</span>
+<span class="tk-nb">source</span><span class="tk-w"> </span>.venv/bin/activate<span class="tk-w">            </span><span class="tk-c1"># kích hoạt (Windows: .venv\Scripts\activate)</span>
+pip<span class="tk-w"> </span>install<span class="tk-w"> </span>numpy<span class="tk-w"> </span>pandas<span class="tk-w"> </span>matplotlib
+pip<span class="tk-w"> </span>freeze<span class="tk-w"> </span>&gt;<span class="tk-w"> </span>requirements.txt<span class="tk-w">        </span><span class="tk-c1"># ghi lại phiên bản để người khác cài đúng</span>
+</code></pre></div>
+
+<p>Trên Colab thì không cần: mỗi notebook đã là một môi trường riêng, chỉ cần <code>!pip install ...</code> khi thiếu thư viện.</p>
+<div class="box pitfall">
+<div class="box-h">Lỗi hay gặp</div>
+<p><strong>Giá trị mặc định là list.</strong> Đối số mặc định chỉ được tạo <strong>một lần</strong> khi định nghĩa hàm, nên các lần gọi dùng chung một list:</p>
+<div class="hl"><pre><span></span><code><span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">add_item</span><span class="tk-p">(</span><span class="tk-n">x</span><span class="tk-p">,</span> <span class="tk-n">bag</span><span class="tk-o">=</span><span class="tk-p">[]):</span>
+    <span class="tk-n">bag</span><span class="tk-o">.</span><span class="tk-n">append</span><span class="tk-p">(</span><span class="tk-n">x</span><span class="tk-p">)</span>
+    <span class="tk-k">return</span> <span class="tk-n">bag</span>
+
+<span class="tk-n">add_item</span><span class="tk-p">(</span><span class="tk-mi">1</span><span class="tk-p">)</span>   <span class="tk-c1"># [1]</span>
+<span class="tk-n">add_item</span><span class="tk-p">(</span><span class="tk-mi">2</span><span class="tk-p">)</span>   <span class="tk-c1"># [1, 2]  ← không phải [2]</span>
+</code></pre></div>
+
+<p>Cách đúng: <code>def add_item(x, bag=None):</code> rồi <code>bag = [] if bag is None else bag</code>.</p>
+</div>
 <h2 id="lt-2">Mảng numpy: shape, dtype, indexing</h2>
-<p><code>np.array</code> là bảng số nhiều chiều, mọi phần tử cùng kiểu (<code>dtype</code>). Thuộc tính quan trọng nhất là <strong>shape</strong>: số phần tử theo từng trục.</p>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>List Python chứa được mọi thứ nhưng không biết làm toán: <code>[1, 2] * 2</code> cho <code>[1, 2, 1, 2]</code> chứ không phải <code>[2, 4]</code>. Mảng numpy là khối số cùng kiểu nằm liền nhau trong bộ nhớ, tính toán trên cả khối bằng code C. Tensor của PyTorch dùng gần như y hệt cách đánh chỉ số và shape của numpy, nên học kỹ ở đây là học luôn cho PyTorch.</p>
+</div>
+<h3>Tạo mảng</h3>
 <div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">numpy</span><span class="tk-w"> </span><span class="tk-k">as</span><span class="tk-w"> </span><span class="tk-nn">np</span>
-<span class="tk-n">x</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">arange</span><span class="tk-p">(</span><span class="tk-mi">12</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">reshape</span><span class="tk-p">(</span><span class="tk-mi">3</span><span class="tk-p">,</span> <span class="tk-mi">4</span><span class="tk-p">)</span>   <span class="tk-c1"># shape (3, 4): 3 hàng, 4 cột</span>
-<span class="tk-n">x</span><span class="tk-p">[</span><span class="tk-mi">1</span><span class="tk-p">]</span>          <span class="tk-c1"># hàng thứ 2 → shape (4,)</span>
-<span class="tk-n">x</span><span class="tk-p">[:,</span> <span class="tk-mi">0</span><span class="tk-p">]</span>       <span class="tk-c1"># cột đầu → shape (3,)</span>
-<span class="tk-n">x</span><span class="tk-p">[</span><span class="tk-n">x</span> <span class="tk-o">&gt;</span> <span class="tk-mi">5</span><span class="tk-p">]</span>      <span class="tk-c1"># lọc bằng mặt nạ boolean → các phần tử lớn hơn 5</span>
-<span class="tk-n">x</span><span class="tk-o">.</span><span class="tk-n">reshape</span><span class="tk-p">(</span><span class="tk-o">-</span><span class="tk-mi">1</span><span class="tk-p">)</span> <span class="tk-c1"># duỗi thành 1 chiều, -1 nghĩa là "tự tính"</span>
-<span class="tk-n">x</span><span class="tk-o">.</span><span class="tk-n">sum</span><span class="tk-p">(</span><span class="tk-n">axis</span><span class="tk-o">=</span><span class="tk-mi">0</span><span class="tk-p">)</span> <span class="tk-c1"># cộng dọc theo trục 0 (gộp các hàng) → shape (4,)</span>
+<span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">array</span><span class="tk-p">([</span><span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-mi">2</span><span class="tk-p">,</span> <span class="tk-mi">3</span><span class="tk-p">])</span>          <span class="tk-c1"># từ list</span>
+<span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">zeros</span><span class="tk-p">((</span><span class="tk-mi">2</span><span class="tk-p">,</span> <span class="tk-mi">3</span><span class="tk-p">))</span>             <span class="tk-c1"># toàn số 0, shape (2, 3)</span>
+<span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">ones</span><span class="tk-p">(</span><span class="tk-mi">4</span><span class="tk-p">)</span>                   <span class="tk-c1"># [1. 1. 1. 1.]</span>
+<span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">arange</span><span class="tk-p">(</span><span class="tk-mi">0</span><span class="tk-p">,</span> <span class="tk-mi">10</span><span class="tk-p">,</span> <span class="tk-mi">2</span><span class="tk-p">)</span>          <span class="tk-c1"># [0 2 4 6 8], giống range</span>
+<span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">linspace</span><span class="tk-p">(</span><span class="tk-mi">0</span><span class="tk-p">,</span> <span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-mi">5</span><span class="tk-p">)</span>         <span class="tk-c1"># [0.   0.25 0.5  0.75 1.  ], 5 điểm chia đều</span>
+<span class="tk-n">rng</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">random</span><span class="tk-o">.</span><span class="tk-n">default_rng</span><span class="tk-p">(</span><span class="tk-mi">0</span><span class="tk-p">)</span>
+<span class="tk-n">rng</span><span class="tk-o">.</span><span class="tk-n">normal</span><span class="tk-p">(</span><span class="tk-n">size</span><span class="tk-o">=</span><span class="tk-p">(</span><span class="tk-mi">2</span><span class="tk-p">,</span> <span class="tk-mi">3</span><span class="tk-p">))</span>      <span class="tk-c1"># số ngẫu nhiên phân phối chuẩn, cố định seed để chạy lại ra giống nhau</span>
 </code></pre></div>
 
-<p>Quy ước nhớ <code>axis</code>: tham số <code>axis=k</code> là trục <strong>bị gộp mất</strong>. <code>x.sum(axis=0)</code> gộp các hàng nên còn lại một giá trị cho mỗi cột.</p>
+<h3>Bốn thuộc tính cần nhìn đầu tiên</h3>
+<div class="hl"><pre><span></span><code><span class="tk-n">x</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">arange</span><span class="tk-p">(</span><span class="tk-mi">12</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">reshape</span><span class="tk-p">(</span><span class="tk-mi">3</span><span class="tk-p">,</span> <span class="tk-mi">4</span><span class="tk-p">)</span>
+<span class="tk-c1"># [[ 0  1  2  3]</span>
+<span class="tk-c1">#  [ 4  5  6  7]</span>
+<span class="tk-c1">#  [ 8  9 10 11]]</span>
+<span class="tk-n">x</span><span class="tk-o">.</span><span class="tk-n">shape</span>    <span class="tk-c1"># (3, 4)   số phần tử theo từng trục: 3 hàng, 4 cột</span>
+<span class="tk-n">x</span><span class="tk-o">.</span><span class="tk-n">ndim</span>     <span class="tk-c1"># 2        số trục</span>
+<span class="tk-n">x</span><span class="tk-o">.</span><span class="tk-n">size</span>     <span class="tk-c1"># 12       tổng số phần tử</span>
+<span class="tk-n">x</span><span class="tk-o">.</span><span class="tk-n">dtype</span>    <span class="tk-c1"># int64    kiểu số của mọi phần tử</span>
+</code></pre></div>
+
+<p><strong>Shape</strong> là thứ bạn kiểm tra nhiều nhất trong cả sự nghiệp ML. Phần lớn lỗi khi viết model là lỗi shape. Thói quen tốt: in <code>x.shape</code> sau mỗi bước biến đổi khi còn chưa chắc.</p>
+<h3>dtype: kiểu số quyết định kết quả</h3>
+<div class="hl"><pre><span></span><code><span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">array</span><span class="tk-p">([</span><span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-mi">2</span><span class="tk-p">,</span> <span class="tk-mi">3</span><span class="tk-p">])</span><span class="tk-o">.</span><span class="tk-n">dtype</span>     <span class="tk-c1"># int64</span>
+<span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">array</span><span class="tk-p">([</span><span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-mf">2.5</span><span class="tk-p">])</span><span class="tk-o">.</span><span class="tk-n">dtype</span>      <span class="tk-c1"># float64 (chỉ cần một số thực là cả mảng thành float)</span>
+<span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">array</span><span class="tk-p">([</span><span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-mi">2</span><span class="tk-p">,</span> <span class="tk-mi">3</span><span class="tk-p">])</span> <span class="tk-o">/</span> <span class="tk-mi">2</span>       <span class="tk-c1"># [0.5 1.  1.5] (chia luôn ra float)</span>
+
+<span class="tk-n">a</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">array</span><span class="tk-p">([</span><span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-mi">2</span><span class="tk-p">,</span> <span class="tk-mi">3</span><span class="tk-p">])</span>
+<span class="tk-n">a</span><span class="tk-p">[</span><span class="tk-mi">0</span><span class="tk-p">]</span> <span class="tk-o">=</span> <span class="tk-mf">9.7</span>
+<span class="tk-n">a</span>                             <span class="tk-c1"># [9 2 3]  ← 9.7 bị cắt thành 9 vì mảng là int</span>
+</code></pre></div>
+
+<p>Deep learning thường dùng <code>float32</code> (nửa bộ nhớ so với <code>float64</code>, đủ chính xác). Đổi kiểu bằng <code>x.astype(np.float32)</code>.</p>
+<h3>Lấy phần tử: slicing, mặt nạ, danh sách chỉ số</h3>
+<div class="hl"><pre><span></span><code><span class="tk-n">x</span><span class="tk-p">[</span><span class="tk-mi">1</span><span class="tk-p">]</span>          <span class="tk-c1"># [4 5 6 7]         hàng thứ 2 (chỉ số bắt đầu từ 0), shape (4,)</span>
+<span class="tk-n">x</span><span class="tk-p">[:,</span> <span class="tk-mi">0</span><span class="tk-p">]</span>       <span class="tk-c1"># [0 4 8]           cột đầu, ":" nghĩa là "lấy hết trục này"</span>
+<span class="tk-n">x</span><span class="tk-p">[</span><span class="tk-mi">1</span><span class="tk-p">:,</span> <span class="tk-mi">2</span><span class="tk-p">:]</span>     <span class="tk-c1"># [[ 6  7]</span>
+              <span class="tk-c1">#  [10 11]]         từ hàng 1 trở đi, từ cột 2 trở đi</span>
+<span class="tk-n">x</span><span class="tk-p">[</span><span class="tk-n">x</span> <span class="tk-o">&gt;</span> <span class="tk-mi">5</span><span class="tk-p">]</span>      <span class="tk-c1"># [ 6  7  8  9 10 11]   mặt nạ boolean: chỉ giữ chỗ True, kết quả luôn 1 chiều</span>
+<span class="tk-n">x</span><span class="tk-p">[[</span><span class="tk-mi">0</span><span class="tk-p">,</span> <span class="tk-mi">2</span><span class="tk-p">]]</span>     <span class="tk-c1"># hàng 0 và hàng 2 (fancy indexing bằng danh sách chỉ số)</span>
+</code></pre></div>
+
+<p><code>x &gt; 5</code> tạo một mảng <code>True/False</code> cùng shape với <code>x</code>. Đặt nó vào trong <code>[...]</code> để lọc. Đây chính là cách bạn lọc dữ liệu trong pandas ở phần sau.</p>
+<h3>reshape và transpose</h3>
+<div class="hl"><pre><span></span><code><span class="tk-n">x</span><span class="tk-o">.</span><span class="tk-n">reshape</span><span class="tk-p">(</span><span class="tk-mi">2</span><span class="tk-p">,</span> <span class="tk-o">-</span><span class="tk-mi">1</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">shape</span>   <span class="tk-c1"># (2, 6)   -1 nghĩa là "tự tính": 12 / 2 = 6</span>
+<span class="tk-n">x</span><span class="tk-o">.</span><span class="tk-n">reshape</span><span class="tk-p">(</span><span class="tk-o">-</span><span class="tk-mi">1</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">shape</span>      <span class="tk-c1"># (12,)    duỗi thành 1 chiều</span>
+<span class="tk-n">x</span><span class="tk-o">.</span><span class="tk-n">T</span><span class="tk-o">.</span><span class="tk-n">shape</span>                <span class="tk-c1"># (4, 3)   đổi hàng thành cột</span>
+<span class="tk-n">x</span><span class="tk-p">[</span><span class="tk-kc">None</span><span class="tk-p">]</span><span class="tk-o">.</span><span class="tk-n">shape</span>            <span class="tk-c1"># (1, 3, 4) chèn thêm một trục độ dài 1 ở đầu</span>
+</code></pre></div>
+
+<p><code>reshape</code> không đổi thứ tự các số, chỉ đổi cách "xếp" chúng vào các trục. Tổng số phần tử phải giữ nguyên: <code>x.reshape(5, -1)</code> sẽ báo lỗi vì 12 không chia hết cho 5.</p>
+<h3>axis: trục bị gộp mất</h3>
+<p>Các hàm tổng hợp (<code>sum</code>, <code>mean</code>, <code>max</code>, <code>argmax</code>...) nhận tham số <code>axis</code>. Cách nhớ chắc nhất: <strong><code>axis=k</code> là trục biến mất trong kết quả</strong>.</p>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>Với <code>x</code> shape <code>(3, 4)</code> ở trên:</p>
+<ul>
+<li><code>x.sum(axis=0)</code> gộp trục 0 (3 hàng) → còn shape <code>(4,)</code>, mỗi cột một tổng: <code>[0+4+8, 1+5+9, 2+6+10, 3+7+11]</code> = <code>[12 15 18 21]</code>.</li>
+<li><code>x.sum(axis=1)</code> gộp trục 1 (4 cột) → còn shape <code>(3,)</code>, mỗi hàng một tổng: <code>[6 22 38]</code>.</li>
+<li><code>x.sum()</code> gộp tất cả → một số: <code>66</code>.</li>
+<li><code>x.mean(axis=1)</code> → <code>[1.5 5.5 9.5]</code>: trung bình mỗi hàng.</li>
+</ul>
+<p>Trong ML, dữ liệu thường có shape <code>(số mẫu, số đặc trưng)</code>. "Trung bình mỗi đặc trưng" là <code>axis=0</code>; "tổng điểm của từng mẫu" là <code>axis=1</code>.</p>
+</div>
+<div class="box pitfall">
+<div class="box-h">Lỗi hay gặp</div>
+<p><strong>Slicing trả về view, không phải bản sao.</strong> Sửa trên view là sửa luôn mảng gốc:</p>
+<div class="hl"><pre><span></span><code><span class="tk-n">v</span> <span class="tk-o">=</span> <span class="tk-n">x</span><span class="tk-p">[</span><span class="tk-mi">0</span><span class="tk-p">]</span>        <span class="tk-c1"># view của hàng 0</span>
+<span class="tk-n">v</span><span class="tk-p">[</span><span class="tk-mi">0</span><span class="tk-p">]</span> <span class="tk-o">=</span> <span class="tk-mi">100</span>
+<span class="tk-n">x</span><span class="tk-p">[</span><span class="tk-mi">0</span><span class="tk-p">,</span> <span class="tk-mi">0</span><span class="tk-p">]</span>         <span class="tk-c1"># 100  ← mảng gốc bị đổi theo</span>
+
+<span class="tk-n">c</span> <span class="tk-o">=</span> <span class="tk-n">x</span><span class="tk-p">[</span><span class="tk-mi">0</span><span class="tk-p">]</span><span class="tk-o">.</span><span class="tk-n">copy</span><span class="tk-p">()</span> <span class="tk-c1"># bản sao độc lập</span>
+<span class="tk-n">c</span><span class="tk-p">[</span><span class="tk-mi">0</span><span class="tk-p">]</span> <span class="tk-o">=</span> <span class="tk-o">-</span><span class="tk-mi">5</span>       <span class="tk-c1"># x không đổi</span>
+</code></pre></div>
+
+<p>Ngược lại, lọc bằng mặt nạ (<code>x[x &gt; 5]</code>) và danh sách chỉ số (<code>x[[0, 2]]</code>) luôn tạo bản sao. Khi cần sửa một phần dữ liệu mà không muốn ảnh hưởng bản gốc, gọi <code>.copy()</code> cho chắc.</p>
+</div>
+<div class="box check">
+<div class="box-h">Tự kiểm tra nhanh</div>
+<p>Với <code>x = np.arange(12).reshape(3, 4)</code> như trên, tính bằng tay:</p>
+<div class="ans" id="p0-1-t-b148-a1">
+<div class="ans-fields"><label>x.sum(axis=0)[2]<input inputmode="decimal" data-ans="18.0" data-tol="0.0" autocomplete="off"></label><label>x[:, 1:3].sum()<input inputmode="decimal" data-ans="33.0" data-tol="0.0" autocomplete="off"></label><label>x.mean(axis=1)[2]<input inputmode="decimal" data-ans="9.5" data-tol="0.001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div>
+<div aria-live="polite" class="ans-fb"></div>
+</div>
+</div>
 <h2 id="lt-3">Broadcasting</h2>
-<p>Khi hai mảng khác shape, numpy so shape <strong>từ phải sang trái</strong>: hai kích thước khớp nhau nếu bằng nhau hoặc một trong hai bằng 1. Trục bằng 1 sẽ được "kéo dài" mà không tốn bộ nhớ.</p>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Bạn sẽ liên tục làm phép tính giữa mảng lớn và mảng nhỏ: trừ trung bình của từng cột, cộng bias vào từng hàng, nhân trọng số. Broadcasting cho phép viết những phép đó trong một dòng mà không cần copy dữ liệu, và cũng là nguồn lỗi im lặng phổ biến nhất trong code ML.</p>
+</div>
+<h3>Quy tắc</h3>
+<p>Khi tính <code>a + b</code> với hai shape khác nhau, numpy làm ba bước:</p>
+<ol>
+<li><strong>Căn phải</strong> hai shape. Nếu một bên ít trục hơn, coi như có thêm trục độ dài 1 ở bên trái.</li>
+<li>So <strong>từng cặp kích thước từ phải sang trái</strong>: khớp nếu bằng nhau, hoặc một trong hai bằng 1.</li>
+<li>Trục nào bằng 1 sẽ được "kéo dài" cho bằng bên kia (không tốn bộ nhớ thật). Nếu có cặp không khớp, báo lỗi.</li>
+</ol>
 <table>
 <thead>
 <tr>
 <th>a</th>
 <th>b</th>
-<th>a + b</th>
+<th>căn phải</th>
+<th>kết quả</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td>(4, 3)</td>
 <td>(3,)</td>
+<td>(4, 3) với (1, 3)</td>
 <td>(4, 3): b cộng vào từng hàng</td>
 </tr>
 <tr>
 <td>(4, 3)</td>
 <td>(4, 1)</td>
+<td>(4, 3) với (4, 1)</td>
 <td>(4, 3): b cộng vào từng cột</td>
 </tr>
 <tr>
 <td>(4, 3)</td>
 <td>(4,)</td>
+<td>(4, 3) với (1, 4)</td>
 <td>lỗi: 3 và 4 không khớp</td>
+</tr>
+<tr>
+<td>(3, 1)</td>
+<td>(1, 4)</td>
+<td>(3, 1) với (1, 4)</td>
+<td>(3, 4): cả hai cùng được kéo dài</td>
 </tr>
 </tbody>
 </table>
-<p>Chuẩn hóa từng cột về trung bình 0 chỉ cần một dòng: <code>(X - X.mean(axis=0)) / X.std(axis=0)</code>.</p>
-<h2 id="lt-4">Vector hóa thay vòng for</h2>
-<p>Vòng <code>for</code> của Python chạy từng phần tử, mỗi bước tốn chi phí thông dịch. Phép toán numpy chạy trong code C trên cả khối bộ nhớ, thường nhanh hơn 50 đến 500 lần.</p>
-<div class="hl"><pre><span></span><code><span class="tk-c1"># khoảng cách Euclid giữa mọi cặp điểm: A (n, d), B (m, d) → D (n, m)</span>
-<span class="tk-n">diff</span> <span class="tk-o">=</span> <span class="tk-n">A</span><span class="tk-p">[:,</span> <span class="tk-kc">None</span><span class="tk-p">,</span> <span class="tk-p">:]</span> <span class="tk-o">-</span> <span class="tk-n">B</span><span class="tk-p">[</span><span class="tk-kc">None</span><span class="tk-p">,</span> <span class="tk-p">:,</span> <span class="tk-p">:]</span>      <span class="tk-c1"># (n, 1, d) - (1, m, d) → (n, m, d)</span>
-<span class="tk-n">D</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">sqrt</span><span class="tk-p">((</span><span class="tk-n">diff</span> <span class="tk-o">**</span> <span class="tk-mi">2</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">sum</span><span class="tk-p">(</span><span class="tk-n">axis</span><span class="tk-o">=-</span><span class="tk-mi">1</span><span class="tk-p">))</span>
+<h3>Ví dụ: chuẩn hóa từng cột</h3>
+<p>Đặc trưng có thang đo khác nhau (diện tích tính bằng m², giá tính bằng triệu) làm model học chậm. Chuẩn hóa đưa mỗi cột về trung bình 0, độ lệch chuẩn 1:</p>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<div class="hl"><pre><span></span><code><span class="tk-n">X</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">array</span><span class="tk-p">([[</span><span class="tk-mf">1.</span><span class="tk-p">,</span> <span class="tk-mf">200.</span><span class="tk-p">],</span>
+              <span class="tk-p">[</span><span class="tk-mf">2.</span><span class="tk-p">,</span> <span class="tk-mf">400.</span><span class="tk-p">],</span>
+              <span class="tk-p">[</span><span class="tk-mf">3.</span><span class="tk-p">,</span> <span class="tk-mf">600.</span><span class="tk-p">]])</span>           <span class="tk-c1"># shape (3, 2): 3 mẫu, 2 đặc trưng</span>
+<span class="tk-n">mu</span> <span class="tk-o">=</span> <span class="tk-n">X</span><span class="tk-o">.</span><span class="tk-n">mean</span><span class="tk-p">(</span><span class="tk-n">axis</span><span class="tk-o">=</span><span class="tk-mi">0</span><span class="tk-p">)</span>                  <span class="tk-c1"># [  2. 400.]          shape (2,)</span>
+<span class="tk-n">sd</span> <span class="tk-o">=</span> <span class="tk-n">X</span><span class="tk-o">.</span><span class="tk-n">std</span><span class="tk-p">(</span><span class="tk-n">axis</span><span class="tk-o">=</span><span class="tk-mi">0</span><span class="tk-p">)</span>                   <span class="tk-c1"># [  0.816 163.299]    shape (2,)</span>
+<span class="tk-n">Z</span> <span class="tk-o">=</span> <span class="tk-p">(</span><span class="tk-n">X</span> <span class="tk-o">-</span> <span class="tk-n">mu</span><span class="tk-p">)</span> <span class="tk-o">/</span> <span class="tk-n">sd</span>                    <span class="tk-c1"># (3, 2) với (2,) → mỗi hàng trừ mu, chia sd</span>
+<span class="tk-c1"># [[-1.2247 -1.2247]</span>
+<span class="tk-c1">#  [ 0.      0.    ]</span>
+<span class="tk-c1">#  [ 1.2247  1.2247]]</span>
 </code></pre></div>
 
-<p>Mẹo <code>None</code> (hay <code>np.newaxis</code>) chèn một trục độ dài 1 để broadcasting làm phần còn lại.</p>
+<p>Bước broadcasting: <code>X</code> shape <code>(3, 2)</code>, <code>mu</code> shape <code>(2,)</code> được căn phải thành <code>(1, 2)</code>, rồi kéo dài thành <code>(3, 2)</code>: hàng nào cũng trừ cùng một vector <code>mu</code>. Sau chuẩn hóa hai cột có cùng thang đo dù ban đầu chênh nhau 200 lần.</p>
+</div>
+<h3>Ví dụ: tạo bảng cửu chương không cần vòng lặp</h3>
+<div class="hl"><pre><span></span><code><span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">arange</span><span class="tk-p">(</span><span class="tk-mi">3</span><span class="tk-p">)[:,</span> <span class="tk-kc">None</span><span class="tk-p">]</span> <span class="tk-o">*</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">arange</span><span class="tk-p">(</span><span class="tk-mi">4</span><span class="tk-p">)[</span><span class="tk-kc">None</span><span class="tk-p">,</span> <span class="tk-p">:]</span>
+<span class="tk-c1"># (3, 1) * (1, 4) → (3, 4)</span>
+<span class="tk-c1"># [[0 0 0 0]</span>
+<span class="tk-c1">#  [0 1 2 3]</span>
+<span class="tk-c1">#  [0 2 4 6]]</span>
+</code></pre></div>
+
+<p><code>[:, None]</code> biến vector thành cột, <code>[None, :]</code> biến thành hàng. Đây là mẹo bạn sẽ gặp lại trong attention ở P3 và khoảng cách giữa các điểm ở phần tiếp theo.</p>
+<div class="box pitfall">
+<div class="box-h">Lỗi hay gặp</div>
+<p><strong>Shape <code>(n,)</code> và <code>(n, 1)</code> trộn nhau.</strong> Lỗi này không báo đỏ, chỉ cho ra số sai:</p>
+<div class="hl"><pre><span></span><code><span class="tk-n">y</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">array</span><span class="tk-p">([</span><span class="tk-mf">1.</span><span class="tk-p">,</span> <span class="tk-mf">2.</span><span class="tk-p">,</span> <span class="tk-mf">3.</span><span class="tk-p">])</span>             <span class="tk-c1"># nhãn thật, shape (3,)</span>
+<span class="tk-n">y_pred</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">array</span><span class="tk-p">([[</span><span class="tk-mf">1.</span><span class="tk-p">],</span> <span class="tk-p">[</span><span class="tk-mf">2.</span><span class="tk-p">],</span> <span class="tk-p">[</span><span class="tk-mf">4.</span><span class="tk-p">]])</span>  <span class="tk-c1"># model trả về shape (3, 1)</span>
+<span class="tk-p">(</span><span class="tk-n">y_pred</span> <span class="tk-o">-</span> <span class="tk-n">y</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">shape</span>                     <span class="tk-c1"># (3, 3)  ← broadcasting thành ma trận 3x3!</span>
+<span class="tk-p">((</span><span class="tk-n">y_pred</span> <span class="tk-o">-</span> <span class="tk-n">y</span><span class="tk-p">)</span> <span class="tk-o">**</span> <span class="tk-mi">2</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">mean</span><span class="tk-p">()</span>             <span class="tk-c1"># 2.33   sai</span>
+<span class="tk-p">((</span><span class="tk-n">y_pred</span><span class="tk-o">.</span><span class="tk-n">ravel</span><span class="tk-p">()</span> <span class="tk-o">-</span> <span class="tk-n">y</span><span class="tk-p">)</span> <span class="tk-o">**</span> <span class="tk-mi">2</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">mean</span><span class="tk-p">()</span>     <span class="tk-c1"># 0.33   đúng</span>
+</code></pre></div>
+
+<p>Mỗi khi tính loss bằng tay, in shape của dự đoán và nhãn, hoặc dùng <code>.ravel()</code> / <code>.reshape(-1)</code> để đưa cả hai về 1 chiều.</p>
+</div>
+<h2 id="lt-4">Vector hóa thay vòng for</h2>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Dữ liệu thật có hàng triệu dòng. Cùng một phép tính, viết bằng vòng <code>for</code> có thể mất vài phút; viết vector hóa mất vài giây. Đây cũng là cách tư duy của GPU: làm cùng một phép tính trên cả khối dữ liệu một lúc.</p>
+</div>
+<h3>Vì sao nhanh hơn</h3>
+<p>Mỗi vòng lặp Python phải kiểm tra kiểu của biến, tra cứu phép toán, tạo đối tượng số mới. Phép toán numpy làm việc đó <strong>một lần</strong> cho cả mảng, rồi chạy vòng lặp bằng C trên vùng nhớ liền nhau (và tận dụng lệnh SIMD của CPU).</p>
+<div class="hl"><pre><span></span><code><span class="tk-n">big</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">random</span><span class="tk-o">.</span><span class="tk-n">default_rng</span><span class="tk-p">(</span><span class="tk-mi">0</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">random</span><span class="tk-p">(</span><span class="tk-mi">1_000_000</span><span class="tk-p">)</span>
+
+<span class="tk-n">s</span> <span class="tk-o">=</span> <span class="tk-mf">0.0</span>
+<span class="tk-k">for</span> <span class="tk-n">v</span> <span class="tk-ow">in</span> <span class="tk-n">big</span><span class="tk-p">:</span>        <span class="tk-c1"># khoảng 150 ms</span>
+    <span class="tk-n">s</span> <span class="tk-o">+=</span> <span class="tk-n">v</span> <span class="tk-o">*</span> <span class="tk-n">v</span>
+
+<span class="tk-n">s2</span> <span class="tk-o">=</span> <span class="tk-p">(</span><span class="tk-n">big</span> <span class="tk-o">*</span> <span class="tk-n">big</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">sum</span><span class="tk-p">()</span>   <span class="tk-c1"># khoảng 5 ms, nhanh hơn khoảng 30 lần</span>
+</code></pre></div>
+
+<p>Con số cụ thể tùy máy, nhưng chênh lệch vài chục đến vài trăm lần là bình thường.</p>
+<h3>Các hàm thay thế vòng lặp hay dùng</h3>
+<div class="hl"><pre><span></span><code><span class="tk-n">z</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">array</span><span class="tk-p">([</span><span class="tk-o">-</span><span class="tk-mf">2.</span><span class="tk-p">,</span> <span class="tk-mf">0.5</span><span class="tk-p">,</span> <span class="tk-mf">3.</span><span class="tk-p">,</span> <span class="tk-o">-</span><span class="tk-mf">1.</span><span class="tk-p">])</span>
+<span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">where</span><span class="tk-p">(</span><span class="tk-n">z</span> <span class="tk-o">&gt;</span> <span class="tk-mi">0</span><span class="tk-p">,</span> <span class="tk-n">z</span><span class="tk-p">,</span> <span class="tk-mi">0</span><span class="tk-p">)</span>     <span class="tk-c1"># [0.  0.5 3.  0. ]  ReLU: giữ số dương, còn lại thành 0</span>
+<span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">clip</span><span class="tk-p">(</span><span class="tk-n">z</span><span class="tk-p">,</span> <span class="tk-o">-</span><span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-mi">1</span><span class="tk-p">)</span>         <span class="tk-c1"># [-1.  0.5 1.  -1. ] chặn trong khoảng [-1, 1]</span>
+<span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">cumsum</span><span class="tk-p">([</span><span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-mi">2</span><span class="tk-p">,</span> <span class="tk-mi">3</span><span class="tk-p">,</span> <span class="tk-mi">4</span><span class="tk-p">])</span>   <span class="tk-c1"># [ 1  3  6 10]       tổng tích lũy</span>
+<span class="tk-n">z</span><span class="tk-o">.</span><span class="tk-n">argmax</span><span class="tk-p">()</span>                <span class="tk-c1"># 2                   chỉ số của phần tử lớn nhất</span>
+<span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">argsort</span><span class="tk-p">(</span><span class="tk-o">-</span><span class="tk-n">z</span><span class="tk-p">)[:</span><span class="tk-mi">2</span><span class="tk-p">]</span>        <span class="tk-c1"># [2 1]               chỉ số của 2 phần tử lớn nhất (top-k)</span>
+</code></pre></div>
+
+<h3>Ví dụ lớn: khoảng cách giữa mọi cặp điểm</h3>
+<p>Bài toán: có <code>n</code> điểm trong <code>A</code> và <code>m</code> điểm trong <code>B</code> (mỗi điểm <code>d</code> chiều), cần ma trận khoảng cách <code>D</code> shape <code>(n, m)</code>. Bạn sẽ dùng đúng phép này ở k-means (P1) và tìm kiếm vector (P4).</p>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<div class="hl"><pre><span></span><code><span class="tk-n">A</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">array</span><span class="tk-p">([[</span><span class="tk-mf">0.</span><span class="tk-p">,</span> <span class="tk-mf">0.</span><span class="tk-p">],</span> <span class="tk-p">[</span><span class="tk-mf">3.</span><span class="tk-p">,</span> <span class="tk-mf">4.</span><span class="tk-p">]])</span>            <span class="tk-c1"># n = 2 điểm</span>
+<span class="tk-n">B</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">array</span><span class="tk-p">([[</span><span class="tk-mf">0.</span><span class="tk-p">,</span> <span class="tk-mf">0.</span><span class="tk-p">],</span> <span class="tk-p">[</span><span class="tk-mf">6.</span><span class="tk-p">,</span> <span class="tk-mf">8.</span><span class="tk-p">],</span> <span class="tk-p">[</span><span class="tk-mf">3.</span><span class="tk-p">,</span> <span class="tk-mf">0.</span><span class="tk-p">]])</span>  <span class="tk-c1"># m = 3 điểm</span>
+
+<span class="tk-n">diff</span> <span class="tk-o">=</span> <span class="tk-n">A</span><span class="tk-p">[:,</span> <span class="tk-kc">None</span><span class="tk-p">,</span> <span class="tk-p">:]</span> <span class="tk-o">-</span> <span class="tk-n">B</span><span class="tk-p">[</span><span class="tk-kc">None</span><span class="tk-p">,</span> <span class="tk-p">:,</span> <span class="tk-p">:]</span>   <span class="tk-c1"># (2, 1, 2) - (1, 3, 2) → (2, 3, 2)</span>
+<span class="tk-n">D</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">sqrt</span><span class="tk-p">((</span><span class="tk-n">diff</span> <span class="tk-o">**</span> <span class="tk-mi">2</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">sum</span><span class="tk-p">(</span><span class="tk-n">axis</span><span class="tk-o">=-</span><span class="tk-mi">1</span><span class="tk-p">))</span>  <span class="tk-c1"># gộp trục cuối (tọa độ) → (2, 3)</span>
+<span class="tk-c1"># [[ 0. 10.  3.]</span>
+<span class="tk-c1">#  [ 5.  5.  4.]]</span>
+</code></pre></div>
+
+<p>Từng bước:</p>
+<ol>
+<li><code>A[:, None, :]</code> chèn trục ở giữa: mỗi điểm của A thành một "hàng" riêng.</li>
+<li><code>B[None, :, :]</code> chèn trục ở đầu: cả B thành một khối.</li>
+<li>Phép trừ broadcasting thành <code>(2, 3, 2)</code>: phần tử <code>diff[i, j]</code> là vector <code>A[i] - B[j]</code>.</li>
+<li>Bình phương, cộng theo trục tọa độ, lấy căn: ra khoảng cách Euclid.</li>
+</ol>
+<p>Kiểm tra một ô: <code>D[1, 1]</code> là khoảng cách từ <code>(3, 4)</code> tới <code>(6, 8)</code> = √(3² + 4²) = 5. Đúng.</p>
+</div>
 <div class="keep">
-<p><strong>Ghi nhớ:</strong> trước khi viết vòng for trên mảng, hỏi: "phép này có thể viết trên cả mảng không?". Hầu như luôn có.</p>
+<p><strong>Ghi nhớ:</strong> trước khi viết vòng <code>for</code> trên mảng, hỏi: "phép này viết trên cả mảng được không?". Hầu như luôn được, nhờ broadcasting, mặt nạ và các hàm như <code>where</code>, <code>cumsum</code>, <code>argsort</code>.</p>
+</div>
+<div class="box pitfall">
+<div class="box-h">Lỗi hay gặp</div>
+<p><strong>Mảng trung gian quá lớn.</strong> Ví dụ khoảng cách ở trên tạo mảng <code>diff</code> shape <code>(n, m, d)</code>. Với 100.000 × 100.000 điểm 128 chiều, mảng đó cần hơn 10 TB. Khi <code>n·m·d</code> lớn, chia <code>A</code> thành từng khúc (ví dụ 1.000 điểm) rồi tính lần lượt, hoặc dùng công thức ‖a − b‖² = ‖a‖² + ‖b‖² − 2a·b để chỉ cần ma trận <code>(n, m)</code>.</p>
 </div>
 <h2 id="lt-5">pandas: làm việc với bảng</h2>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Dữ liệu thật ít khi là mảng số sạch sẽ. Nó là bảng có cột chữ, cột ngày, ô trống, dòng trùng. pandas là công cụ chuẩn để đọc, làm sạch, gộp nhóm và nối bảng trước khi đưa vào model. Phần lớn thời gian của một dự án ML thật nằm ở bước này.</p>
+</div>
+<h3>Series và DataFrame</h3>
+<ul>
+<li><strong>Series</strong>: một cột dữ liệu có nhãn (index). Giống mảng numpy 1 chiều có tên cho từng dòng.</li>
+<li><strong>DataFrame</strong>: một bảng gồm nhiều Series dùng chung index. Mỗi cột có thể khác kiểu.</li>
+</ul>
+<p>Ta dùng một bảng đơn hàng nhỏ để minh họa mọi thao tác:</p>
 <div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">pandas</span><span class="tk-w"> </span><span class="tk-k">as</span><span class="tk-w"> </span><span class="tk-nn">pd</span>
-<span class="tk-n">df</span> <span class="tk-o">=</span> <span class="tk-n">pd</span><span class="tk-o">.</span><span class="tk-n">read_csv</span><span class="tk-p">(</span><span class="tk-s2">"orders.csv"</span><span class="tk-p">,</span> <span class="tk-n">parse_dates</span><span class="tk-o">=</span><span class="tk-p">[</span><span class="tk-s2">"date"</span><span class="tk-p">])</span>
-<span class="tk-n">df</span><span class="tk-o">.</span><span class="tk-n">info</span><span class="tk-p">();</span> <span class="tk-n">df</span><span class="tk-o">.</span><span class="tk-n">describe</span><span class="tk-p">()</span>                       <span class="tk-c1"># xem kiểu cột, giá trị thiếu, thống kê</span>
-<span class="tk-n">df</span> <span class="tk-o">=</span> <span class="tk-n">df</span><span class="tk-o">.</span><span class="tk-n">dropna</span><span class="tk-p">(</span><span class="tk-n">subset</span><span class="tk-o">=</span><span class="tk-p">[</span><span class="tk-s2">"price"</span><span class="tk-p">])</span>               <span class="tk-c1"># bỏ dòng thiếu giá</span>
-<span class="tk-n">df</span><span class="tk-p">[</span><span class="tk-s2">"revenue"</span><span class="tk-p">]</span> <span class="tk-o">=</span> <span class="tk-n">df</span><span class="tk-p">[</span><span class="tk-s2">"qty"</span><span class="tk-p">]</span> <span class="tk-o">*</span> <span class="tk-n">df</span><span class="tk-p">[</span><span class="tk-s2">"price"</span><span class="tk-p">]</span>        <span class="tk-c1"># cột mới, vector hóa</span>
-<span class="tk-n">monthly</span> <span class="tk-o">=</span> <span class="tk-n">df</span><span class="tk-o">.</span><span class="tk-n">groupby</span><span class="tk-p">(</span><span class="tk-n">df</span><span class="tk-p">[</span><span class="tk-s2">"date"</span><span class="tk-p">]</span><span class="tk-o">.</span><span class="tk-n">dt</span><span class="tk-o">.</span><span class="tk-n">to_period</span><span class="tk-p">(</span><span class="tk-s2">"M"</span><span class="tk-p">))[</span><span class="tk-s2">"revenue"</span><span class="tk-p">]</span><span class="tk-o">.</span><span class="tk-n">sum</span><span class="tk-p">()</span>
-<span class="tk-n">top</span> <span class="tk-o">=</span> <span class="tk-n">df</span><span class="tk-o">.</span><span class="tk-n">groupby</span><span class="tk-p">(</span><span class="tk-s2">"product"</span><span class="tk-p">)[</span><span class="tk-s2">"qty"</span><span class="tk-p">]</span><span class="tk-o">.</span><span class="tk-n">sum</span><span class="tk-p">()</span><span class="tk-o">.</span><span class="tk-n">nlargest</span><span class="tk-p">(</span><span class="tk-mi">5</span><span class="tk-p">)</span>
-<span class="tk-n">full</span> <span class="tk-o">=</span> <span class="tk-n">df</span><span class="tk-o">.</span><span class="tk-n">merge</span><span class="tk-p">(</span><span class="tk-n">products</span><span class="tk-p">,</span> <span class="tk-n">on</span><span class="tk-o">=</span><span class="tk-s2">"product_id"</span><span class="tk-p">,</span> <span class="tk-n">how</span><span class="tk-o">=</span><span class="tk-s2">"left"</span><span class="tk-p">)</span>   <span class="tk-c1"># nối bảng như SQL JOIN</span>
+<span class="tk-n">df</span> <span class="tk-o">=</span> <span class="tk-n">pd</span><span class="tk-o">.</span><span class="tk-n">DataFrame</span><span class="tk-p">({</span>
+    <span class="tk-s2">"date"</span><span class="tk-p">:</span> <span class="tk-n">pd</span><span class="tk-o">.</span><span class="tk-n">to_datetime</span><span class="tk-p">([</span><span class="tk-s2">"2026-01-03"</span><span class="tk-p">,</span> <span class="tk-s2">"2026-01-15"</span><span class="tk-p">,</span> <span class="tk-s2">"2026-02-02"</span><span class="tk-p">,</span> <span class="tk-s2">"2026-02-20"</span><span class="tk-p">,</span> <span class="tk-s2">"2026-02-21"</span><span class="tk-p">]),</span>
+    <span class="tk-s2">"product"</span><span class="tk-p">:</span> <span class="tk-p">[</span><span class="tk-s2">"Bàn A"</span><span class="tk-p">,</span> <span class="tk-s2">"Ghế B"</span><span class="tk-p">,</span> <span class="tk-s2">"Bàn A"</span><span class="tk-p">,</span> <span class="tk-s2">"Bàn A"</span><span class="tk-p">,</span> <span class="tk-s2">"Ghế B"</span><span class="tk-p">],</span>
+    <span class="tk-s2">"qty"</span><span class="tk-p">:</span> <span class="tk-p">[</span><span class="tk-mi">2</span><span class="tk-p">,</span> <span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-mi">3</span><span class="tk-p">,</span> <span class="tk-mi">2</span><span class="tk-p">],</span>
+    <span class="tk-s2">"price"</span><span class="tk-p">:</span> <span class="tk-p">[</span><span class="tk-mi">1500</span><span class="tk-p">,</span> <span class="tk-mi">400</span><span class="tk-p">,</span> <span class="tk-kc">None</span><span class="tk-p">,</span> <span class="tk-mi">1500</span><span class="tk-p">,</span> <span class="tk-mi">450</span><span class="tk-p">],</span>
+<span class="tk-p">})</span>
+<span class="tk-c1">#         date product  qty   price</span>
+<span class="tk-c1"># 0 2026-01-03   Bàn A    2  1500.0</span>
+<span class="tk-c1"># 1 2026-01-15   Ghế B    1   400.0</span>
+<span class="tk-c1"># 2 2026-02-02   Bàn A    1     NaN</span>
+<span class="tk-c1"># 3 2026-02-20   Bàn A    3  1500.0</span>
+<span class="tk-c1"># 4 2026-02-21   Ghế B    2   450.0</span>
 </code></pre></div>
 
-<p><code>groupby</code> là tách nhóm, áp dụng hàm, gộp kết quả. Đây là thao tác dùng nhiều nhất khi phân tích dữ liệu.</p>
+<p>Với file thật: <code>pd.read_csv("orders.csv", parse_dates=["date"])</code> hoặc <code>pd.read_excel("orders.xlsx")</code>.</p>
+<h3>Ba lệnh xem dữ liệu trước mọi thứ</h3>
+<div class="hl"><pre><span></span><code><span class="tk-n">df</span><span class="tk-o">.</span><span class="tk-n">head</span><span class="tk-p">()</span>          <span class="tk-c1"># 5 dòng đầu</span>
+<span class="tk-n">df</span><span class="tk-o">.</span><span class="tk-n">info</span><span class="tk-p">()</span>          <span class="tk-c1"># số dòng, kiểu từng cột, số ô không trống</span>
+<span class="tk-n">df</span><span class="tk-o">.</span><span class="tk-n">describe</span><span class="tk-p">()</span>      <span class="tk-c1"># đếm, trung bình, độ lệch chuẩn, min, các phân vị, max của cột số</span>
+<span class="tk-n">df</span><span class="tk-o">.</span><span class="tk-n">isna</span><span class="tk-p">()</span><span class="tk-o">.</span><span class="tk-n">sum</span><span class="tk-p">()</span>    <span class="tk-c1"># số ô trống từng cột: price có 1</span>
+</code></pre></div>
+
+<p>Ô trống hiện là <code>NaN</code> (Not a Number). Cột số có ô trống sẽ thành kiểu <code>float</code>, đó là lý do <code>price</code> hiện <code>1500.0</code>.</p>
+<h3>Chọn dòng và cột: loc và iloc</h3>
+<div class="hl"><pre><span></span><code><span class="tk-n">df</span><span class="tk-p">[</span><span class="tk-s2">"qty"</span><span class="tk-p">]</span>                                  <span class="tk-c1"># một cột → Series</span>
+<span class="tk-n">df</span><span class="tk-p">[[</span><span class="tk-s2">"product"</span><span class="tk-p">,</span> <span class="tk-s2">"qty"</span><span class="tk-p">]]</span>                     <span class="tk-c1"># nhiều cột → DataFrame</span>
+<span class="tk-n">df</span><span class="tk-o">.</span><span class="tk-n">loc</span><span class="tk-p">[</span><span class="tk-n">df</span><span class="tk-p">[</span><span class="tk-s2">"qty"</span><span class="tk-p">]</span> <span class="tk-o">&gt;=</span> <span class="tk-mi">2</span><span class="tk-p">,</span> <span class="tk-p">[</span><span class="tk-s2">"product"</span><span class="tk-p">,</span> <span class="tk-s2">"qty"</span><span class="tk-p">]]</span> <span class="tk-c1"># loc: lọc theo điều kiện và tên cột</span>
+<span class="tk-n">df</span><span class="tk-o">.</span><span class="tk-n">iloc</span><span class="tk-p">[</span><span class="tk-mi">0</span><span class="tk-p">:</span><span class="tk-mi">2</span><span class="tk-p">,</span> <span class="tk-mi">1</span><span class="tk-p">:</span><span class="tk-mi">3</span><span class="tk-p">]</span>                          <span class="tk-c1"># iloc: theo vị trí, giống slicing của numpy</span>
+</code></pre></div>
+
+<p><code>loc</code> dùng <strong>nhãn</strong> (tên cột, giá trị index, mặt nạ boolean), <code>iloc</code> dùng <strong>vị trí số</strong>. Khi lọc nhiều điều kiện, dùng <code>&amp;</code> (và), <code>|</code> (hoặc), <code>~</code> (phủ định), và <strong>bọc từng điều kiện trong ngoặc</strong>.</p>
+<div class="box pitfall">
+<div class="box-h">Lỗi hay gặp</div>
+<p><strong>Quên ngoặc khi kết hợp điều kiện.</strong> Toán tử <code>&amp;</code> được tính trước <code>&gt;=</code>, nên dòng dưới không báo lỗi mà lọc sai:</p>
+<div class="hl"><pre><span></span><code><span class="tk-n">df</span><span class="tk-p">[</span><span class="tk-n">df</span><span class="tk-p">[</span><span class="tk-s2">"qty"</span><span class="tk-p">]</span> <span class="tk-o">&gt;=</span> <span class="tk-mi">2</span> <span class="tk-o">&amp;</span> <span class="tk-p">(</span><span class="tk-n">df</span><span class="tk-p">[</span><span class="tk-s2">"price"</span><span class="tk-p">]</span> <span class="tk-o">&gt;</span> <span class="tk-mi">1000</span><span class="tk-p">)]</span>      <span class="tk-c1"># sai: ra 5 dòng</span>
+<span class="tk-n">df</span><span class="tk-p">[(</span><span class="tk-n">df</span><span class="tk-p">[</span><span class="tk-s2">"qty"</span><span class="tk-p">]</span> <span class="tk-o">&gt;=</span> <span class="tk-mi">2</span><span class="tk-p">)</span> <span class="tk-o">&amp;</span> <span class="tk-p">(</span><span class="tk-n">df</span><span class="tk-p">[</span><span class="tk-s2">"price"</span><span class="tk-p">]</span> <span class="tk-o">&gt;</span> <span class="tk-mi">1000</span><span class="tk-p">)]</span>    <span class="tk-c1"># đúng: ra 2 dòng</span>
+</code></pre></div>
+
+</div>
+<h3>Xử lý ô trống</h3>
+<p>Ba lựa chọn, tùy ý nghĩa dữ liệu:</p>
+<table>
+<thead>
+<tr>
+<th>Cách</th>
+<th>Lệnh</th>
+<th>Khi nào</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Bỏ dòng</td>
+<td><code>df.dropna(subset=["price"])</code></td>
+<td>ít dòng thiếu, thiếu ngẫu nhiên</td>
+</tr>
+<tr>
+<td>Điền giá trị</td>
+<td><code>df["price"].fillna(...)</code></td>
+<td>có giá trị hợp lý để điền (trung vị, giá trị của nhóm)</td>
+</tr>
+<tr>
+<td>Giữ và đánh dấu</td>
+<td><code>df["price_missing"] = df["price"].isna()</code></td>
+<td>việc thiếu tự nó mang thông tin</td>
+</tr>
+</tbody>
+</table>
+<p>Ở bảng ví dụ, cùng một sản phẩm thường cùng giá, nên điền theo <strong>trung vị của sản phẩm đó</strong> hợp lý hơn trung vị cả bảng:</p>
+<div class="hl"><pre><span></span><code><span class="tk-n">df</span><span class="tk-p">[</span><span class="tk-s2">"price"</span><span class="tk-p">]</span> <span class="tk-o">=</span> <span class="tk-n">df</span><span class="tk-p">[</span><span class="tk-s2">"price"</span><span class="tk-p">]</span><span class="tk-o">.</span><span class="tk-n">fillna</span><span class="tk-p">(</span><span class="tk-n">df</span><span class="tk-o">.</span><span class="tk-n">groupby</span><span class="tk-p">(</span><span class="tk-s2">"product"</span><span class="tk-p">)[</span><span class="tk-s2">"price"</span><span class="tk-p">]</span><span class="tk-o">.</span><span class="tk-n">transform</span><span class="tk-p">(</span><span class="tk-s2">"median"</span><span class="tk-p">))</span>
+<span class="tk-n">df</span><span class="tk-p">[</span><span class="tk-s2">"revenue"</span><span class="tk-p">]</span> <span class="tk-o">=</span> <span class="tk-n">df</span><span class="tk-p">[</span><span class="tk-s2">"qty"</span><span class="tk-p">]</span> <span class="tk-o">*</span> <span class="tk-n">df</span><span class="tk-p">[</span><span class="tk-s2">"price"</span><span class="tk-p">]</span>     <span class="tk-c1"># cột mới, tính trên cả cột (vector hóa)</span>
+<span class="tk-c1">#         date product  qty   price  revenue</span>
+<span class="tk-c1"># 0 2026-01-03   Bàn A    2  1500.0   3000.0</span>
+<span class="tk-c1"># 1 2026-01-15   Ghế B    1   400.0    400.0</span>
+<span class="tk-c1"># 2 2026-02-02   Bàn A    1  1500.0   1500.0</span>
+<span class="tk-c1"># 3 2026-02-20   Bàn A    3  1500.0   4500.0</span>
+<span class="tk-c1"># 4 2026-02-21   Ghế B    2   450.0    900.0</span>
+</code></pre></div>
+
+<h3>groupby: tách nhóm, tính, gộp lại</h3>
+<p><code>groupby</code> là thao tác bạn dùng nhiều nhất khi phân tích. Nó làm ba việc: <strong>tách</strong> bảng thành các nhóm theo một cột, <strong>áp dụng</strong> một hàm cho từng nhóm, <strong>gộp</strong> kết quả thành bảng mới.</p>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<div class="hl"><pre><span></span><code><span class="tk-n">df</span><span class="tk-o">.</span><span class="tk-n">groupby</span><span class="tk-p">(</span><span class="tk-s2">"product"</span><span class="tk-p">)[</span><span class="tk-s2">"revenue"</span><span class="tk-p">]</span><span class="tk-o">.</span><span class="tk-n">sum</span><span class="tk-p">()</span>
+<span class="tk-c1"># product</span>
+<span class="tk-c1"># Bàn A    9000.0      ← 3000 + 1500 + 4500</span>
+<span class="tk-c1"># Ghế B    1300.0      ← 400 + 900</span>
+</code></pre></div>
+
+<p>Nhiều phép tính một lúc, đặt tên cột kết quả:</p>
+<div class="hl"><pre><span></span><code><span class="tk-n">df</span><span class="tk-o">.</span><span class="tk-n">groupby</span><span class="tk-p">(</span><span class="tk-s2">"product"</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">agg</span><span class="tk-p">(</span>
+    <span class="tk-n">so_don</span><span class="tk-o">=</span><span class="tk-p">(</span><span class="tk-s2">"qty"</span><span class="tk-p">,</span> <span class="tk-s2">"size"</span><span class="tk-p">),</span>       <span class="tk-c1"># số dòng mỗi nhóm</span>
+    <span class="tk-n">tong_sl</span><span class="tk-o">=</span><span class="tk-p">(</span><span class="tk-s2">"qty"</span><span class="tk-p">,</span> <span class="tk-s2">"sum"</span><span class="tk-p">),</span>
+    <span class="tk-n">doanh_thu</span><span class="tk-o">=</span><span class="tk-p">(</span><span class="tk-s2">"revenue"</span><span class="tk-p">,</span> <span class="tk-s2">"sum"</span><span class="tk-p">),</span>
+<span class="tk-p">)</span>
+<span class="tk-c1">#          so_don  tong_sl  doanh_thu</span>
+<span class="tk-c1"># product</span>
+<span class="tk-c1"># Bàn A         3        6     9000.0</span>
+<span class="tk-c1"># Ghế B         2        3     1300.0</span>
+</code></pre></div>
+
+<p>Theo tháng: nhóm theo một biểu thức thay vì một cột có sẵn.</p>
+<div class="hl"><pre><span></span><code><span class="tk-n">df</span><span class="tk-o">.</span><span class="tk-n">groupby</span><span class="tk-p">(</span><span class="tk-n">df</span><span class="tk-p">[</span><span class="tk-s2">"date"</span><span class="tk-p">]</span><span class="tk-o">.</span><span class="tk-n">dt</span><span class="tk-o">.</span><span class="tk-n">to_period</span><span class="tk-p">(</span><span class="tk-s2">"M"</span><span class="tk-p">))[</span><span class="tk-s2">"revenue"</span><span class="tk-p">]</span><span class="tk-o">.</span><span class="tk-n">sum</span><span class="tk-p">()</span>
+<span class="tk-c1"># 2026-01    3400.0</span>
+<span class="tk-c1"># 2026-02    6900.0</span>
+</code></pre></div>
+
+</div>
+<p><code>pivot_table</code> là groupby theo hai chiều, cho ra bảng chéo như Excel:</p>
+<div class="hl"><pre><span></span><code><span class="tk-n">df</span><span class="tk-o">.</span><span class="tk-n">pivot_table</span><span class="tk-p">(</span><span class="tk-n">index</span><span class="tk-o">=</span><span class="tk-n">df</span><span class="tk-p">[</span><span class="tk-s2">"date"</span><span class="tk-p">]</span><span class="tk-o">.</span><span class="tk-n">dt</span><span class="tk-o">.</span><span class="tk-n">month</span><span class="tk-p">,</span> <span class="tk-n">columns</span><span class="tk-o">=</span><span class="tk-s2">"product"</span><span class="tk-p">,</span>
+               <span class="tk-n">values</span><span class="tk-o">=</span><span class="tk-s2">"revenue"</span><span class="tk-p">,</span> <span class="tk-n">aggfunc</span><span class="tk-o">=</span><span class="tk-s2">"sum"</span><span class="tk-p">,</span> <span class="tk-n">fill_value</span><span class="tk-o">=</span><span class="tk-mi">0</span><span class="tk-p">)</span>
+<span class="tk-c1"># product   Bàn A  Ghế B</span>
+<span class="tk-c1"># date</span>
+<span class="tk-c1"># 1        3000.0  400.0</span>
+<span class="tk-c1"># 2        6000.0  900.0</span>
+</code></pre></div>
+
+<h3>merge: nối bảng như SQL JOIN</h3>
+<div class="hl"><pre><span></span><code><span class="tk-n">products</span> <span class="tk-o">=</span> <span class="tk-n">pd</span><span class="tk-o">.</span><span class="tk-n">DataFrame</span><span class="tk-p">({</span><span class="tk-s2">"product"</span><span class="tk-p">:</span> <span class="tk-p">[</span><span class="tk-s2">"Bàn A"</span><span class="tk-p">,</span> <span class="tk-s2">"Ghế B"</span><span class="tk-p">],</span> <span class="tk-s2">"category"</span><span class="tk-p">:</span> <span class="tk-p">[</span><span class="tk-s2">"Bàn"</span><span class="tk-p">,</span> <span class="tk-s2">"Ghế"</span><span class="tk-p">]})</span>
+<span class="tk-n">full</span> <span class="tk-o">=</span> <span class="tk-n">df</span><span class="tk-o">.</span><span class="tk-n">merge</span><span class="tk-p">(</span><span class="tk-n">products</span><span class="tk-p">,</span> <span class="tk-n">on</span><span class="tk-o">=</span><span class="tk-s2">"product"</span><span class="tk-p">,</span> <span class="tk-n">how</span><span class="tk-o">=</span><span class="tk-s2">"left"</span><span class="tk-p">)</span>   <span class="tk-c1"># thêm cột category vào mỗi đơn</span>
+</code></pre></div>
+
+<p><code>how</code> quyết định giữ dòng nào: <code>"left"</code> giữ mọi dòng bảng trái (hay dùng nhất), <code>"inner"</code> chỉ giữ dòng khớp ở cả hai bảng, <code>"outer"</code> giữ hết.</p>
+<div class="box pitfall">
+<div class="box-h">Lỗi hay gặp</div>
+<p><strong>Khóa bị trùng ở bảng phải làm số dòng tăng.</strong> Nếu bảng phải có 2 dòng cho "Bàn A" (ví dụ hai màu), mỗi đơn "Bàn A" bị nhân đôi:</p>
+<div class="hl"><pre><span></span><code><span class="tk-n">dup</span> <span class="tk-o">=</span> <span class="tk-n">pd</span><span class="tk-o">.</span><span class="tk-n">DataFrame</span><span class="tk-p">({</span><span class="tk-s2">"product"</span><span class="tk-p">:</span> <span class="tk-p">[</span><span class="tk-s2">"Bàn A"</span><span class="tk-p">,</span> <span class="tk-s2">"Bàn A"</span><span class="tk-p">],</span> <span class="tk-s2">"color"</span><span class="tk-p">:</span> <span class="tk-p">[</span><span class="tk-s2">"trắng"</span><span class="tk-p">,</span> <span class="tk-s2">"đen"</span><span class="tk-p">]})</span>
+<span class="tk-nb">len</span><span class="tk-p">(</span><span class="tk-n">df</span><span class="tk-p">),</span> <span class="tk-nb">len</span><span class="tk-p">(</span><span class="tk-n">df</span><span class="tk-o">.</span><span class="tk-n">merge</span><span class="tk-p">(</span><span class="tk-n">dup</span><span class="tk-p">,</span> <span class="tk-n">on</span><span class="tk-o">=</span><span class="tk-s2">"product"</span><span class="tk-p">,</span> <span class="tk-n">how</span><span class="tk-o">=</span><span class="tk-s2">"left"</span><span class="tk-p">))</span>   <span class="tk-c1"># (5, 8)</span>
+</code></pre></div>
+
+<p>Doanh thu cộng lại sẽ bị đếm hai lần. Luôn so <code>len()</code> trước và sau khi merge, hoặc dùng <code>validate="many_to_one"</code> để pandas báo lỗi khi khóa bị trùng.</p>
+</div>
+<h3>apply và vector hóa trong pandas</h3>
+<p><code>df["x"].apply(f)</code> gọi hàm Python cho từng dòng, chậm như vòng <code>for</code>. Với phép toán số, dùng phép tính trên cả cột (<code>df["qty"] * df["price"]</code>). Với chữ, dùng các hàm <code>.str</code> (<code>df["product"].str.lower()</code>, <code>.str.contains("Bàn")</code>). Với ngày, dùng <code>.dt</code> (<code>.dt.month</code>, <code>.dt.dayofweek</code>). Chỉ dùng <code>apply</code> khi không có cách vector hóa.</p>
+<div class="box check">
+<div class="box-h">Tự kiểm tra nhanh</div>
+<p>Từ bảng <code>df</code> đã điền giá và có cột <code>revenue</code> ở trên:</p>
+<div class="ans" id="p0-1-t-b338-a1">
+<div class="ans-fields"><label>Doanh thu tháng 2 của Bàn A<input inputmode="decimal" data-ans="6000.0" data-tol="0.0" autocomplete="off"></label><label>Số đơn có qty từ 2 trở lên<input inputmode="decimal" data-ans="3.0" data-tol="0.0" autocomplete="off"></label><label>Trung bình qty mỗi đơn của Ghế B<input inputmode="decimal" data-ans="1.5" data-tol="0.001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div>
+<div aria-live="polite" class="ans-fb"></div>
+</div>
+</div>
 <h2 id="lt-6">matplotlib: nhìn dữ liệu trước khi train</h2>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Thống kê tóm tắt có thể giống hệt nhau trong khi dữ liệu khác hẳn nhau. Một biểu đồ cho thấy ngay giá trị ngoại lai, phân bố lệch, xu hướng theo mùa, hay một cột bị nhập sai đơn vị. Vẽ trước khi train giúp bạn tránh train model trên dữ liệu hỏng.</p>
+</div>
+<h3>Figure và Axes</h3>
+<p>Một <strong>Figure</strong> là cả bức hình; mỗi <strong>Axes</strong> là một khung biểu đồ bên trong. Cách viết rõ ràng nhất là tạo cả hai bằng <code>plt.subplots</code> rồi vẽ lên từng <code>ax</code>:</p>
 <div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">matplotlib.pyplot</span><span class="tk-w"> </span><span class="tk-k">as</span><span class="tk-w"> </span><span class="tk-nn">plt</span>
-<span class="tk-n">fig</span><span class="tk-p">,</span> <span class="tk-n">axes</span> <span class="tk-o">=</span> <span class="tk-n">plt</span><span class="tk-o">.</span><span class="tk-n">subplots</span><span class="tk-p">(</span><span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-mi">2</span><span class="tk-p">,</span> <span class="tk-n">figsize</span><span class="tk-o">=</span><span class="tk-p">(</span><span class="tk-mi">10</span><span class="tk-p">,</span> <span class="tk-mf">3.5</span><span class="tk-p">))</span>
-<span class="tk-n">monthly</span><span class="tk-o">.</span><span class="tk-n">plot</span><span class="tk-p">(</span><span class="tk-n">ax</span><span class="tk-o">=</span><span class="tk-n">axes</span><span class="tk-p">[</span><span class="tk-mi">0</span><span class="tk-p">],</span> <span class="tk-n">marker</span><span class="tk-o">=</span><span class="tk-s2">"o"</span><span class="tk-p">,</span> <span class="tk-n">title</span><span class="tk-o">=</span><span class="tk-s2">"Doanh thu theo tháng"</span><span class="tk-p">)</span>
-<span class="tk-n">df</span><span class="tk-p">[</span><span class="tk-s2">"price"</span><span class="tk-p">]</span><span class="tk-o">.</span><span class="tk-n">hist</span><span class="tk-p">(</span><span class="tk-n">ax</span><span class="tk-o">=</span><span class="tk-n">axes</span><span class="tk-p">[</span><span class="tk-mi">1</span><span class="tk-p">],</span> <span class="tk-n">bins</span><span class="tk-o">=</span><span class="tk-mi">30</span><span class="tk-p">);</span> <span class="tk-n">axes</span><span class="tk-p">[</span><span class="tk-mi">1</span><span class="tk-p">]</span><span class="tk-o">.</span><span class="tk-n">set_title</span><span class="tk-p">(</span><span class="tk-s2">"Phân bố giá"</span><span class="tk-p">)</span>
-<span class="tk-n">plt</span><span class="tk-o">.</span><span class="tk-n">tight_layout</span><span class="tk-p">();</span> <span class="tk-n">plt</span><span class="tk-o">.</span><span class="tk-n">show</span><span class="tk-p">()</span>
+<span class="tk-n">monthly</span> <span class="tk-o">=</span> <span class="tk-n">df</span><span class="tk-o">.</span><span class="tk-n">groupby</span><span class="tk-p">(</span><span class="tk-n">df</span><span class="tk-p">[</span><span class="tk-s2">"date"</span><span class="tk-p">]</span><span class="tk-o">.</span><span class="tk-n">dt</span><span class="tk-o">.</span><span class="tk-n">to_period</span><span class="tk-p">(</span><span class="tk-s2">"M"</span><span class="tk-p">))[</span><span class="tk-s2">"revenue"</span><span class="tk-p">]</span><span class="tk-o">.</span><span class="tk-n">sum</span><span class="tk-p">()</span>
+
+<span class="tk-n">fig</span><span class="tk-p">,</span> <span class="tk-n">axes</span> <span class="tk-o">=</span> <span class="tk-n">plt</span><span class="tk-o">.</span><span class="tk-n">subplots</span><span class="tk-p">(</span><span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-mi">2</span><span class="tk-p">,</span> <span class="tk-n">figsize</span><span class="tk-o">=</span><span class="tk-p">(</span><span class="tk-mi">10</span><span class="tk-p">,</span> <span class="tk-mf">3.5</span><span class="tk-p">))</span>   <span class="tk-c1"># 1 hàng, 2 khung</span>
+<span class="tk-n">monthly</span><span class="tk-o">.</span><span class="tk-n">plot</span><span class="tk-p">(</span><span class="tk-n">ax</span><span class="tk-o">=</span><span class="tk-n">axes</span><span class="tk-p">[</span><span class="tk-mi">0</span><span class="tk-p">],</span> <span class="tk-n">marker</span><span class="tk-o">=</span><span class="tk-s2">"o"</span><span class="tk-p">)</span>
+<span class="tk-n">axes</span><span class="tk-p">[</span><span class="tk-mi">0</span><span class="tk-p">]</span><span class="tk-o">.</span><span class="tk-n">set_title</span><span class="tk-p">(</span><span class="tk-s2">"Doanh thu theo tháng"</span><span class="tk-p">)</span>
+<span class="tk-n">axes</span><span class="tk-p">[</span><span class="tk-mi">0</span><span class="tk-p">]</span><span class="tk-o">.</span><span class="tk-n">set_ylabel</span><span class="tk-p">(</span><span class="tk-s2">"nghìn đồng"</span><span class="tk-p">)</span>
+<span class="tk-n">df</span><span class="tk-p">[</span><span class="tk-s2">"price"</span><span class="tk-p">]</span><span class="tk-o">.</span><span class="tk-n">hist</span><span class="tk-p">(</span><span class="tk-n">ax</span><span class="tk-o">=</span><span class="tk-n">axes</span><span class="tk-p">[</span><span class="tk-mi">1</span><span class="tk-p">],</span> <span class="tk-n">bins</span><span class="tk-o">=</span><span class="tk-mi">30</span><span class="tk-p">)</span>
+<span class="tk-n">axes</span><span class="tk-p">[</span><span class="tk-mi">1</span><span class="tk-p">]</span><span class="tk-o">.</span><span class="tk-n">set_title</span><span class="tk-p">(</span><span class="tk-s2">"Phân bố giá"</span><span class="tk-p">)</span>
+<span class="tk-n">plt</span><span class="tk-o">.</span><span class="tk-n">tight_layout</span><span class="tk-p">()</span>                                   <span class="tk-c1"># tránh chữ đè nhau</span>
+<span class="tk-n">fig</span><span class="tk-o">.</span><span class="tk-n">savefig</span><span class="tk-p">(</span><span class="tk-s2">"eda.png"</span><span class="tk-p">,</span> <span class="tk-n">dpi</span><span class="tk-o">=</span><span class="tk-mi">150</span><span class="tk-p">)</span>                      <span class="tk-c1"># lưu để đưa vào README</span>
+<span class="tk-n">plt</span><span class="tk-o">.</span><span class="tk-n">show</span><span class="tk-p">()</span>
 </code></pre></div>
 
-<p>Chọn biểu đồ theo câu hỏi: xu hướng theo thời gian dùng <strong>line</strong>, so sánh nhóm dùng <strong>bar</strong>, phân bố dùng <strong>histogram</strong>, quan hệ hai biến dùng <strong>scatter</strong>.</p>
+<h3>Chọn biểu đồ theo câu hỏi</h3>
+<table>
+<thead>
+<tr>
+<th>Câu hỏi</th>
+<th>Biểu đồ</th>
+<th>Lệnh</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Thay đổi theo thời gian thế nào?</td>
+<td>line</td>
+<td><code>ax.plot(x, y)</code></td>
+</tr>
+<tr>
+<td>Nhóm nào lớn hơn?</td>
+<td>bar</td>
+<td><code>ax.bar(names, values)</code></td>
+</tr>
+<tr>
+<td>Giá trị phân bố ra sao, có ngoại lai không?</td>
+<td>histogram, boxplot</td>
+<td><code>ax.hist(v, bins=30)</code>, <code>ax.boxplot(v)</code></td>
+</tr>
+<tr>
+<td>Hai biến có liên quan không?</td>
+<td>scatter</td>
+<td><code>ax.scatter(x, y, alpha=.3)</code></td>
+</tr>
+</tbody>
+</table>
+<p>Mẹo nhỏ đáng giá: <code>alpha=.3</code> cho scatter khi điểm dày đặc để thấy chỗ đậm nhạt; <code>ax.set_yscale("log")</code> khi giá trị trải từ vài chục tới vài triệu; luôn ghi tên trục và đơn vị.</p>
 <div class="keep">
-<p><strong>Ghi nhớ:</strong> luôn vẽ dữ liệu trước khi train. Nhiều lỗi (giá trị âm vô lý, cột bị lệch đơn vị, dữ liệu trùng) lộ ra ngay trên biểu đồ.</p>
+<p><strong>Ghi nhớ:</strong> biểu đồ tốt trả lời <strong>một câu hỏi</strong>. Viết câu hỏi làm tiêu đề ("Doanh thu tháng 2 tăng gấp đôi?") thay vì tên dữ liệu ("revenue").</p>
+</div>
+<h2 id="lt-7">Quy trình xem dữ liệu (EDA) trong 6 bước</h2>
+<p>Gộp mọi thứ ở trên thành một quy trình bạn sẽ lặp lại ở mọi dự án:</p>
+<ol>
+<li><strong>Đọc và xem:</strong> <code>read_csv</code>, <code>head</code>, <code>info</code>, <code>describe</code>. Ghi lại số dòng, số cột, kiểu từng cột.</li>
+<li><strong>Kiểm tra chất lượng:</strong> ô trống (<code>isna().sum()</code>), dòng trùng (<code>duplicated().sum()</code>), giá trị vô lý (giá âm, ngày ở tương lai).</li>
+<li><strong>Làm sạch:</strong> sửa kiểu dữ liệu, xử lý ô trống có lý do, bỏ trùng. Ghi lại mỗi quyết định.</li>
+<li><strong>Tạo cột mới:</strong> doanh thu, tháng, thứ trong tuần, bằng phép tính vector hóa.</li>
+<li><strong>Tổng hợp và vẽ:</strong> <code>groupby</code>, <code>pivot_table</code>, mỗi biểu đồ trả lời một câu hỏi.</li>
+<li><strong>Viết kết luận:</strong> 3–5 câu có số liệu cụ thể ("Bàn A chiếm 87% doanh thu").</li>
+</ol>
+<div class="box check">
+<div class="box-h">Tự kiểm tra nhanh</div>
+<p>Bạn vừa đọc một file có 10.000 đơn hàng. <code>describe()</code> cho thấy cột <code>qty</code> có min là −3. Bước nào trong quy trình trên phát hiện vấn đề này, và bạn sẽ xử lý thế nào?</p>
+<details class="fold answer">
+<summary>Xem đáp án</summary>
+<p>Bước 2 (kiểm tra chất lượng). Số lượng âm có thể là <strong>đơn trả hàng</strong> chứ không hẳn là lỗi. Đếm có bao nhiêu dòng như vậy, xem chúng có cột trạng thái riêng không, rồi quyết định: tách riêng để tính tỉ lệ hoàn, hoặc loại khỏi phần tính doanh thu bán. Ghi quyết định vào notebook.</p>
+</details>
 </div></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p0.1:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class=ex-lead><p>Làm bằng giấy bút trước, rồi kiểm tra lại bằng code nếu muốn.</p></div><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 3</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Đoán shape</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Cho <code>a = np.zeros((4, 3))</code>, <code>b = np.ones(3)</code>, <code>x = np.zeros((2, 3, 4))</code>.</p>
 <ol>
 <li><code>(a + b).shape</code> có bao nhiêu hàng, bao nhiêu cột?</li>
@@ -284,7 +718,7 @@
     </div>
     <aside class="aside">
       <div class="abox"><h4>Tiến độ bài này</h4><div class="ring"><svg viewBox="0 0 64 64" aria-hidden="true"><circle class="bg" cx="32" cy="32" r="28"/><circle class="fg" cx="32" cy="32" r="28" stroke-dasharray="176" stroke-dashoffset="176"/></svg><div><b id="ring-n">0/3</b><span id="ring-sub">phần đã xong</span></div></div></div>
-      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Python đủ dùng cho ML</a></li><li><a href="#lt-2">Mảng numpy: shape, dtype, indexing</a></li><li><a href="#lt-3">Broadcasting</a></li><li><a href="#lt-4">Vector hóa thay vòng for</a></li><li><a href="#lt-5">pandas: làm việc với bảng</a></li><li><a href="#lt-6">matplotlib: nhìn dữ liệu trước khi train</a></li></ol></div>
+      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Python đủ dùng cho ML</a></li><li><a href="#lt-2">Mảng numpy: shape, dtype, indexing</a></li><li><a href="#lt-3">Broadcasting</a></li><li><a href="#lt-4">Vector hóa thay vòng for</a></li><li><a href="#lt-5">pandas: làm việc với bảng</a></li><li><a href="#lt-6">matplotlib: nhìn dữ liệu trước khi train</a></li><li><a href="#lt-7">Quy trình xem dữ liệu (EDA) trong 6 bước</a></li></ol></div>
       
       <div class="abox"><h4>Cùng giai đoạn</h4><ul><li><span class=cur>Python cho ML: numpy, pandas, matplotlib</span></li><li><a href="p0-2.html">Toán cho AI: đại số tuyến tính, giải tích, xác suất</a></li><li><a href="p0-3.html">Công cụ: Git, GitHub, terminal, Colab</a></li></ul></div>
     </aside>
@@ -346,11 +780,11 @@
 
   /* answer boxes */
   const parse = (s) => parseFloat(String(s).trim().replace(",", ".").replace("−", "-"));
-  const allAns = [...document.querySelectorAll(".ans")];
+  const allAns = [...document.querySelectorAll(".ans")], exAns = allAns.filter((a) => a.closest("#bai-tap"));
   function score() {
-    const ok = allAns.filter((a) => solved[a.id]).length;
+    const ok = exAns.filter((a) => solved[a.id]).length;
     const el = document.getElementById("ex-score");
-    if (el) { el.querySelector("b").textContent = `${ok} / ${allAns.length}`; el.querySelector(".bar i").style.width = (allAns.length ? ok / allAns.length * 100 : 0) + "%"; }
+    if (el) { el.querySelector("b").textContent = `${ok} / ${exAns.length}`; el.querySelector(".bar i").style.width = (exAns.length ? ok / exAns.length * 100 : 0) + "%"; }
     document.querySelectorAll(".excard").forEach((c) => { const as = [...c.querySelectorAll(".ans")]; c.classList.toggle("solved", as.length > 0 && as.every((a) => solved[a.id])); });
   }
   allAns.forEach((box) => {
@@ -369,7 +803,7 @@
         const first = !solved[box.id];
         solved[box.id] = true; saveSolved(); mark(); box.classList.remove("pop"); void box.offsetWidth; box.classList.add("pop"); score();
         if (first && AIE.confettiAt) {
-          if (allAns.every((a) => solved[a.id])) AIE.confetti(innerWidth / 2, innerHeight * .35, 120);
+          if (box.closest("#bai-tap") && exAns.every((a) => solved[a.id])) AIE.confetti(innerWidth / 2, innerHeight * .35, 120);
           else AIE.confettiAt(box.querySelector(".btn-check"), 28);
         }
       }
