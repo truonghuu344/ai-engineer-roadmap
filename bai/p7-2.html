@@ -22,32 +22,135 @@
 <main class="container">
   <div class="crumbs"><a href="../bai-hoc.html">Bài học</a><span>/</span><a href="../bai-hoc.html#p7">P7 · Thị giác và đa phương thức</a><span>/</span><span>P7.2</span></div>
   <section class="lhero"><div class="code">P7.2</div><h1>Vision-language model</h1><div class="lmeta"><span class="m">Giai đoạn P7 · Thị giác và đa phương thức</span><span class="m">Tuần 31–34</span><span class="chip ready"><span class="dot"></span>Có nội dung đầy đủ</span></div>
-    <div class="intro"><p>Vision-language model (VLM) đọc được cả ảnh lẫn chữ và trả lời bằng chữ: mô tả ảnh, đọc hóa đơn, trả lời câu hỏi về biểu đồ, so sánh hai sản phẩm. Bài này giải thích kiến trúc chung của hầu hết VLM mã nguồn mở, cách chúng được train, và cách fine-tune một VLM nhỏ cho bài toán của riêng bạn.</p></div></section>
+    <div class="intro"><p>Vision-language model (VLM) đọc được cả ảnh lẫn chữ và trả lời bằng chữ: mô tả ảnh, đọc hóa đơn, trả lời câu hỏi về biểu đồ, so sánh hai sản phẩm. Bài này giải thích kiến trúc chung của hầu hết VLM mã nguồn mở (kèm thí nghiệm nhỏ cho thấy vì sao một "cầu nối" nhỏ là đủ), cách chúng được train, chuyện token ảnh và chi phí, và cách dùng VLM an toàn cho tài liệu quan trọng.</p></div></section>
   
-  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">4 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
+  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">7 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
   <div class="lgrid" style="margin-top:22px">
-    <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">Kiến trúc kiểu LLaVA</h2>
-<div class="hl"><pre><span></span><code>ảnh ──▶ vision encoder (ViT, thường từ CLIP/SigLIP) ──▶ N vector đặc trưng
-                                                         │
-                                       projector (MLP 2 lớp) ──▶ N "token ảnh" cùng chiều với LLM
-                                                         │
-[token văn bản hệ thống] [token ảnh × N] [câu hỏi] ──▶ LLM ──▶ câu trả lời
+    <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">VLM dùng để làm gì</h2>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Rất nhiều việc freelance AI thực tế có ảnh: trích xuất thông tin từ hóa đơn, chứng từ, ảnh chụp màn hình; mô tả và phân loại ảnh sản phẩm cho shop; trả lời khách hàng gửi kèm ảnh. VLM làm được những việc này với vài dòng code, nhưng cũng có kiểu lỗi riêng (đọc sai số, bịa chi tiết không có trong ảnh) mà bạn phải biết để thiết kế hệ thống đáng tin.</p>
+</div>
+<table>
+<thead>
+<tr>
+<th>Tác vụ</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Mô tả ảnh (captioning)</td>
+<td>viết mô tả sản phẩm từ ảnh chụp</td>
+</tr>
+<tr>
+<td>Hỏi đáp ảnh (VQA)</td>
+<td>"chiếc ghế này có tay vịn không?"</td>
+</tr>
+<tr>
+<td>Đọc tài liệu</td>
+<td>trích xuất các trường của hóa đơn thành JSON</td>
+</tr>
+<tr>
+<td>Hiểu biểu đồ, màn hình</td>
+<td>"tháng nào doanh thu cao nhất?" từ ảnh biểu đồ</td>
+</tr>
+<tr>
+<td>So sánh nhiều ảnh</td>
+<td>"hai sản phẩm này khác nhau ở đâu?"</td>
+</tr>
+</tbody>
+</table>
+<h2 id="lt-2">Kiến trúc kiểu LLaVA</h2>
+<p>Hầu hết VLM mã nguồn mở (LLaVA, Qwen-VL, InternVL, SmolVLM) theo cùng một khuôn:</p>
+<figure class="fig"><img src="../assets/fig/p7-2-arch.svg" alt="Ba khối: vision encoder đã pretrain, projector nhỏ, và LLM. Token ảnh được chèn vào chuỗi như những từ đặc biệt." loading="lazy"><figcaption>Ba khối: vision encoder đã pretrain, projector nhỏ, và LLM. Token ảnh được chèn vào chuỗi như những từ đặc biệt.</figcaption></figure>
+
+<table>
+<thead>
+<tr>
+<th>Khối</th>
+<th>Vai trò</th>
+<th>Thường là</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Vision encoder</td>
+<td>ảnh → dãy vector, mỗi mảnh một vector</td>
+<td>ViT từ CLIP hoặc SigLIP (P7.1)</td>
+</tr>
+<tr>
+<td>Projector</td>
+<td>chiếu vector ảnh sang không gian embedding của LLM</td>
+<td>MLP 2 lớp</td>
+</tr>
+<tr>
+<td>LLM</td>
+<td>xử lý chuỗi token hỗn hợp, sinh câu trả lời</td>
+<td>Qwen, Llama, Gemma…</td>
+</tr>
+</tbody>
+</table>
+<p>Ý tưởng then chốt: <strong>không cần train lại từ đầu</strong>. Ghép hai model đã giỏi (một hiểu ảnh, một hiểu ngôn ngữ) bằng một cầu nối nhỏ.</p>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>Một VLM ghép encoder SigLIP (vector 1152 chiều) với LLM có embedding 2048 chiều. Projector MLP 1152 → 2048 → 2048, có bias:</p>
+<p>1152 · 2048 + 2048 + 2048 · 2048 + 2048 = <strong>6.557.696</strong> tham số, khoảng 6,6 triệu. So với LLM 3 tỉ tham số, projector chỉ khoảng 0,2%.</p>
+</div>
+<h3>Thí nghiệm: cầu nối nhỏ học nhanh</h3>
+<p>Mô phỏng ý tưởng căn chỉnh bằng một thí nghiệm nhỏ:</p>
+<ul>
+<li>"Vision encoder" đóng băng: PCA 32 chiều trên ảnh chữ số viết tay 8×8.</li>
+<li>"LLM" đóng băng: 10 vector ngẫu nhiên 128 chiều, đóng vai embedding của 10 từ "không", "một", …, "chín".</li>
+<li>Chỉ train <strong>projector</strong> MLP 32 → 128 → 128 bằng loss tương phản: đưa vector ảnh về gần embedding của từ đúng.</li>
+<li>Đo trên 500 ảnh test: chiếu ảnh qua projector, chọn từ gần nhất.</li>
+</ul>
+<figure class="fig"><img src="../assets/fig/p7-2-align.svg" alt="Projector chỉ có 20.736 tham số. Với 100 cặp đã chọn đúng 88%; 300 cặp: 94,5%; 1.000 cặp: 97,7%." loading="lazy"><figcaption>Projector chỉ có 20.736 tham số. Với 100 cặp đã chọn đúng 88%; 300 cặp: 94,5%; 1.000 cặp: 97,7%.</figcaption></figure>
+
+<p>Hai encoder không hề được train cùng nhau, vậy mà một projector nhỏ học từ vài trăm cặp đã nối được chúng. Với VLM thật, nguyên lý giống hệt, chỉ là quy mô lớn hơn (vài trăm nghìn cặp ảnh–chú thích).</p>
+<h2 id="lt-3">Train một VLM</h2>
+<ol>
+<li><strong>Căn chỉnh (alignment):</strong> đóng băng vision encoder và LLM, chỉ train projector trên cặp (ảnh, chú thích). Projector học "dịch" đặc trưng ảnh sang ngôn ngữ. Nhanh vì chỉ vài triệu tham số được train.</li>
+<li><strong>Instruction tuning:</strong> mở khóa LLM (hoặc dùng LoRA), train trên dữ liệu hội thoại có ảnh: hỏi đáp, mô tả chi tiết, suy luận, đọc chữ, đọc biểu đồ. Bước này quyết định VLM "biết làm gì".</li>
+</ol>
+<p>Khi bạn fine-tune VLM cho bài toán riêng (phần thực hành), thường <strong>đóng băng vision encoder</strong> và dùng LoRA cho LLM: rẻ và ít rủi ro làm hỏng khả năng nhìn.</p>
+<h2 id="lt-4">Token ảnh, độ phân giải và chi phí</h2>
+<p>Mỗi mảnh ảnh thành một token (hoặc vài mảnh gộp thành một token). Ảnh độ phân giải thấp thì không đọc được chữ nhỏ; ảnh cao thì rất nhiều token.</p>
+<figure class="fig"><img src="../assets/fig/p7-2-tokens.svg" alt="Số token của một ảnh tùy cách xử lý. Ảnh chụp một trang A4 ở độ phân giải động tốn khoảng 4.560 token, tương đương vài trang văn bản." loading="lazy"><figcaption>Số token của một ảnh tùy cách xử lý. Ảnh chụp một trang A4 ở độ phân giải động tốn khoảng 4.560 token, tương đương vài trang văn bản.</figcaption></figure>
+
+<p>Hai cách xử lý ảnh lớn của VLM hiện đại:</p>
+<ul>
+<li><strong>Cắt ô (tiling):</strong> cắt ảnh lớn thành nhiều ô, mỗi ô mã hóa riêng, kèm một bản thu nhỏ của cả ảnh để giữ bố cục tổng thể.</li>
+<li><strong>Độ phân giải động:</strong> mã hóa ảnh ở gần kích thước gốc, gộp mỗi 2×2 mảnh liền kề thành một token. Với Qwen2-VL (mảnh 14 pixel, gộp 2×2), mỗi token phủ 28×28 pixel.</li>
+</ul>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>Ảnh 1280×720 với độ phân giải động, mỗi token phủ 28×28 pixel:</p>
+<ol>
+<li>Cạnh dài: 1280 / 28 ≈ 45,7 → làm tròn 46. Cạnh ngắn: 720 / 28 ≈ 25,7 → 26.</li>
+<li>Số token: 46 × 26 = <strong>1.196</strong>.</li>
+<li>Hỏi 10 câu về ảnh này trong một hội thoại: ảnh được tính vào context ở <strong>mọi</strong> lượt gọi API, tức khoảng 12.000 token đầu vào chỉ cho ảnh.</li>
+</ol>
+<p>Thu nhỏ ảnh về 640×360 thì còn khoảng 23 × 13 = 299 token: rẻ hơn 4 lần, đủ cho câu hỏi về nội dung chung, không đủ để đọc chữ nhỏ.</p>
+</div>
+<div class="box pitfall">
+<div class="box-h">Lỗi hay gặp</div>
+<p><strong>Gửi ảnh gốc 12 megapixel cho mọi câu hỏi.</strong> Tốn token (và tiền) gấp nhiều lần mà không chính xác hơn khi câu hỏi không cần chi tiết. Chọn kích thước theo tác vụ: thu nhỏ cho phân loại, mô tả chung; giữ độ phân giải cao (hoặc cắt đúng vùng cần đọc) cho tài liệu có chữ nhỏ.</p>
+</div>
+<h2 id="lt-5">Dùng VLM</h2>
+<p>Trong <code>transformers</code> có sẵn pipeline <code>image-text-to-text</code> (đã kiểm tra với bản 5.22). Tin nhắn có ảnh là danh sách các phần tử <code>image</code> và <code>text</code>:</p>
+<div class="hl"><pre><span></span><code><span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">transformers</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">pipeline</span>
+<span class="tk-n">vlm</span> <span class="tk-o">=</span> <span class="tk-n">pipeline</span><span class="tk-p">(</span><span class="tk-s2">"image-text-to-text"</span><span class="tk-p">,</span> <span class="tk-n">model</span><span class="tk-o">=</span><span class="tk-s2">"Qwen/Qwen2.5-VL-3B-Instruct"</span><span class="tk-p">,</span> <span class="tk-n">device_map</span><span class="tk-o">=</span><span class="tk-s2">"auto"</span><span class="tk-p">)</span>
+<span class="tk-n">messages</span> <span class="tk-o">=</span> <span class="tk-p">[{</span><span class="tk-s2">"role"</span><span class="tk-p">:</span> <span class="tk-s2">"user"</span><span class="tk-p">,</span> <span class="tk-s2">"content"</span><span class="tk-p">:</span> <span class="tk-p">[</span>
+    <span class="tk-p">{</span><span class="tk-s2">"type"</span><span class="tk-p">:</span> <span class="tk-s2">"image"</span><span class="tk-p">,</span> <span class="tk-s2">"url"</span><span class="tk-p">:</span> <span class="tk-s2">"ghe_sofa.jpg"</span><span class="tk-p">},</span>
+    <span class="tk-p">{</span><span class="tk-s2">"type"</span><span class="tk-p">:</span> <span class="tk-s2">"text"</span><span class="tk-p">,</span> <span class="tk-s2">"text"</span><span class="tk-p">:</span> <span class="tk-s2">"Đây là sản phẩm gì, màu gì, chất liệu gì? Trả lời ngắn gọn."</span><span class="tk-p">},</span>
+<span class="tk-p">]}]</span>
+<span class="tk-n">out</span> <span class="tk-o">=</span> <span class="tk-n">vlm</span><span class="tk-p">(</span><span class="tk-n">text</span><span class="tk-o">=</span><span class="tk-n">messages</span><span class="tk-p">,</span> <span class="tk-n">max_new_tokens</span><span class="tk-o">=</span><span class="tk-mi">80</span><span class="tk-p">)</span>
+<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-n">out</span><span class="tk-p">[</span><span class="tk-mi">0</span><span class="tk-p">][</span><span class="tk-s2">"generated_text"</span><span class="tk-p">][</span><span class="tk-o">-</span><span class="tk-mi">1</span><span class="tk-p">][</span><span class="tk-s2">"content"</span><span class="tk-p">])</span>
 </code></pre></div>
 
-<ul>
-<li><strong>Vision encoder</strong> đã pretrain, biến ảnh thành dãy vector theo mảnh.</li>
-<li><strong>Projector</strong> chiếu vector ảnh sang không gian embedding của LLM. Với LLM, token ảnh trông như những "từ" đặc biệt.</li>
-<li><strong>LLM</strong> xử lý dãy token hỗn hợp và sinh câu trả lời như bình thường.</li>
-</ul>
-<p>Ý tưởng then chốt: không cần train lại từ đầu. Ghép hai model đã giỏi (một hiểu ảnh, một hiểu ngôn ngữ) bằng một cầu nối nhỏ.</p>
-<h2 id="lt-2">Train một VLM</h2>
-<ol>
-<li><strong>Căn chỉnh (alignment):</strong> đóng băng vision encoder và LLM, chỉ train projector trên cặp (ảnh, chú thích). Projector học "dịch" đặc trưng ảnh sang ngôn ngữ.</li>
-<li><strong>Instruction tuning:</strong> mở khóa LLM (hoặc dùng LoRA), train trên dữ liệu hội thoại có ảnh: hỏi đáp, mô tả chi tiết, suy luận, đọc chữ.</li>
-</ol>
-<h2 id="lt-3">Độ phân giải và số token ảnh</h2>
-<p>Ảnh độ phân giải thấp thì không đọc được chữ nhỏ; ảnh cao thì quá nhiều token. Các VLM hiện đại xử lý <strong>độ phân giải động</strong>: cắt ảnh lớn thành nhiều ô, mỗi ô mã hóa riêng, kèm một bản thu nhỏ của cả ảnh; hoặc gộp các mảnh liền kề để giảm số token. Mỗi ảnh có thể tốn từ vài trăm tới vài nghìn token context.</p>
-<h2 id="lt-4">VLM so với OCR truyền thống</h2>
+<p>Với API thương mại (OpenAI, Anthropic, Google), cấu trúc tương tự: nội dung tin nhắn là danh sách gồm phần ảnh (base64 hoặc URL) và phần chữ. Mọi kỹ thuật ở P4 (structured output, eval, guardrails) áp dụng nguyên vẹn.</p>
+<h2 id="lt-6">VLM so với OCR truyền thống</h2>
 <table>
 <thead>
 <tr>
@@ -73,16 +176,121 @@
 <td>trả lời trực tiếp</td>
 </tr>
 <tr>
-<td>Rủi ro</td>
-<td>sai ký tự</td>
-<td>có thể "bịa" số không có trong ảnh</td>
+<td>Kiểu lỗi</td>
+<td>sai ký tự, dễ thấy</td>
+<td><strong>bịa</strong> số hoặc chi tiết không có trong ảnh, trông rất hợp lý</td>
 </tr>
 </tbody>
 </table>
-<p>Với tài liệu quan trọng (hóa đơn, hợp đồng), kết hợp: VLM trích xuất có cấu trúc, rồi kiểm tra chéo (tổng các dòng có bằng tổng tiền không).</p>
+<p>Kiểu lỗi cuối là điểm quan trọng nhất. OCR sai thì thường ra ký tự lạ, dễ phát hiện. VLM sai thì ra một con số hoàn toàn hợp lý, chỉ là không đúng.</p>
+<h3>Kiểm tra chéo</h3>
+<p>Với tài liệu quan trọng (hóa đơn, hợp đồng), không tin một mình VLM. Thiết kế:</p>
+<ol>
+<li>VLM trích xuất JSON theo schema (structured output, P4.1).</li>
+<li><strong>Quy tắc kiểm tra chéo</strong> bằng code: tổng các dòng bằng tổng tiền, ngày hợp lệ, mã số thuế đúng định dạng, số lượng × đơn giá = thành tiền.</li>
+<li>Hóa đơn không qua kiểm tra → chuyển người duyệt, kèm lý do.</li>
+</ol>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>VLM đọc hóa đơn ra 3 dòng: 3 × 120.000, 1 × 890.000, 2 × 45.000 (đồng); tổng tiền in trên hóa đơn: 1.430.000.</p>
+<ol>
+<li>Tổng tính lại: 360.000 + 890.000 + 90.000 = <strong>1.340.000</strong>.</li>
+<li>Chênh với tổng in: 1.430.000 − 1.340.000 = <strong>90.000</strong>.</li>
+<li>Lệch → đánh dấu cho người kiểm tra. Rất có thể VLM đọc nhầm "2 × 45.000" (thật ra là 4 × 45.000), hoặc đọc đảo chữ số của tổng tiền.</li>
+</ol>
+<p>Chỉ một phép cộng, nhưng bắt được loại lỗi nguy hiểm nhất của VLM: con số trông hợp lý mà sai.</p>
+</div>
 <div class="keep">
-<p><strong>Ghi nhớ:</strong> VLM là LLM có thêm "mắt". Mọi kỹ thuật ở P4 (prompt, structured output, eval, RAG) đều áp dụng được, chỉ cần thêm ảnh vào đầu vào.</p>
-</div></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p7.2:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 3</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Số token ảnh</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Một VLM dùng ảnh 336×336, patch 14, mỗi mảnh một token.</p>
+<p><strong>Ghi nhớ:</strong> VLM là LLM có thêm "mắt". Mọi kỹ thuật ở P4 (prompt, structured output, eval, RAG, guardrails) đều áp dụng được, chỉ cần thêm ảnh vào đầu vào; và vì VLM có thể bịa con số hợp lý, luôn có bước kiểm tra chéo cho dữ liệu quan trọng.</p>
+</div>
+<div class="box check">
+<div class="box-h">Tự kiểm tra nhanh</div>
+<div class="ans" id="p7-2-t-b104-a1">
+<div class="ans-fields"><label>Projector 1152 → 2048 → 2048 có bias: số tham số<input inputmode="decimal" data-ans="6557696.0" data-tol="0.0" autocomplete="off"></label><label>Ảnh 1280×720, mỗi token 28×28 px (làm tròn mỗi cạnh): số token<input inputmode="decimal" data-ans="1196.0" data-tol="0.0" autocomplete="off"></label><label>Hóa đơn 3×120.000 + 1×890.000 + 2×45.000, tổng in 1.430.000: chênh lệch<input inputmode="decimal" data-ans="90000.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div>
+<div aria-live="polite" class="ans-fb"></div>
+</div>
+</div>
+<h2 id="lt-7">Tóm tắt bài và thuật ngữ</h2>
+<table>
+<thead>
+<tr>
+<th>Chủ đề</th>
+<th>Ý chính</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Kiến trúc</td>
+<td>vision encoder + projector nhỏ + LLM; token ảnh chèn vào chuỗi</td>
+</tr>
+<tr>
+<td>Train</td>
+<td>căn chỉnh (chỉ projector) → instruction tuning (LLM, LoRA)</td>
+</tr>
+<tr>
+<td>Token ảnh</td>
+<td>vài trăm tới vài nghìn mỗi ảnh; chọn độ phân giải theo tác vụ</td>
+</tr>
+<tr>
+<td>Dùng</td>
+<td>pipeline <code>image-text-to-text</code> hoặc API; tin nhắn gồm phần ảnh và phần chữ</td>
+</tr>
+<tr>
+<td>An toàn</td>
+<td>VLM có thể bịa số hợp lý; schema + kiểm tra chéo + người duyệt</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Thuật ngữ</th>
+<th>Nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>VLM</td>
+<td>vision-language model, model đọc ảnh và chữ</td>
+</tr>
+<tr>
+<td>vision encoder</td>
+<td>mạng biến ảnh thành vector (ViT)</td>
+</tr>
+<tr>
+<td>projector / connector</td>
+<td>cầu nối chiếu đặc trưng ảnh sang không gian LLM</td>
+</tr>
+<tr>
+<td>SigLIP</td>
+<td>biến thể của CLIP dùng loss sigmoid, encoder ảnh phổ biến cho VLM</td>
+</tr>
+<tr>
+<td>alignment (căn chỉnh)</td>
+<td>giai đoạn chỉ train projector</td>
+</tr>
+<tr>
+<td>visual instruction tuning</td>
+<td>fine-tune trên hội thoại có ảnh</td>
+</tr>
+<tr>
+<td>tiling</td>
+<td>cắt ảnh lớn thành nhiều ô</td>
+</tr>
+<tr>
+<td>dynamic resolution</td>
+<td>mã hóa ảnh ở gần kích thước gốc</td>
+</tr>
+<tr>
+<td>VQA</td>
+<td>visual question answering, hỏi đáp về ảnh</td>
+</tr>
+<tr>
+<td>OCR</td>
+<td>nhận dạng ký tự quang học</td>
+</tr>
+</tbody>
+</table></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p7.2:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 3</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Số token ảnh</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Một VLM dùng ảnh 336×336, patch 14, mỗi mảnh một token.</p>
 <div class="ans" id="p7-2-e1-a1"><div class="ans-fields"><label>Token mỗi ảnh<input inputmode="decimal" data-ans="576.0" data-tol="0.0" autocomplete="off"></label><label>4 ảnh trong một câu hỏi<input inputmode="decimal" data-ans="2304.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
 
 <details class="fold solution">
@@ -144,7 +352,7 @@
     </div>
     <aside class="aside">
       <div class="abox"><h4>Tiến độ bài này</h4><div class="ring"><svg viewBox="0 0 64 64" aria-hidden="true"><circle class="bg" cx="32" cy="32" r="28"/><circle class="fg" cx="32" cy="32" r="28" stroke-dasharray="176" stroke-dashoffset="176"/></svg><div><b id="ring-n">0/3</b><span id="ring-sub">phần đã xong</span></div></div></div>
-      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Kiến trúc kiểu LLaVA</a></li><li><a href="#lt-2">Train một VLM</a></li><li><a href="#lt-3">Độ phân giải và số token ảnh</a></li><li><a href="#lt-4">VLM so với OCR truyền thống</a></li></ol></div>
+      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">VLM dùng để làm gì</a></li><li><a href="#lt-2">Kiến trúc kiểu LLaVA</a></li><li><a href="#lt-3">Train một VLM</a></li><li><a href="#lt-4">Token ảnh, độ phân giải và chi phí</a></li><li><a href="#lt-5">Dùng VLM</a></li><li><a href="#lt-6">VLM so với OCR truyền thống</a></li><li><a href="#lt-7">Tóm tắt bài và thuật ngữ</a></li></ol></div>
       
       <div class="abox"><h4>Cùng giai đoạn</h4><ul><li><a href="p7-1.html">Bài 9 · ViT và CLIP</a></li><li><span class=cur>Vision-language model</span></li><li><a href="p7-3.html">Video và embodied AI (nâng cao)</a></li></ul></div>
     </aside>

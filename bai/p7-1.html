@@ -22,18 +22,54 @@
 <main class="container">
   <div class="crumbs"><a href="../bai-hoc.html">Bài học</a><span>/</span><a href="../bai-hoc.html#p7">P7 · Thị giác và đa phương thức</a><span>/</span><span>P7.1</span></div>
   <section class="lhero"><div class="code">P7.1</div><h1>Bài 9 · ViT và CLIP</h1><div class="lmeta"><span class="m">Giai đoạn P7 · Thị giác và đa phương thức</span><span class="m">Tuần 31–34</span><span class="chip ready"><span class="dot"></span>Có nội dung đầy đủ</span></div>
-    <div class="intro"><p>Transformer không chỉ dành cho chữ. <strong>Vision Transformer (ViT)</strong> cắt ảnh thành các mảnh và xử lý chúng như token. <strong>CLIP</strong> ghép một ViT với một Transformer văn bản để hiểu ảnh qua ngôn ngữ, cho phép phân loại ảnh vào những lớp chưa từng được train. Đây là nền móng của mọi model đa phương thức hiện nay, kể cả text encoder trong Stable Diffusion bạn đã dùng ở dự án Diffusion.</p></div></section>
+    <div class="intro"><p>Transformer không chỉ dành cho chữ. <strong>Vision Transformer (ViT)</strong> cắt ảnh thành các mảnh và xử lý chúng như token. <strong>CLIP</strong> ghép một ViT với một Transformer văn bản để hiểu ảnh qua ngôn ngữ, cho phép phân loại ảnh vào những lớp chưa từng được train. Đây là nền móng của mọi model đa phương thức hiện nay, kể cả text encoder trong Stable Diffusion bạn đã dùng ở dự án Diffusion. Bài này có thí nghiệm thật so ViT với CNN khi ít dữ liệu, và hướng dẫn chọn giữa zero-shot, linear probe, fine-tune.</p></div></section>
   
-  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">5 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
+  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">7 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
   <div class="lgrid" style="margin-top:22px">
-    <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">Patch embedding</h2>
-<p>ViT chia ảnh thành các mảnh vuông không chồng nhau (thường 16×16 pixel), duỗi mỗi mảnh thành vector rồi chiếu tuyến tính thành embedding d chiều. Phép chiếu này tương đương một lớp Conv2d có kernel và stride bằng kích thước mảnh.</p>
-<div class="hl"><pre><span></span><code>ảnh 224×224×3 → 14×14 = 196 mảnh, mỗi mảnh 16·16·3 = 768 số → Linear → 196 token × d
-thêm 1 token [CLS] + embedding vị trí → Transformer encoder → đầu ra của [CLS] dùng để phân loại
+    <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">Vì sao học ViT và CLIP</h2>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Gần như mọi hệ thống thị giác hiện đại dùng một encoder ảnh kiểu ViT: encoder ảnh của CLIP, của các model đa phương thức (P7.2), của các model robot Vision-Language-Action (P7.3). Với dự án thực tế (phân loại ảnh sản phẩm, tìm ảnh bằng câu mô tả), CLIP thường cho kết quả tốt <strong>mà không cần ảnh nhãn nào</strong>: đó là cách nhanh nhất để giao một bản demo cho khách.</p>
+</div>
+<h2 id="lt-2">Patch embedding</h2>
+<p>ViT (Dosovitskiy và cộng sự, 2020) biến ảnh thành chuỗi token như câu văn:</p>
+<ol>
+<li>Chia ảnh thành các <strong>mảnh vuông</strong> không chồng nhau, thường 14×14 hoặc 16×16 pixel.</li>
+<li>Duỗi mỗi mảnh thành vector, chiếu tuyến tính thành embedding d chiều. Phép chiếu này tương đương một lớp <code>Conv2d</code> có kernel và stride bằng kích thước mảnh.</li>
+<li>Thêm một token đặc biệt <strong>[CLS]</strong> ở đầu, cộng <strong>embedding vị trí</strong> (học được) để model biết mảnh nào ở đâu.</li>
+<li>Đưa qua Transformer encoder (như BERT, P3.2). Đầu ra ở vị trí [CLS] đại diện cho cả ảnh, dùng để phân loại.</li>
+</ol>
+<figure class="fig"><img src="../assets/fig/p7-1-patch.svg" alt="Từ ảnh tới chuỗi token. Sau bước patch embedding, ViT chỉ là Transformer encoder." loading="lazy"><figcaption>Từ ảnh tới chuỗi token. Sau bước patch embedding, ViT chỉ là Transformer encoder.</figcaption></figure>
+
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>CLIP ViT-L/14 (encoder ảnh mà nhiều VLM dùng, P7.2) ở độ phân giải 224:</p>
+<ol>
+<li>Số mảnh: 224 / 14 = 16 mỗi cạnh → 16 × 16 = <strong>256 mảnh</strong>, cộng [CLS] là 257 token.</li>
+<li>Mỗi mảnh: 14 · 14 · 3 = 588 số.</li>
+<li>Patch embedding chiếu 588 → 1024 chiều: 588 · 1024 + 1024 (bias) = <strong>603.136</strong> tham số.</li>
+</ol>
+</div>
+<div class="hl"><pre><span></span><code><span class="tk-k">class</span><span class="tk-w"> </span><span class="tk-nc">ViT</span><span class="tk-p">(</span><span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">Module</span><span class="tk-p">):</span>
+    <span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-fm">__init__</span><span class="tk-p">(</span><span class="tk-bp">self</span><span class="tk-p">,</span> <span class="tk-n">p</span><span class="tk-o">=</span><span class="tk-mi">2</span><span class="tk-p">,</span> <span class="tk-n">d</span><span class="tk-o">=</span><span class="tk-mi">64</span><span class="tk-p">,</span> <span class="tk-n">depth</span><span class="tk-o">=</span><span class="tk-mi">4</span><span class="tk-p">,</span> <span class="tk-n">heads</span><span class="tk-o">=</span><span class="tk-mi">4</span><span class="tk-p">,</span> <span class="tk-n">img</span><span class="tk-o">=</span><span class="tk-mi">8</span><span class="tk-p">,</span> <span class="tk-n">n_cls</span><span class="tk-o">=</span><span class="tk-mi">10</span><span class="tk-p">):</span>
+        <span class="tk-nb">super</span><span class="tk-p">()</span><span class="tk-o">.</span><span class="tk-fm">__init__</span><span class="tk-p">()</span>
+        <span class="tk-bp">self</span><span class="tk-o">.</span><span class="tk-n">patch</span> <span class="tk-o">=</span> <span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">Conv2d</span><span class="tk-p">(</span><span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-n">d</span><span class="tk-p">,</span> <span class="tk-n">p</span><span class="tk-p">,</span> <span class="tk-n">stride</span><span class="tk-o">=</span><span class="tk-n">p</span><span class="tk-p">)</span>                       <span class="tk-c1"># patch embedding</span>
+        <span class="tk-n">n</span> <span class="tk-o">=</span> <span class="tk-p">(</span><span class="tk-n">img</span> <span class="tk-o">//</span> <span class="tk-n">p</span><span class="tk-p">)</span> <span class="tk-o">**</span> <span class="tk-mi">2</span>
+        <span class="tk-bp">self</span><span class="tk-o">.</span><span class="tk-n">cls</span> <span class="tk-o">=</span> <span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">Parameter</span><span class="tk-p">(</span><span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">zeros</span><span class="tk-p">(</span><span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-n">d</span><span class="tk-p">))</span>
+        <span class="tk-bp">self</span><span class="tk-o">.</span><span class="tk-n">pos</span> <span class="tk-o">=</span> <span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">Parameter</span><span class="tk-p">(</span><span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">randn</span><span class="tk-p">(</span><span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-n">n</span> <span class="tk-o">+</span> <span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-n">d</span><span class="tk-p">)</span> <span class="tk-o">*</span> <span class="tk-mf">.02</span><span class="tk-p">)</span>         <span class="tk-c1"># embedding vị trí</span>
+        <span class="tk-n">layer</span> <span class="tk-o">=</span> <span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">TransformerEncoderLayer</span><span class="tk-p">(</span><span class="tk-n">d</span><span class="tk-p">,</span> <span class="tk-n">heads</span><span class="tk-p">,</span> <span class="tk-mi">2</span> <span class="tk-o">*</span> <span class="tk-n">d</span><span class="tk-p">,</span> <span class="tk-n">dropout</span><span class="tk-o">=</span><span class="tk-mf">0.1</span><span class="tk-p">,</span> <span class="tk-n">batch_first</span><span class="tk-o">=</span><span class="tk-kc">True</span><span class="tk-p">,</span> <span class="tk-n">norm_first</span><span class="tk-o">=</span><span class="tk-kc">True</span><span class="tk-p">)</span>
+        <span class="tk-bp">self</span><span class="tk-o">.</span><span class="tk-n">enc</span> <span class="tk-o">=</span> <span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">TransformerEncoder</span><span class="tk-p">(</span><span class="tk-n">layer</span><span class="tk-p">,</span> <span class="tk-n">depth</span><span class="tk-p">)</span>
+        <span class="tk-bp">self</span><span class="tk-o">.</span><span class="tk-n">head</span> <span class="tk-o">=</span> <span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">Sequential</span><span class="tk-p">(</span><span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">LayerNorm</span><span class="tk-p">(</span><span class="tk-n">d</span><span class="tk-p">),</span> <span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">Linear</span><span class="tk-p">(</span><span class="tk-n">d</span><span class="tk-p">,</span> <span class="tk-n">n_cls</span><span class="tk-p">))</span>
+    <span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">forward</span><span class="tk-p">(</span><span class="tk-bp">self</span><span class="tk-p">,</span> <span class="tk-n">x</span><span class="tk-p">):</span>
+        <span class="tk-n">t</span> <span class="tk-o">=</span> <span class="tk-bp">self</span><span class="tk-o">.</span><span class="tk-n">patch</span><span class="tk-p">(</span><span class="tk-n">x</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">flatten</span><span class="tk-p">(</span><span class="tk-mi">2</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">transpose</span><span class="tk-p">(</span><span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-mi">2</span><span class="tk-p">)</span>                     <span class="tk-c1"># (B, n, d)</span>
+        <span class="tk-n">t</span> <span class="tk-o">=</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">cat</span><span class="tk-p">([</span><span class="tk-bp">self</span><span class="tk-o">.</span><span class="tk-n">cls</span><span class="tk-o">.</span><span class="tk-n">expand</span><span class="tk-p">(</span><span class="tk-nb">len</span><span class="tk-p">(</span><span class="tk-n">t</span><span class="tk-p">),</span> <span class="tk-o">-</span><span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-o">-</span><span class="tk-mi">1</span><span class="tk-p">),</span> <span class="tk-n">t</span><span class="tk-p">],</span> <span class="tk-mi">1</span><span class="tk-p">)</span> <span class="tk-o">+</span> <span class="tk-bp">self</span><span class="tk-o">.</span><span class="tk-n">pos</span>
+        <span class="tk-k">return</span> <span class="tk-bp">self</span><span class="tk-o">.</span><span class="tk-n">head</span><span class="tk-p">(</span><span class="tk-bp">self</span><span class="tk-o">.</span><span class="tk-n">enc</span><span class="tk-p">(</span><span class="tk-n">t</span><span class="tk-p">)[:,</span> <span class="tk-mi">0</span><span class="tk-p">])</span>                              <span class="tk-c1"># lấy đầu ra của CLS</span>
 </code></pre></div>
 
-<p>Từ đây ViT chỉ là Transformer encoder như BERT (Bài 3). Mỗi lớp, mọi mảnh nhìn được mọi mảnh khác: tầm nhìn toàn cục ngay từ lớp đầu, khác CNN phải xếp nhiều lớp mới "nhìn" rộng ra.</p>
-<h2 id="lt-2">ViT so với CNN</h2>
+<p>(Đây là ViT nhỏ dùng trong thí nghiệm ở phần sau, ảnh xám 8×8, mảnh 2×2.)</p>
+<h3>Tầm nhìn toàn cục</h3>
+<p>Trong mỗi lớp self-attention, <strong>mọi mảnh nhìn được mọi mảnh khác</strong>. Mảnh góc trên trái liên hệ được với mảnh góc dưới phải ngay từ lớp đầu. CNN thì khác: kernel 3×3 chỉ nhìn hàng xóm, phải xếp nhiều lớp và giảm kích thước mới "nhìn" rộng ra (P2.1).</p>
+<h2 id="lt-3">ViT so với CNN</h2>
 <table>
 <thead>
 <tr>
@@ -44,14 +80,14 @@ thêm 1 token [CLS] + embedding vị trí → Transformer encoder → đầu ra 
 </thead>
 <tbody>
 <tr>
-<td>Giả định có sẵn</td>
+<td>Giả định có sẵn (inductive bias)</td>
 <td>cục bộ, dùng chung trọng số theo vị trí</td>
 <td>gần như không có</td>
 </tr>
 <tr>
 <td>Dữ liệu ít</td>
 <td>tốt hơn</td>
-<td>cần pretrain trên dữ liệu lớn</td>
+<td>kém hơn, cần pretrain</td>
 </tr>
 <tr>
 <td>Dữ liệu rất lớn</td>
@@ -65,25 +101,182 @@ thêm 1 token [CLS] + embedding vị trí → Transformer encoder → đầu ra 
 </tr>
 </tbody>
 </table>
-<p>Thực tế: dùng ViT <strong>đã pretrain</strong> (ImageNet-21k, hoặc tự giám sát như DINOv2), không train từ đầu.</p>
-<h2 id="lt-3">CLIP và học tương phản</h2>
-<p>CLIP train hai encoder (ảnh và văn bản) trên hàng trăm triệu cặp (ảnh, chú thích) từ internet. Trong mỗi batch N cặp, ma trận N×N cosine giữa mọi ảnh và mọi chú thích; loss là cross-entropy đối xứng kéo đường chéo (cặp đúng) lên cao, phần còn lại xuống thấp. Kết quả là một không gian chung cho ảnh và chữ.</p>
-<h2 id="lt-4">Zero-shot classification</h2>
-<p>Không cần train gì thêm: biến mỗi lớp thành một câu ("a photo of a chair"), mã hóa, rồi chọn lớp có cosine cao nhất với ảnh.</p>
-<div class="hl"><pre><span></span><code>logits = 100 · cos(ảnh, câu_lớp_i)        (100 là nhiệt độ CLIP học được, xấp xỉ)
-p = softmax(logits)
+<p>"Giả định có sẵn" là kiến thức mà kiến trúc mang sẵn trước khi thấy dữ liệu. CNN "biết sẵn" rằng pixel gần nhau liên quan, và một cái tai mèo ở góc trái cũng là tai mèo ở góc phải. ViT phải tự học điều đó từ dữ liệu: cần nhiều dữ liệu hơn, nhưng không bị giới hạn bởi giả định nếu dữ liệu đủ lớn.</p>
+<h3>Thí nghiệm: ít dữ liệu thì ai thắng</h3>
+<p>Train từ đầu một ViT nhỏ (mảnh 2×2, 4 lớp, đúng đoạn code ở trên) và một CNN nhỏ trên bộ chữ số viết tay 8×8 của scikit-learn, với số ảnh train khác nhau, cùng số bước train, đo trên 500 ảnh test:</p>
+<figure class="fig"><img src="../assets/fig/p7-1-data.svg" alt="Với 50 ảnh, CNN đạt 80,5%, ViT chỉ 60,9%. Khoảng cách thu hẹp dần khi thêm dữ liệu: 1.297 ảnh thì 98,3% so với 94,4%." loading="lazy"><figcaption>Với 50 ảnh, CNN đạt 80,5%, ViT chỉ 60,9%. Khoảng cách thu hẹp dần khi thêm dữ liệu: 1.297 ảnh thì 98,3% so với 94,4%.</figcaption></figure>
+
+<p>CNN thắng ở mọi mức trong thí nghiệm nhỏ này, nhưng khoảng cách giảm từ gần 20 điểm xuống khoảng 4 điểm khi dữ liệu tăng 26 lần. Ở quy mô hàng chục hay hàng trăm triệu ảnh, ViT vượt CNN: đó là kết quả của bài báo ViT gốc.</p>
+<p>Thực tế: <strong>luôn dùng ViT đã pretrain</strong> (trên ImageNet-21k, trên cặp ảnh–chữ như CLIP, hoặc tự giám sát như DINOv2), không train ViT từ đầu trên tập nhỏ.</p>
+<div class="box pitfall">
+<div class="box-h">Lỗi hay gặp</div>
+<p><strong>Đổi độ phân giải mà quên embedding vị trí.</strong> ViT pretrain ở 224 có 196 embedding vị trí. Đưa ảnh 448 vào thì có 784 mảnh, không khớp. Thư viện thường nội suy embedding vị trí tự động (<code>interpolate_pos_encoding=True</code> trong transformers), nhưng chất lượng giảm nếu chênh lệch lớn, và attention tăng theo bình phương số mảnh. Dùng đúng độ phân giải model được train, hoặc fine-tune lại ở độ phân giải mới.</p>
+</div>
+<h2 id="lt-4">CLIP và học tương phản</h2>
+<p>CLIP (Radford và cộng sự, 2021) train hai encoder cùng lúc trên khoảng 400 triệu cặp (ảnh, chú thích) từ internet:</p>
+<ul>
+<li><strong>Encoder ảnh:</strong> ViT (hoặc ResNet), ảnh → vector.</li>
+<li><strong>Encoder văn bản:</strong> Transformer, câu → vector cùng số chiều.</li>
+</ul>
+<p>Trong mỗi batch N cặp, tính ma trận N × N cosine giữa mọi ảnh và mọi chú thích; loss là cross-entropy đối xứng kéo đường chéo (cặp đúng) lên cao, phần còn lại xuống thấp (chi tiết và ví dụ số ở P5.3). Kết quả là <strong>một không gian chung cho ảnh và chữ</strong>: ảnh sofa nằm gần câu "a photo of a sofa".</p>
+<p>Vì học từ chú thích tự nhiên chứ không từ 1000 nhãn cố định, CLIP biết hàng chục nghìn khái niệm: chất liệu, phong cách, thương hiệu, hành động.</p>
+<h2 id="lt-5">Zero-shot classification</h2>
+<p>Không cần train gì thêm:</p>
+<ol>
+<li>Viết mỗi lớp thành một câu: "a photo of a sofa.", "a photo of a lamp.", …</li>
+<li>Mã hóa các câu bằng encoder văn bản, mã hóa ảnh bằng encoder ảnh, chuẩn hóa về độ dài 1.</li>
+<li>Tính cosine giữa ảnh và từng câu, nhân với nhiệt độ (khoảng 100 với CLIP), softmax.</li>
+<li>Chọn lớp có xác suất cao nhất.</li>
+</ol>
+<figure class="fig"><img src="../assets/fig/p7-1-zeroshot.svg" alt="Cosine 0.26, 0.21, 0.19 nhìn sát nhau, nhưng sau khi nhân 100 và softmax, &quot;sofa&quot; chiếm 99,2%." loading="lazy"><figcaption>Cosine 0.26, 0.21, 0.19 nhìn sát nhau, nhưng sau khi nhân 100 và softmax, &quot;sofa&quot; chiếm 99,2%.</figcaption></figure>
+
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>Cosine với ba câu lớp: sofa 0.26, lamp 0.21, shelf 0.19.</p>
+<ol>
+<li>Logits = 100 × cosine = [26, 21, 19].</li>
+<li>Trừ giá trị lớn nhất: [0, −5, −7]. e⁰ = 1, e⁻⁵ ≈ 0.0067, e⁻⁷ ≈ 0.0009.</li>
+<li>p(sofa) = 1 / (1 + 0.0067 + 0.0009) ≈ <strong>0.992</strong>; p(lamp) ≈ 0.007; p(shelf) ≈ 0.001.</li>
+</ol>
+<p>Xác suất cao không có nghĩa là chắc chắn đúng: nếu ảnh là một cái ghế mà danh sách lớp không có "ghế", CLIP vẫn chọn lớp gần nhất với độ tự tin cao. Luôn cân nhắc thêm lớp "khác".</p>
+</div>
+<h3>Prompt ensembling và chọn câu</h3>
+<p>Cách viết câu ảnh hưởng đáng kể tới kết quả:</p>
+<ul>
+<li>"sofa" (một từ) thường kém hơn "a photo of a sofa." vì chú thích trên internet là câu hoàn chỉnh.</li>
+<li>Thêm ngữ cảnh miền: "a product photo of a sofa." cho ảnh sản phẩm.</li>
+<li><strong>Prompt ensembling:</strong> lấy trung bình embedding của nhiều mẫu câu cho mỗi lớp ("a photo of a {}.", "a product photo of a {}.", "a close-up photo of a {}."), chuẩn hóa lại, rồi mới tính cosine. Thường tăng độ chính xác vài điểm phần trăm, không tốn gì lúc chạy vì embedding lớp tính một lần.</li>
+</ul>
+<h2 id="lt-6">Linear probe và fine-tune</h2>
+<table>
+<thead>
+<tr>
+<th>Cách</th>
+<th>Làm gì</th>
+<th>Cần dữ liệu</th>
+<th>Khi nào</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Zero-shot</td>
+<td>không train</td>
+<td>0 ảnh nhãn</td>
+<td>lớp phổ biến, cần demo nhanh</td>
+</tr>
+<tr>
+<td>Linear probe</td>
+<td>đóng băng encoder, train một lớp Linear (hoặc logistic regression) trên embedding</td>
+<td>vài chục ảnh mỗi lớp</td>
+<td>hầu hết bài toán thực tế</td>
+</tr>
+<tr>
+<td>Fine-tune</td>
+<td>mở khóa encoder, lr nhỏ (1e-5)</td>
+<td>hàng nghìn ảnh</td>
+<td>miền rất khác ảnh internet (y tế, vệ tinh, hiển vi)</td>
+</tr>
+</tbody>
+</table>
+<div class="hl"><pre><span></span><code><span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">sklearn.linear_model</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">LogisticRegression</span>
+<span class="tk-c1"># emb_train, emb_test: embedding ảnh từ encoder CLIP đã đóng băng, chuẩn hóa độ dài 1</span>
+<span class="tk-n">clf</span> <span class="tk-o">=</span> <span class="tk-n">LogisticRegression</span><span class="tk-p">(</span><span class="tk-n">C</span><span class="tk-o">=</span><span class="tk-mf">1.0</span><span class="tk-p">,</span> <span class="tk-n">max_iter</span><span class="tk-o">=</span><span class="tk-mi">2000</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">fit</span><span class="tk-p">(</span><span class="tk-n">emb_train</span><span class="tk-p">,</span> <span class="tk-n">y_train</span><span class="tk-p">)</span>
+<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-s2">"accuracy:"</span><span class="tk-p">,</span> <span class="tk-n">clf</span><span class="tk-o">.</span><span class="tk-n">score</span><span class="tk-p">(</span><span class="tk-n">emb_test</span><span class="tk-p">,</span> <span class="tk-n">y_test</span><span class="tk-p">))</span>
 </code></pre></div>
 
-<p>Mẹo <strong>prompt ensembling</strong>: lấy trung bình embedding của nhiều mẫu câu ("a photo of a {}", "a product photo of a {}", "a close-up photo of a {}") cho mỗi lớp, thường tăng độ chính xác vài phần trăm.</p>
-<h2 id="lt-5">Linear probe và fine-tune</h2>
-<ul>
-<li><strong>Zero-shot:</strong> không cần dữ liệu nhãn, tốt cho lớp phổ biến.</li>
-<li><strong>Linear probe:</strong> đóng băng encoder ảnh, train một lớp Linear trên embedding. Vài chục ảnh mỗi lớp đã vượt zero-shot rõ rệt.</li>
-<li><strong>Fine-tune:</strong> mở khóa encoder với learning rate nhỏ. Tốt nhất khi có nhiều dữ liệu và miền khác ảnh internet, nhưng dễ làm mất khả năng zero-shot.</li>
-</ul>
+<p>Linear probe rẻ tới mức chạy trên CPU trong vài giây: trích embedding một lần (bước tốn nhất), sau đó thử bao nhiêu cấu hình cũng được.</p>
+<div class="box pitfall">
+<div class="box-h">Lỗi hay gặp</div>
+<p><strong>Fine-tune CLIP với learning rate thường (1e-3, 1e-4).</strong> Encoder pretrain bị phá nhanh chóng, accuracy có khi thấp hơn linear probe, và mất hết khả năng zero-shot. Dùng lr 1e-5 hoặc nhỏ hơn, warmup, vài epoch; hoặc dùng LoRA (P5.5) trên encoder ảnh.</p>
+</div>
 <div class="keep">
 <p><strong>Ghi nhớ:</strong> với một bài toán ảnh mới, thử theo thứ tự zero-shot CLIP → linear probe → fine-tune. Thường linear probe đã đủ tốt mà rẻ nhất.</p>
-</div></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p7.1:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 3</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Đếm patch</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Ảnh 224×224, patch 16, có thêm token [CLS].</p>
+</div>
+<div class="box check">
+<div class="box-h">Tự kiểm tra nhanh</div>
+<p>CLIP ViT-L/14 ở 224×224.</p>
+<div class="ans" id="p7-1-t-b117-a1">
+<div class="ans-fields"><label>Số mảnh<input inputmode="decimal" data-ans="256.0" data-tol="0.0" autocomplete="off"></label><label>Tham số patch embedding (d = 1024, có bias)<input inputmode="decimal" data-ans="603136.0" data-tol="0.0" autocomplete="off"></label><label>Cosine sofa 0.26, lamp 0.21, shelf 0.19, nhiệt độ 100: p(sofa) (3 chữ số)<input inputmode="decimal" data-ans="0.992" data-tol="0.001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div>
+<div aria-live="polite" class="ans-fb"></div>
+</div>
+</div>
+<h2 id="lt-7">Tóm tắt bài và thuật ngữ</h2>
+<table>
+<thead>
+<tr>
+<th>Chủ đề</th>
+<th>Ý chính</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ViT</td>
+<td>cắt ảnh thành mảnh → token → Transformer encoder; [CLS] đại diện ảnh</td>
+</tr>
+<tr>
+<td>ViT vs CNN</td>
+<td>CNN thắng khi ít dữ liệu; ViT cần pretrain, mạnh khi dữ liệu lớn</td>
+</tr>
+<tr>
+<td>CLIP</td>
+<td>học tương phản trên cặp ảnh–chú thích; không gian chung ảnh và chữ</td>
+</tr>
+<tr>
+<td>Zero-shot</td>
+<td>câu cho mỗi lớp, cosine × 100, softmax; prompt ensembling</td>
+</tr>
+<tr>
+<td>Thứ tự thử</td>
+<td>zero-shot → linear probe → fine-tune (lr nhỏ)</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Thuật ngữ</th>
+<th>Nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ViT</td>
+<td>Vision Transformer</td>
+</tr>
+<tr>
+<td>patch / patch embedding</td>
+<td>mảnh ảnh / phép chiếu mảnh thành vector</td>
+</tr>
+<tr>
+<td>[CLS] token</td>
+<td>token đại diện cho cả đầu vào</td>
+</tr>
+<tr>
+<td>positional embedding</td>
+<td>embedding vị trí</td>
+</tr>
+<tr>
+<td>inductive bias</td>
+<td>giả định có sẵn trong kiến trúc</td>
+</tr>
+<tr>
+<td>zero-shot</td>
+<td>dùng cho lớp chưa từng train</td>
+</tr>
+<tr>
+<td>prompt ensembling</td>
+<td>trung bình embedding nhiều mẫu câu</td>
+</tr>
+<tr>
+<td>linear probe</td>
+<td>train một lớp tuyến tính trên đặc trưng đóng băng</td>
+</tr>
+<tr>
+<td>DINOv2</td>
+<td>ViT tự giám sát của Meta, đặc trưng ảnh tốt</td>
+</tr>
+</tbody>
+</table></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p7.1:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 3</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Đếm patch</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Ảnh 224×224, patch 16, có thêm token [CLS].</p>
 <div class="ans" id="p7-1-e1-a1"><div class="ans-fields"><label>Số mảnh<input inputmode="decimal" data-ans="196.0" data-tol="0.0" autocomplete="off"></label><label>Độ dài chuỗi<input inputmode="decimal" data-ans="197.0" data-tol="0.0" autocomplete="off"></label><label>Tham số patch embedding (d = 768, có bias)<input inputmode="decimal" data-ans="590592.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
 
 <details class="fold solution">
@@ -161,7 +354,7 @@ p = softmax(logits)
     </div>
     <aside class="aside">
       <div class="abox"><h4>Tiến độ bài này</h4><div class="ring"><svg viewBox="0 0 64 64" aria-hidden="true"><circle class="bg" cx="32" cy="32" r="28"/><circle class="fg" cx="32" cy="32" r="28" stroke-dasharray="176" stroke-dashoffset="176"/></svg><div><b id="ring-n">0/3</b><span id="ring-sub">phần đã xong</span></div></div></div>
-      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Patch embedding</a></li><li><a href="#lt-2">ViT so với CNN</a></li><li><a href="#lt-3">CLIP và học tương phản</a></li><li><a href="#lt-4">Zero-shot classification</a></li><li><a href="#lt-5">Linear probe và fine-tune</a></li></ol></div>
+      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Vì sao học ViT và CLIP</a></li><li><a href="#lt-2">Patch embedding</a></li><li><a href="#lt-3">ViT so với CNN</a></li><li><a href="#lt-4">CLIP và học tương phản</a></li><li><a href="#lt-5">Zero-shot classification</a></li><li><a href="#lt-6">Linear probe và fine-tune</a></li><li><a href="#lt-7">Tóm tắt bài và thuật ngữ</a></li></ol></div>
       
       <div class="abox"><h4>Cùng giai đoạn</h4><ul><li><span class=cur>Bài 9 · ViT và CLIP</span></li><li><a href="p7-2.html">Vision-language model</a></li><li><a href="p7-3.html">Video và embodied AI (nâng cao)</a></li></ul></div>
     </aside>

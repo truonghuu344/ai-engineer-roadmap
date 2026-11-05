@@ -22,38 +22,266 @@
 <main class="container">
   <div class="crumbs"><a href="../bai-hoc.html">Bài học</a><span>/</span><a href="../bai-hoc.html#p7">P7 · Thị giác và đa phương thức</a><span>/</span><span>P7.3</span></div>
   <section class="lhero"><div class="code">P7.3</div><h1>Video và embodied AI (nâng cao)</h1><div class="lmeta"><span class="m">Giai đoạn P7 · Thị giác và đa phương thức</span><span class="m">Tuần 31–34</span><span class="chip ready"><span class="dot"></span>Có nội dung đầy đủ</span></div>
-    <div class="intro"><p>Video thêm chiều thời gian: không chỉ "trong ảnh có gì" mà "chuyện gì đang xảy ra và sắp xảy ra". Video quay từ góc nhìn người thực hiện (<strong>egocentric</strong>) là dữ liệu chính để dạy robot làm việc nhà, và <strong>Vision-Language-Action</strong> model nối thị giác, ngôn ngữ với hành động điều khiển robot. Bài này là phần nâng cao, gắn với dự án EPIC-KITCHENS và hướng VLA bạn quan tâm.</p></div></section>
+    <div class="intro"><p>Video thêm chiều thời gian: không chỉ "trong ảnh có gì" mà "chuyện gì đang xảy ra và sắp xảy ra". Video quay từ góc nhìn người thực hiện (<strong>egocentric</strong>) là dữ liệu chính để dạy robot làm việc nhà, và <strong>Vision-Language-Action</strong> model nối thị giác, ngôn ngữ với hành động điều khiển robot. Bài này là phần nâng cao, gắn với dự án EPIC-KITCHENS và hướng VLA bạn quan tâm. Có mô phỏng cho thấy vì sao dự đoán hành động đo bằng top-5 trung bình theo lớp.</p></div></section>
   
-  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">4 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
+  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">6 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
   <div class="lgrid" style="margin-top:22px">
-    <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">Biểu diễn video</h2>
-<p>Video 10 giây ở 30 khung hình/giây là 300 ảnh, quá nhiều để xử lý hết. Các cách phổ biến:</p>
-<ul>
-<li><strong>Lấy mẫu khung hình:</strong> chọn 8–32 khung cách đều (hoặc ngẫu nhiên trong các đoạn khi train).</li>
-<li><strong>Đặc trưng từng khung + model thời gian:</strong> chạy encoder ảnh (CLIP, DINOv2) trên từng khung, rồi một Transformer nhỏ trên chuỗi đặc trưng. Rẻ, dễ làm, baseline tốt.</li>
-<li><strong>Model video đầu-cuối:</strong> chia video thành <strong>tubelet</strong> (mảnh không gian × vài khung liên tiếp) và dùng Transformer như ViT (ViViT, VideoMAE). Học được chuyển động tinh nhưng đắt.</li>
-</ul>
-<h2 id="lt-2">Dữ liệu egocentric</h2>
-<p><strong>EPIC-KITCHENS-100</strong> quay người nấu ăn trong bếp bằng camera đeo đầu: khoảng 100 giờ, chú thích hành động dạng <strong>(động từ, danh từ)</strong>, ví dụ (mở, tủ lạnh), (cắt, cà chua). <strong>Ego4D</strong> lớn hơn nhiều, đa dạng hoạt động. Đặc điểm khó: camera rung, tay che vật, vật thể nhỏ, phân phối nhãn đuôi dài (vài hành động rất phổ biến, rất nhiều hành động hiếm).</p>
-<h2 id="lt-3">Nhận diện và dự đoán hành động</h2>
-<ul>
-<li><strong>Action recognition:</strong> cho đoạn video, hành động đang diễn ra là gì.</li>
-<li><strong>Action anticipation:</strong> quan sát video tới thời điểm t, đoán hành động sẽ bắt đầu sau một khoảng τ (thường 1 giây). Khó hơn nhiều vì tương lai không chắc chắn: sau khi mở tủ lạnh có thể lấy sữa, lấy rau, hoặc đóng lại.</li>
-</ul>
-<p>Vì tương lai mơ hồ, anticipation thường đo bằng <strong>top-5 recall</strong>: đáp án đúng có nằm trong 5 dự đoán đầu không, tính trung bình theo lớp để lớp hiếm không bị lấn át.</p>
-<h2 id="lt-4">Vision-Language-Action</h2>
-<p>VLA lấy một VLM (P7.2) và dạy nó xuất ra <strong>hành động robot</strong> thay vì chỉ chữ:</p>
-<div class="hl"><pre><span></span><code>ảnh camera + câu lệnh ("cho cốc vào bồn rửa") ──▶ VLM backbone ──▶ hành động (vị trí, góc xoay tay kẹp, đóng/mở)
+    <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">Vì sao video và VLA</h2>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Robot làm việc trong nhà cần hiểu chuỗi hành động ("mở tủ lạnh, lấy sữa, đóng tủ") và đoán bước tiếp theo, chứ không chỉ nhận diện vật thể. Video egocentric là nguồn dữ liệu rẻ nhất cho kiến thức đó, và VLA là hướng nghiên cứu nóng nhất của robot học hiện nay. Dự án EPIC-KITCHENS của bạn là đúng bài toán "đoán hành động tiếp theo", và nền tảng để hiểu các bài báo VLA.</p>
+</div>
+<h2 id="lt-2">Biểu diễn video</h2>
+<p>Video 6 giây ở 25 khung hình/giây là 150 ảnh. Mỗi ảnh qua ViT-B/14 ở 224 là 256 token, cả video là 38.400 token: quá nhiều. Ba cách phổ biến:</p>
+<table>
+<thead>
+<tr>
+<th>Cách</th>
+<th>Làm gì</th>
+<th>Ưu</th>
+<th>Nhược</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Lấy mẫu khung hình</td>
+<td>chọn 8–32 khung</td>
+<td>đơn giản, giảm chi phí tuyến tính</td>
+<td>bỏ qua chuyển động giữa các khung</td>
+</tr>
+<tr>
+<td>Đặc trưng từng khung + model thời gian</td>
+<td>encoder ảnh (CLIP, DINOv2) trên từng khung, rồi Transformer nhỏ trên chuỗi đặc trưng</td>
+<td>rẻ, trích đặc trưng một lần dùng mãi, baseline tốt</td>
+<td>không thấy chuyển động tinh</td>
+</tr>
+<tr>
+<td>Model video đầu-cuối</td>
+<td>cắt video thành <strong>tubelet</strong> (mảnh không gian × vài khung) rồi Transformer như ViT (ViViT, VideoMAE)</td>
+<td>học được chuyển động</td>
+<td>đắt, cần nhiều dữ liệu</td>
+</tr>
+</tbody>
+</table>
+<h3>Lấy mẫu theo đoạn</h3>
+<p>Cách chuẩn (từ TSN): chia video thành k đoạn bằng nhau, lấy một khung trong mỗi đoạn. Khi <strong>train</strong> lấy ngẫu nhiên trong đoạn (thêm đa dạng, như data augmentation); khi <strong>đánh giá</strong> lấy giữa đoạn (để kết quả lặp lại được).</p>
+<div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">numpy</span><span class="tk-w"> </span><span class="tk-k">as</span><span class="tk-w"> </span><span class="tk-nn">np</span>
+<span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">sample_frames</span><span class="tk-p">(</span><span class="tk-n">n_frames</span><span class="tk-p">,</span> <span class="tk-n">k</span><span class="tk-p">,</span> <span class="tk-n">train</span><span class="tk-p">,</span> <span class="tk-n">rng</span><span class="tk-o">=</span><span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">random</span><span class="tk-o">.</span><span class="tk-n">default_rng</span><span class="tk-p">(</span><span class="tk-mi">0</span><span class="tk-p">)):</span>
+    <span class="tk-n">edges</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">linspace</span><span class="tk-p">(</span><span class="tk-mi">0</span><span class="tk-p">,</span> <span class="tk-n">n_frames</span><span class="tk-p">,</span> <span class="tk-n">k</span> <span class="tk-o">+</span> <span class="tk-mi">1</span><span class="tk-p">)</span>                     <span class="tk-c1"># k đoạn bằng nhau</span>
+    <span class="tk-k">if</span> <span class="tk-n">train</span><span class="tk-p">:</span>
+        <span class="tk-k">return</span> <span class="tk-p">[</span><span class="tk-nb">int</span><span class="tk-p">(</span><span class="tk-n">rng</span><span class="tk-o">.</span><span class="tk-n">uniform</span><span class="tk-p">(</span><span class="tk-n">edges</span><span class="tk-p">[</span><span class="tk-n">i</span><span class="tk-p">],</span> <span class="tk-n">edges</span><span class="tk-p">[</span><span class="tk-n">i</span> <span class="tk-o">+</span> <span class="tk-mi">1</span><span class="tk-p">]))</span> <span class="tk-k">for</span> <span class="tk-n">i</span> <span class="tk-ow">in</span> <span class="tk-nb">range</span><span class="tk-p">(</span><span class="tk-n">k</span><span class="tk-p">)]</span>
+    <span class="tk-k">return</span> <span class="tk-p">[</span><span class="tk-nb">int</span><span class="tk-p">((</span><span class="tk-n">edges</span><span class="tk-p">[</span><span class="tk-n">i</span><span class="tk-p">]</span> <span class="tk-o">+</span> <span class="tk-n">edges</span><span class="tk-p">[</span><span class="tk-n">i</span> <span class="tk-o">+</span> <span class="tk-mi">1</span><span class="tk-p">])</span> <span class="tk-o">/</span> <span class="tk-mi">2</span><span class="tk-p">)</span> <span class="tk-k">for</span> <span class="tk-n">i</span> <span class="tk-ow">in</span> <span class="tk-nb">range</span><span class="tk-p">(</span><span class="tk-n">k</span><span class="tk-p">)]</span>
+
+<span class="tk-n">sample_frames</span><span class="tk-p">(</span><span class="tk-mi">150</span><span class="tk-p">,</span> <span class="tk-mi">16</span><span class="tk-p">,</span> <span class="tk-n">train</span><span class="tk-o">=</span><span class="tk-kc">False</span><span class="tk-p">)</span>   <span class="tk-c1"># [4, 14, 23, 32, 42, 51, 60, 70, 79, 89, 98, 107, 117, 126, 135, 145]</span>
 </code></pre></div>
 
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>Video 150 khung, lấy 16 khung, mỗi khung 256 token (ViT mảnh 14 ở 224):</p>
+<ol>
+<li>Theo khung: 16 × 256 = <strong>4.096</strong> token.</li>
+<li>Dùng tubelet gộp 2 khung liên tiếp: <strong>2.048</strong> token.</li>
+<li>Trích đặc trưng từng khung bằng CLIP rồi chỉ giữ vector [CLS]: <strong>16</strong> vector. Model thời gian nhỏ xử lý chuỗi 16 phần tử, train được trên laptop.</li>
+</ol>
+<p>Cách 3 là lý do dự án EPIC-KITCHENS trích đặc trưng trước và lưu ra đĩa: đọc và giải mã video là phần chậm nhất, chỉ nên làm một lần.</p>
+</div>
+<h2 id="lt-3">Dữ liệu egocentric</h2>
+<p><strong>EPIC-KITCHENS-100</strong> quay người nấu ăn trong bếp nhà họ bằng camera đeo đầu: khoảng 100 giờ, 45 căn bếp, khoảng 90 nghìn đoạn hành động có chú thích dạng <strong>(động từ, danh từ)</strong>: (mở, tủ lạnh), (cắt, cà chua). Có 97 động từ và 300 danh từ. <strong>Ego4D</strong> lớn hơn nhiều (khoảng 3.600 giờ), đa dạng hoạt động ngoài bếp.</p>
+<p>Đặc điểm khó của dữ liệu egocentric:</p>
 <ul>
-<li>Hành động được rời rạc hóa thành token (RT-2, OpenVLA) hoặc sinh liên tục bằng một đầu flow matching hay diffusion (họ π0), thường theo <strong>cụm hành động</strong> (action chunk) vài chục bước một lần cho mượt.</li>
-<li>Dữ liệu: các bộ trình diễn robot lớn (Open X-Embodiment), cộng video người làm việc (egocentric) để học kiến thức về vật thể và tác vụ.</li>
-<li>Thách thức: dữ liệu robot đắt, chuyển giao giữa các loại robot khác nhau, an toàn khi chạy thật.</li>
+<li><strong>Camera rung</strong> theo chuyển động đầu, khung hình nhòe.</li>
+<li><strong>Tay che vật</strong>: vật đang được thao tác thường bị che một phần.</li>
+<li><strong>Vật nhỏ</strong> (thìa, nắp chai) chỉ chiếm vài phần trăm khung hình.</li>
+<li><strong>Đuôi dài</strong>: vài hành động ("lấy", "đặt", "mở") chiếm phần lớn dữ liệu, hàng trăm hành động khác rất hiếm.</li>
+<li><strong>Bếp chưa thấy</strong>: tập test có những căn bếp không có trong tập train, đo khả năng khái quát.</li>
 </ul>
+<h2 id="lt-4">Nhận diện và dự đoán hành động</h2>
+<ul>
+<li><strong>Action recognition:</strong> cho đoạn video, hành động <strong>đang diễn ra</strong> là gì.</li>
+<li><strong>Action anticipation:</strong> quan sát video tới thời điểm t, đoán hành động <strong>sẽ bắt đầu</strong> sau một khoảng τ (thường 1 giây).</li>
+</ul>
+<figure class="fig"><img src="../assets/fig/p7-3-timeline.svg" alt="Anticipation: model chỉ thấy đoạn quan sát kết thúc trước khi hành động bắt đầu τ giây." loading="lazy"><figcaption>Anticipation: model chỉ thấy đoạn quan sát kết thúc trước khi hành động bắt đầu τ giây.</figcaption></figure>
+
+<p>Anticipation khó hơn nhiều vì <strong>tương lai không chắc chắn</strong>: sau khi mở tủ lạnh, người ta có thể lấy sữa, lấy rau, hoặc đóng tủ lại. Ngay cả model hoàn hảo cũng không thể đúng mọi lần.</p>
+<h3>Vì sao dùng top-5 trung bình theo lớp</h3>
+<p><strong>Mô phỏng:</strong> chuỗi hành động sinh từ một chuỗi Markov 40 hành động với phân phối đuôi dài (mỗi hành động thường dẫn tới 3–6 hành động tiếp theo, độ bất định trung bình khoảng 2,6 bit). Train trên 400 chuỗi, đo trên 200 chuỗi khác, ba "model":</p>
+<figure class="fig"><img src="../assets/fig/p7-3-metrics.svg" alt="Ngay cả khi biết đúng xác suất thật, top-1 chỉ đạt 49%: phần còn lại là bất định của tương lai, không phải lỗi model. Model &quot;luôn đoán 5 hành động phổ biến nhất&quot; đạt top-5 61% nhưng top-5 trung bình theo lớp chỉ 12%." loading="lazy"><figcaption>Ngay cả khi biết đúng xác suất thật, top-1 chỉ đạt 49%: phần còn lại là bất định của tương lai, không phải lỗi model. Model &quot;luôn đoán 5 hành động phổ biến nhất&quot; đạt top-5 61% nhưng top-5 trung bình theo lớp chỉ 12%.</figcaption></figure>
+
+<table>
+<thead>
+<tr>
+<th>Model</th>
+<th>Top-1</th>
+<th>Top-5</th>
+<th>Top-5 trung bình theo lớp</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Luôn đoán phổ biến nhất</td>
+<td>34%</td>
+<td>61%</td>
+<td>12%</td>
+</tr>
+<tr>
+<td>Đếm cặp liên tiếp từ dữ liệu train</td>
+<td>49%</td>
+<td>88%</td>
+<td>56%</td>
+</tr>
+<tr>
+<td>Biết xác suất thật (giới hạn trên)</td>
+<td>49%</td>
+<td>88%</td>
+<td>56%</td>
+</tr>
+</tbody>
+</table>
+<p>Hai bài học:</p>
+<ol>
+<li><strong>Top-1 thấp không nhất thiết là model kém.</strong> Với tương lai mơ hồ, top-5 cho biết model có "nắm được các khả năng hợp lý" không.</li>
+<li><strong>Phải tính trung bình theo lớp.</strong> Top-5 tổng thể bị các hành động phổ biến lấn át: model lười chỉ đoán "lấy, đặt, mở…" vẫn được 61%. Trung bình theo lớp (mean class recall) cho mỗi lớp trọng số như nhau, lộ ra model bỏ quên lớp hiếm. EPIC-KITCHENS dùng đúng thước đo này.</li>
+</ol>
+<div class="box pitfall">
+<div class="box-h">Lỗi hay gặp</div>
+<p><strong>Rò rỉ tương lai.</strong> Lấy khung hình trong khoảng τ (sau thời điểm t) hoặc trong chính đoạn hành động để train anticipation thì model "nhìn thấy" đáp án, điểm val cao vô lý. Kiểm tra kỹ chỉ số khung: mọi khung phải kết thúc trước thời điểm bắt đầu hành động trừ τ.</p>
+</div>
+<h3>Model anticipation đơn giản</h3>
+<p>Baseline mạnh và rẻ cho dự án: đặc trưng CLIP/DINOv2 của 8 khung trong đoạn quan sát → Transformer encoder nhỏ trên chuỗi 8 vector (có embedding vị trí theo thời gian) → hai đầu phân loại: động từ (97 lớp) và danh từ (300 lớp). Hành động (động từ, danh từ) được chấm bằng cách kết hợp hai dự đoán. Bài tập code yêu cầu bạn viết đúng model này.</p>
+<p>Xử lý đuôi dài khi train: trọng số lớp trong cross-entropy (lớp hiếm trọng số cao hơn), hoặc lấy mẫu cân bằng hơn.</p>
+<h2 id="lt-5">Vision-Language-Action</h2>
+<p>VLA lấy một VLM (P7.2) và dạy nó xuất ra <strong>hành động robot</strong> thay vì chỉ chữ:</p>
+<figure class="fig"><img src="../assets/fig/p7-3-vla.svg" alt="Ảnh và câu lệnh vào VLM; đầu ra là cụm hành động, sinh bằng token rời rạc hoặc bằng một đầu flow matching." loading="lazy"><figcaption>Ảnh và câu lệnh vào VLM; đầu ra là cụm hành động, sinh bằng token rời rạc hoặc bằng một đầu flow matching.</figcaption></figure>
+
+<h3>Hai cách biểu diễn hành động</h3>
+<p><strong>1. Token rời rạc (RT-2, OpenVLA).</strong> Mỗi chiều hành động (x, y, z, ba góc xoay, kẹp) được chuẩn hóa về [−1, 1] rồi chia thành 256 khoảng; mỗi khoảng là một token. LLM sinh hành động như sinh chữ.</p>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>Một chiều hành động có giá trị 0.37, chia [−1, 1] thành 256 khoảng:</p>
+<ol>
+<li>Khoảng: ⌊(0.37 + 1) / 2 × 256⌋ = ⌊175,36⌋ = <strong>175</strong>.</li>
+<li>Khi giải mã, lấy giữa khoảng: −1 + (175 + 0.5) × 2/256 ≈ <strong>0.3711</strong>.</li>
+<li>Sai số 0.0011, tức độ phân giải khoảng 0,8% của dải. Đủ cho nhiều tác vụ, thiếu cho thao tác cần chính xác cao.</li>
+</ol>
+</div>
+<p><strong>2. Liên tục bằng flow matching (họ π0).</strong> Một "đầu hành động" nhỏ nhận đặc trưng từ VLM, sinh vector hành động liên tục bằng flow matching (P5.6), vài bước Euler. Mượt hơn và chính xác hơn token rời rạc, đặc biệt cho tay robot nhiều khớp.</p>
+<h3>Cụm hành động</h3>
+<p>Thay vì chạy model mỗi bước điều khiển, VLA sinh <strong>cụm hành động</strong> (action chunk): ví dụ 30 hành động liên tiếp ở tần số điều khiển 15 Hz phủ 2 giây chuyển động. Model chạy ít lần hơn (VLM lớn thì chậm), và chuyển động mượt hơn vì cả cụm được sinh nhất quán.</p>
+<h3>Dữ liệu và thách thức</h3>
+<table>
+<thead>
+<tr>
+<th>Nguồn dữ liệu</th>
+<th>Vai trò</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Trình diễn robot (Open X-Embodiment, DROID)</td>
+<td>cặp (ảnh, lệnh, hành động) thật, đắt để thu thập</td>
+</tr>
+<tr>
+<td>Video người làm việc (egocentric)</td>
+<td>kiến thức về vật thể và trình tự tác vụ, không có hành động robot</td>
+</tr>
+<tr>
+<td>Dữ liệu ảnh–chữ của VLM</td>
+<td>hiểu ngôn ngữ và nhận diện vật thể</td>
+</tr>
+</tbody>
+</table>
+<p>Thách thức chính: dữ liệu robot đắt và ít; <strong>chuyển giao giữa các loại robot</strong> (cánh tay khác nhau có không gian hành động khác nhau); đánh giá phải chạy trên robot thật hoặc mô phỏng (không có "tập test" tĩnh như ảnh); và an toàn khi robot chạy cạnh người.</p>
 <div class="keep">
 <p><strong>Ghi nhớ:</strong> mảnh nào bạn đã học đều xuất hiện ở đây: ViT và CLIP (thị giác), Transformer (chuỗi thời gian), LLM (hiểu lệnh), flow matching (sinh hành động). VLA là nơi chúng hội tụ.</p>
-</div></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p7.3:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 3</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Lấy mẫu khung hình</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Đoạn video 10 giây, 30 fps, lấy 8 khung cách đều.</p>
+</div>
+<div class="box check">
+<div class="box-h">Tự kiểm tra nhanh</div>
+<div class="ans" id="p7-3-t-b108-a1">
+<div class="ans-fields"><label>Video 150 khung, lấy 16 khung, 256 token mỗi khung: tổng token<input inputmode="decimal" data-ans="4096.0" data-tol="0.0" autocomplete="off"></label><label>Giá trị hành động 0.37, 256 khoảng trên [−1, 1]: chỉ số khoảng<input inputmode="decimal" data-ans="175.0" data-tol="0.0" autocomplete="off"></label><label>Cụm 30 hành động ở 15 Hz kéo dài (giây)<input inputmode="decimal" data-ans="2.0" data-tol="0.001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div>
+<div aria-live="polite" class="ans-fb"></div>
+</div>
+</div>
+<h2 id="lt-6">Tóm tắt bài và thuật ngữ</h2>
+<table>
+<thead>
+<tr>
+<th>Chủ đề</th>
+<th>Ý chính</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Biểu diễn video</td>
+<td>lấy mẫu theo đoạn; đặc trưng từng khung + Transformer thời gian; hoặc tubelet</td>
+</tr>
+<tr>
+<td>Egocentric</td>
+<td>camera đeo đầu, (động từ, danh từ), đuôi dài, bếp chưa thấy</td>
+</tr>
+<tr>
+<td>Anticipation</td>
+<td>đoán hành động sau τ giây; tương lai bất định; top-5 trung bình theo lớp</td>
+</tr>
+<tr>
+<td>VLA</td>
+<td>VLM + đầu hành động (token rời rạc hoặc flow matching), sinh theo cụm</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Thuật ngữ</th>
+<th>Nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>egocentric</td>
+<td>góc nhìn thứ nhất, camera đeo trên người</td>
+</tr>
+<tr>
+<td>action recognition / anticipation</td>
+<td>nhận diện / dự đoán hành động</td>
+</tr>
+<tr>
+<td>τ (anticipation time)</td>
+<td>khoảng cách từ lúc quan sát xong tới lúc hành động bắt đầu</td>
+</tr>
+<tr>
+<td>tubelet</td>
+<td>mảnh không gian × thời gian của video</td>
+</tr>
+<tr>
+<td>TSN sampling</td>
+<td>lấy một khung trong mỗi đoạn bằng nhau</td>
+</tr>
+<tr>
+<td>mean class recall</td>
+<td>recall trung bình theo lớp</td>
+</tr>
+<tr>
+<td>long-tail</td>
+<td>phân phối đuôi dài</td>
+</tr>
+<tr>
+<td>VLA</td>
+<td>Vision-Language-Action model</td>
+</tr>
+<tr>
+<td>action tokenization</td>
+<td>rời rạc hóa hành động thành token</td>
+</tr>
+<tr>
+<td>action chunk</td>
+<td>cụm hành động sinh một lần</td>
+</tr>
+<tr>
+<td>embodiment</td>
+<td>loại thân robot (cánh tay, tay kẹp, khớp)</td>
+</tr>
+</tbody>
+</table></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p7.3:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 3</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Lấy mẫu khung hình</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Đoạn video 10 giây, 30 fps, lấy 8 khung cách đều.</p>
 <div class="ans" id="p7-3-e1-a1"><div class="ans-fields"><label>Tổng số khung<input inputmode="decimal" data-ans="300.0" data-tol="0.0" autocomplete="off"></label><label>Khoảng cách giữa hai khung được lấy (số khung)<input inputmode="decimal" data-ans="37.5" data-tol="0.001" autocomplete="off"></label><label>Token nếu mỗi khung 196 mảnh<input inputmode="decimal" data-ans="1568.0" data-tol="0.0" autocomplete="off"></label><label>Token nếu dùng tubelet 2 khung<input inputmode="decimal" data-ans="784.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
 
 <details class="fold solution">
@@ -129,7 +357,7 @@
     </div>
     <aside class="aside">
       <div class="abox"><h4>Tiến độ bài này</h4><div class="ring"><svg viewBox="0 0 64 64" aria-hidden="true"><circle class="bg" cx="32" cy="32" r="28"/><circle class="fg" cx="32" cy="32" r="28" stroke-dasharray="176" stroke-dashoffset="176"/></svg><div><b id="ring-n">0/3</b><span id="ring-sub">phần đã xong</span></div></div></div>
-      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Biểu diễn video</a></li><li><a href="#lt-2">Dữ liệu egocentric</a></li><li><a href="#lt-3">Nhận diện và dự đoán hành động</a></li><li><a href="#lt-4">Vision-Language-Action</a></li></ol></div>
+      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Vì sao video và VLA</a></li><li><a href="#lt-2">Biểu diễn video</a></li><li><a href="#lt-3">Dữ liệu egocentric</a></li><li><a href="#lt-4">Nhận diện và dự đoán hành động</a></li><li><a href="#lt-5">Vision-Language-Action</a></li><li><a href="#lt-6">Tóm tắt bài và thuật ngữ</a></li></ol></div>
       
       <div class="abox"><h4>Cùng giai đoạn</h4><ul><li><a href="p7-1.html">Bài 9 · ViT và CLIP</a></li><li><a href="p7-2.html">Vision-language model</a></li><li><span class=cur>Video và embodied AI (nâng cao)</span></li></ul></div>
     </aside>
