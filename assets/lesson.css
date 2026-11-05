@@ -32,6 +32,10 @@
 .box pre { margin-top: 10px; }
 details.fold.deep > summary { color: var(--side); }
 details.fold.answer > summary { color: var(--ok); }
+.fig { margin: 24px 0 6px; padding: 14px; background: #fff; border: 1px solid var(--line); border-radius: 12px; }
+.fig img { display: block; margin: 0 auto; max-width: 100%; height: auto; }
+.fig figcaption { margin-top: 10px; font-size: 13.5px; line-height: 1.5; color: var(--muted); text-align: center; }
+.prose table { display: block; overflow-x: auto; }
 /* effects: sliding tab pill, copy button on code */
 .tabs { position: sticky; }
 .tabs .pill { position: absolute; top: 6px; left: 0; height: calc(100% - 12px); width: 0; border-radius: 8px; background: var(--ink); z-index: 0; pointer-events: none; }
