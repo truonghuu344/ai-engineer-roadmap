@@ -22,54 +22,235 @@
 <main class="container">
   <div class="crumbs"><a href="../bai-hoc.html">Bài học</a><span>/</span><a href="../bai-hoc.html#p4">P4 · LLM Engineering</a><span>/</span><span>P4.3</span></div>
   <section class="lhero"><div class="code">P4.3</div><h1>Bài 6 · Đánh giá hệ thống AI</h1><div class="lmeta"><span class="m">Giai đoạn P4 · LLM Engineering</span><span class="m">Tuần 18–25</span><span class="chip ready"><span class="dot"></span>Có nội dung đầy đủ</span></div>
-    <div class="intro"><p>"Prompt mới có vẻ tốt hơn" không phải là kỹ thuật. Đánh giá (eval) biến cảm giác thành con số: bạn biết thay đổi nào thật sự cải thiện hệ thống, và biết khi nào một bản cập nhật làm hỏng thứ đang chạy tốt. Đây là kỹ năng phân biệt rõ nhất người làm demo với người làm sản phẩm.</p></div></section>
+    <div class="intro"><p>"Prompt mới có vẻ tốt hơn" không phải là kỹ thuật. Đánh giá (eval) biến cảm giác thành con số: bạn biết thay đổi nào thật sự cải thiện hệ thống, và biết khi nào một bản cập nhật làm hỏng thứ đang chạy tốt. Đây là kỹ năng phân biệt rõ nhất người làm demo với người làm sản phẩm, và là câu hỏi gần như chắc chắn gặp khi phỏng vấn ("bạn biết hệ thống của mình tốt bằng cách nào?").</p></div></section>
   
-  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">6 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
+  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">9 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
   <div class="lgrid" style="margin-top:22px">
-    <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">Bộ eval vàng</h2>
-<p>Mọi thứ bắt đầu từ một <strong>bộ ví dụ có đáp án</strong>, đại diện cho cách người dùng thật dùng hệ thống:</p>
+    <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">Vì sao ứng dụng LLM cần eval riêng</h2>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Code thường đúng hay sai rõ ràng, có unit test. Đầu ra của LLM là văn bản tự do, thay đổi theo từng lần gọi, và một thay đổi nhỏ trong prompt có thể sửa 5 câu nhưng làm hỏng 8 câu khác mà bạn không thấy. Eval là "unit test" cho hành vi của hệ thống.</p>
+</div>
+<table>
+<thead>
+<tr>
+<th>Không có eval</th>
+<th>Có eval</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>thử 3 câu, thấy ổn, đưa lên</td>
+<td>chạy 150 câu, so với phiên bản cũ</td>
+</tr>
+<tr>
+<td>người dùng báo lỗi mới biết</td>
+<td>biết trước câu nào hỏng</td>
+</tr>
+<tr>
+<td>tranh luận "prompt A hay B"</td>
+<td>so điểm A và B trên cùng bộ câu</td>
+</tr>
+<tr>
+<td>đổi model sang model rẻ hơn là đánh liều</td>
+<td>biết chính xác mất bao nhiêu điểm</td>
+</tr>
+</tbody>
+</table>
+<p>Eval cho hệ thống LLM có ba tầng: <strong>offline</strong> (bộ câu có đáp án, chạy trước khi đưa lên), <strong>online</strong> (theo dõi người dùng thật: tỉ lệ thích/không thích, tỉ lệ hỏi lại, P8.3), và <strong>con người</strong> (định kỳ đọc mẫu ngẫu nhiên). Bài này tập trung vào tầng offline.</p>
+<h2 id="lt-2">Bộ eval vàng</h2>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Mọi metric đều vô nghĩa nếu bộ câu hỏi không giống cách người dùng thật dùng hệ thống. Bộ eval vàng là tài sản quan trọng nhất của một dự án LLM, quan trọng hơn cả prompt.</p>
+</div>
+<p>Mọi thứ bắt đầu từ một <strong>bộ ví dụ có đáp án</strong>:</p>
 <ul>
-<li>Lấy câu hỏi <strong>thật</strong> (log, phiếu hỗ trợ) thay vì tự nghĩ. Thêm các ca khó: câu mơ hồ, câu không có đáp án trong tài liệu, câu cố tình gài bẫy.</li>
-<li>50–200 ví dụ là đủ để bắt đầu. Mỗi ví dụ có: đầu vào, đáp án mong đợi (hoặc tiêu chí chấm), và với RAG là id các đoạn đúng.</li>
-<li>Bộ eval là tài sản: đặt trong git, có phiên bản, thêm ví dụ mỗi khi phát hiện lỗi mới.</li>
+<li>Lấy câu hỏi <strong>thật</strong> (log, phiếu hỗ trợ, email khách hàng) thay vì tự nghĩ. Câu tự nghĩ thường quá "sạch" so với câu thật (viết tắt, sai chính tả, hỏi nhiều ý một lúc).</li>
+<li>Thêm các <strong>ca khó</strong> có chủ đích: câu mơ hồ, câu không có đáp án trong tài liệu (để kiểm tra từ chối), câu hỏi gài bẫy, câu cần ghép thông tin từ hai tài liệu.</li>
+<li>50–200 ví dụ là đủ để bắt đầu.</li>
+<li>Bộ eval là tài sản: đặt trong Git, có phiên bản, <strong>thêm ví dụ mỗi khi phát hiện lỗi mới</strong> (mỗi lỗi người dùng báo là một ví dụ eval).</li>
 </ul>
-<h2 id="lt-2">Đo retrieval</h2>
+<p>Mỗi ví dụ cho hệ RAG nên có:</p>
+<div class="hl"><pre><span></span><code><span class="tk-p">{</span><span class="tk-nt">"id"</span><span class="tk-p">:</span><span class="tk-w"> </span><span class="tk-s2">"q017"</span><span class="tk-p">,</span>
+<span class="tk-w"> </span><span class="tk-nt">"question"</span><span class="tk-p">:</span><span class="tk-w"> </span><span class="tk-s2">"Mua online đổi được trong bao lâu, ai trả phí ship?"</span><span class="tk-p">,</span>
+<span class="tk-w"> </span><span class="tk-nt">"relevant_chunks"</span><span class="tk-p">:</span><span class="tk-w"> </span><span class="tk-p">[</span><span class="tk-s2">"chinh-sach-doi-tra.pdf#p2-c3"</span><span class="tk-p">],</span>
+<span class="tk-w"> </span><span class="tk-nt">"reference_answer"</span><span class="tk-p">:</span><span class="tk-w"> </span><span class="tk-s2">"Đổi trong 30 ngày kể từ khi nhận hàng. Tài liệu không nói ai trả phí vận chuyển khi đổi."</span><span class="tk-p">,</span>
+<span class="tk-w"> </span><span class="tk-nt">"category"</span><span class="tk-p">:</span><span class="tk-w"> </span><span class="tk-s2">"nhiều ý + thiếu thông tin"</span><span class="tk-p">,</span>
+<span class="tk-w"> </span><span class="tk-nt">"must_refuse_part"</span><span class="tk-p">:</span><span class="tk-w"> </span><span class="tk-kc">true</span><span class="tk-p">}</span>
+</code></pre></div>
+
+<table>
+<thead>
+<tr>
+<th>Loại câu</th>
+<th>Tỉ lệ gợi ý</th>
+<th>Kiểm tra</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Câu thường, có đáp án rõ</td>
+<td>50–60%</td>
+<td>độ đúng</td>
+</tr>
+<tr>
+<td>Cần ghép nhiều đoạn</td>
+<td>10–20%</td>
+<td>retrieval nhiều đoạn</td>
+</tr>
+<tr>
+<td>Không có đáp án trong tài liệu</td>
+<td>10–15%</td>
+<td>từ chối đúng</td>
+</tr>
+<tr>
+<td>Mơ hồ, sai chính tả, viết tắt</td>
+<td>10%</td>
+<td>độ bền</td>
+</tr>
+<tr>
+<td>Tấn công (prompt injection)</td>
+<td>vài câu</td>
+<td>an toàn (P4.8)</td>
+</tr>
+</tbody>
+</table>
+<div class="box pitfall">
+<div class="box-h">Lỗi hay gặp</div>
+<p><strong>Dùng bộ eval để tune rồi báo cáo trên chính nó.</strong> Sửa prompt cho tới khi đạt 95% trên 100 câu eval rồi báo "hệ thống đúng 95%" là lặp lại lỗi chọn siêu tham số trên tập test (P1.2). Giữ một phần (20–30%) làm <strong>tập kiểm tra cuối</strong>, chỉ chạy khi chốt phiên bản.</p>
+</div>
+<h2 id="lt-3">Đo retrieval</h2>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Như P4.2 đã nói, phần lớn lỗi RAG nằm ở bước tìm kiếm. Retrieval đo được mà không cần gọi LLM, nên rẻ và nhanh: thử 20 cấu hình chunking trong vài phút. Hãy tối ưu nó trước.</p>
+</div>
 <table>
 <thead>
 <tr>
 <th>Metric</th>
 <th>Ý nghĩa</th>
+<th>Khi nào dùng</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td>Recall@k</td>
 <td>tỉ lệ đoạn đúng nằm trong top-k</td>
+<td>metric chính: đoạn đúng có được đưa cho LLM không</td>
 </tr>
 <tr>
 <td>Precision@k</td>
 <td>tỉ lệ đoạn trong top-k là đúng</td>
+<td>đưa nhiều đoạn sai vào làm LLM dễ nhầm</td>
 </tr>
 <tr>
 <td>MRR</td>
-<td>trung bình 1/(thứ hạng của đoạn đúng đầu tiên); 0 nếu không tìm thấy</td>
+<td>trung bình 1/(thứ hạng của đoạn đúng đầu tiên)</td>
+<td>khi chỉ cần một đoạn đúng, ở càng cao càng tốt</td>
 </tr>
 <tr>
 <td>nDCG@k</td>
-<td>như MRR nhưng tính mọi đoạn đúng, đúng ở hạng cao được thưởng nhiều hơn</td>
+<td>tính mọi đoạn đúng, đúng ở hạng cao được thưởng nhiều hơn</td>
+<td>khi có nhiều đoạn đúng với mức liên quan khác nhau</td>
 </tr>
 </tbody>
 </table>
-<p>Retrieval đo được mà không cần gọi LLM, nên rẻ và nhanh: hãy tối ưu nó trước.</p>
-<h2 id="lt-3">Đo câu trả lời</h2>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p><strong>MRR.</strong> Năm câu hỏi, đoạn đúng đầu tiên lần lượt ở hạng 2, 1, 4, không tìm thấy, 1:</p>
+<figure class="fig"><img src="../assets/fig/p4-3-mrr.svg" alt="Ô xanh là vị trí của đoạn đúng trong top-5 của từng câu." loading="lazy"><figcaption>Ô xanh là vị trí của đoạn đúng trong top-5 của từng câu.</figcaption></figure>
+<p>MRR = (1/2 + 1 + 1/4 + 0 + 1)/5 = <strong>0.55</strong>.</p>
+<p><strong>nDCG@5.</strong> Một câu có 2 đoạn đúng, tìm được ở hạng 1 và 3:</p>
 <ul>
-<li><strong>So khớp chính xác</strong> khi đáp án ngắn và rõ (số, tên, nhãn).</li>
-<li><strong>Faithfulness (bám nguồn):</strong> mỗi ý trong câu trả lời có được hỗ trợ bởi các đoạn đã tìm được không. Tách câu trả lời thành các mệnh đề rồi kiểm tra từng cái.</li>
-<li><strong>Correctness:</strong> câu trả lời có đúng so với đáp án chuẩn không.</li>
-<li><strong>Từ chối đúng:</strong> với câu không có thông tin, hệ thống có nói "không biết" thay vì bịa.</li>
+<li>DCG = 1/log₂(1+1) + 1/log₂(3+1) = 1 + 0.5 = 1.5</li>
+<li>DCG lý tưởng (hai đoạn đúng ở hạng 1, 2) = 1 + 1/log₂3 = 1.631</li>
+<li>nDCG = 1.5 / 1.631 ≈ <strong>0.92</strong></li>
 </ul>
-<h2 id="lt-4">LLM-as-judge</h2>
-<p>Dùng một LLM chấm câu trả lời theo tiêu chí. Rẻ và nhanh hơn người chấm, nhưng có thiên lệch:</p>
+</div>
+<h2 id="lt-4">Đo câu trả lời</h2>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Đoạn đúng đã có trong context, nhưng LLM vẫn có thể hiểu sai, bịa thêm, trích dẫn nhầm, hoặc trả lời đúng mà quá dài. Cần đo câu trả lời theo nhiều khía cạnh, mỗi khía cạnh một metric.</p>
+</div>
+<table>
+<thead>
+<tr>
+<th>Khía cạnh</th>
+<th>Câu hỏi</th>
+<th>Cách đo</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Correctness</strong></td>
+<td>đúng so với đáp án chuẩn không?</td>
+<td>so khớp, F1 theo từ, hoặc LLM chấm</td>
+</tr>
+<tr>
+<td><strong>Faithfulness</strong></td>
+<td>mỗi ý có được tài liệu tìm được hỗ trợ không?</td>
+<td>tách thành mệnh đề, kiểm tra từng mệnh đề</td>
+</tr>
+<tr>
+<td><strong>Citation accuracy</strong></td>
+<td>trích dẫn [n] có trỏ đúng đoạn chứa ý đó không?</td>
+<td>kiểm tra từng trích dẫn</td>
+</tr>
+<tr>
+<td><strong>Refusal</strong></td>
+<td>câu không có thông tin thì có nói "không biết" không?</td>
+<td>tỉ lệ từ chối đúng trên nhóm câu không có đáp án</td>
+</tr>
+<tr>
+<td><strong>Completeness</strong></td>
+<td>trả lời đủ mọi ý của câu hỏi chưa?</td>
+<td>checklist ý trong đáp án chuẩn</td>
+</tr>
+</tbody>
+</table>
+<h3>Khi đáp án ngắn: so khớp</h3>
+<p>Với đáp án là số, tên, nhãn: so khớp chính xác sau khi chuẩn hóa (chữ thường, bỏ dấu câu). Với câu ngắn, dùng <strong>F1 theo từ</strong>:</p>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>Đáp án chuẩn "được đổi trả trong vòng 30 ngày" (7 từ), câu trả lời "đổi trả trong 30 ngày" (5 từ), trùng 5 từ.</p>
+<ul>
+<li>Precision = 5/5 = 1.0, Recall = 5/7 ≈ 0.714, F1 = 2 × 1.0 × 0.714 / 1.714 ≈ <strong>0.833</strong></li>
+</ul>
+<p>F1 theo từ rẻ và khách quan, nhưng chấm sai khi câu trả lời đúng mà diễn đạt khác ("một tháng" thay vì "30 ngày"). Với câu trả lời dài, dùng LLM chấm.</p>
+</div>
+<h3>Faithfulness: chống bịa</h3>
+<p>Tách câu trả lời thành các <strong>mệnh đề</strong> đơn, rồi kiểm tra từng mệnh đề có được đoạn tài liệu hỗ trợ không:</p>
+<div class="hl"><pre><span></span><code>Câu trả lời: "Bạn được đổi trong 30 ngày [1], shop chịu phí ship khi đổi [2]."
+Mệnh đề 1: "được đổi trong 30 ngày"       → đoạn [1] hỗ trợ ✓
+Mệnh đề 2: "shop chịu phí ship khi đổi"    → không đoạn nào nói vậy ✗  (bịa)
+Faithfulness = 1/2
+</code></pre></div>
+
+<p>Một câu trả lời có thể <strong>đúng</strong> (khớp thực tế) nhưng <strong>không faithful</strong> (model lấy từ kiến thức riêng, không từ tài liệu): trong RAG, đó vẫn là lỗi, vì người dùng không kiểm tra được.</p>
+<h2 id="lt-5">LLM-as-judge</h2>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Chấm tay 200 câu trả lời mỗi lần đổi prompt là không thể. Một LLM chấm theo tiêu chí rõ ràng làm việc đó trong vài phút. Nhưng judge cũng là một LLM: nó có thiên lệch, và phải được kiểm tra như mọi thành phần khác.</p>
+</div>
+<h3>Prompt chấm tốt</h3>
+<div class="hl"><pre><span></span><code>Bạn chấm câu trả lời của trợ lý chăm sóc khách hàng, dựa trên tài liệu tham chiếu.
+
+&lt;tài_liệu&gt;{các đoạn đã tìm được}&lt;/tài_liệu&gt;
+&lt;câu_hỏi&gt;{câu hỏi}&lt;/câu_hỏi&gt;
+&lt;đáp_án_chuẩn&gt;{đáp án chuẩn}&lt;/đáp_án_chuẩn&gt;
+&lt;câu_trả_lời&gt;{câu trả lời cần chấm}&lt;/câu_trả_lời&gt;
+
+Chấm theo thang:
+3 = đúng và đủ mọi ý của đáp án chuẩn, không thêm thông tin ngoài tài liệu
+2 = đúng nhưng thiếu ý phụ, hoặc thêm chi tiết thừa vô hại
+1 = có ý sai, hoặc thiếu ý chính
+0 = sai hoàn toàn, bịa thông tin, hoặc không trả lời
+
+Viết lý do ngắn trong &lt;lý_do&gt;, rồi điểm trong &lt;điểm&gt;.
+</code></pre></div>
+
+<p>Yêu cầu <strong>lý do trước điểm</strong> để judge "nghĩ" trước khi chấm, và để bạn đọc được vì sao nó chấm như vậy.</p>
+<h3>Các thiên lệch đã biết</h3>
 <table>
 <thead>
 <tr>
@@ -91,28 +272,252 @@
 <td>dùng model chấm khác model sinh</td>
 </tr>
 <tr>
-<td>Chấm mơ hồ</td>
-<td>thang điểm có mô tả từng mức, yêu cầu lý do trước điểm</td>
+<td>Chấm mơ hồ, điểm dồn về giữa</td>
+<td>thang điểm ngắn (0–3) có mô tả từng mức</td>
+</tr>
+<tr>
+<td>Bị câu trả lời "thuyết phục"</td>
+<td>đưa đáp án chuẩn và tài liệu cho judge</td>
 </tr>
 </tbody>
 </table>
-<p><strong>Luôn kiểm tra judge bằng người:</strong> gán nhãn tay 20–50 mẫu, đo tỉ lệ đồng ý giữa judge và người. Dưới khoảng 80% thì sửa prompt chấm trước khi tin nó.</p>
-<h2 id="lt-5">Phân tích lỗi</h2>
-<p>Con số tổng chỉ nói "tệ bao nhiêu", không nói "tệ ở đâu". Sau mỗi lần chạy eval:</p>
-<ol>
-<li>Đọc <strong>từng</strong> câu sai (đúng, đọc hết).</li>
-<li>Gán mỗi lỗi vào một nhóm: không tìm được đoạn đúng, tìm được nhưng LLM hiểu sai, bịa, định dạng sai, câu hỏi mơ hồ…</li>
-<li>Đếm theo nhóm, sửa nhóm lớn nhất trước.</li>
-</ol>
-<h2 id="lt-6">Eval trong quy trình làm việc</h2>
+<h3>Kiểm tra judge bằng người</h3>
+<p><strong>Luôn kiểm tra judge bằng người:</strong> gán nhãn tay 20–50 mẫu, đo mức đồng ý giữa judge và người. Tỉ lệ đồng ý thô có thể đánh lừa khi nhãn mất cân bằng, nên dùng thêm <strong>Cohen's kappa</strong> (đồng ý đã trừ phần đồng ý do may mắn):</p>
+<div class="hl"><pre><span></span><code>κ = (p_o − p_e) / (1 − p_e)
+p_o: tỉ lệ đồng ý quan sát;  p_e: tỉ lệ đồng ý kỳ vọng nếu hai bên chấm ngẫu nhiên theo tỉ lệ của riêng mình
+</code></pre></div>
+
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>40 câu, judge và người cùng chấm đạt/không đạt:</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>người: đạt</th>
+<th>người: không đạt</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>judge: đạt</td>
+<td>20</td>
+<td>4</td>
+</tr>
+<tr>
+<td>judge: không đạt</td>
+<td>3</td>
+<td>13</td>
+</tr>
+</tbody>
+</table>
 <ul>
-<li><strong>Regression test:</strong> chạy bộ eval mỗi khi đổi prompt, model, cách chunking. Đưa vào CI để chặn thay đổi làm điểm tụt (P8.2).</li>
-<li><strong>Tracing:</strong> ghi lại toàn bộ chuỗi xử lý của từng yêu cầu (truy vấn, đoạn tìm được, prompt, đầu ra, độ trễ, chi phí) để debug ca lỗi trong production.</li>
-<li><strong>Độ tin cậy thống kê:</strong> bộ eval nhỏ thì con số dao động nhiều. Chênh 2% trên 50 câu thường chỉ là nhiễu.</li>
+<li>p_o = (20 + 13)/40 = 0.825</li>
+<li>p_e = (24/40)(23/40) + (16/40)(17/40) = 0.345 + 0.17 = 0.515</li>
+<li>κ = (0.825 − 0.515)/(1 − 0.515) ≈ <strong>0.64</strong></li>
+</ul>
+<p>Đồng ý 82.5% nghe cao, nhưng κ = 0.64 chỉ ở mức "khá". Đọc 7 câu bất đồng để sửa prompt chấm.</p>
+</div>
+<p>Quy tắc thực hành: tỉ lệ đồng ý dưới khoảng 80% (hoặc κ dưới 0.6) thì sửa prompt chấm trước khi tin nó.</p>
+<h2 id="lt-6">Phân tích lỗi</h2>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Con số tổng chỉ nói "tệ bao nhiêu", không nói "tệ ở đâu" hay "sửa gì". Phân tích lỗi biến 28 câu sai thành một danh sách việc cần làm có thứ tự ưu tiên.</p>
+</div>
+<p>Sau mỗi lần chạy eval:</p>
+<ol>
+<li>Đọc <strong>từng</strong> câu sai (đúng, đọc hết, kèm các đoạn đã tìm được).</li>
+<li>Gán mỗi lỗi vào một nhóm: không tìm được đoạn đúng, tìm được nhưng LLM hiểu sai, bịa, trích dẫn sai, định dạng sai, câu hỏi mơ hồ…</li>
+<li>Đếm theo nhóm, sửa nhóm lớn nhất trước.</li>
+<li>Sau khi sửa, chạy lại <strong>toàn bộ</strong> eval (không chỉ các câu đã sai) để chắc không làm hỏng câu khác.</li>
+</ol>
+<figure class="fig"><img src="../assets/fig/p4-3-errors.svg" alt="Ví dụ minh họa: 28 câu sai, nhóm &quot;không tìm được đoạn đúng&quot; chiếm 14 câu. Sửa retrieval (hybrid search, reranker) trước, chưa cần đụng prompt." loading="lazy"><figcaption>Ví dụ minh họa: 28 câu sai, nhóm &quot;không tìm được đoạn đúng&quot; chiếm 14 câu. Sửa retrieval (hybrid search, reranker) trước, chưa cần đụng prompt.</figcaption></figure>
+
+<p>Các nhóm lỗi thường gợi ý cách sửa:</p>
+<table>
+<thead>
+<tr>
+<th>Nhóm lỗi</th>
+<th>Thường sửa bằng</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Không tìm được đoạn đúng</td>
+<td>chunking, hybrid, reranker, viết lại truy vấn (P4.5)</td>
+</tr>
+<tr>
+<td>Tìm được nhưng hiểu sai</td>
+<td>đưa ít đoạn hơn, sắp đoạn đúng lên đầu, model mạnh hơn</td>
+</tr>
+<tr>
+<td>Bịa</td>
+<td>nhấn mạnh "chỉ dùng tài liệu", yêu cầu trích dẫn từng ý</td>
+</tr>
+<tr>
+<td>Không từ chối khi nên từ chối</td>
+<td>ví dụ few-shot về từ chối</td>
+</tr>
+<tr>
+<td>Định dạng sai</td>
+<td>structured output (P4.1)</td>
+</tr>
+</tbody>
+</table>
+<h2 id="lt-7">Độ tin cậy thống kê</h2>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Prompt B đạt 76%, prompt A đạt 72% trên 100 câu. B tốt hơn thật, hay chỉ may mắn trên đúng 100 câu này? Trả lời sai câu hỏi này là cách nhanh nhất để đưa một thay đổi vô ích (hoặc có hại) lên production.</p>
+</div>
+<h3>Khoảng tin cậy</h3>
+<p>Với độ chính xác p đo trên n câu, khoảng tin cậy 95% xấp xỉ:</p>
+<div class="hl"><pre><span></span><code>p ± 1.96 · √( p(1 − p) / n )
+</code></pre></div>
+
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>p = 0.7 trên n = 100 câu: nửa độ rộng = 1.96 × √(0.21/100) ≈ <strong>0.09</strong>. Độ chính xác thật nằm khoảng 61% đến 79%. Muốn sai số ±5 điểm cần khoảng 320 câu.</p>
+</div>
+<figure class="fig"><img src="../assets/fig/p4-3-ci.svg" alt="Nửa độ rộng khoảng tin cậy giảm theo 1/√n: tăng gấp 4 số câu mới giảm được một nửa sai số." loading="lazy"><figcaption>Nửa độ rộng khoảng tin cậy giảm theo 1/√n: tăng gấp 4 số câu mới giảm được một nửa sai số.</figcaption></figure>
+
+<h3>So sánh có cặp</h3>
+<p>Khi so hai phiên bản, chạy <strong>cùng</strong> bộ câu và so <strong>từng câu</strong> (so có cặp), không chỉ so hai con số tổng. Chỉ những câu mà hai phiên bản cho kết quả khác nhau mới mang thông tin.</p>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>100 câu: 66 câu cả hai đúng, 18 câu cả hai sai, <strong>10 câu chỉ B đúng</strong>, <strong>6 câu chỉ A đúng</strong>. A = 72%, B = 76%.</p>
+<ul>
+<li>Kiểm định McNemar chính xác: trong 16 câu khác nhau, nếu A và B ngang nhau thì việc B thắng 10 hay hơn có xác suất (hai phía) khoảng <strong>0.45</strong>. Không có bằng chứng B tốt hơn.</li>
+<li>Bootstrap (lấy mẫu lại 100 câu có hoàn lại 10.000 lần, tính B − A mỗi lần): khoảng 95% từ <strong>−4 đến +12 điểm</strong>, chứa 0.</li>
+</ul>
+</div>
+<figure class="fig"><img src="../assets/fig/p4-3-boot.svg" alt="Phân phối bootstrap của chênh lệch B − A. Khoảng tin cậy (vùng xanh) chứa 0: chưa kết luận được." loading="lazy"><figcaption>Phân phối bootstrap của chênh lệch B − A. Khoảng tin cậy (vùng xanh) chứa 0: chưa kết luận được.</figcaption></figure>
+
+<p>Kết luận đúng ở ví dụ trên: "B có vẻ tốt hơn khoảng 4 điểm nhưng chưa chắc; cần thêm câu eval, hoặc đọc 16 câu khác nhau để xem B thắng ở loại câu nào."</p>
+<h2 id="lt-8">Eval trong quy trình làm việc</h2>
+<ul>
+<li><strong>Regression test:</strong> chạy bộ eval mỗi khi đổi prompt, model, cách chunking, phiên bản thư viện. Đưa vào CI để chặn thay đổi làm điểm tụt quá ngưỡng (P8.2).</li>
+<li><strong>Tracing:</strong> ghi lại toàn bộ chuỗi xử lý của từng yêu cầu (truy vấn, đoạn tìm được, prompt, đầu ra, độ trễ, chi phí) để debug ca lỗi trong production và biến chúng thành ví dụ eval mới.</li>
+<li><strong>Theo dõi chi phí và độ trễ</strong> cùng chất lượng: một phiên bản đúng hơn 2 điểm mà chậm gấp đôi chưa chắc tốt hơn.</li>
+<li><strong>Online:</strong> sau khi đưa lên, theo dõi tín hiệu từ người dùng thật (thích/không thích, hỏi lại, chuyển sang nhân viên) và A/B test các thay đổi lớn (P8.3).</li>
 </ul>
 <div class="keep">
 <p><strong>Ghi nhớ:</strong> không có bộ eval thì không có cải tiến, chỉ có thay đổi.</p>
-</div></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p4.3:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 3</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>MRR</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Bốn câu hỏi, thứ hạng của đoạn đúng đầu tiên: 1, 3, không tìm thấy, 2.</p>
+</div>
+<div class="box check">
+<div class="box-h">Tự kiểm tra nhanh</div>
+<p>Bộ eval 64 câu, độ chính xác đo được 0.75.</p>
+<div class="ans" id="p4-3-t-b196-a1">
+<div class="ans-fields"><label>Nửa độ rộng khoảng tin cậy 95%<input inputmode="decimal" data-ans="0.1061" data-tol="0.001" autocomplete="off"></label><label>Số câu cần để nửa độ rộng giảm còn một nửa<input inputmode="decimal" data-ans="256.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div>
+<div aria-live="polite" class="ans-fb"></div>
+</div>
+</div>
+<h2 id="lt-9">Tóm tắt bài và thuật ngữ</h2>
+<table>
+<thead>
+<tr>
+<th>Tầng</th>
+<th>Đo gì</th>
+<th>Công cụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Retrieval</td>
+<td>đoạn đúng có trong top-k không</td>
+<td>recall@k, MRR, nDCG</td>
+</tr>
+<tr>
+<td>Câu trả lời</td>
+<td>đúng, bám nguồn, trích dẫn đúng, từ chối đúng</td>
+<td>so khớp, F1, LLM-as-judge</td>
+</tr>
+<tr>
+<td>Judge</td>
+<td>judge có chấm giống người không</td>
+<td>tỉ lệ đồng ý, Cohen's kappa</td>
+</tr>
+<tr>
+<td>So sánh</td>
+<td>thay đổi có thật sự tốt hơn không</td>
+<td>so có cặp, McNemar, bootstrap</td>
+</tr>
+<tr>
+<td>Quy trình</td>
+<td>không làm hỏng thứ đang chạy</td>
+<td>regression trong CI, tracing</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Thuật ngữ</th>
+<th>Nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>eval / evaluation set</td>
+<td>bộ ví dụ có đáp án để đánh giá</td>
+</tr>
+<tr>
+<td>golden set</td>
+<td>bộ eval vàng, chất lượng cao, ổn định</td>
+</tr>
+<tr>
+<td>recall@k / precision@k</td>
+<td>độ phủ / độ chính xác trong top-k</td>
+</tr>
+<tr>
+<td>MRR</td>
+<td>trung bình nghịch đảo hạng của kết quả đúng đầu tiên</td>
+</tr>
+<tr>
+<td>nDCG</td>
+<td>điểm xếp hạng có chiết khấu theo vị trí</td>
+</tr>
+<tr>
+<td>faithfulness / groundedness</td>
+<td>câu trả lời bám vào tài liệu</td>
+</tr>
+<tr>
+<td>LLM-as-judge</td>
+<td>dùng LLM chấm đầu ra</td>
+</tr>
+<tr>
+<td>rubric</td>
+<td>thang điểm có mô tả từng mức</td>
+</tr>
+<tr>
+<td>Cohen's kappa</td>
+<td>mức đồng ý đã trừ phần do may mắn</td>
+</tr>
+<tr>
+<td>error analysis</td>
+<td>phân loại và đếm lỗi để ưu tiên sửa</td>
+</tr>
+<tr>
+<td>confidence interval</td>
+<td>khoảng tin cậy của một con số đo</td>
+</tr>
+<tr>
+<td>paired comparison / McNemar</td>
+<td>so từng câu giữa hai phiên bản</td>
+</tr>
+<tr>
+<td>bootstrap</td>
+<td>lấy mẫu lại có hoàn lại để ước lượng độ dao động</td>
+</tr>
+<tr>
+<td>regression test</td>
+<td>kiểm tra thay đổi không làm hỏng thứ cũ</td>
+</tr>
+<tr>
+<td>tracing</td>
+<td>ghi lại toàn bộ chuỗi xử lý của một yêu cầu</td>
+</tr>
+</tbody>
+</table></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p4.3:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 3</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>MRR</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Bốn câu hỏi, thứ hạng của đoạn đúng đầu tiên: 1, 3, không tìm thấy, 2.</p>
 <div class="ans" id="p4-3-e1-a1"><div class="ans-fields"><label>MRR<input inputmode="decimal" data-ans="0.4583" data-tol="0.001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
 
 <details class="fold solution">
@@ -198,7 +603,7 @@ Viết lý do ngắn trước, rồi cho điểm. Chỉ trả JSON:
     </div>
     <aside class="aside">
       <div class="abox"><h4>Tiến độ bài này</h4><div class="ring"><svg viewBox="0 0 64 64" aria-hidden="true"><circle class="bg" cx="32" cy="32" r="28"/><circle class="fg" cx="32" cy="32" r="28" stroke-dasharray="176" stroke-dashoffset="176"/></svg><div><b id="ring-n">0/3</b><span id="ring-sub">phần đã xong</span></div></div></div>
-      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Bộ eval vàng</a></li><li><a href="#lt-2">Đo retrieval</a></li><li><a href="#lt-3">Đo câu trả lời</a></li><li><a href="#lt-4">LLM-as-judge</a></li><li><a href="#lt-5">Phân tích lỗi</a></li><li><a href="#lt-6">Eval trong quy trình làm việc</a></li></ol></div>
+      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Vì sao ứng dụng LLM cần eval riêng</a></li><li><a href="#lt-2">Bộ eval vàng</a></li><li><a href="#lt-3">Đo retrieval</a></li><li><a href="#lt-4">Đo câu trả lời</a></li><li><a href="#lt-5">LLM-as-judge</a></li><li><a href="#lt-6">Phân tích lỗi</a></li><li><a href="#lt-7">Độ tin cậy thống kê</a></li><li><a href="#lt-8">Eval trong quy trình làm việc</a></li><li><a href="#lt-9">Tóm tắt bài và thuật ngữ</a></li></ol></div>
       
       <div class="abox"><h4>Cùng giai đoạn</h4><ul><li><a href="p4-1.html">Bài 4 · Làm việc với LLM</a></li><li><a href="p4-2.html">Bài 5 · Embedding và RAG</a></li><li><span class=cur>Bài 6 · Đánh giá hệ thống AI</span></li><li><a href="p4-4.html">Bài 7 · Agent</a></li><li><a href="p4-5.html">RAG nâng cao</a></li><li><a href="p4-6.html">Multi-agent</a></li><li><a href="p4-7.html">MCP và hệ sinh thái tool</a></li><li><a href="p4-8.html">Guardrails, an toàn và human-in-the-loop</a></li></ul></div>
     </aside>

@@ -22,11 +22,23 @@
 <main class="container">
   <div class="crumbs"><a href="../bai-hoc.html">Bài học</a><span>/</span><a href="../bai-hoc.html#p4">P4 · LLM Engineering</a><span>/</span><span>P4.7</span></div>
   <section class="lhero"><div class="code">P4.7</div><h1>MCP và hệ sinh thái tool</h1><div class="lmeta"><span class="m">Giai đoạn P4 · LLM Engineering</span><span class="m">Tuần 18–25</span><span class="chip ready"><span class="dot"></span>Có nội dung đầy đủ</span></div>
-    <div class="intro"><p>Mỗi ứng dụng AI đều cần nối với dữ liệu và công cụ: Google Drive, cơ sở dữ liệu, Slack, hệ thống nội bộ. Trước đây mỗi cặp ứng dụng–công cụ phải viết một tích hợp riêng. <strong>Model Context Protocol (MCP)</strong> là chuẩn mở để viết một lần, dùng được ở mọi ứng dụng hỗ trợ MCP. Bài này dạy kiến trúc MCP, cách thiết kế tool tốt, tự viết một MCP server bằng Python, và bảo mật tool.</p></div></section>
+    <div class="intro"><p>Mỗi ứng dụng AI đều cần nối với dữ liệu và công cụ: Google Drive, cơ sở dữ liệu, Slack, hệ thống nội bộ. Trước đây mỗi cặp ứng dụng–công cụ phải viết một tích hợp riêng. <strong>Model Context Protocol (MCP)</strong> là chuẩn mở để viết một lần, dùng được ở mọi ứng dụng hỗ trợ MCP. Bài này dạy kiến trúc MCP, cách thiết kế tool tốt, tự viết một MCP server và client bằng Python (code đã chạy thử), và bảo mật tool.</p></div></section>
   
-  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">4 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
+  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">6 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
   <div class="lgrid" style="margin-top:22px">
-    <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">Kiến trúc MCP</h2>
+    <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">Vì sao cần một chuẩn</h2>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Không có chuẩn, mỗi ứng dụng AI phải tự viết code nối với từng hệ thống, và mỗi hệ thống phải viết plugin cho từng ứng dụng. MCP giống cổng USB cho AI: hệ thống của bạn viết một MCP server là dùng được ngay trong Claude Desktop, IDE, và agent tự viết của bạn.</p>
+</div>
+<figure class="fig"><img src="../assets/fig/p4-7-nxm.svg" alt="3 ứng dụng và 4 nguồn dữ liệu: không có chuẩn cần 12 tích hợp riêng; có MCP, mỗi ứng dụng một client, mỗi nguồn một server." loading="lazy"><figcaption>3 ứng dụng và 4 nguồn dữ liệu: không có chuẩn cần 12 tích hợp riêng; có MCP, mỗi ứng dụng một client, mỗi nguồn một server.</figcaption></figure>
+
+<p>Với M ứng dụng và N công cụ, số tích hợp giảm từ M × N xuống M + N. Đó cũng là lý do MCP lan nhanh: viết một server cho hệ thống nội bộ của công ty là mọi công cụ AI hỗ trợ MCP đều dùng được.</p>
+<h2 id="lt-2">Kiến trúc MCP</h2>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Hiểu ai làm gì (host, client, server) giúp bạn biết code của mình nằm ở đâu, và biết chỗ nào phải kiểm tra bảo mật.</p>
+</div>
 <table>
 <thead>
 <tr>
@@ -38,7 +50,7 @@
 <tbody>
 <tr>
 <td>Host</td>
-<td>ứng dụng người dùng tương tác</td>
+<td>ứng dụng người dùng tương tác, chứa LLM</td>
 <td>Claude Desktop, IDE, agent của bạn</td>
 </tr>
 <tr>
@@ -53,15 +65,70 @@
 </tr>
 </tbody>
 </table>
-<p>Server cung cấp ba loại khả năng:</p>
-<ul>
-<li><strong>Tools:</strong> hàm model có thể gọi (tra đơn, tạo vé hỗ trợ). Model quyết định khi nào gọi.</li>
-<li><strong>Resources:</strong> dữ liệu đọc được qua URI (<code>orders://today</code>, nội dung file). Ứng dụng hoặc người dùng chọn đưa vào context.</li>
-<li><strong>Prompts:</strong> mẫu prompt dựng sẵn mà người dùng chọn dùng (ví dụ "báo cáo tuần").</li>
-</ul>
-<p>Giao tiếp bằng JSON-RPC qua <strong>stdio</strong> (server chạy như tiến trình con trên máy) hoặc <strong>HTTP</strong> (server chạy từ xa, có xác thực).</p>
-<h2 id="lt-2">Thiết kế tool tốt</h2>
-<p>Model chỉ biết về tool qua <strong>tên, mô tả và schema</strong>. Đó là prompt, hãy viết cẩn thận như prompt:</p>
+<figure class="fig"><img src="../assets/fig/p4-7-arch.svg" alt="Một host có thể nối nhiều server, mỗi server qua một client riêng. Server chạy cục bộ dùng stdio, server từ xa dùng HTTP có xác thực." loading="lazy"><figcaption>Một host có thể nối nhiều server, mỗi server qua một client riêng. Server chạy cục bộ dùng stdio, server từ xa dùng HTTP có xác thực.</figcaption></figure>
+
+<h3>Ba loại khả năng</h3>
+<table>
+<thead>
+<tr>
+<th>Loại</th>
+<th>Ai quyết định dùng</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Tools</strong></td>
+<td>model quyết định khi nào gọi</td>
+<td><code>get_order</code>, <code>create_ticket</code></td>
+</tr>
+<tr>
+<td><strong>Resources</strong></td>
+<td>ứng dụng hoặc người dùng chọn đưa vào context</td>
+<td><code>orders://summary</code>, nội dung một file</td>
+</tr>
+<tr>
+<td><strong>Prompts</strong></td>
+<td>người dùng chọn dùng (như lệnh tắt)</td>
+<td>mẫu "báo cáo tuần"</td>
+</tr>
+</tbody>
+</table>
+<p>Tools giống tool calling ở P4.1, chỉ khác là định nghĩa nằm ở server và được chuẩn hóa. Resources giống "tài liệu đính kèm": dữ liệu đọc, không có tác dụng phụ.</p>
+<h3>Giao tiếp</h3>
+<p>Client và server trao đổi bằng <strong>JSON-RPC</strong>:</p>
+<ol>
+<li><code>initialize</code>: hai bên chào nhau, thống nhất phiên bản giao thức và khả năng.</li>
+<li><code>tools/list</code>, <code>resources/list</code>, <code>prompts/list</code>: client hỏi server có gì.</li>
+<li><code>tools/call</code>, <code>resources/read</code>, <code>prompts/get</code>: dùng từng khả năng.</li>
+</ol>
+<p>Hai kiểu vận chuyển:</p>
+<table>
+<thead>
+<tr>
+<th>Kiểu</th>
+<th>Server chạy ở đâu</th>
+<th>Dùng khi</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>stdio</strong></td>
+<td>tiến trình con trên cùng máy, giao tiếp qua đầu vào/đầu ra chuẩn</td>
+<td>công cụ cá nhân, truy cập file cục bộ</td>
+</tr>
+<tr>
+<td><strong>HTTP</strong> (streamable HTTP)</td>
+<td>máy chủ từ xa, có xác thực (OAuth)</td>
+<td>dịch vụ dùng chung cho nhiều người, SaaS</td>
+</tr>
+</tbody>
+</table>
+<h2 id="lt-3">Thiết kế tool tốt</h2>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>MCP chỉ chuẩn hóa <strong>cách nối</strong>. Model vẫn chỉ biết về tool qua tên, mô tả và schema, nên chất lượng tool quyết định agent có dùng đúng hay không. Đây là phần khó nhất và quan trọng nhất của việc viết MCP server.</p>
+</div>
 <table>
 <thead>
 <tr>
@@ -71,7 +138,7 @@
 </thead>
 <tbody>
 <tr>
-<td><code>search_orders(customer_phone, status, from_date)</code></td>
+<td><code>search_orders(phone, status, limit)</code></td>
 <td><code>query(sql)</code> cho model tự viết SQL</td>
 </tr>
 <tr>
@@ -94,14 +161,55 @@
 <td>Gộp các bước hay đi cùng nhau thành một tool</td>
 <td>bắt model gọi 4 tool nhỏ cho một việc</td>
 </tr>
+<tr>
+<td>Tool đọc và tool ghi tách riêng</td>
+<td>một tool <code>manage_order(action=...)</code> làm mọi thứ</td>
+</tr>
 </tbody>
 </table>
-<p>Mỗi tool trong danh sách tốn token trong <strong>mọi</strong> yêu cầu. 30 tool với mô tả dài có thể chiếm vài nghìn token trước khi người dùng nói gì.</p>
-<h2 id="lt-3">Viết MCP server bằng Python</h2>
-<div class="hl"><pre><span></span><code><span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">mcp.server.fastmcp</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">FastMCP</span>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p><strong>Tool kém:</strong></p>
+<div class="hl"><pre><span></span><code><span class="tk-nd">@mcp</span><span class="tk-o">.</span><span class="tk-n">tool</span><span class="tk-p">()</span>
+<span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">orders</span><span class="tk-p">(</span><span class="tk-n">q</span><span class="tk-p">:</span> <span class="tk-nb">str</span><span class="tk-p">)</span> <span class="tk-o">-&gt;</span> <span class="tk-nb">str</span><span class="tk-p">:</span>
+<span class="tk-w">    </span><span class="tk-sd">"""Orders."""</span>
+</code></pre></div>
+
+<p>Model không biết <code>q</code> là mã đơn, số điện thoại hay câu hỏi; không biết trả về gì.</p>
+<p><strong>Tool tốt:</strong></p>
+<div class="hl"><pre><span></span><code><span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">typing</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">Literal</span>
+
+<span class="tk-nd">@mcp</span><span class="tk-o">.</span><span class="tk-n">tool</span><span class="tk-p">()</span>
+<span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">search_orders</span><span class="tk-p">(</span><span class="tk-n">phone</span><span class="tk-p">:</span> <span class="tk-nb">str</span><span class="tk-p">,</span> <span class="tk-n">status</span><span class="tk-p">:</span> <span class="tk-n">Literal</span><span class="tk-p">[</span><span class="tk-s2">"đang giao"</span><span class="tk-p">,</span> <span class="tk-s2">"đã giao"</span><span class="tk-p">,</span> <span class="tk-s2">"đã hủy"</span><span class="tk-p">]</span> <span class="tk-o">|</span> <span class="tk-kc">None</span> <span class="tk-o">=</span> <span class="tk-kc">None</span><span class="tk-p">,</span>
+                  <span class="tk-n">limit</span><span class="tk-p">:</span> <span class="tk-nb">int</span> <span class="tk-o">=</span> <span class="tk-mi">5</span><span class="tk-p">)</span> <span class="tk-o">-&gt;</span> <span class="tk-nb">list</span><span class="tk-p">[</span><span class="tk-nb">dict</span><span class="tk-p">]:</span>
+<span class="tk-w">    </span><span class="tk-sd">"""Tìm đơn của một khách theo số điện thoại (10 chữ số).</span>
+<span class="tk-sd">    Lọc theo trạng thái nếu cần. Trả về tối đa `limit` đơn, mới nhất trước.</span>
+<span class="tk-sd">    Dùng khi khách không nhớ mã đơn. Nếu đã có mã đơn, dùng get_order."""</span>
+</code></pre></div>
+
+<p>SDK sinh schema có <code>enum</code> cho <code>status</code> từ kiểu <code>Literal</code>, nên model không thể gửi trạng thái lạ như "đang ship".</p>
+</div>
+<h3>Tool tốn token ở mọi yêu cầu</h3>
+<p>Mô tả và schema của <strong>mọi</strong> tool được gửi kèm <strong>mọi</strong> yêu cầu tới LLM (để model biết có gì mà chọn). 40 tool, mỗi tool khoảng 250 token, là 10.000 token cố định trước khi người dùng nói gì.</p>
+<figure class="fig"><img src="../assets/fig/p4-7-toolcost.svg" alt="Chi phí cố định tăng tuyến tính theo số tool và độ dài mô tả. Nhiều tool còn làm model dễ chọn nhầm hơn." loading="lazy"><figcaption>Chi phí cố định tăng tuyến tính theo số tool và độ dài mô tả. Nhiều tool còn làm model dễ chọn nhầm hơn.</figcaption></figure>
+
+<p>Cách giảm: chỉ bật những server cần cho phiên làm việc, gộp tool gần giống nhau, mô tả đủ ý nhưng gọn, và với hệ rất nhiều tool thì cho model một tool "tìm tool" thay vì liệt kê hết.</p>
+<h2 id="lt-4">Viết MCP server bằng Python</h2>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Tự viết một MCP server cho dữ liệu của chính bạn (đơn hàng shop, ghi chú học tập, bảng tính) là cách nhanh nhất để thấy giá trị của MCP, và là một mục portfolio thực tế.</p>
+</div>
+<div class="box pitfall">
+<div class="box-h">Lỗi hay gặp</div>
+<p><strong>Phiên bản SDK.</strong> Code trong bài dùng <strong>MCP Python SDK 1.x</strong> (<code>pip install "mcp&lt;2"</code>), phiên bản phổ biến trong hầu hết tài liệu và ví dụ hiện có. Ở bản 2.x, <code>FastMCP</code> được đổi tên thành <code>MCPServer</code> (<code>from mcp.server.mcpserver import MCPServer</code>) và nhiều trường đổi sang kiểu snake_case (ví dụ <code>tool.input_schema</code> thay cho <code>tool.inputSchema</code>). Ghi rõ phiên bản trong <code>requirements.txt</code> để code không hỏng khi thư viện cập nhật.</p>
+</div>
+<div class="hl"><pre><span></span><code><span class="tk-c1"># server.py</span>
+<span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">typing</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">Literal</span>
+<span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">mcp.server.fastmcp</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">FastMCP</span>
 
 <span class="tk-n">mcp</span> <span class="tk-o">=</span> <span class="tk-n">FastMCP</span><span class="tk-p">(</span><span class="tk-s2">"shop-orders"</span><span class="tk-p">)</span>
-<span class="tk-n">ORDERS</span> <span class="tk-o">=</span> <span class="tk-p">{</span><span class="tk-s2">"DH1024"</span><span class="tk-p">:</span> <span class="tk-p">{</span><span class="tk-s2">"status"</span><span class="tk-p">:</span> <span class="tk-s2">"đang giao"</span><span class="tk-p">,</span> <span class="tk-s2">"eta"</span><span class="tk-p">:</span> <span class="tk-s2">"2026-11-06"</span><span class="tk-p">,</span> <span class="tk-s2">"items"</span><span class="tk-p">:</span> <span class="tk-p">[</span><span class="tk-s2">"bàn trang điểm"</span><span class="tk-p">]}}</span>
+<span class="tk-n">ORDERS</span> <span class="tk-o">=</span> <span class="tk-p">{</span><span class="tk-s2">"DH1024"</span><span class="tk-p">:</span> <span class="tk-p">{</span><span class="tk-s2">"status"</span><span class="tk-p">:</span> <span class="tk-s2">"đang giao"</span><span class="tk-p">,</span> <span class="tk-s2">"eta"</span><span class="tk-p">:</span> <span class="tk-s2">"2026-11-06"</span><span class="tk-p">,</span> <span class="tk-s2">"items"</span><span class="tk-p">:</span> <span class="tk-p">[</span><span class="tk-s2">"bàn trang điểm"</span><span class="tk-p">],</span> <span class="tk-s2">"phone"</span><span class="tk-p">:</span> <span class="tk-s2">"0901234567"</span><span class="tk-p">},</span>
+          <span class="tk-s2">"DH1025"</span><span class="tk-p">:</span> <span class="tk-p">{</span><span class="tk-s2">"status"</span><span class="tk-p">:</span> <span class="tk-s2">"đã giao"</span><span class="tk-p">,</span> <span class="tk-s2">"eta"</span><span class="tk-p">:</span> <span class="tk-s2">"2026-11-02"</span><span class="tk-p">,</span> <span class="tk-s2">"items"</span><span class="tk-p">:</span> <span class="tk-p">[</span><span class="tk-s2">"ghế"</span><span class="tk-p">],</span> <span class="tk-s2">"phone"</span><span class="tk-p">:</span> <span class="tk-s2">"0901234567"</span><span class="tk-p">}}</span>
 
 <span class="tk-nd">@mcp</span><span class="tk-o">.</span><span class="tk-n">tool</span><span class="tk-p">()</span>
 <span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">get_order</span><span class="tk-p">(</span><span class="tk-n">order_id</span><span class="tk-p">:</span> <span class="tk-nb">str</span><span class="tk-p">)</span> <span class="tk-o">-&gt;</span> <span class="tk-nb">dict</span><span class="tk-p">:</span>
@@ -109,7 +217,16 @@
 <span class="tk-sd">    Trả về trạng thái, ngày giao dự kiến và sản phẩm. Dùng khi khách hỏi đơn của họ."""</span>
     <span class="tk-k">if</span> <span class="tk-n">order_id</span> <span class="tk-ow">not</span> <span class="tk-ow">in</span> <span class="tk-n">ORDERS</span><span class="tk-p">:</span>
         <span class="tk-k">return</span> <span class="tk-p">{</span><span class="tk-s2">"error"</span><span class="tk-p">:</span> <span class="tk-sa">f</span><span class="tk-s2">"Không có đơn </span><span class="tk-si">{</span><span class="tk-n">order_id</span><span class="tk-si">}</span><span class="tk-s2">. Kiểm tra lại mã, dạng DH + 4 chữ số."</span><span class="tk-p">}</span>
-    <span class="tk-k">return</span> <span class="tk-n">ORDERS</span><span class="tk-p">[</span><span class="tk-n">order_id</span><span class="tk-p">]</span>
+    <span class="tk-n">o</span> <span class="tk-o">=</span> <span class="tk-n">ORDERS</span><span class="tk-p">[</span><span class="tk-n">order_id</span><span class="tk-p">]</span>
+    <span class="tk-k">return</span> <span class="tk-p">{</span><span class="tk-n">k</span><span class="tk-p">:</span> <span class="tk-n">o</span><span class="tk-p">[</span><span class="tk-n">k</span><span class="tk-p">]</span> <span class="tk-k">for</span> <span class="tk-n">k</span> <span class="tk-ow">in</span> <span class="tk-p">(</span><span class="tk-s2">"status"</span><span class="tk-p">,</span> <span class="tk-s2">"eta"</span><span class="tk-p">,</span> <span class="tk-s2">"items"</span><span class="tk-p">)}</span>        <span class="tk-c1"># không trả số điện thoại ra ngoài</span>
+
+<span class="tk-nd">@mcp</span><span class="tk-o">.</span><span class="tk-n">tool</span><span class="tk-p">()</span>
+<span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">search_orders</span><span class="tk-p">(</span><span class="tk-n">phone</span><span class="tk-p">:</span> <span class="tk-nb">str</span><span class="tk-p">,</span> <span class="tk-n">status</span><span class="tk-p">:</span> <span class="tk-n">Literal</span><span class="tk-p">[</span><span class="tk-s2">"đang giao"</span><span class="tk-p">,</span> <span class="tk-s2">"đã giao"</span><span class="tk-p">,</span> <span class="tk-s2">"đã hủy"</span><span class="tk-p">]</span> <span class="tk-o">|</span> <span class="tk-kc">None</span> <span class="tk-o">=</span> <span class="tk-kc">None</span><span class="tk-p">,</span>
+                  <span class="tk-n">limit</span><span class="tk-p">:</span> <span class="tk-nb">int</span> <span class="tk-o">=</span> <span class="tk-mi">5</span><span class="tk-p">)</span> <span class="tk-o">-&gt;</span> <span class="tk-nb">list</span><span class="tk-p">[</span><span class="tk-nb">dict</span><span class="tk-p">]:</span>
+<span class="tk-w">    </span><span class="tk-sd">"""Tìm đơn của một khách theo số điện thoại (10 chữ số). Lọc theo trạng thái nếu cần."""</span>
+    <span class="tk-n">rows</span> <span class="tk-o">=</span> <span class="tk-p">[{</span><span class="tk-s2">"order_id"</span><span class="tk-p">:</span> <span class="tk-n">k</span><span class="tk-p">,</span> <span class="tk-s2">"status"</span><span class="tk-p">:</span> <span class="tk-n">v</span><span class="tk-p">[</span><span class="tk-s2">"status"</span><span class="tk-p">]}</span> <span class="tk-k">for</span> <span class="tk-n">k</span><span class="tk-p">,</span> <span class="tk-n">v</span> <span class="tk-ow">in</span> <span class="tk-n">ORDERS</span><span class="tk-o">.</span><span class="tk-n">items</span><span class="tk-p">()</span>
+            <span class="tk-k">if</span> <span class="tk-n">v</span><span class="tk-p">[</span><span class="tk-s2">"phone"</span><span class="tk-p">]</span> <span class="tk-o">==</span> <span class="tk-n">phone</span> <span class="tk-ow">and</span> <span class="tk-p">(</span><span class="tk-n">status</span> <span class="tk-ow">is</span> <span class="tk-kc">None</span> <span class="tk-ow">or</span> <span class="tk-n">v</span><span class="tk-p">[</span><span class="tk-s2">"status"</span><span class="tk-p">]</span> <span class="tk-o">==</span> <span class="tk-n">status</span><span class="tk-p">)]</span>
+    <span class="tk-k">return</span> <span class="tk-n">rows</span><span class="tk-p">[:</span><span class="tk-n">limit</span><span class="tk-p">]</span>
 
 <span class="tk-nd">@mcp</span><span class="tk-o">.</span><span class="tk-n">resource</span><span class="tk-p">(</span><span class="tk-s2">"orders://summary"</span><span class="tk-p">)</span>
 <span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">orders_summary</span><span class="tk-p">()</span> <span class="tk-o">-&gt;</span> <span class="tk-nb">str</span><span class="tk-p">:</span>
@@ -119,23 +236,170 @@
         <span class="tk-n">counts</span><span class="tk-p">[</span><span class="tk-n">o</span><span class="tk-p">[</span><span class="tk-s2">"status"</span><span class="tk-p">]]</span> <span class="tk-o">=</span> <span class="tk-n">counts</span><span class="tk-o">.</span><span class="tk-n">get</span><span class="tk-p">(</span><span class="tk-n">o</span><span class="tk-p">[</span><span class="tk-s2">"status"</span><span class="tk-p">],</span> <span class="tk-mi">0</span><span class="tk-p">)</span> <span class="tk-o">+</span> <span class="tk-mi">1</span>
     <span class="tk-k">return</span> <span class="tk-s2">"</span><span class="tk-se">\n</span><span class="tk-s2">"</span><span class="tk-o">.</span><span class="tk-n">join</span><span class="tk-p">(</span><span class="tk-sa">f</span><span class="tk-s2">"</span><span class="tk-si">{</span><span class="tk-n">k</span><span class="tk-si">}</span><span class="tk-s2">: </span><span class="tk-si">{</span><span class="tk-n">v</span><span class="tk-si">}</span><span class="tk-s2">"</span> <span class="tk-k">for</span> <span class="tk-n">k</span><span class="tk-p">,</span> <span class="tk-n">v</span> <span class="tk-ow">in</span> <span class="tk-n">counts</span><span class="tk-o">.</span><span class="tk-n">items</span><span class="tk-p">())</span>
 
+<span class="tk-nd">@mcp</span><span class="tk-o">.</span><span class="tk-n">prompt</span><span class="tk-p">()</span>
+<span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">weekly_report</span><span class="tk-p">(</span><span class="tk-n">week</span><span class="tk-p">:</span> <span class="tk-nb">str</span><span class="tk-p">)</span> <span class="tk-o">-&gt;</span> <span class="tk-nb">str</span><span class="tk-p">:</span>
+<span class="tk-w">    </span><span class="tk-sd">"""Mẫu prompt báo cáo đơn hàng theo tuần."""</span>
+    <span class="tk-k">return</span> <span class="tk-sa">f</span><span class="tk-s2">"Tóm tắt tình hình đơn hàng tuần </span><span class="tk-si">{</span><span class="tk-n">week</span><span class="tk-si">}</span><span class="tk-s2">: số đơn mới, đơn giao trễ, khiếu nại."</span>
+
 <span class="tk-k">if</span> <span class="tk-vm">__name__</span> <span class="tk-o">==</span> <span class="tk-s2">"__main__"</span><span class="tk-p">:</span>
     <span class="tk-n">mcp</span><span class="tk-o">.</span><span class="tk-n">run</span><span class="tk-p">()</span>          <span class="tk-c1"># mặc định chạy qua stdio</span>
 </code></pre></div>
 
-<p>SDK đọc type hint và docstring để tự sinh JSON schema và mô tả. Thử server bằng <strong>MCP Inspector</strong> (<code>npx @modelcontextprotocol/inspector python server.py</code>) trước khi nối vào ứng dụng. Để dùng trong Claude Desktop, khai báo trong file cấu hình <code>claude_desktop_config.json</code> mục <code>mcpServers</code> với lệnh chạy server.</p>
-<h2 id="lt-4">Bảo mật tool</h2>
-<p>Tool cho model quyền làm việc thật trên hệ thống thật. Các nguyên tắc:</p>
+<p>SDK đọc <strong>type hint</strong> và <strong>docstring</strong> để tự sinh JSON schema và mô tả. Ví dụ schema sinh ra cho <code>get_order</code>:</p>
+<div class="hl"><pre><span></span><code><span class="tk-p">{</span><span class="tk-nt">"type"</span><span class="tk-p">:</span><span class="tk-w"> </span><span class="tk-s2">"object"</span><span class="tk-p">,</span><span class="tk-w"> </span><span class="tk-nt">"properties"</span><span class="tk-p">:</span><span class="tk-w"> </span><span class="tk-p">{</span><span class="tk-nt">"order_id"</span><span class="tk-p">:</span><span class="tk-w"> </span><span class="tk-p">{</span><span class="tk-nt">"title"</span><span class="tk-p">:</span><span class="tk-w"> </span><span class="tk-s2">"Order Id"</span><span class="tk-p">,</span><span class="tk-w"> </span><span class="tk-nt">"type"</span><span class="tk-p">:</span><span class="tk-w"> </span><span class="tk-s2">"string"</span><span class="tk-p">}},</span><span class="tk-w"> </span><span class="tk-nt">"required"</span><span class="tk-p">:</span><span class="tk-w"> </span><span class="tk-p">[</span><span class="tk-s2">"order_id"</span><span class="tk-p">]}</span>
+</code></pre></div>
+
+<h3>Client: gọi server từ code của bạn</h3>
+<div class="hl"><pre><span></span><code><span class="tk-c1"># client.py</span>
+<span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">asyncio</span><span class="tk-o">,</span><span class="tk-w"> </span><span class="tk-nn">os</span><span class="tk-o">,</span><span class="tk-w"> </span><span class="tk-nn">sys</span>
+<span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">mcp</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">ClientSession</span><span class="tk-p">,</span> <span class="tk-n">StdioServerParameters</span>
+<span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">mcp.client.stdio</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">stdio_client</span>
+
+<span class="tk-k">async</span> <span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">main</span><span class="tk-p">():</span>
+    <span class="tk-n">params</span> <span class="tk-o">=</span> <span class="tk-n">StdioServerParameters</span><span class="tk-p">(</span><span class="tk-n">command</span><span class="tk-o">=</span><span class="tk-n">sys</span><span class="tk-o">.</span><span class="tk-n">executable</span><span class="tk-p">,</span> <span class="tk-n">args</span><span class="tk-o">=</span><span class="tk-p">[</span><span class="tk-s2">"server.py"</span><span class="tk-p">],</span> <span class="tk-n">env</span><span class="tk-o">=</span><span class="tk-nb">dict</span><span class="tk-p">(</span><span class="tk-n">os</span><span class="tk-o">.</span><span class="tk-n">environ</span><span class="tk-p">))</span>
+    <span class="tk-k">async</span> <span class="tk-k">with</span> <span class="tk-n">stdio_client</span><span class="tk-p">(</span><span class="tk-n">params</span><span class="tk-p">)</span> <span class="tk-k">as</span> <span class="tk-p">(</span><span class="tk-n">read</span><span class="tk-p">,</span> <span class="tk-n">write</span><span class="tk-p">):</span>
+        <span class="tk-k">async</span> <span class="tk-k">with</span> <span class="tk-n">ClientSession</span><span class="tk-p">(</span><span class="tk-n">read</span><span class="tk-p">,</span> <span class="tk-n">write</span><span class="tk-p">)</span> <span class="tk-k">as</span> <span class="tk-n">session</span><span class="tk-p">:</span>
+            <span class="tk-k">await</span> <span class="tk-n">session</span><span class="tk-o">.</span><span class="tk-n">initialize</span><span class="tk-p">()</span>
+            <span class="tk-n">tools</span> <span class="tk-o">=</span> <span class="tk-k">await</span> <span class="tk-n">session</span><span class="tk-o">.</span><span class="tk-n">list_tools</span><span class="tk-p">()</span>
+            <span class="tk-nb">print</span><span class="tk-p">([</span><span class="tk-n">t</span><span class="tk-o">.</span><span class="tk-n">name</span> <span class="tk-k">for</span> <span class="tk-n">t</span> <span class="tk-ow">in</span> <span class="tk-n">tools</span><span class="tk-o">.</span><span class="tk-n">tools</span><span class="tk-p">])</span>                        <span class="tk-c1"># ['get_order', 'search_orders']</span>
+            <span class="tk-n">r</span> <span class="tk-o">=</span> <span class="tk-k">await</span> <span class="tk-n">session</span><span class="tk-o">.</span><span class="tk-n">call_tool</span><span class="tk-p">(</span><span class="tk-s2">"get_order"</span><span class="tk-p">,</span> <span class="tk-p">{</span><span class="tk-s2">"order_id"</span><span class="tk-p">:</span> <span class="tk-s2">"DH9"</span><span class="tk-p">})</span>
+            <span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-n">r</span><span class="tk-o">.</span><span class="tk-n">content</span><span class="tk-p">[</span><span class="tk-mi">0</span><span class="tk-p">]</span><span class="tk-o">.</span><span class="tk-n">text</span><span class="tk-p">)</span>    <span class="tk-c1"># {"error": "Không có đơn DH9. Kiểm tra lại mã, dạng DH + 4 chữ số."}</span>
+            <span class="tk-n">res</span> <span class="tk-o">=</span> <span class="tk-k">await</span> <span class="tk-n">session</span><span class="tk-o">.</span><span class="tk-n">read_resource</span><span class="tk-p">(</span><span class="tk-s2">"orders://summary"</span><span class="tk-p">)</span>
+            <span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-n">res</span><span class="tk-o">.</span><span class="tk-n">contents</span><span class="tk-p">[</span><span class="tk-mi">0</span><span class="tk-p">]</span><span class="tk-o">.</span><span class="tk-n">text</span><span class="tk-p">)</span>                                 <span class="tk-c1"># đang giao: 1 / đã giao: 1</span>
+
+<span class="tk-n">asyncio</span><span class="tk-o">.</span><span class="tk-n">run</span><span class="tk-p">(</span><span class="tk-n">main</span><span class="tk-p">())</span>
+</code></pre></div>
+
+<p>Đã chạy thử đúng như trên. Trong agent thật, bạn chuyển <code>tools.tools</code> thành danh sách tool cho LLM (tên, mô tả, <code>inputSchema</code>), và khi LLM yêu cầu gọi tool thì gọi <code>session.call_tool</code>, như vòng lặp ở P4.4.</p>
+<div class="box pitfall">
+<div class="box-h">Lỗi hay gặp</div>
+<p><strong>Server con không thấy biến môi trường.</strong> Khi chạy server qua stdio, SDK mặc định chỉ chuyển một số biến môi trường an toàn (như <code>PATH</code>, <code>HOME</code>) cho tiến trình con. Server cần khóa API, <code>PYTHONPATH</code> hay đường dẫn database sẽ khởi động lỗi và client chỉ báo "Connection closed". Truyền rõ <code>env={...}</code> chỉ gồm những biến server cần.</p>
+</div>
+<h3>Thử và cài đặt</h3>
 <ul>
-<li><strong>Quyền tối thiểu:</strong> tool đọc đơn không cần quyền xóa đơn. Tách tool đọc và tool ghi.</li>
-<li><strong>Xác thực ở server</strong>, không tin tham số do model gửi lên để quyết định quyền (model có thể bị lừa gửi <code>user_id</code> của người khác).</li>
-<li><strong>Hành động không đảo ngược được</strong> (xóa, thanh toán, gửi email) cần người duyệt (P4.8).</li>
-<li><strong>Prompt injection gián tiếp:</strong> dữ liệu tool trả về (email, trang web, ticket) có thể chứa câu lệnh độc hại. Coi mọi nội dung từ tool là dữ liệu, không phải chỉ thị.</li>
-<li><strong>Chỉ cài server từ nguồn tin cậy:</strong> một MCP server chạy code trên máy bạn với quyền của bạn.</li>
+<li><strong>MCP Inspector</strong> (<code>npx @modelcontextprotocol/inspector python server.py</code>): giao diện web để xem tool, gọi thử với tham số tùy ý. Luôn thử ở đây trước khi nối vào ứng dụng.</li>
+<li><strong>Claude Desktop</strong>: khai báo trong file cấu hình <code>claude_desktop_config.json</code>, mục <code>mcpServers</code>, với lệnh chạy server (<code>command</code>, <code>args</code>, <code>env</code>).</li>
+<li><strong>Agent của bạn</strong>: dùng client như trên, hoặc adapter của framework (LangGraph có thư viện nạp tool từ MCP server).</li>
 </ul>
+<h2 id="lt-5">Bảo mật tool</h2>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Tool cho model quyền làm việc thật trên hệ thống thật: đọc dữ liệu khách hàng, gửi email, sửa đơn hàng. Model có thể bị lừa, hiểu sai, hoặc đơn giản là gọi nhầm. Bảo mật phải nằm ở <strong>server</strong>, không thể trông vào việc model "ngoan".</p>
+</div>
+<h3>Các nguyên tắc</h3>
+<ul>
+<li><strong>Quyền tối thiểu:</strong> tool đọc đơn không cần quyền xóa đơn. Tách tool đọc và tool ghi, server đọc dùng tài khoản database chỉ đọc.</li>
+<li><strong>Xác thực ở server</strong>, không tin tham số do model gửi lên để quyết định quyền. Model có thể bị lừa gửi <code>user_id</code> của người khác; server phải lấy danh tính người dùng từ phiên đăng nhập.</li>
+<li><strong>Không trả dữ liệu thừa:</strong> ví dụ ở trên cố ý không trả số điện thoại trong <code>get_order</code>.</li>
+<li><strong>Hành động không đảo ngược được</strong> (xóa, thanh toán, gửi email) cần người duyệt (P4.8).</li>
+<li><strong>Chỉ cài server từ nguồn tin cậy:</strong> một MCP server stdio chạy code trên máy bạn với quyền của bạn, đọc được mọi file bạn đọc được.</li>
+</ul>
+<h3>Prompt injection gián tiếp</h3>
+<p>Nguy hiểm nhất không phải người dùng gõ lệnh độc hại, mà là <strong>dữ liệu tool trả về</strong> chứa lệnh độc hại: một email, một trang web, một ticket hỗ trợ do kẻ xấu viết.</p>
+<figure class="fig"><img src="../assets/fig/p4-7-injection.svg" alt="Agent đọc email chứa câu &quot;bỏ qua chỉ dẫn trước…&quot;. Nếu agent coi đó là chỉ dẫn và có tool gửi email, dữ liệu có thể bị rò ra ngoài." loading="lazy"><figcaption>Agent đọc email chứa câu &quot;bỏ qua chỉ dẫn trước…&quot;. Nếu agent coi đó là chỉ dẫn và có tool gửi email, dữ liệu có thể bị rò ra ngoài.</figcaption></figure>
+
+<p>Phòng thủ nhiều lớp (chi tiết P4.8):</p>
+<ol>
+<li>Coi mọi nội dung từ tool là <strong>dữ liệu</strong>: đánh dấu rõ trong prompt, không làm theo chỉ dẫn trong đó.</li>
+<li><strong>Không kết hợp</strong> trong cùng một agent ba thứ: đọc dữ liệu không tin cậy, truy cập dữ liệu nhạy cảm, và gửi dữ liệu ra ngoài.</li>
+<li>Hành động gửi ra ngoài, thanh toán, xóa: <strong>người duyệt</strong>.</li>
+</ol>
 <div class="keep">
 <p><strong>Ghi nhớ:</strong> MCP chuẩn hóa <strong>cách nối</strong>, không tự làm tool an toàn hay dễ dùng. Chất lượng mô tả và thiết kế quyền vẫn là việc của bạn.</p>
-</div></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p4.7:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 1</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Chi phí của danh sách tool</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Ứng dụng có 12 tool, mỗi định nghĩa tool chiếm trung bình 150 token và được gửi kèm mọi yêu cầu. Giá ví dụ 1 USD cho 1 triệu token đầu vào.</p>
+</div>
+<div class="box check">
+<div class="box-h">Tự kiểm tra nhanh</div>
+<p>Một host bật 3 MCP server: server A có 8 tool, server B có 14 tool, server C có 6 tool. Mô tả trung bình 180 token mỗi tool.</p>
+<div class="ans" id="p4-7-t-b184-a1">
+<div class="ans-fields"><label>Tổng số tool<input inputmode="decimal" data-ans="28.0" data-tol="0.0" autocomplete="off"></label><label>Token cố định thêm vào mỗi yêu cầu<input inputmode="decimal" data-ans="5040.0" data-tol="0.0" autocomplete="off"></label><label>Nếu tắt server B khi không cần, token còn lại<input inputmode="decimal" data-ans="2520.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div>
+<div aria-live="polite" class="ans-fb"></div>
+</div>
+</div>
+<h2 id="lt-6">Tóm tắt bài và thuật ngữ</h2>
+<table>
+<thead>
+<tr>
+<th>Chủ đề</th>
+<th>Điều cần nhớ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Vì sao MCP</td>
+<td>M × N tích hợp thành M + N</td>
+</tr>
+<tr>
+<td>Kiến trúc</td>
+<td>host chứa client, mỗi client nối một server</td>
+</tr>
+<tr>
+<td>Khả năng</td>
+<td>tools (model chọn), resources (ứng dụng chọn), prompts (người dùng chọn)</td>
+</tr>
+<tr>
+<td>Vận chuyển</td>
+<td>stdio (cục bộ), HTTP + xác thực (từ xa)</td>
+</tr>
+<tr>
+<td>Tool tốt</td>
+<td>tên rõ, mô tả khi nào dùng, kiểu chặt (enum), kết quả gọn, lỗi có hướng dẫn</td>
+</tr>
+<tr>
+<td>Code</td>
+<td>SDK 1.x: <code>FastMCP</code>, <code>@mcp.tool()</code>; client: <code>stdio_client</code> + <code>ClientSession</code></td>
+</tr>
+<tr>
+<td>Bảo mật</td>
+<td>quyền tối thiểu, xác thực ở server, chống injection gián tiếp, người duyệt</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Thuật ngữ</th>
+<th>Nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>MCP</td>
+<td>Model Context Protocol, chuẩn nối ứng dụng AI với công cụ và dữ liệu</td>
+</tr>
+<tr>
+<td>host / client / server</td>
+<td>ứng dụng / bộ kết nối / chương trình cung cấp khả năng</td>
+</tr>
+<tr>
+<td>tool / resource / prompt</td>
+<td>hàm gọi được / dữ liệu đọc được / mẫu prompt</td>
+</tr>
+<tr>
+<td>JSON-RPC</td>
+<td>giao thức gọi hàm từ xa dạng JSON</td>
+</tr>
+<tr>
+<td>stdio / streamable HTTP</td>
+<td>hai kiểu vận chuyển của MCP</td>
+</tr>
+<tr>
+<td>input schema</td>
+<td>JSON schema mô tả tham số của tool</td>
+</tr>
+<tr>
+<td>MCP Inspector</td>
+<td>công cụ thử MCP server</td>
+</tr>
+<tr>
+<td>indirect prompt injection</td>
+<td>chỉ dẫn độc hại nằm trong dữ liệu tool trả về</td>
+</tr>
+<tr>
+<td>least privilege</td>
+<td>quyền tối thiểu</td>
+</tr>
+</tbody>
+</table></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p4.7:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 1</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Chi phí của danh sách tool</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Ứng dụng có 12 tool, mỗi định nghĩa tool chiếm trung bình 150 token và được gửi kèm mọi yêu cầu. Giá ví dụ 1 USD cho 1 triệu token đầu vào.</p>
 <div class="ans" id="p4-7-e1-a1"><div class="ans-fields"><label>Token tool mỗi yêu cầu<input inputmode="decimal" data-ans="1800.0" data-tol="0.0" autocomplete="off"></label><label>Token tool cho 1.000 yêu cầu<input inputmode="decimal" data-ans="1800000.0" data-tol="0.0" autocomplete="off"></label><label>Chi phí cho 1.000 yêu cầu (USD)<input inputmode="decimal" data-ans="1.8" data-tol="0.001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
 
 <details class="fold solution">
@@ -213,7 +477,8 @@
 </details></div></article><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p4.7:b">Tôi đã xong phần bài tập</label><button class="btn" type="button" data-goto="thuc-hanh">Sang thực hành <span class="arr">→</span></button></div></section><section class="panel" id="thuc-hanh" role="tabpanel" hidden><div class="prose"><h2>MCP server cho dữ liệu của bạn</h2>
 <p>Viết một MCP server cho một nguồn dữ liệu bạn thật sự dùng: đơn hàng của shop (từ file CSV ở P0.1), ghi chú học tập, hoặc tiến độ lộ trình.</p>
 <p><strong>Các bước</strong></p>
-<ol>
+<ol start="0">
+<li>Tạo môi trường ảo và cài <code>pip install "mcp&lt;2"</code> (code của bài dùng SDK 1.x), ghi phiên bản vào <code>requirements.txt</code>.</li>
 <li>Chọn 3 tool có ích và 1 resource. Ví dụ với đơn hàng: <code>search_orders</code> (lọc theo trạng thái, khoảng ngày), <code>get_order</code>, <code>revenue_report(month)</code>; resource <code>orders://summary</code>.</li>
 <li>Viết docstring đầy đủ: làm gì, khi nào dùng, định dạng tham số, ví dụ. Kết quả gọn (tối đa 20 dòng, có tổng số).</li>
 <li>Lỗi trả về có hướng dẫn sửa.</li>
@@ -232,7 +497,7 @@
     </div>
     <aside class="aside">
       <div class="abox"><h4>Tiến độ bài này</h4><div class="ring"><svg viewBox="0 0 64 64" aria-hidden="true"><circle class="bg" cx="32" cy="32" r="28"/><circle class="fg" cx="32" cy="32" r="28" stroke-dasharray="176" stroke-dashoffset="176"/></svg><div><b id="ring-n">0/3</b><span id="ring-sub">phần đã xong</span></div></div></div>
-      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Kiến trúc MCP</a></li><li><a href="#lt-2">Thiết kế tool tốt</a></li><li><a href="#lt-3">Viết MCP server bằng Python</a></li><li><a href="#lt-4">Bảo mật tool</a></li></ol></div>
+      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Vì sao cần một chuẩn</a></li><li><a href="#lt-2">Kiến trúc MCP</a></li><li><a href="#lt-3">Thiết kế tool tốt</a></li><li><a href="#lt-4">Viết MCP server bằng Python</a></li><li><a href="#lt-5">Bảo mật tool</a></li><li><a href="#lt-6">Tóm tắt bài và thuật ngữ</a></li></ol></div>
       
       <div class="abox"><h4>Cùng giai đoạn</h4><ul><li><a href="p4-1.html">Bài 4 · Làm việc với LLM</a></li><li><a href="p4-2.html">Bài 5 · Embedding và RAG</a></li><li><a href="p4-3.html">Bài 6 · Đánh giá hệ thống AI</a></li><li><a href="p4-4.html">Bài 7 · Agent</a></li><li><a href="p4-5.html">RAG nâng cao</a></li><li><a href="p4-6.html">Multi-agent</a></li><li><span class=cur>MCP và hệ sinh thái tool</span></li><li><a href="p4-8.html">Guardrails, an toàn và human-in-the-loop</a></li></ul></div>
     </aside>

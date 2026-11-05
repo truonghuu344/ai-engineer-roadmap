@@ -24,33 +24,140 @@
   <section class="lhero"><div class="code">P4.5</div><h1>RAG nâng cao</h1><div class="lmeta"><span class="m">Giai đoạn P4 · LLM Engineering</span><span class="m">Tuần 18–25</span><span class="chip ready"><span class="dot"></span>Có nội dung đầy đủ</span></div>
     <div class="intro"><p>RAG cơ bản ở P4.2 thường đạt khoảng 60–70% câu trả lời tốt. Đi từ đó lên 85–90% là nhờ các kỹ thuật trong bài này: gộp nhiều cách tìm kiếm, xếp hạng lại bằng model mạnh hơn, viết lại câu hỏi, chunking thông minh, và biết khi nào cần GraphRAG hay để agent tự quyết định tìm kiếm. Quy tắc xuyên suốt: <strong>thêm từng kỹ thuật một và đo bằng bộ eval</strong> của Lab 6.</p></div></section>
   
-  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">5 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
+  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">8 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
   <div class="lgrid" style="margin-top:22px">
-    <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">Hybrid search với Reciprocal Rank Fusion</h2>
-<p>BM25 và vector cho điểm ở hai thang khác nhau, không cộng thẳng được. <strong>RRF</strong> chỉ dùng <strong>thứ hạng</strong>:</p>
-<div class="hl"><pre><span></span><code>RRF(d) = Σ_{mỗi danh sách r}  1 / (k + rank_r(d))      k thường = 60
+    <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">Bản đồ các kỹ thuật</h2>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Có hàng chục "mẹo RAG" trên mạng. Thêm tất cả một lúc làm hệ thống chậm, đắt, và bạn không biết cái nào thật sự giúp. Mỗi kỹ thuật sửa một <strong>loại lỗi</strong> cụ thể; phân tích lỗi (P4.3) cho bạn biết cần loại nào.</p>
+</div>
+<table>
+<thead>
+<tr>
+<th>Loại lỗi trong phân tích</th>
+<th>Kỹ thuật sửa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Bỏ lỡ mã, tên riêng, số hiệu</td>
+<td>hybrid search + RRF</td>
+</tr>
+<tr>
+<td>Đoạn đúng có trong top-50 nhưng không trong top-5</td>
+<td>reranker cross-encoder</td>
+</tr>
+<tr>
+<td>Câu hỏi phụ thuộc hội thoại trước, quá ngắn, mơ hồ</td>
+<td>viết lại câu hỏi, multi-query</td>
+</tr>
+<tr>
+<td>Câu so sánh, nhiều ý</td>
+<td>tách câu hỏi (decomposition)</td>
+</tr>
+<tr>
+<td>Đoạn tìm được thiếu ngữ cảnh ("doanh thu tăng 12%" của công ty nào?)</td>
+<td>contextual retrieval, parent–child</td>
+</tr>
+<tr>
+<td>Câu hỏi tổng hợp toàn bộ kho tài liệu</td>
+<td>GraphRAG, tóm tắt phân cấp</td>
+</tr>
+<tr>
+<td>Cần tìm nhiều lần, nhiều nguồn</td>
+<td>agentic RAG</td>
+</tr>
+</tbody>
+</table>
+<h2 id="lt-2">Hybrid search với Reciprocal Rank Fusion</h2>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>BM25 và vector search bắt những loại câu hỏi khác nhau (P4.2). Gộp chúng gần như luôn tăng recall, nhưng gộp sai cách (cộng thẳng điểm) có thể làm tệ hơn cả từng cách riêng.</p>
+</div>
+<p>BM25 cho điểm từ 0 tới vài chục, cosine từ −1 tới 1, và phân phối điểm thay đổi theo từng câu hỏi: không cộng thẳng được. <strong>Reciprocal Rank Fusion (RRF)</strong> chỉ dùng <strong>thứ hạng</strong>:</p>
+<div class="hl"><pre><span></span><code>RRF(d) = Σ_{mỗi danh sách r}  1 / (k + rank_r(d))      k thường = 60; đoạn không có trong danh sách thì không cộng
 </code></pre></div>
 
-<p>Đoạn xuất hiện ở hạng cao trong nhiều danh sách sẽ thắng. RRF không cần chuẩn hóa điểm, gần như không có tham số, và rất khó làm tệ hơn từng danh sách riêng.</p>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>BM25 trả về [D3, D1, D7, D2], vector trả về [D5, D2, D1, D9]:</p>
+<figure class="fig"><img src="../assets/fig/p4-5-rrf.svg" alt="D1 và D2 không đứng đầu danh sách nào, nhưng có mặt ở cả hai nên được xếp trên D3 và D5 (mỗi đoạn chỉ đứng đầu một danh sách)." loading="lazy"><figcaption>D1 và D2 không đứng đầu danh sách nào, nhưng có mặt ở cả hai nên được xếp trên D3 và D5 (mỗi đoạn chỉ đứng đầu một danh sách).</figcaption></figure>
+<p>Ý nghĩa: một đoạn được <strong>cả hai</strong> cách tìm kiếm cùng đánh giá cao là đoạn đáng tin hơn đoạn chỉ một cách thích.</p>
+</div>
 <div class="hl"><pre><span></span><code><span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">rrf</span><span class="tk-p">(</span><span class="tk-n">lists</span><span class="tk-p">,</span> <span class="tk-n">k</span><span class="tk-o">=</span><span class="tk-mi">60</span><span class="tk-p">):</span>
     <span class="tk-n">score</span> <span class="tk-o">=</span> <span class="tk-p">{}</span>
     <span class="tk-k">for</span> <span class="tk-n">lst</span> <span class="tk-ow">in</span> <span class="tk-n">lists</span><span class="tk-p">:</span>
         <span class="tk-k">for</span> <span class="tk-n">rank</span><span class="tk-p">,</span> <span class="tk-n">doc</span> <span class="tk-ow">in</span> <span class="tk-nb">enumerate</span><span class="tk-p">(</span><span class="tk-n">lst</span><span class="tk-p">,</span> <span class="tk-n">start</span><span class="tk-o">=</span><span class="tk-mi">1</span><span class="tk-p">):</span>
             <span class="tk-n">score</span><span class="tk-p">[</span><span class="tk-n">doc</span><span class="tk-p">]</span> <span class="tk-o">=</span> <span class="tk-n">score</span><span class="tk-o">.</span><span class="tk-n">get</span><span class="tk-p">(</span><span class="tk-n">doc</span><span class="tk-p">,</span> <span class="tk-mi">0</span><span class="tk-p">)</span> <span class="tk-o">+</span> <span class="tk-mi">1</span> <span class="tk-o">/</span> <span class="tk-p">(</span><span class="tk-n">k</span> <span class="tk-o">+</span> <span class="tk-n">rank</span><span class="tk-p">)</span>
     <span class="tk-k">return</span> <span class="tk-nb">sorted</span><span class="tk-p">(</span><span class="tk-n">score</span><span class="tk-p">,</span> <span class="tk-n">key</span><span class="tk-o">=</span><span class="tk-n">score</span><span class="tk-o">.</span><span class="tk-n">get</span><span class="tk-p">,</span> <span class="tk-n">reverse</span><span class="tk-o">=</span><span class="tk-kc">True</span><span class="tk-p">)</span>
+
+<span class="tk-n">candidates</span> <span class="tk-o">=</span> <span class="tk-n">rrf</span><span class="tk-p">([</span><span class="tk-n">bm25_top50</span><span class="tk-p">,</span> <span class="tk-n">vector_top50</span><span class="tk-p">])[:</span><span class="tk-mi">50</span><span class="tk-p">]</span>
 </code></pre></div>
 
-<h2 id="lt-2">Reranker cross-encoder</h2>
-<p>Embedding (bi-encoder) mã hóa câu hỏi và đoạn <strong>riêng rẽ</strong>, nhanh nhưng thô. <strong>Cross-encoder</strong> đọc câu hỏi và đoạn <strong>cùng lúc</strong> qua một Transformer, cho điểm liên quan chính xác hơn nhiều, nhưng chậm vì phải chạy một lần cho mỗi cặp.</p>
-<p>Quy trình hai tầng: tìm rộng (top 50 bằng hybrid) → rerank bằng cross-encoder → giữ top 5 đưa vào LLM.</p>
+<p>Hằng số k làm mượt: k lớn thì chênh lệch giữa hạng 1 và hạng 10 nhỏ đi, kết quả dựa nhiều vào việc "có mặt ở bao nhiêu danh sách". RRF không cần chuẩn hóa điểm, gần như không có tham số, và rất khó làm tệ hơn từng danh sách riêng, nên là lựa chọn mặc định.</p>
+<details class="fold deep">
+<summary>Đào sâu thêm</summary>
+<p><strong>Gộp có trọng số.</strong> Nếu bộ eval cho thấy vector search tốt hơn hẳn BM25 trên dữ liệu của bạn, có thể nhân trọng số cho từng danh sách: RRF(d) = Σ wᵣ / (k + rankᵣ(d)). Chỉ tune trọng số này trên tập eval riêng (không phải tập báo cáo cuối), vì rất dễ overfit vào vài chục câu hỏi.</p>
+</details>
+<h2 id="lt-3">Reranker cross-encoder</h2>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Embedding nén cả một đoạn văn thành một vector <strong>trước khi</strong> biết câu hỏi là gì, nên mất chi tiết. Reranker đọc câu hỏi và đoạn <strong>cùng lúc</strong>, nhìn được từng từ của câu hỏi khớp với từng từ của đoạn. Trong nhiều bộ dữ liệu, thêm reranker là cải thiện lớn nhất sau hybrid.</p>
+</div>
+<figure class="fig"><img src="../assets/fig/p4-5-encoders.svg" alt="Bi-encoder mã hóa câu hỏi và đoạn riêng rẽ, vector đoạn tính sẵn một lần. Cross-encoder ghép cặp câu hỏi–đoạn vào cùng một Transformer cho mỗi lần chấm." loading="lazy"><figcaption>Bi-encoder mã hóa câu hỏi và đoạn riêng rẽ, vector đoạn tính sẵn một lần. Cross-encoder ghép cặp câu hỏi–đoạn vào cùng một Transformer cho mỗi lần chấm.</figcaption></figure>
+
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Bi-encoder (embedding)</th>
+<th>Cross-encoder (reranker)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Đầu vào</td>
+<td>câu hỏi và đoạn riêng rẽ</td>
+<td>cặp (câu hỏi, đoạn) cùng lúc</td>
+</tr>
+<tr>
+<td>Tính sẵn được</td>
+<td>có: vector đoạn tính một lần</td>
+<td>không: phải chạy cho mỗi cặp</td>
+</tr>
+<tr>
+<td>Chi phí khi có 100.000 đoạn</td>
+<td>1 lần encode câu hỏi + tìm vector</td>
+<td>100.000 lần chạy model: không khả thi</td>
+</tr>
+<tr>
+<td>Độ chính xác xếp hạng</td>
+<td>khá</td>
+<td>tốt hơn rõ rệt</td>
+</tr>
+</tbody>
+</table>
+<h3>Quy trình hai tầng</h3>
+<p>Vì cross-encoder chậm, ta chỉ dùng nó trên một danh sách ngắn:</p>
+<figure class="fig"><img src="../assets/fig/p4-5-funnel.svg" alt="Tầng 1 lọc nhanh từ toàn bộ index xuống vài chục ứng viên; tầng 2 chấm kỹ để chọn vài đoạn tốt nhất đưa vào LLM." loading="lazy"><figcaption>Tầng 1 lọc nhanh từ toàn bộ index xuống vài chục ứng viên; tầng 2 chấm kỹ để chọn vài đoạn tốt nhất đưa vào LLM.</figcaption></figure>
+
 <div class="hl"><pre><span></span><code><span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">sentence_transformers</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">CrossEncoder</span>
 <span class="tk-n">reranker</span> <span class="tk-o">=</span> <span class="tk-n">CrossEncoder</span><span class="tk-p">(</span><span class="tk-s2">"BAAI/bge-reranker-v2-m3"</span><span class="tk-p">)</span>
-<span class="tk-n">scores</span> <span class="tk-o">=</span> <span class="tk-n">reranker</span><span class="tk-o">.</span><span class="tk-n">predict</span><span class="tk-p">([(</span><span class="tk-n">question</span><span class="tk-p">,</span> <span class="tk-n">chunks</span><span class="tk-p">[</span><span class="tk-n">i</span><span class="tk-p">][</span><span class="tk-s2">"text"</span><span class="tk-p">])</span> <span class="tk-k">for</span> <span class="tk-n">i</span> <span class="tk-ow">in</span> <span class="tk-n">candidates</span><span class="tk-p">])</span>
+<span class="tk-n">pairs</span> <span class="tk-o">=</span> <span class="tk-p">[(</span><span class="tk-n">question</span><span class="tk-p">,</span> <span class="tk-n">chunks</span><span class="tk-p">[</span><span class="tk-n">i</span><span class="tk-p">][</span><span class="tk-s2">"text"</span><span class="tk-p">])</span> <span class="tk-k">for</span> <span class="tk-n">i</span> <span class="tk-ow">in</span> <span class="tk-n">candidates</span><span class="tk-p">]</span>         <span class="tk-c1"># 50 cặp</span>
+<span class="tk-n">scores</span> <span class="tk-o">=</span> <span class="tk-n">reranker</span><span class="tk-o">.</span><span class="tk-n">predict</span><span class="tk-p">(</span><span class="tk-n">pairs</span><span class="tk-p">,</span> <span class="tk-n">batch_size</span><span class="tk-o">=</span><span class="tk-mi">16</span><span class="tk-p">)</span>
 <span class="tk-n">top5</span> <span class="tk-o">=</span> <span class="tk-p">[</span><span class="tk-n">candidates</span><span class="tk-p">[</span><span class="tk-n">i</span><span class="tk-p">]</span> <span class="tk-k">for</span> <span class="tk-n">i</span> <span class="tk-ow">in</span> <span class="tk-n">scores</span><span class="tk-o">.</span><span class="tk-n">argsort</span><span class="tk-p">()[::</span><span class="tk-o">-</span><span class="tk-mi">1</span><span class="tk-p">][:</span><span class="tk-mi">5</span><span class="tk-p">]]</span>
 </code></pre></div>
 
-<h2 id="lt-3">Biến đổi câu hỏi</h2>
-<p>Câu hỏi của người dùng thường ngắn, mơ hồ, hoặc phụ thuộc hội thoại trước ("thế còn năm ngoái?").</p>
+<p>Số ứng viên đưa vào reranker là một đánh đổi: nhiều hơn thì recall cao hơn (đoạn đúng có cơ hội lọt vào), nhưng độ trễ tăng tuyến tính. Đo recall@50 của tầng 1: nếu đoạn đúng thường ở hạng 30–50, tăng lên 100 ứng viên; nếu hầu như luôn trong top 20, giảm xuống để nhanh hơn.</p>
+<div class="box pitfall">
+<div class="box-h">Lỗi hay gặp</div>
+<p><strong>Reranker không hiểu tiếng Việt.</strong> Nhiều reranker phổ biến chỉ train trên tiếng Anh; dùng với tiếng Việt có thể còn tệ hơn không rerank. Chọn reranker đa ngôn ngữ và đo trên bộ eval của bạn, như với model embedding.</p>
+</div>
+<h2 id="lt-4">Biến đổi câu hỏi</h2>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Câu người dùng gõ thường không giống văn phong tài liệu: ngắn, viết tắt, dựa vào hội thoại trước. Viết lại câu hỏi trước khi tìm kiếm là cách rẻ để khớp tốt hơn với tài liệu.</p>
+</div>
 <table>
 <thead>
 <tr>
@@ -82,19 +189,251 @@
 </tr>
 </tbody>
 </table>
-<p>Mỗi kỹ thuật thêm một cuộc gọi LLM: tốn thời gian và tiền. Đo xem có đáng không.</p>
-<h2 id="lt-4">Chunking nâng cao</h2>
-<ul>
-<li><strong>Theo cấu trúc:</strong> tách theo tiêu đề, điều khoản, hàm (với code). Giữ đường dẫn tiêu đề ("Chương 3 &gt; Điều 12 &gt; Khoản 2") trong nội dung đoạn.</li>
-<li><strong>Parent–child:</strong> tìm trên đoạn nhỏ (chính xác), nhưng đưa vào LLM đoạn cha lớn hơn (đủ ngữ cảnh).</li>
-<li><strong>Contextual retrieval:</strong> trước khi embedding, dùng LLM viết 1–2 câu mô tả đoạn nằm ở đâu trong tài liệu ("Đoạn này thuộc báo cáo quý 2/2026 của công ty X, nói về doanh thu miền Nam") và ghép vào đầu đoạn. Giải quyết vấn đề đoạn mất ngữ cảnh khi bị cắt ra.</li>
-</ul>
-<h2 id="lt-5">GraphRAG và agentic RAG</h2>
-<p><strong>GraphRAG:</strong> dùng LLM trích xuất thực thể và quan hệ từ tài liệu thành đồ thị tri thức, gom cụm và tóm tắt theo cụm. Mạnh với câu hỏi <strong>tổng hợp toàn cục</strong> ("các chủ đề chính trong 500 báo cáo là gì?") và câu hỏi <strong>nhiều bước nhảy</strong> (A liên quan B, B liên quan C). Đắt khi xây dựng, nên chỉ dùng khi RAG thường thất bại ở loại câu hỏi đó.</p>
-<p><strong>Agentic RAG:</strong> cho agent (P4.4) công cụ tìm kiếm thay vì tìm một lần cố định. Agent tự quyết định tìm gì, tìm lại khi kết quả chưa đủ, tìm trong nhiều nguồn. Linh hoạt nhất, nhưng chậm, đắt, và khó đoán hơn.</p>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>Hội thoại:</p>
+<div class="hl"><pre><span></span><code>Người dùng: Bàn trang điểm gỗ sồi bảo hành bao lâu?
+Trợ lý:     Bàn trang điểm gỗ sồi được bảo hành 12 tháng [1].
+Người dùng: Thế còn loại MDF?
+</code></pre></div>
+
+<p>Tìm kiếm thẳng "Thế còn loại MDF?" gần như vô vọng. <strong>Rewriting</strong> biến nó thành "Bàn trang điểm gỗ MDF được bảo hành bao lâu?".</p>
+<p><strong>Decomposition</strong> với "So sánh chính sách đổi trả của bàn và ghế": tách thành "chính sách đổi trả của bàn" và "chính sách đổi trả của ghế", tìm riêng, gộp đoạn cho LLM so sánh.</p>
+<p><strong>HyDE</strong> với "làm sao để bàn không bị cong vênh": LLM viết đoạn giả định "Để tránh cong vênh, đặt bàn nơi khô ráo, tránh ánh nắng trực tiếp…", đoạn này giống văn phong hướng dẫn bảo quản trong tài liệu hơn câu hỏi gốc.</p>
+</div>
+<p>Mỗi kỹ thuật thêm ít nhất một cuộc gọi LLM: tốn thêm vài trăm ms và tiền. Dùng model nhỏ, nhanh cho bước này, và đo xem có đáng không.</p>
+<div class="box pitfall">
+<div class="box-h">Lỗi hay gặp</div>
+<p><strong>Viết lại làm sai nghĩa.</strong> LLM viết lại có thể "sửa" mã sản phẩm, đổi số liệu, hoặc thêm giả định. Luôn tìm kiếm với <strong>cả</strong> câu gốc và câu viết lại (rồi RRF), và giữ nguyên các chuỗi như mã, số trong prompt viết lại.</p>
+</div>
+<h2 id="lt-5">Chunking nâng cao</h2>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Một đoạn bị cắt khỏi tài liệu thường mất ngữ cảnh: "Doanh thu tăng 12% so với cùng kỳ" mà không biết công ty nào, quý nào. Embedding của đoạn đó không khớp với câu hỏi "doanh thu quý 2 của công ty X", dù đó chính là câu trả lời.</p>
+</div>
+<h3>Theo cấu trúc, kèm đường dẫn tiêu đề</h3>
+<p>Tách theo tiêu đề, điều khoản, hàm (với code). Giữ <strong>đường dẫn tiêu đề</strong> ("Chương 3 &gt; Điều 12 &gt; Khoản 2") trong nội dung đoạn để đoạn tự mang ngữ cảnh.</p>
+<h3>Parent–child</h3>
+<p>Tìm trên đoạn <strong>nhỏ</strong> (khớp chính xác, embedding không bị pha loãng), nhưng đưa vào LLM đoạn <strong>cha</strong> lớn hơn chứa nó (đủ ngữ cảnh để trả lời).</p>
+<figure class="fig"><img src="../assets/fig/p4-5-parent.svg" alt="Tìm thấy &quot;con 4&quot;, nhưng đưa cả Điều 12 cho LLM. Nhiều đoạn con cùng một cha thì chỉ đưa cha một lần." loading="lazy"><figcaption>Tìm thấy &quot;con 4&quot;, nhưng đưa cả Điều 12 cho LLM. Nhiều đoạn con cùng một cha thì chỉ đưa cha một lần.</figcaption></figure>
+
+<h3>Contextual retrieval</h3>
+<p>Trước khi embedding (và trước khi đưa vào BM25), dùng LLM viết 1–2 câu mô tả đoạn nằm ở đâu trong tài liệu, ghép vào đầu đoạn:</p>
+<div class="hl"><pre><span></span><code>[Ngữ cảnh: Đoạn này thuộc báo cáo kết quả kinh doanh quý 2/2026 của Công ty Nội thất An Phát,
+mục Doanh thu theo khu vực.]
+Doanh thu tăng 12% so với cùng kỳ, chủ yếu nhờ các cửa hàng miền Nam...
+</code></pre></div>
+
+<p>Chi phí: một lần gọi LLM cho <strong>mỗi đoạn</strong> khi xây index (không phải mỗi câu hỏi). Với prompt caching (tài liệu gốc được cache, chỉ đoạn thay đổi), chi phí này thường chấp nhận được. Đổi lại, các đoạn "mồ côi ngữ cảnh" trở nên tìm được.</p>
+<h2 id="lt-6">GraphRAG và agentic RAG</h2>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Một số câu hỏi không có câu trả lời nằm trong bất kỳ đoạn nào: "Các chủ đề khách hàng phàn nàn nhiều nhất năm nay là gì?" cần đọc <strong>toàn bộ</strong> kho. Một số câu cần nhiều bước tìm: tìm A, từ A mới biết cần tìm B. RAG một lần không giải được những loại này.</p>
+</div>
+<h3>GraphRAG</h3>
+<p>Dùng LLM trích xuất <strong>thực thể</strong> (người, sản phẩm, công ty) và <strong>quan hệ</strong> từ tài liệu thành đồ thị tri thức, gom cụm các thực thể liên quan, và viết tóm tắt cho từng cụm.</p>
+<table>
+<thead>
+<tr>
+<th>Mạnh với</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Câu hỏi tổng hợp toàn cục</td>
+<td>"Các chủ đề chính trong 500 báo cáo là gì?"</td>
+</tr>
+<tr>
+<td>Câu hỏi nhiều bước nhảy</td>
+<td>"Nhà cung cấp gỗ của sản phẩm bị phàn nàn nhiều nhất là ai?"</td>
+</tr>
+</tbody>
+</table>
+<p>Đắt khi xây dựng (gọi LLM trên toàn bộ kho), khó cập nhật, nên chỉ dùng khi RAG thường thất bại ở đúng loại câu hỏi đó.</p>
+<h3>Agentic RAG</h3>
+<p>Cho agent (P4.4) <strong>công cụ tìm kiếm</strong> thay vì tìm một lần cố định. Agent tự quyết định tìm gì, tìm lại khi kết quả chưa đủ, tìm trong nhiều nguồn (tài liệu, database đơn hàng, web).</p>
+<div class="hl"><pre><span></span><code>Câu hỏi: "Đơn DH1024 có được đổi không?"
+Agent: search_orders("DH1024") → giao ngày 20/10, sản phẩm bàn MDF
+       search_docs("chính sách đổi trả bàn MDF") → 30 ngày, hàng còn nguyên tem
+       → hôm nay 05/11, đã 16 ngày: còn trong hạn, nếu còn nguyên tem.
+</code></pre></div>
+
+<p>Linh hoạt nhất, nhưng chậm (nhiều vòng gọi), đắt, và khó đoán hơn. Thường dùng như <strong>lớp ngoài cùng</strong>: câu hỏi thường đi đường RAG nhanh, câu phức tạp mới chuyển sang agent.</p>
+<h2 id="lt-7">Thử nghiệm có kiểm soát: bảng ablation</h2>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>"Thêm reranker làm hệ thống tốt hơn" chỉ đáng tin khi bạn đo trước và sau trên cùng bộ eval, chỉ thay đổi <strong>một</strong> thứ mỗi lần. Bảng ablation là cách trình bày chuẩn, và là thứ nhà tuyển dụng muốn thấy trong README dự án RAG.</p>
+</div>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>Ví dụ minh họa dạng bảng (số liệu giả định để thấy cách đọc; của bạn sẽ khác):</p>
+<table>
+<thead>
+<tr>
+<th>Cấu hình</th>
+<th>Recall@5</th>
+<th>Điểm judge (0–3)</th>
+<th>Độ trễ p50</th>
+<th>Chi phí / 1.000 câu</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Vector, chunk 500</td>
+<td>0.71</td>
+<td>2.05</td>
+<td>0.9 s</td>
+<td>1.8 USD</td>
+</tr>
+<tr>
+<td>+ BM25, RRF</td>
+<td>0.79</td>
+<td>2.22</td>
+<td>0.9 s</td>
+<td>1.8 USD</td>
+</tr>
+<tr>
+<td>+ reranker (50 → 5)</td>
+<td>0.86</td>
+<td>2.41</td>
+<td>1.2 s</td>
+<td>1.8 USD</td>
+</tr>
+<tr>
+<td>+ query rewriting</td>
+<td>0.88</td>
+<td>2.44</td>
+<td>1.7 s</td>
+<td>2.3 USD</td>
+</tr>
+<tr>
+<td>+ contextual retrieval</td>
+<td>0.90</td>
+<td>2.47</td>
+<td>1.7 s</td>
+<td>2.3 USD (+ chi phí xây index)</td>
+</tr>
+</tbody>
+</table>
+<p>Đọc bảng: hybrid và reranker cho cải thiện lớn với chi phí nhỏ; query rewriting thêm 2 điểm recall nhưng tăng độ trễ 40%: có thể không đáng với chatbot cần nhanh. Mỗi dòng nên kèm khoảng tin cậy (P4.3) khi bộ eval nhỏ.</p>
+</div>
 <div class="keep">
 <p><strong>Ghi nhớ:</strong> thứ tự nên thử: hybrid + RRF → reranker → chunking tốt hơn → query rewriting → contextual retrieval → agentic/GraphRAG. Dừng khi bộ eval nói đã đủ tốt.</p>
-</div></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p4.5:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 2</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Tính RRF</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>k = 60. Danh sách vector: [X, Y, Z]. Danh sách BM25: [Y, W, X].</p>
+</div>
+<div class="box check">
+<div class="box-h">Tự kiểm tra nhanh</div>
+<p>Hai danh sách, k = 60. Đoạn P đứng hạng 1 ở danh sách thứ nhất và không có ở danh sách thứ hai. Đoạn Q đứng hạng 5 ở cả hai.</p>
+<div class="ans" id="p4-5-t-b152-a1">
+<div class="ans-fields"><label>RRF(P)<input inputmode="decimal" data-ans="0.016393" data-tol="1e-05" autocomplete="off"></label><label>RRF(Q)<input inputmode="decimal" data-ans="0.030769" data-tol="1e-05" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div>
+<div aria-live="polite" class="ans-fb"></div>
+</div>
+</div>
+<h2 id="lt-8">Tóm tắt bài và thuật ngữ</h2>
+<table>
+<thead>
+<tr>
+<th>Kỹ thuật</th>
+<th>Sửa lỗi gì</th>
+<th>Chi phí thêm</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Hybrid + RRF</td>
+<td>bỏ lỡ từ khóa hoặc đồng nghĩa</td>
+<td>thấp</td>
+</tr>
+<tr>
+<td>Reranker</td>
+<td>đoạn đúng không đủ cao trong danh sách</td>
+<td>trung bình (độ trễ)</td>
+</tr>
+<tr>
+<td>Viết lại câu hỏi</td>
+<td>câu ngắn, phụ thuộc hội thoại, mơ hồ</td>
+<td>1 lần gọi LLM mỗi câu</td>
+</tr>
+<tr>
+<td>Parent–child</td>
+<td>đoạn tìm được thiếu ngữ cảnh</td>
+<td>thấp</td>
+</tr>
+<tr>
+<td>Contextual retrieval</td>
+<td>đoạn mồ côi ngữ cảnh</td>
+<td>1 lần gọi LLM mỗi đoạn (khi xây index)</td>
+</tr>
+<tr>
+<td>GraphRAG</td>
+<td>câu hỏi tổng hợp toàn cục, nhiều bước nhảy</td>
+<td>cao</td>
+</tr>
+<tr>
+<td>Agentic RAG</td>
+<td>cần nhiều lần tìm, nhiều nguồn</td>
+<td>cao, khó đoán</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Thuật ngữ</th>
+<th>Nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>RRF</td>
+<td>gộp danh sách theo thứ hạng: Σ 1/(k + hạng)</td>
+</tr>
+<tr>
+<td>bi-encoder</td>
+<td>mã hóa câu hỏi và đoạn riêng rẽ thành vector</td>
+</tr>
+<tr>
+<td>cross-encoder / reranker</td>
+<td>chấm cặp (câu hỏi, đoạn) bằng một Transformer</td>
+</tr>
+<tr>
+<td>two-stage retrieval</td>
+<td>tìm rộng nhanh rồi xếp hạng lại kỹ</td>
+</tr>
+<tr>
+<td>query rewriting / multi-query</td>
+<td>viết lại câu hỏi / sinh nhiều cách hỏi</td>
+</tr>
+<tr>
+<td>decomposition</td>
+<td>tách câu hỏi phức hợp thành câu con</td>
+</tr>
+<tr>
+<td>HyDE</td>
+<td>tìm bằng câu trả lời giả định</td>
+</tr>
+<tr>
+<td>parent–child chunking</td>
+<td>tìm trên đoạn con, trả về đoạn cha</td>
+</tr>
+<tr>
+<td>contextual retrieval</td>
+<td>thêm mô tả ngữ cảnh vào đầu đoạn trước khi index</td>
+</tr>
+<tr>
+<td>knowledge graph / GraphRAG</td>
+<td>đồ thị thực thể–quan hệ / RAG trên đồ thị đó</td>
+</tr>
+<tr>
+<td>agentic RAG</td>
+<td>agent tự quyết định tìm kiếm</td>
+</tr>
+<tr>
+<td>ablation</td>
+<td>bỏ/thêm từng thành phần để đo đóng góp của nó</td>
+</tr>
+</tbody>
+</table></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p4.5:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 2</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Tính RRF</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>k = 60. Danh sách vector: [X, Y, Z]. Danh sách BM25: [Y, W, X].</p>
 <div class="ans" id="p4-5-e1-a1"><div class="ans-fields"><label>RRF(X)<input inputmode="decimal" data-ans="0.032266" data-tol="1e-05" autocomplete="off"></label><label>RRF(Y)<input inputmode="decimal" data-ans="0.032522" data-tol="1e-05" autocomplete="off"></label><label>RRF(Z)<input inputmode="decimal" data-ans="0.015873" data-tol="1e-05" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
 
 <details class="fold solution">
@@ -220,7 +559,7 @@
     </div>
     <aside class="aside">
       <div class="abox"><h4>Tiến độ bài này</h4><div class="ring"><svg viewBox="0 0 64 64" aria-hidden="true"><circle class="bg" cx="32" cy="32" r="28"/><circle class="fg" cx="32" cy="32" r="28" stroke-dasharray="176" stroke-dashoffset="176"/></svg><div><b id="ring-n">0/3</b><span id="ring-sub">phần đã xong</span></div></div></div>
-      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Hybrid search với Reciprocal Rank Fusion</a></li><li><a href="#lt-2">Reranker cross-encoder</a></li><li><a href="#lt-3">Biến đổi câu hỏi</a></li><li><a href="#lt-4">Chunking nâng cao</a></li><li><a href="#lt-5">GraphRAG và agentic RAG</a></li></ol></div>
+      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Bản đồ các kỹ thuật</a></li><li><a href="#lt-2">Hybrid search với Reciprocal Rank Fusion</a></li><li><a href="#lt-3">Reranker cross-encoder</a></li><li><a href="#lt-4">Biến đổi câu hỏi</a></li><li><a href="#lt-5">Chunking nâng cao</a></li><li><a href="#lt-6">GraphRAG và agentic RAG</a></li><li><a href="#lt-7">Thử nghiệm có kiểm soát: bảng ablation</a></li><li><a href="#lt-8">Tóm tắt bài và thuật ngữ</a></li></ol></div>
       
       <div class="abox"><h4>Cùng giai đoạn</h4><ul><li><a href="p4-1.html">Bài 4 · Làm việc với LLM</a></li><li><a href="p4-2.html">Bài 5 · Embedding và RAG</a></li><li><a href="p4-3.html">Bài 6 · Đánh giá hệ thống AI</a></li><li><a href="p4-4.html">Bài 7 · Agent</a></li><li><span class=cur>RAG nâng cao</span></li><li><a href="p4-6.html">Multi-agent</a></li><li><a href="p4-7.html">MCP và hệ sinh thái tool</a></li><li><a href="p4-8.html">Guardrails, an toàn và human-in-the-loop</a></li></ul></div>
     </aside>

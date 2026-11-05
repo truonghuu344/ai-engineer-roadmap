@@ -22,37 +22,259 @@
 <main class="container">
   <div class="crumbs"><a href="../bai-hoc.html">Bài học</a><span>/</span><a href="../bai-hoc.html#p4">P4 · LLM Engineering</a><span>/</span><span>P4.2</span></div>
   <section class="lhero"><div class="code">P4.2</div><h1>Bài 5 · Embedding và RAG</h1><div class="lmeta"><span class="m">Giai đoạn P4 · LLM Engineering</span><span class="m">Tuần 18–25</span><span class="chip ready"><span class="dot"></span>Có nội dung đầy đủ</span></div>
-    <div class="intro"><p>LLM không biết tài liệu nội bộ của công ty bạn, và kiến thức của nó dừng ở thời điểm train. <strong>RAG</strong> (Retrieval-Augmented Generation) giải quyết bằng cách tìm các đoạn tài liệu liên quan rồi đưa vào prompt để LLM trả lời dựa trên chúng, kèm trích dẫn. Đây là kỹ năng được nhắc trong khoảng 40% tin tuyển dụng AI Engineer.</p></div></section>
+    <div class="intro"><p>LLM không biết tài liệu nội bộ của công ty bạn, và kiến thức của nó dừng ở thời điểm train. <strong>RAG</strong> (Retrieval-Augmented Generation) giải quyết bằng cách tìm các đoạn tài liệu liên quan rồi đưa vào prompt để LLM trả lời dựa trên chúng, kèm trích dẫn. Đây là kỹ năng được nhắc trong khoảng 40% tin tuyển dụng AI Engineer, và là dự án portfolio tốt nhất để bắt đầu.</p></div></section>
   
-  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">5 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
+  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">6 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
   <div class="lgrid" style="margin-top:22px">
     <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">Kiến trúc RAG</h2>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Chatbot trả lời về chính sách công ty, trợ lý tra cứu quy chế đào tạo, hệ thống hỏi đáp tài liệu kỹ thuật: gần như mọi ứng dụng LLM "biết về dữ liệu của bạn" đều là RAG. Hiểu từng bước giúp bạn biết lỗi nằm ở đâu khi câu trả lời sai.</p>
+</div>
+<figure class="fig"><img src="../assets/fig/p4-2-arch.svg" alt="Hai giai đoạn: chuẩn bị index một lần (chạy lại khi tài liệu đổi), và trả lời mỗi câu hỏi bằng cách tìm đoạn liên quan rồi đưa vào prompt." loading="lazy"><figcaption>Hai giai đoạn: chuẩn bị index một lần (chạy lại khi tài liệu đổi), và trả lời mỗi câu hỏi bằng cách tìm đoạn liên quan rồi đưa vào prompt.</figcaption></figure>
+
 <div class="hl"><pre><span></span><code>Chuẩn bị (offline):  tài liệu → tách đoạn (chunk) → embedding → lưu vào vector index
 Trả lời (online):    câu hỏi → embedding → tìm top-k đoạn gần nhất → prompt = câu hỏi + các đoạn → LLM → câu trả lời + trích dẫn
 </code></pre></div>
 
-<p>RAG thắng fine-tune khi kiến thức <strong>thay đổi thường xuyên</strong>, cần <strong>trích dẫn nguồn</strong>, hoặc cần <strong>phân quyền</strong> (người dùng chỉ được thấy tài liệu của họ). Fine-tune hợp hơn khi cần đổi <strong>cách</strong> model viết hoặc làm một tác vụ hẹp, không phải thêm kiến thức.</p>
+<h3>RAG hay fine-tune</h3>
+<table>
+<thead>
+<tr>
+<th>Tình huống</th>
+<th>Chọn</th>
+<th>Vì sao</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Kiến thức thay đổi thường xuyên (giá, chính sách, tồn kho)</td>
+<td>RAG</td>
+<td>cập nhật bằng cách thay tài liệu, không train lại</td>
+</tr>
+<tr>
+<td>Cần trích dẫn nguồn để người dùng kiểm tra</td>
+<td>RAG</td>
+<td>biết chính xác câu trả lời dựa trên đoạn nào</td>
+</tr>
+<tr>
+<td>Phân quyền: mỗi người chỉ được xem tài liệu của mình</td>
+<td>RAG</td>
+<td>lọc theo quyền ngay khi tìm kiếm</td>
+</tr>
+<tr>
+<td>Đổi cách model viết (giọng văn, định dạng)</td>
+<td>fine-tune</td>
+<td>đó là "kỹ năng", không phải "kiến thức"</td>
+</tr>
+<tr>
+<td>Tác vụ hẹp, lặp lại hàng triệu lần, cần rẻ</td>
+<td>fine-tune model nhỏ</td>
+<td>model nhỏ đã fine-tune rẻ hơn model lớn + prompt dài</td>
+</tr>
+</tbody>
+</table>
+<p>Hai cách không loại trừ nhau: nhiều hệ thống fine-tune model để trả lời đúng định dạng, rồi dùng RAG để cung cấp kiến thức.</p>
+<h3>Vì sao không nhét cả tài liệu vào context</h3>
+<p>Context của model hiện đại rất dài (hàng trăm nghìn token), nên có thể hỏi: sao không đưa hết tài liệu vào? Với vài chục trang thì đó thường là cách tốt. Nhưng với hàng nghìn tài liệu: chi phí mỗi câu hỏi tăng theo độ dài context (P4.1), độ trễ tăng, và model hay <strong>bỏ sót</strong> thông tin nằm giữa context dài. RAG chỉ đưa vào vài đoạn liên quan nhất.</p>
 <h2 id="lt-2">Chunking</h2>
-<p>Đoạn quá dài thì embedding bị "pha loãng" và tốn context; quá ngắn thì mất ngữ cảnh. Điểm khởi đầu hợp lý: <strong>300–800 token</strong>, chồng lấn 10–20% để câu bị cắt ngang vẫn nằm trọn ở một đoạn.</p>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Đơn vị tìm kiếm là <strong>đoạn</strong>, không phải cả tài liệu. Cách cắt đoạn quyết định một câu trả lời có nằm gọn trong một đoạn tìm được hay bị chia đôi ở hai đoạn mà không đoạn nào đủ nghĩa.</p>
+</div>
+<p>Đoạn quá dài thì embedding bị "pha loãng" (một vector phải đại diện cho nhiều ý) và tốn context; quá ngắn thì mất ngữ cảnh ("thời hạn là 30 ngày" mà không biết thời hạn của cái gì). Điểm khởi đầu hợp lý: <strong>300–800 token</strong>, chồng lấn 10–20% để câu bị cắt ngang ở ranh giới vẫn nằm trọn ở một đoạn.</p>
+<figure class="fig"><img src="../assets/fig/p4-2-chunk.svg" alt="Cửa sổ trượt có chồng lấn: mỗi đoạn lặp lại phần cuối của đoạn trước." loading="lazy"><figcaption>Cửa sổ trượt có chồng lấn: mỗi đoạn lặp lại phần cuối của đoạn trước.</figcaption></figure>
+
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>Tài liệu 20.000 token, đoạn 500 token, chồng lấn 200 token (bước nhảy 300): số đoạn = ⌈(20.000 − 500) / 300⌉ + 1 = <strong>66</strong> đoạn. Không chồng lấn thì chỉ 40 đoạn. Chồng lấn tăng số đoạn (tốn thêm embedding và bộ nhớ) để đổi lấy ít câu bị cắt đôi.</p>
+</div>
+<h3>Cắt theo cấu trúc</h3>
+<p>Tách theo <strong>cấu trúc</strong> khi có thể: tiêu đề, đoạn văn, điều khoản, mục FAQ. Một điều khoản "Điều 5. Đổi trả" là một đơn vị nghĩa tự nhiên; cắt mù theo số ký tự có thể cắt đôi nó.</p>
+<table>
+<thead>
+<tr>
+<th>Loại tài liệu</th>
+<th>Cách cắt tốt</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Quy chế, hợp đồng</td>
+<td>theo điều, khoản</td>
+</tr>
+<tr>
+<td>FAQ</td>
+<td>mỗi cặp hỏi–đáp một đoạn</td>
+</tr>
+<tr>
+<td>Tài liệu kỹ thuật, Markdown</td>
+<td>theo tiêu đề <code>#</code>, <code>##</code></td>
+</tr>
+<tr>
+<td>Bảng</td>
+<td>giữ nguyên bảng, hoặc mỗi hàng thành một câu có tên cột</td>
+</tr>
+<tr>
+<td>Văn bản dài không cấu trúc</td>
+<td>cửa sổ trượt có chồng lấn</td>
+</tr>
+</tbody>
+</table>
+<h3>Metadata</h3>
+<p>Gắn <strong>metadata</strong> cho mỗi đoạn: tên tài liệu, mục, trang, ngày cập nhật, quyền truy cập. Dùng để:</p>
 <ul>
-<li>Tách theo <strong>cấu trúc</strong> khi có thể: tiêu đề, đoạn văn, điều khoản. Tốt hơn tách mù theo số ký tự.</li>
-<li>Gắn <strong>metadata</strong> cho mỗi đoạn: tên tài liệu, mục, trang, ngày. Dùng để trích dẫn và lọc (chỉ tìm trong tài liệu năm 2026).</li>
+<li><strong>Trích dẫn</strong>: "theo chinh-sach-doi-tra.pdf, trang 2".</li>
+<li><strong>Lọc</strong>: chỉ tìm trong tài liệu năm 2026, chỉ tài liệu phòng ban của người hỏi.</li>
+<li><strong>Thêm ngữ cảnh</strong>: chèn tiêu đề mục vào đầu đoạn trước khi embedding ("Chính sách đổi trả &gt; Điều kiện: …") giúp đoạn ngắn tự đủ nghĩa.</li>
 </ul>
+<div class="box pitfall">
+<div class="box-h">Lỗi hay gặp</div>
+<p><strong>PDF trích xuất ra rác.</strong> PDF nhiều cột, bảng, đầu trang/chân trang lặp lại thường cho văn bản lộn xộn: chữ hai cột trộn vào nhau, số trang chen giữa câu. Trước khi lo chọn embedding, <strong>in ra 10 đoạn ngẫu nhiên và đọc</strong>. Một nửa số vấn đề RAG được giải quyết bằng làm sạch văn bản.</p>
+</div>
 <h2 id="lt-3">Embedding và tìm kiếm vector</h2>
-<p>Model embedding biến mỗi đoạn thành một vector, sao cho đoạn cùng nghĩa có vector gần nhau. Với tiếng Việt, chọn model đa ngôn ngữ (ví dụ họ BGE-M3, multilingual E5) và <strong>đo</strong> trên câu hỏi thật của bạn.</p>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Người dùng hỏi "trả lại tiền mất mấy ngày" nhưng tài liệu viết "hoàn tiền được thực hiện trong 5 ngày làm việc". Không có từ nào trùng, nhưng nghĩa giống. Embedding tìm theo <strong>nghĩa</strong>, không theo từ.</p>
+</div>
+<p>Model embedding biến mỗi đoạn thành một vector (P3.1), sao cho đoạn cùng nghĩa có vector gần nhau theo cosine. Câu hỏi cũng được embedding bằng <strong>cùng model</strong>, rồi tìm các đoạn có cosine cao nhất.</p>
 <div class="hl"><pre><span></span><code><span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">sentence_transformers</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">SentenceTransformer</span>
 <span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">faiss</span><span class="tk-o">,</span><span class="tk-w"> </span><span class="tk-nn">numpy</span><span class="tk-w"> </span><span class="tk-k">as</span><span class="tk-w"> </span><span class="tk-nn">np</span>
 <span class="tk-n">emb</span> <span class="tk-o">=</span> <span class="tk-n">SentenceTransformer</span><span class="tk-p">(</span><span class="tk-s2">"BAAI/bge-m3"</span><span class="tk-p">)</span>
 <span class="tk-n">X</span> <span class="tk-o">=</span> <span class="tk-n">emb</span><span class="tk-o">.</span><span class="tk-n">encode</span><span class="tk-p">(</span><span class="tk-n">chunks</span><span class="tk-p">,</span> <span class="tk-n">normalize_embeddings</span><span class="tk-o">=</span><span class="tk-kc">True</span><span class="tk-p">)</span>          <span class="tk-c1"># (n, d), đã chuẩn hóa độ dài 1</span>
 <span class="tk-n">index</span> <span class="tk-o">=</span> <span class="tk-n">faiss</span><span class="tk-o">.</span><span class="tk-n">IndexFlatIP</span><span class="tk-p">(</span><span class="tk-n">X</span><span class="tk-o">.</span><span class="tk-n">shape</span><span class="tk-p">[</span><span class="tk-mi">1</span><span class="tk-p">]);</span> <span class="tk-n">index</span><span class="tk-o">.</span><span class="tk-n">add</span><span class="tk-p">(</span><span class="tk-n">X</span><span class="tk-p">)</span>        <span class="tk-c1"># tích vô hướng = cosine khi đã chuẩn hóa</span>
 <span class="tk-n">q</span> <span class="tk-o">=</span> <span class="tk-n">emb</span><span class="tk-o">.</span><span class="tk-n">encode</span><span class="tk-p">([</span><span class="tk-s2">"Chính sách đổi trả trong bao lâu?"</span><span class="tk-p">],</span> <span class="tk-n">normalize_embeddings</span><span class="tk-o">=</span><span class="tk-kc">True</span><span class="tk-p">)</span>
-<span class="tk-n">scores</span><span class="tk-p">,</span> <span class="tk-n">ids</span> <span class="tk-o">=</span> <span class="tk-n">index</span><span class="tk-o">.</span><span class="tk-n">search</span><span class="tk-p">(</span><span class="tk-n">q</span><span class="tk-p">,</span> <span class="tk-n">k</span><span class="tk-o">=</span><span class="tk-mi">5</span><span class="tk-p">)</span>
+<span class="tk-n">scores</span><span class="tk-p">,</span> <span class="tk-n">ids</span> <span class="tk-o">=</span> <span class="tk-n">index</span><span class="tk-o">.</span><span class="tk-n">search</span><span class="tk-p">(</span><span class="tk-n">q</span><span class="tk-p">,</span> <span class="tk-n">k</span><span class="tk-o">=</span><span class="tk-mi">5</span><span class="tk-p">)</span>                         <span class="tk-c1"># 5 đoạn có cosine cao nhất</span>
 </code></pre></div>
 
-<p><code>IndexFlatIP</code> so với mọi vector (chính xác, chậm khi có hàng chục triệu đoạn). Index gần đúng như <strong>HNSW</strong> hay <strong>IVF</strong> nhanh hơn hàng trăm lần, đổi lấy một chút recall. Vector database (Qdrant, pgvector, Milvus) thêm lưu trữ, lọc metadata, cập nhật.</p>
+<h3>Chọn model embedding</h3>
+<p>Với tiếng Việt, chọn model <strong>đa ngôn ngữ</strong> (họ BGE-M3, multilingual E5, các model tiếng Việt fine-tune riêng) và <strong>đo</strong> trên câu hỏi thật của bạn. Bảng xếp hạng công khai (MTEB) là điểm khởi đầu, nhưng thứ hạng trên dữ liệu tiếng Anh tổng quát không chắc đúng với tài liệu tiếng Việt chuyên ngành của bạn.</p>
+<table>
+<thead>
+<tr>
+<th>Tiêu chí</th>
+<th>Cân nhắc</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Chất lượng</td>
+<td>recall@k trên bộ câu hỏi của bạn</td>
+</tr>
+<tr>
+<td>Số chiều</td>
+<td>384–1024 chiều; nhiều chiều hơn tốn bộ nhớ hơn</td>
+</tr>
+<tr>
+<td>Độ dài tối đa</td>
+<td>đoạn dài hơn giới hạn của model bị cắt mất phần cuối</td>
+</tr>
+<tr>
+<td>Chạy ở đâu</td>
+<td>API (tiện) hay tự chạy trên GPU/CPU (dữ liệu không ra ngoài)</td>
+</tr>
+</tbody>
+</table>
+<div class="box pitfall">
+<div class="box-h">Lỗi hay gặp</div>
+<p><strong>Đổi model embedding mà không embedding lại toàn bộ.</strong> Vector từ hai model khác nhau nằm trong hai "không gian" khác nhau, không so được với nhau. Đổi model là phải embedding lại mọi đoạn. Lưu tên model và phiên bản cùng index.</p>
+</div>
+<h3>Index chính xác và index gần đúng</h3>
+<p><code>IndexFlatIP</code> so câu hỏi với <strong>mọi</strong> vector: chính xác, nhưng chậm khi có hàng chục triệu đoạn. Index gần đúng như <strong>HNSW</strong> (đồ thị các điểm láng giềng) hay <strong>IVF</strong> (chia không gian thành cụm, chỉ tìm trong vài cụm gần nhất, giống k-means ở P1.4) nhanh hơn hàng trăm lần, đổi lấy một chút recall.</p>
+<p>Bộ nhớ cũng tăng nhanh:</p>
+<figure class="fig"><img src="../assets/fig/p4-2-size.svg" alt="1 triệu vector 768 chiều: 3 GB ở float32. Lượng tử hóa xuống int8 hoặc 1 bit mỗi chiều giảm bộ nhớ 4–32 lần, đổi lại giảm độ chính xác một chút." loading="lazy"><figcaption>1 triệu vector 768 chiều: 3 GB ở float32. Lượng tử hóa xuống int8 hoặc 1 bit mỗi chiều giảm bộ nhớ 4–32 lần, đổi lại giảm độ chính xác một chút.</figcaption></figure>
+
+<p><strong>Vector database</strong> (Qdrant, pgvector trên PostgreSQL, Milvus, Weaviate) thêm lưu trữ bền vững, lọc theo metadata, cập nhật từng đoạn, và chạy được nhiều máy. Với dự án dưới vài trăm nghìn đoạn, FAISS trong bộ nhớ hoặc pgvector (nếu đã có PostgreSQL, P8.4) là đủ.</p>
 <h2 id="lt-4">BM25 và hybrid search</h2>
-<p><strong>BM25</strong> là tìm kiếm theo từ khóa cổ điển: điểm cao khi đoạn chứa từ trong câu hỏi, nhất là từ hiếm. Nó bắt tốt <strong>mã sản phẩm, tên riêng, số hiệu</strong> mà embedding hay bỏ lỡ ("lỗi E-204"). Embedding bắt tốt <strong>đồng nghĩa, diễn đạt khác</strong> ("hoàn tiền" và "trả lại tiền"). <strong>Hybrid search</strong> chạy cả hai rồi gộp kết quả, thường tốt hơn từng cái riêng. Cách gộp chi tiết (RRF) và reranker học ở P4.5.</p>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Embedding giỏi bắt nghĩa nhưng hay bỏ lỡ chi tiết chính xác: mã lỗi, mã sản phẩm, số hiệu văn bản, tên riêng hiếm. Tìm kiếm từ khóa cổ điển làm tốt đúng những chỗ đó. Kết hợp hai cách gần như luôn tốt hơn từng cách riêng.</p>
+</div>
+<h3>BM25</h3>
+<p><strong>BM25</strong> chấm điểm một đoạn theo các từ trong câu hỏi xuất hiện trong đoạn:</p>
+<div class="hl"><pre><span></span><code>BM25(q, d) = Σ_{từ t trong q}  IDF(t) · tf(t, d)·(k₁ + 1) / (tf(t, d) + k₁·(1 − b + b·|d|/avgdl))
+IDF(t) = log( (N − n(t) + 0.5) / (n(t) + 0.5) + 1 )
+</code></pre></div>
+
+<ul>
+<li><strong>IDF</strong>: từ hiếm (xuất hiện ở ít đoạn, n(t) nhỏ) có trọng số cao. "E-204" quan trọng hơn "trong".</li>
+<li><strong>tf</strong>: từ xuất hiện nhiều lần trong đoạn thì điểm cao hơn, nhưng <strong>bão hòa</strong> (lần thứ 10 không đáng bằng lần thứ 2), điều chỉnh bởi k₁ (thường 1.2–2).</li>
+<li><strong>Độ dài</strong>: đoạn dài bị phạt nhẹ (b ≈ 0.75), vì đoạn dài dễ chứa từ một cách tình cờ.</li>
+</ul>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>Năm đoạn chính sách của một shop, BM25 với k₁ = 1.5, b = 0.75 (tách theo âm tiết):</p>
+<ul>
+<li>D1: "Khách được đổi trả sản phẩm trong vòng 30 ngày kể từ ngày nhận hàng."</li>
+<li>D2: phí giao hàng · D3: "Sản phẩm lỗi E-204 cần liên hệ trung tâm bảo hành…" · D4: "Hoàn tiền được thực hiện qua chuyển khoản trong 5 ngày làm việc." · D5: bảo hành bàn trang điểm.</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Câu hỏi</th>
+<th>Điểm cao nhất</th>
+<th>Đúng không</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>"đổi trả trong bao lâu"</td>
+<td>D1 = 3.60</td>
+<td>đúng</td>
+</tr>
+<tr>
+<td>"lỗi E-204"</td>
+<td>D3 = 2.74 (các đoạn khác 0)</td>
+<td>đúng: khớp chính xác mã lỗi</td>
+</tr>
+<tr>
+<td>"trả lại tiền mất mấy ngày"</td>
+<td>D1 = 2.61, D4 = 2.38</td>
+<td><strong>sai</strong>: D1 thắng vì trùng "trả" và "ngày"</td>
+</tr>
+</tbody>
+</table>
+<p>Câu thứ ba hỏi về hoàn tiền (D4), nhưng BM25 không biết "trả lại tiền" đồng nghĩa với "hoàn tiền". Embedding thường xếp D4 lên đầu ở câu này, nhưng có thể bỏ lỡ "E-204" ở câu thứ hai.</p>
+</div>
+<figure class="fig"><img src="../assets/fig/p4-2-bm25.svg" alt="Điểm BM25 thật cho ba câu hỏi. Xanh lá: đoạn đúng. BM25 làm tốt với mã lỗi, nhưng xếp sai câu hỏi diễn đạt khác từ ngữ trong tài liệu." loading="lazy"><figcaption>Điểm BM25 thật cho ba câu hỏi. Xanh lá: đoạn đúng. BM25 làm tốt với mã lỗi, nhưng xếp sai câu hỏi diễn đạt khác từ ngữ trong tài liệu.</figcaption></figure>
+
+<h3>Hybrid search</h3>
+<p><strong>Hybrid search</strong> chạy cả BM25 và vector search, rồi <strong>gộp</strong> hai danh sách kết quả. Vì điểm BM25 (0 tới vài chục) và cosine (−1 tới 1) khác thang đo, cách gộp phổ biến nhất là theo <strong>thứ hạng</strong> (Reciprocal Rank Fusion), chi tiết ở P4.5 cùng với reranker.</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>BM25</th>
+<th>Embedding</th>
+<th>Hybrid</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Mã, số hiệu, tên riêng</td>
+<td>tốt</td>
+<td>kém</td>
+<td>tốt</td>
+</tr>
+<tr>
+<td>Đồng nghĩa, diễn đạt khác</td>
+<td>kém</td>
+<td>tốt</td>
+<td>tốt</td>
+</tr>
+<tr>
+<td>Cần GPU</td>
+<td>không</td>
+<td>có (hoặc API)</td>
+<td>có</td>
+</tr>
+</tbody>
+</table>
 <h2 id="lt-5">Prompt sinh câu trả lời có trích dẫn</h2>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Tìm đúng đoạn mới là một nửa. Nửa còn lại là buộc LLM <strong>chỉ</strong> dùng các đoạn đó, nói rõ khi không biết, và ghi nguồn để người dùng kiểm tra được.</p>
+</div>
 <div class="hl"><pre><span></span><code>Trả lời câu hỏi CHỈ dựa trên các đoạn tài liệu dưới đây.
 Sau mỗi ý, ghi nguồn dạng [1], [2] theo số thứ tự đoạn.
 Nếu tài liệu không đủ để trả lời, nói rõ "Tài liệu không có thông tin này".
@@ -63,9 +285,152 @@ Nếu tài liệu không đủ để trả lời, nói rõ "Tài liệu không c
 Câu hỏi: ...
 </code></pre></div>
 
+<p>Ba yêu cầu then chốt: <strong>chỉ dùng tài liệu</strong> (giảm bịa), <strong>trích dẫn</strong> (người dùng kiểm tra được, bạn đo được độ trung thực), <strong>được phép nói không biết</strong> (thay vì đoán).</p>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>Câu hỏi: "Mua bàn online được đổi trong bao lâu, đổi thì ai trả phí ship?"</p>
+<p>Đoạn tìm được: [1] đổi trả 30 ngày; [2] phí giao hàng nội thành 30 nghìn đồng.</p>
+<p>Câu trả lời tốt: "Bạn được đổi trả trong vòng 30 ngày kể từ ngày nhận hàng [1]. Tài liệu không có thông tin về việc ai chịu phí vận chuyển khi đổi trả." Câu trả lời tệ (bịa): "…và shop chịu phí ship khi đổi [2]": đoạn [2] nói về phí giao hàng chứ không nói về đổi trả. Trích dẫn sai kiểu này là thứ bộ đánh giá ở P4.3 phải bắt được.</p>
+</div>
+<h3>Đo riêng từng bước</h3>
+<p>Lỗi RAG chia thành hai loại, sửa theo hai cách khác nhau:</p>
+<table>
+<thead>
+<tr>
+<th>Loại lỗi</th>
+<th>Dấu hiệu</th>
+<th>Sửa ở đâu</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Lỗi tìm kiếm</td>
+<td>đoạn đúng không có trong top-k</td>
+<td>chunking, model embedding, hybrid, reranker</td>
+</tr>
+<tr>
+<td>Lỗi sinh</td>
+<td>đoạn đúng có trong top-k nhưng trả lời sai, bịa, trích dẫn sai</td>
+<td>prompt, model LLM, số đoạn đưa vào</td>
+</tr>
+</tbody>
+</table>
+<p>Đo tìm kiếm bằng <strong>recall@k</strong>: trong các câu hỏi có đoạn đúng đã biết, bao nhiêu phần trăm câu có đoạn đúng nằm trong top-k.</p>
 <div class="keep">
 <p><strong>Ghi nhớ:</strong> phần lớn lỗi RAG nằm ở bước <strong>tìm kiếm</strong>, không phải ở LLM. Nếu đoạn đúng không có trong top-k, model giỏi đến đâu cũng không trả lời đúng được. Luôn đo retrieval riêng.</p>
-</div></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p4.2:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 4</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Xếp hạng bằng cosine</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Câu hỏi q = [1, 0]. Ba đoạn đã chuẩn hóa: a = [0.8, 0.6], b = [0.6, 0.8], c = [0, 1].</p>
+</div>
+<div class="box check">
+<div class="box-h">Tự kiểm tra nhanh</div>
+<p>Bộ đánh giá 40 câu hỏi, mỗi câu có đúng 1 đoạn đúng. Đoạn đúng nằm trong top-3 ở 28 câu, trong top-10 ở 36 câu.</p>
+<div class="ans" id="p4-2-t-b162-a1">
+<div class="ans-fields"><label>Recall@3<input inputmode="decimal" data-ans="0.7" data-tol="0.001" autocomplete="off"></label><label>Recall@10<input inputmode="decimal" data-ans="0.9" data-tol="0.001" autocomplete="off"></label><label>Số câu mà dù lấy 10 đoạn cũng không thể trả lời đúng<input inputmode="decimal" data-ans="4.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div>
+<div aria-live="polite" class="ans-fb"></div>
+</div>
+</div>
+<h2 id="lt-6">Tóm tắt bài và thuật ngữ</h2>
+<table>
+<thead>
+<tr>
+<th>Bước</th>
+<th>Lựa chọn chính</th>
+<th>Lỗi hay gặp</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Làm sạch</td>
+<td>đọc thử văn bản trích xuất</td>
+<td>PDF lộn xộn</td>
+</tr>
+<tr>
+<td>Chunking</td>
+<td>300–800 token, chồng lấn 10–20%, theo cấu trúc</td>
+<td>cắt đôi ý, thiếu ngữ cảnh</td>
+</tr>
+<tr>
+<td>Embedding</td>
+<td>model đa ngôn ngữ, đo recall@k</td>
+<td>đổi model mà không embedding lại</td>
+</tr>
+<tr>
+<td>Index</td>
+<td>Flat (nhỏ), HNSW/IVF (lớn), vector DB</td>
+<td>quên metadata để lọc và trích dẫn</td>
+</tr>
+<tr>
+<td>Tìm kiếm</td>
+<td>hybrid BM25 + vector</td>
+<td>chỉ dùng một cách</td>
+</tr>
+<tr>
+<td>Sinh</td>
+<td>chỉ dùng tài liệu, trích dẫn, được nói không biết</td>
+<td>bịa, trích dẫn sai</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Thuật ngữ</th>
+<th>Nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>RAG</td>
+<td>sinh câu trả lời có bổ sung tài liệu tìm được</td>
+</tr>
+<tr>
+<td>chunk / chunking</td>
+<td>đoạn / tách tài liệu thành đoạn</td>
+</tr>
+<tr>
+<td>overlap</td>
+<td>phần chồng lấn giữa hai đoạn liền nhau</td>
+</tr>
+<tr>
+<td>metadata</td>
+<td>thông tin kèm đoạn: nguồn, trang, ngày, quyền</td>
+</tr>
+<tr>
+<td>embedding model</td>
+<td>model biến văn bản thành vector</td>
+</tr>
+<tr>
+<td>vector index / vector database</td>
+<td>cấu trúc / hệ thống tìm vector gần nhất</td>
+</tr>
+<tr>
+<td>ANN (HNSW, IVF)</td>
+<td>tìm láng giềng gần đúng, nhanh</td>
+</tr>
+<tr>
+<td>BM25</td>
+<td>chấm điểm theo từ khóa, có IDF và bão hòa tf</td>
+</tr>
+<tr>
+<td>IDF</td>
+<td>trọng số nghịch với độ phổ biến của từ</td>
+</tr>
+<tr>
+<td>hybrid search</td>
+<td>kết hợp tìm từ khóa và tìm vector</td>
+</tr>
+<tr>
+<td>top-k</td>
+<td>k kết quả có điểm cao nhất</td>
+</tr>
+<tr>
+<td>recall@k</td>
+<td>tỉ lệ câu hỏi có đoạn đúng trong top-k</td>
+</tr>
+<tr>
+<td>grounding / citation</td>
+<td>bám vào tài liệu / trích dẫn nguồn</td>
+</tr>
+</tbody>
+</table></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p4.2:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 4</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Xếp hạng bằng cosine</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Câu hỏi q = [1, 0]. Ba đoạn đã chuẩn hóa: a = [0.8, 0.6], b = [0.6, 0.8], c = [0, 1].</p>
 <div class="ans" id="p4-2-e1-a1"><div class="ans-fields"><label>cos(q, a)<input inputmode="decimal" data-ans="0.8" data-tol="0.001" autocomplete="off"></label><label>cos(q, b)<input inputmode="decimal" data-ans="0.6" data-tol="0.001" autocomplete="off"></label><label>Thứ hạng của b (1 = gần nhất)<input inputmode="decimal" data-ans="2.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
 
 <details class="fold solution">
@@ -156,7 +521,7 @@ Câu hỏi: ...
     </div>
     <aside class="aside">
       <div class="abox"><h4>Tiến độ bài này</h4><div class="ring"><svg viewBox="0 0 64 64" aria-hidden="true"><circle class="bg" cx="32" cy="32" r="28"/><circle class="fg" cx="32" cy="32" r="28" stroke-dasharray="176" stroke-dashoffset="176"/></svg><div><b id="ring-n">0/3</b><span id="ring-sub">phần đã xong</span></div></div></div>
-      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Kiến trúc RAG</a></li><li><a href="#lt-2">Chunking</a></li><li><a href="#lt-3">Embedding và tìm kiếm vector</a></li><li><a href="#lt-4">BM25 và hybrid search</a></li><li><a href="#lt-5">Prompt sinh câu trả lời có trích dẫn</a></li></ol></div>
+      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Kiến trúc RAG</a></li><li><a href="#lt-2">Chunking</a></li><li><a href="#lt-3">Embedding và tìm kiếm vector</a></li><li><a href="#lt-4">BM25 và hybrid search</a></li><li><a href="#lt-5">Prompt sinh câu trả lời có trích dẫn</a></li><li><a href="#lt-6">Tóm tắt bài và thuật ngữ</a></li></ol></div>
       
       <div class="abox"><h4>Cùng giai đoạn</h4><ul><li><a href="p4-1.html">Bài 4 · Làm việc với LLM</a></li><li><span class=cur>Bài 5 · Embedding và RAG</span></li><li><a href="p4-3.html">Bài 6 · Đánh giá hệ thống AI</a></li><li><a href="p4-4.html">Bài 7 · Agent</a></li><li><a href="p4-5.html">RAG nâng cao</a></li><li><a href="p4-6.html">Multi-agent</a></li><li><a href="p4-7.html">MCP và hệ sinh thái tool</a></li><li><a href="p4-8.html">Guardrails, an toàn và human-in-the-loop</a></li></ul></div>
     </aside>

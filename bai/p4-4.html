@@ -22,11 +22,70 @@
 <main class="container">
   <div class="crumbs"><a href="../bai-hoc.html">Bài học</a><span>/</span><a href="../bai-hoc.html#p4">P4 · LLM Engineering</a><span>/</span><span>P4.4</span></div>
   <section class="lhero"><div class="code">P4.4</div><h1>Bài 7 · Agent</h1><div class="lmeta"><span class="m">Giai đoạn P4 · LLM Engineering</span><span class="m">Tuần 18–25</span><span class="chip ready"><span class="dot"></span>Có nội dung đầy đủ</span></div>
-    <div class="intro"><p>Một cuộc gọi LLM trả lời một câu. Một <strong>agent</strong> tự quyết định chuỗi hành động: gọi tool nào, đọc kết quả, gọi tiếp, cho tới khi xong việc. Bài này dạy vòng lặp agent từ con số 0 (không framework), các thành phần bộ nhớ và lập kế hoạch, cách dựng agent bằng LangGraph, và những thứ làm agent thất bại trong thực tế.</p></div></section>
+    <div class="intro"><p>Một cuộc gọi LLM trả lời một câu. Một <strong>agent</strong> tự quyết định chuỗi hành động: gọi tool nào, đọc kết quả, gọi tiếp, cho tới khi xong việc. Bài này dạy khi nào cần agent và khi nào không, vòng lặp agent từ con số 0 (không framework), thiết kế tool, bộ nhớ và lập kế hoạch, cách dựng agent bằng LangGraph, và những thứ làm agent thất bại trong thực tế.</p></div></section>
   
-  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">5 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
+  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">7 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
   <div class="lgrid" style="margin-top:22px">
-    <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">Vòng lặp agent</h2>
+    <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">Workflow hay agent</h2>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>"Agent" là từ được dùng quá đà. Phần lớn hệ thống LLM chạy tốt trong production là <strong>workflow</strong>: các bước cố định do bạn viết, LLM chỉ làm từng bước. Biết chọn đúng mức tự chủ giúp hệ thống rẻ hơn, nhanh hơn và dễ kiểm thử hơn nhiều.</p>
+</div>
+<ul>
+<li><strong>Workflow</strong>: bạn quyết định thứ tự các bước trong code; LLM thực hiện từng bước.</li>
+<li><strong>Agent</strong>: LLM tự quyết định bước tiếp theo dựa trên kết quả của bước trước.</li>
+</ul>
+<figure class="fig"><img src="../assets/fig/p4-4-spectrum.svg" alt="Các mẫu thiết kế từ ít tới nhiều tự chủ. Bắt đầu từ bên trái, chỉ dịch sang phải khi bài toán thật sự cần." loading="lazy"><figcaption>Các mẫu thiết kế từ ít tới nhiều tự chủ. Bắt đầu từ bên trái, chỉ dịch sang phải khi bài toán thật sự cần.</figcaption></figure>
+
+<table>
+<thead>
+<tr>
+<th>Mẫu</th>
+<th>Mô tả</th>
+<th>Ví dụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Chuỗi bước</td>
+<td>đầu ra bước này là đầu vào bước sau, có thể kiểm tra giữa chừng</td>
+<td>trích xuất thông tin đơn → kiểm tra hợp lệ → soạn email xác nhận</td>
+</tr>
+<tr>
+<td>Định tuyến</td>
+<td>LLM phân loại yêu cầu, chuyển sang nhánh chuyên biệt</td>
+<td>câu hỏi giao hàng → nhánh A; khiếu nại → nhánh B; câu khó → model lớn</td>
+</tr>
+<tr>
+<td>Song song</td>
+<td>chạy nhiều lần gọi độc lập rồi gộp</td>
+<td>chấm một bài theo 5 tiêu chí cùng lúc; hỏi 3 lần rồi bỏ phiếu</td>
+</tr>
+<tr>
+<td>Điều phối – thực thi</td>
+<td>một LLM chia việc, các LLM con làm từng phần (P4.6)</td>
+<td>viết báo cáo: lập dàn ý, mỗi mục giao một lần gọi</td>
+</tr>
+<tr>
+<td>Đánh giá – tối ưu</td>
+<td>một LLM làm, một LLM chấm và góp ý, lặp lại</td>
+<td>dịch rồi tự rà soát</td>
+</tr>
+<tr>
+<td>Agent</td>
+<td>LLM tự chọn tool và số bước</td>
+<td>hỗ trợ khách: tra đơn, tra chính sách, tạo yêu cầu đổi trả tùy tình huống</td>
+</tr>
+</tbody>
+</table>
+<div class="keep">
+<p><strong>Ghi nhớ:</strong> dùng agent khi số bước và thứ tự <strong>không biết trước</strong>. Nếu quy trình cố định (luôn A rồi B rồi C), một workflow rẻ hơn, nhanh hơn và dễ kiểm soát hơn nhiều.</p>
+</div>
+<h2 id="lt-2">Vòng lặp agent</h2>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Mọi framework agent (LangGraph, Claude Agent SDK, CrewAI…) đều là cùng một vòng lặp vài chục dòng, thêm tiện ích. Tự viết vòng lặp một lần giúp bạn hiểu framework làm gì và debug được khi nó sai.</p>
+</div>
 <p>Agent chỉ là tool calling (P4.1) đặt trong một vòng lặp:</p>
 <div class="hl"><pre><span></span><code>messages = [yêu cầu của người dùng]
 lặp tối đa N bước:
@@ -36,41 +95,148 @@ lặp tối đa N bước:
 nếu hết N bước: dừng và báo không hoàn thành
 </code></pre></div>
 
-<p>Kiểu suy nghĩ này gọi là <strong>ReAct</strong> (Reason + Act): model xen kẽ suy luận ("cần tra đơn trước, rồi mới tạo yêu cầu đổi trả") và hành động (gọi tool), mỗi kết quả tool là một quan sát mới.</p>
-<h2 id="lt-2">Thiết kế tool cho agent</h2>
-<p>Agent chỉ giỏi bằng bộ tool của nó:</p>
+<figure class="fig"><img src="../assets/fig/p4-4-loop.svg" alt="LLM suy luận, gọi tool, nhận kết quả như một quan sát mới, lặp lại tới khi không cần tool nữa." loading="lazy"><figcaption>LLM suy luận, gọi tool, nhận kết quả như một quan sát mới, lặp lại tới khi không cần tool nữa.</figcaption></figure>
+
+<p>Kiểu suy nghĩ này gọi là <strong>ReAct</strong> (Reason + Act): model xen kẽ suy luận và hành động, mỗi kết quả tool là một quan sát mới làm thay đổi bước tiếp theo.</p>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>Khách viết: "Đơn DH1024 bị giao thiếu ghế, tôi muốn đổi." Một lượt chạy của agent hỗ trợ khách hàng có 3 tool:</p>
+<div class="hl"><pre><span></span><code>Bước 1  suy luận: cần biết đơn gồm gì và đã giao chưa
+        gọi get_order(order_id="DH1024")
+        quan sát: {"items": ["bàn trang điểm", "ghế"], "status": "đã giao 03/11"}
+Bước 2  suy luận: đã giao, cần biết có trong thời hạn đổi không
+        gọi get_policy(topic="giao thiếu")
+        quan sát: "Giao thiếu: báo trong 7 ngày, shop gửi bù miễn phí"
+Bước 3  suy luận: còn trong 7 ngày, tạo yêu cầu gửi bù
+        gọi create_ticket(order_id="DH1024", type="giao_thieu", item="ghế")
+        quan sát: {"ticket": "YC-5531"}
+Bước 4  không gọi tool: "Shop đã ghi nhận đơn DH1024 thiếu ghế (yêu cầu YC-5531)
+        và sẽ gửi bù miễn phí..."
+</code></pre></div>
+
+<p>Nếu đơn đã giao quá 7 ngày, agent sẽ đi nhánh khác (báo hết hạn, đề nghị chuyển nhân viên). Workflow cố định khó xử lý hết các nhánh như vậy; đó là lúc agent đáng giá.</p>
+</div>
+<p>Vòng lặp tự viết với Anthropic SDK:</p>
+<div class="hl"><pre><span></span><code><span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">run_agent</span><span class="tk-p">(</span><span class="tk-n">user_msg</span><span class="tk-p">,</span> <span class="tk-n">tools</span><span class="tk-p">,</span> <span class="tk-n">tool_fns</span><span class="tk-p">,</span> <span class="tk-n">max_steps</span><span class="tk-o">=</span><span class="tk-mi">8</span><span class="tk-p">):</span>
+    <span class="tk-n">messages</span> <span class="tk-o">=</span> <span class="tk-p">[{</span><span class="tk-s2">"role"</span><span class="tk-p">:</span> <span class="tk-s2">"user"</span><span class="tk-p">,</span> <span class="tk-s2">"content"</span><span class="tk-p">:</span> <span class="tk-n">user_msg</span><span class="tk-p">}]</span>
+    <span class="tk-k">for</span> <span class="tk-n">step</span> <span class="tk-ow">in</span> <span class="tk-nb">range</span><span class="tk-p">(</span><span class="tk-n">max_steps</span><span class="tk-p">):</span>
+        <span class="tk-n">resp</span> <span class="tk-o">=</span> <span class="tk-n">client</span><span class="tk-o">.</span><span class="tk-n">messages</span><span class="tk-o">.</span><span class="tk-n">create</span><span class="tk-p">(</span><span class="tk-n">model</span><span class="tk-o">=</span><span class="tk-s2">"claude-haiku-5-5"</span><span class="tk-p">,</span> <span class="tk-n">max_tokens</span><span class="tk-o">=</span><span class="tk-mi">1024</span><span class="tk-p">,</span>
+                                      <span class="tk-n">system</span><span class="tk-o">=</span><span class="tk-n">SYSTEM</span><span class="tk-p">,</span> <span class="tk-n">tools</span><span class="tk-o">=</span><span class="tk-n">tools</span><span class="tk-p">,</span> <span class="tk-n">messages</span><span class="tk-o">=</span><span class="tk-n">messages</span><span class="tk-p">)</span>
+        <span class="tk-n">messages</span><span class="tk-o">.</span><span class="tk-n">append</span><span class="tk-p">({</span><span class="tk-s2">"role"</span><span class="tk-p">:</span> <span class="tk-s2">"assistant"</span><span class="tk-p">,</span> <span class="tk-s2">"content"</span><span class="tk-p">:</span> <span class="tk-n">resp</span><span class="tk-o">.</span><span class="tk-n">content</span><span class="tk-p">})</span>
+        <span class="tk-n">calls</span> <span class="tk-o">=</span> <span class="tk-p">[</span><span class="tk-n">b</span> <span class="tk-k">for</span> <span class="tk-n">b</span> <span class="tk-ow">in</span> <span class="tk-n">resp</span><span class="tk-o">.</span><span class="tk-n">content</span> <span class="tk-k">if</span> <span class="tk-n">b</span><span class="tk-o">.</span><span class="tk-n">type</span> <span class="tk-o">==</span> <span class="tk-s2">"tool_use"</span><span class="tk-p">]</span>
+        <span class="tk-k">if</span> <span class="tk-ow">not</span> <span class="tk-n">calls</span><span class="tk-p">:</span>
+            <span class="tk-k">return</span> <span class="tk-n">resp</span><span class="tk-o">.</span><span class="tk-n">content</span><span class="tk-p">[</span><span class="tk-mi">0</span><span class="tk-p">]</span><span class="tk-o">.</span><span class="tk-n">text</span><span class="tk-p">,</span> <span class="tk-n">messages</span>                  <span class="tk-c1"># xong việc</span>
+        <span class="tk-n">results</span> <span class="tk-o">=</span> <span class="tk-p">[]</span>
+        <span class="tk-k">for</span> <span class="tk-n">c</span> <span class="tk-ow">in</span> <span class="tk-n">calls</span><span class="tk-p">:</span>
+            <span class="tk-k">try</span><span class="tk-p">:</span>
+                <span class="tk-n">out</span> <span class="tk-o">=</span> <span class="tk-n">tool_fns</span><span class="tk-p">[</span><span class="tk-n">c</span><span class="tk-o">.</span><span class="tk-n">name</span><span class="tk-p">](</span><span class="tk-o">**</span><span class="tk-n">c</span><span class="tk-o">.</span><span class="tk-n">input</span><span class="tk-p">)</span>
+            <span class="tk-k">except</span> <span class="tk-ne">Exception</span> <span class="tk-k">as</span> <span class="tk-n">e</span><span class="tk-p">:</span>                                 <span class="tk-c1"># lỗi tool trả lại cho model, không làm sập vòng lặp</span>
+                <span class="tk-n">out</span> <span class="tk-o">=</span> <span class="tk-sa">f</span><span class="tk-s2">"Lỗi khi gọi </span><span class="tk-si">{</span><span class="tk-n">c</span><span class="tk-o">.</span><span class="tk-n">name</span><span class="tk-si">}</span><span class="tk-s2">: </span><span class="tk-si">{</span><span class="tk-n">e</span><span class="tk-si">}</span><span class="tk-s2">"</span>
+            <span class="tk-n">results</span><span class="tk-o">.</span><span class="tk-n">append</span><span class="tk-p">({</span><span class="tk-s2">"type"</span><span class="tk-p">:</span> <span class="tk-s2">"tool_result"</span><span class="tk-p">,</span> <span class="tk-s2">"tool_use_id"</span><span class="tk-p">:</span> <span class="tk-n">c</span><span class="tk-o">.</span><span class="tk-n">id</span><span class="tk-p">,</span> <span class="tk-s2">"content"</span><span class="tk-p">:</span> <span class="tk-nb">str</span><span class="tk-p">(</span><span class="tk-n">out</span><span class="tk-p">)[:</span><span class="tk-mi">4000</span><span class="tk-p">]})</span>
+        <span class="tk-n">messages</span><span class="tk-o">.</span><span class="tk-n">append</span><span class="tk-p">({</span><span class="tk-s2">"role"</span><span class="tk-p">:</span> <span class="tk-s2">"user"</span><span class="tk-p">,</span> <span class="tk-s2">"content"</span><span class="tk-p">:</span> <span class="tk-n">results</span><span class="tk-p">})</span>
+    <span class="tk-k">return</span> <span class="tk-s2">"Chưa hoàn thành sau số bước tối đa, đã chuyển cho nhân viên."</span><span class="tk-p">,</span> <span class="tk-n">messages</span>
+</code></pre></div>
+
+<p>Ba chi tiết quan trọng: <strong>giới hạn số bước</strong>, <strong>bắt lỗi tool</strong> và trả lỗi cho model tự sửa, <strong>cắt bớt kết quả tool</strong> quá dài.</p>
+<h2 id="lt-3">Thiết kế tool cho agent</h2>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Agent chỉ giỏi bằng bộ tool của nó. Model chọn tool dựa hoàn toàn vào tên, mô tả và schema bạn viết; tool mơ hồ là nguồn lỗi số một của agent.</p>
+</div>
 <ul>
 <li><strong>Ít mà chất:</strong> 3–10 tool rõ ràng tốt hơn 40 tool chồng chéo. Mỗi tool thêm vào là thêm cơ hội chọn nhầm.</li>
 <li><strong>Mô tả như viết cho đồng nghiệp mới:</strong> làm gì, khi nào dùng, khi nào <strong>không</strong> dùng, ý nghĩa và định dạng từng tham số.</li>
 <li><strong>Kết quả gọn và có ích:</strong> trả về thông tin cần thiết, không đổ cả bảng 10.000 dòng vào context.</li>
 <li><strong>Lỗi có hướng dẫn:</strong> "Không tìm thấy đơn DH999. Mã đơn có dạng DH + 4 chữ số" giúp model tự sửa; một stack trace thì không.</li>
+<li><strong>Tool ở mức nghiệp vụ, không ở mức kỹ thuật:</strong> <code>create_return_request(order_id, reason)</code> tốt hơn <code>sql_query(query)</code>: an toàn hơn, khó dùng sai hơn.</li>
 </ul>
-<h2 id="lt-3">Bộ nhớ và lập kế hoạch</h2>
+<div class="box pitfall">
+<div class="box-h">Lỗi hay gặp</div>
+<p><strong>Đưa tool quá mạnh.</strong> Một tool <code>run_sql(query)</code> cho phép agent làm mọi thứ, kể cả <code>DROP TABLE</code> nếu bị prompt injection hoặc chỉ đơn giản là hiểu sai. Cho agent <strong>quyền tối thiểu</strong>: tool chỉ đọc khi chỉ cần đọc, tham số giới hạn, hành động không đảo ngược được phải có người duyệt (P4.8).</p>
+</div>
+<h2 id="lt-4">Bộ nhớ và lập kế hoạch</h2>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Context có giới hạn và mỗi token đều tốn tiền. Agent làm việc dài (hàng chục bước) hoặc phục vụ một người dùng nhiều ngày cần cách nhớ có chọn lọc, và cần một kế hoạch để không lạc đề.</p>
+</div>
 <table>
 <thead>
 <tr>
-<th>Loại</th>
+<th>Loại bộ nhớ</th>
+<th>Lưu gì</th>
 <th>Cách làm</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td>Ngắn hạn</td>
-<td>lịch sử messages trong một phiên; tóm tắt khi quá dài</td>
+<td>những gì xảy ra trong phiên này</td>
+<td>lịch sử messages; tóm tắt khi quá dài</td>
 </tr>
 <tr>
 <td>Dài hạn</td>
-<td>lưu sự kiện/sở thích vào DB hoặc vector store, truy xuất khi cần (giống RAG)</td>
+<td>sự kiện, sở thích qua nhiều phiên</td>
+<td>lưu vào DB hoặc vector store, truy xuất khi cần (giống RAG)</td>
 </tr>
 <tr>
 <td>Trạng thái công việc</td>
-<td>một đối tượng state có cấu trúc: danh sách việc, việc đã xong, kết quả trung gian</td>
+<td>tiến độ của nhiệm vụ hiện tại</td>
+<td>một đối tượng state có cấu trúc: việc cần làm, việc đã xong, kết quả trung gian</td>
 </tr>
 </tbody>
 </table>
-<p>Với việc dài, cho agent <strong>lập kế hoạch trước</strong> (danh sách bước), rồi thực hiện và cập nhật kế hoạch theo kết quả. Kế hoạch viết ra giúp model không lạc đề sau hàng chục bước.</p>
-<h2 id="lt-4">LangGraph</h2>
-<p>LangGraph mô tả agent như một <strong>đồ thị trạng thái</strong>: node là bước xử lý (gọi LLM, chạy tool), edge là chuyển tiếp, có thể có điều kiện. Lợi ích so với vòng lặp tự viết: lưu checkpoint (tiếp tục sau khi lỗi hoặc sau khi người dùng duyệt), human-in-the-loop, chạy song song, quan sát từng bước.</p>
+<h3>Context phình to theo số bước</h3>
+<p>Mỗi bước, toàn bộ lịch sử (kể cả mọi kết quả tool) lại được gửi đi. Nếu mỗi bước thêm 800 token và system prompt + tool mất 2.000 token, bước thứ 8 gửi đi 2.000 + 7 × 800 = 7.600 token (gấp gần 4 lần bước đầu), và tổng 8 bước là 38.400 token.</p>
+<p>Cách giảm:</p>
+<ul>
+<li>Cắt kết quả tool, chỉ giữ trường cần thiết.</li>
+<li>Tóm tắt các bước cũ thành một đoạn ngắn.</li>
+<li>Lưu kết quả lớn ra ngoài (file, DB), chỉ đưa vào context một tham chiếu.</li>
+</ul>
+<h3>Lập kế hoạch</h3>
+<p>Với việc dài, cho agent <strong>lập kế hoạch trước</strong> (danh sách bước), rồi thực hiện và cập nhật kế hoạch theo kết quả. Kế hoạch viết ra (ví dụ một danh sách việc trong state) giúp model không lạc đề sau hàng chục bước, và giúp bạn đọc được agent đang nghĩ gì.</p>
+<h2 id="lt-5">LangGraph</h2>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Vòng lặp tự viết đủ cho agent đơn giản. Khi cần dừng giữa chừng chờ người duyệt, tiếp tục sau khi server khởi động lại, rẽ nhánh phức tạp, hay nhiều agent phối hợp (P4.6), một framework đồ thị trạng thái tiết kiệm rất nhiều code.</p>
+</div>
+<p>LangGraph mô tả agent như một <strong>đồ thị trạng thái</strong>:</p>
+<table>
+<thead>
+<tr>
+<th>Khái niệm</th>
+<th>Ý nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>State</strong></td>
+<td>dữ liệu đi qua đồ thị (thường là danh sách messages + các trường khác)</td>
+</tr>
+<tr>
+<td><strong>Node</strong></td>
+<td>một bước xử lý: hàm nhận state, trả về phần state cần cập nhật</td>
+</tr>
+<tr>
+<td><strong>Edge</strong></td>
+<td>chuyển tiếp từ node này sang node khác</td>
+</tr>
+<tr>
+<td><strong>Conditional edge</strong></td>
+<td>chọn node tiếp theo dựa trên state</td>
+</tr>
+<tr>
+<td><strong>Reducer</strong></td>
+<td>cách gộp cập nhật vào state; <code>add_messages</code> nối thêm thay vì ghi đè</td>
+</tr>
+<tr>
+<td><strong>Checkpointer</strong></td>
+<td>lưu state sau mỗi bước để tiếp tục hoặc quay lại</td>
+</tr>
+</tbody>
+</table>
+<figure class="fig"><img src="../assets/fig/p4-4-graph.svg" alt="Đồ thị agent tối thiểu: node agent gọi LLM; nếu có lời gọi tool thì sang node tools rồi quay lại, không thì kết thúc." loading="lazy"><figcaption>Đồ thị agent tối thiểu: node agent gọi LLM; nếu có lời gọi tool thì sang node tools rồi quay lại, không thì kết thúc.</figcaption></figure>
+
 <div class="hl"><pre><span></span><code><span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">typing</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">Annotated</span>
 <span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">typing_extensions</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">TypedDict</span>
 <span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">langgraph.graph</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">StateGraph</span><span class="tk-p">,</span> <span class="tk-n">START</span>
@@ -85,7 +251,7 @@ nếu hết N bước: dừng và báo không hoàn thành
     <span class="tk-k">return</span> <span class="tk-p">{</span><span class="tk-s2">"DH1024"</span><span class="tk-p">:</span> <span class="tk-s2">"đang giao, dự kiến 6/11"</span><span class="tk-p">}</span><span class="tk-o">.</span><span class="tk-n">get</span><span class="tk-p">(</span><span class="tk-n">order_id</span><span class="tk-p">,</span> <span class="tk-sa">f</span><span class="tk-s2">"Không tìm thấy </span><span class="tk-si">{</span><span class="tk-n">order_id</span><span class="tk-si">}</span><span class="tk-s2">"</span><span class="tk-p">)</span>
 
 <span class="tk-k">class</span><span class="tk-w"> </span><span class="tk-nc">State</span><span class="tk-p">(</span><span class="tk-n">TypedDict</span><span class="tk-p">):</span>
-    <span class="tk-n">messages</span><span class="tk-p">:</span> <span class="tk-n">Annotated</span><span class="tk-p">[</span><span class="tk-nb">list</span><span class="tk-p">,</span> <span class="tk-n">add_messages</span><span class="tk-p">]</span>
+    <span class="tk-n">messages</span><span class="tk-p">:</span> <span class="tk-n">Annotated</span><span class="tk-p">[</span><span class="tk-nb">list</span><span class="tk-p">,</span> <span class="tk-n">add_messages</span><span class="tk-p">]</span>          <span class="tk-c1"># reducer: nối thêm message mới</span>
 
 <span class="tk-n">llm</span> <span class="tk-o">=</span> <span class="tk-n">ChatAnthropic</span><span class="tk-p">(</span><span class="tk-n">model</span><span class="tk-o">=</span><span class="tk-s2">"claude-haiku-5-5"</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">bind_tools</span><span class="tk-p">([</span><span class="tk-n">get_order_status</span><span class="tk-p">])</span>
 <span class="tk-n">graph</span> <span class="tk-o">=</span> <span class="tk-n">StateGraph</span><span class="tk-p">(</span><span class="tk-n">State</span><span class="tk-p">)</span>
@@ -98,16 +264,167 @@ nếu hết N bước: dừng và báo không hoàn thành
 <span class="tk-n">out</span> <span class="tk-o">=</span> <span class="tk-n">app</span><span class="tk-o">.</span><span class="tk-n">invoke</span><span class="tk-p">({</span><span class="tk-s2">"messages"</span><span class="tk-p">:</span> <span class="tk-p">[(</span><span class="tk-s2">"user"</span><span class="tk-p">,</span> <span class="tk-s2">"Đơn DH1024 của tôi tới đâu rồi?"</span><span class="tk-p">)]},</span> <span class="tk-p">{</span><span class="tk-s2">"recursion_limit"</span><span class="tk-p">:</span> <span class="tk-mi">10</span><span class="tk-p">})</span>
 </code></pre></div>
 
-<h2 id="lt-5">Vì sao agent thất bại</h2>
+<p><code>recursion_limit</code> là giới hạn số bước, đóng vai trò như <code>max_steps</code> trong vòng lặp tự viết. Thêm <code>checkpointer=MemorySaver()</code> khi compile để lưu state theo <code>thread_id</code>, cho phép hội thoại nhiều lượt và dừng chờ người duyệt (<code>interrupt</code>, P4.8).</p>
+<h2 id="lt-6">Vì sao agent thất bại</h2>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Demo agent thường chạy đẹp ở 3 ví dụ đầu. Trong production, nó gặp hàng nghìn tình huống chưa thấy. Biết trước các kiểu thất bại giúp bạn thiết kế phòng thủ ngay từ đầu.</p>
+</div>
+<h3>Lỗi cộng dồn</h3>
+<p>Nếu mỗi bước đúng với xác suất p và các bước độc lập, chuỗi n bước đều đúng với xác suất pⁿ.</p>
+<figure class="fig"><img src="../assets/fig/p4-4-reliability.svg" alt="Mỗi bước đúng 90%: sau 7 bước chỉ còn khoảng một nửa chuỗi đúng hoàn toàn. Mỗi bước 99.5%: 30 bước vẫn còn 86%." loading="lazy"><figcaption>Mỗi bước đúng 90%: sau 7 bước chỉ còn khoảng một nửa chuỗi đúng hoàn toàn. Mỗi bước 99.5%: 30 bước vẫn còn 86%.</figcaption></figure>
+
+<p>Cách giảm: <strong>rút ngắn chuỗi</strong> (tool làm được nhiều hơn mỗi lần gọi), <strong>kiểm tra kết quả trung gian</strong> (validate, hỏi lại người dùng khi không chắc), và <strong>cho phép tự sửa</strong> (lỗi rõ ràng để model thử lại).</p>
+<h3>Các kiểu thất bại khác</h3>
+<table>
+<thead>
+<tr>
+<th>Kiểu</th>
+<th>Biểu hiện</th>
+<th>Phòng thủ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Vòng lặp vô hạn</td>
+<td>gọi cùng một tool với cùng tham số lặp lại</td>
+<td>giới hạn số bước, phát hiện lời gọi trùng</td>
+</tr>
+<tr>
+<td>Context phình to</td>
+<td>chi phí tăng, model "quên" mục tiêu ban đầu</td>
+<td>cắt kết quả tool, tóm tắt, nhắc lại mục tiêu</td>
+</tr>
+<tr>
+<td>Chọn sai tool</td>
+<td>dùng <code>search_products</code> khi cần <code>get_order</code></td>
+<td>mô tả tool rõ ràng, ít tool hơn</td>
+</tr>
+<tr>
+<td>Bịa tham số</td>
+<td>tự nghĩ ra mã đơn</td>
+<td>tool kiểm tra và trả lỗi; hỏi lại người dùng</td>
+</tr>
+<tr>
+<td>Dừng quá sớm</td>
+<td>trả lời khi chưa đủ thông tin</td>
+<td>hướng dẫn trong system prompt; eval theo nhiệm vụ</td>
+</tr>
+<tr>
+<td>Hành động nguy hiểm</td>
+<td>xóa dữ liệu, gửi email, hoàn tiền</td>
+<td>quyền tối thiểu, duyệt thủ công (P4.8)</td>
+</tr>
+</tbody>
+</table>
+<h3>Đánh giá agent</h3>
+<p>Agent được đánh giá theo <strong>nhiệm vụ</strong>, không theo từng câu trả lời (P4.3):</p>
 <ul>
-<li><strong>Lỗi cộng dồn:</strong> mỗi bước đúng 95% thì 10 bước liên tiếp chỉ còn khoảng 60%. Rút ngắn chuỗi, kiểm tra kết quả trung gian.</li>
-<li><strong>Vòng lặp vô hạn:</strong> gọi cùng một tool lặp lại. Luôn có giới hạn số bước và phát hiện lặp.</li>
-<li><strong>Context phình to:</strong> kết quả tool dài làm chi phí tăng và model "quên" mục tiêu.</li>
-<li><strong>Hành động nguy hiểm:</strong> xóa dữ liệu, gửi email, trả tiền. Cần quyền tối thiểu và duyệt thủ công (P4.8).</li>
+<li><strong>Tỉ lệ hoàn thành nhiệm vụ</strong> trên một bộ tình huống có kết quả mong đợi ("đơn DH1024 thiếu ghế" → phải tạo đúng một ticket loại <code>giao_thieu</code>).</li>
+<li><strong>Quỹ đạo (trajectory)</strong>: có gọi tool cần thiết không, có gọi tool thừa hay nguy hiểm không.</li>
+<li><strong>Số bước, chi phí, độ trễ</strong> trung bình mỗi nhiệm vụ.</li>
 </ul>
-<div class="keep">
-<p><strong>Ghi nhớ:</strong> dùng agent khi số bước và thứ tự <strong>không biết trước</strong>. Nếu quy trình cố định (luôn A rồi B rồi C), một chuỗi gọi LLM có cấu trúc rẻ hơn, nhanh hơn và dễ kiểm soát hơn nhiều.</p>
-</div></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p4.4:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 2</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Chi phí context của agent</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Mỗi bước gửi lại toàn bộ lịch sử. Bước 1 có 1.000 token đầu vào, mỗi bước sau thêm 500 token (kết quả tool và suy luận).</p>
+<div class="box check">
+<div class="box-h">Tự kiểm tra nhanh</div>
+<p>Một agent cần trung bình 6 bước, mỗi bước đúng 92% (độc lập).</p>
+<div class="ans" id="p4-4-t-b181-a1">
+<div class="ans-fields"><label>Xác suất cả 6 bước đều đúng<input inputmode="decimal" data-ans="0.6064" data-tol="0.001" autocomplete="off"></label><label>Nếu gộp 2 tool để còn 4 bước (vẫn 92% mỗi bước)<input inputmode="decimal" data-ans="0.7164" data-tol="0.001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div>
+<div aria-live="polite" class="ans-fb"></div>
+</div>
+</div>
+<h2 id="lt-7">Tóm tắt bài và thuật ngữ</h2>
+<table>
+<thead>
+<tr>
+<th>Câu hỏi</th>
+<th>Trả lời</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Có cần agent không?</td>
+<td>chỉ khi số bước và thứ tự không biết trước; nếu không, dùng workflow</td>
+</tr>
+<tr>
+<td>Agent là gì về kỹ thuật?</td>
+<td>tool calling trong một vòng lặp có giới hạn số bước</td>
+</tr>
+<tr>
+<td>Tool tốt?</td>
+<td>ít, rõ, mức nghiệp vụ, kết quả gọn, lỗi có hướng dẫn, quyền tối thiểu</td>
+</tr>
+<tr>
+<td>Bộ nhớ?</td>
+<td>ngắn hạn (messages), dài hạn (DB/vector), state công việc</td>
+</tr>
+<tr>
+<td>Framework?</td>
+<td>LangGraph khi cần checkpoint, duyệt thủ công, nhánh phức tạp</td>
+</tr>
+<tr>
+<td>Rủi ro lớn nhất?</td>
+<td>lỗi cộng dồn, vòng lặp, context phình, hành động nguy hiểm</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Thuật ngữ</th>
+<th>Nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>agent</td>
+<td>hệ thống trong đó LLM tự quyết định bước tiếp theo</td>
+</tr>
+<tr>
+<td>workflow</td>
+<td>chuỗi bước cố định do code quyết định</td>
+</tr>
+<tr>
+<td>ReAct</td>
+<td>xen kẽ suy luận và hành động</td>
+</tr>
+<tr>
+<td>tool / action / observation</td>
+<td>công cụ / hành động gọi tool / kết quả trả về</td>
+</tr>
+<tr>
+<td>prompt chaining</td>
+<td>nối nhiều lần gọi LLM thành chuỗi</td>
+</tr>
+<tr>
+<td>routing</td>
+<td>phân loại rồi chuyển sang nhánh phù hợp</td>
+</tr>
+<tr>
+<td>orchestrator–worker</td>
+<td>một LLM chia việc cho nhiều LLM con</td>
+</tr>
+<tr>
+<td>state / node / edge</td>
+<td>dữ liệu / bước / chuyển tiếp trong đồ thị</td>
+</tr>
+<tr>
+<td>checkpointer</td>
+<td>lưu state để tiếp tục hoặc quay lại</td>
+</tr>
+<tr>
+<td>recursion limit / max steps</td>
+<td>giới hạn số bước của agent</td>
+</tr>
+<tr>
+<td>trajectory</td>
+<td>chuỗi hành động agent đã thực hiện</td>
+</tr>
+<tr>
+<td>least privilege</td>
+<td>nguyên tắc quyền tối thiểu</td>
+</tr>
+</tbody>
+</table></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p4.4:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 2</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Chi phí context của agent</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Mỗi bước gửi lại toàn bộ lịch sử. Bước 1 có 1.000 token đầu vào, mỗi bước sau thêm 500 token (kết quả tool và suy luận).</p>
 <div class="ans" id="p4-4-e1-a1"><div class="ans-fields"><label>Token vào ở bước 5<input inputmode="decimal" data-ans="3000.0" data-tol="0.0" autocomplete="off"></label><label>Tổng token vào sau 5 bước<input inputmode="decimal" data-ans="10000.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
 
 <details class="fold solution">
@@ -185,7 +502,7 @@ Edge: START → collect_info; collect_info → collect_info nếu thiếu addres
     </div>
     <aside class="aside">
       <div class="abox"><h4>Tiến độ bài này</h4><div class="ring"><svg viewBox="0 0 64 64" aria-hidden="true"><circle class="bg" cx="32" cy="32" r="28"/><circle class="fg" cx="32" cy="32" r="28" stroke-dasharray="176" stroke-dashoffset="176"/></svg><div><b id="ring-n">0/3</b><span id="ring-sub">phần đã xong</span></div></div></div>
-      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Vòng lặp agent</a></li><li><a href="#lt-2">Thiết kế tool cho agent</a></li><li><a href="#lt-3">Bộ nhớ và lập kế hoạch</a></li><li><a href="#lt-4">LangGraph</a></li><li><a href="#lt-5">Vì sao agent thất bại</a></li></ol></div>
+      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Workflow hay agent</a></li><li><a href="#lt-2">Vòng lặp agent</a></li><li><a href="#lt-3">Thiết kế tool cho agent</a></li><li><a href="#lt-4">Bộ nhớ và lập kế hoạch</a></li><li><a href="#lt-5">LangGraph</a></li><li><a href="#lt-6">Vì sao agent thất bại</a></li><li><a href="#lt-7">Tóm tắt bài và thuật ngữ</a></li></ol></div>
       
       <div class="abox"><h4>Cùng giai đoạn</h4><ul><li><a href="p4-1.html">Bài 4 · Làm việc với LLM</a></li><li><a href="p4-2.html">Bài 5 · Embedding và RAG</a></li><li><a href="p4-3.html">Bài 6 · Đánh giá hệ thống AI</a></li><li><span class=cur>Bài 7 · Agent</span></li><li><a href="p4-5.html">RAG nâng cao</a></li><li><a href="p4-6.html">Multi-agent</a></li><li><a href="p4-7.html">MCP và hệ sinh thái tool</a></li><li><a href="p4-8.html">Guardrails, an toàn và human-in-the-loop</a></li></ul></div>
     </aside>

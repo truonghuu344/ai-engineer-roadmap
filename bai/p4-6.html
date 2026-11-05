@@ -22,11 +22,15 @@
 <main class="container">
   <div class="crumbs"><a href="../bai-hoc.html">Bài học</a><span>/</span><a href="../bai-hoc.html#p4">P4 · LLM Engineering</a><span>/</span><span>P4.6</span></div>
   <section class="lhero"><div class="code">P4.6</div><h1>Multi-agent</h1><div class="lmeta"><span class="m">Giai đoạn P4 · LLM Engineering</span><span class="m">Tuần 18–25</span><span class="chip ready"><span class="dot"></span>Có nội dung đầy đủ</span></div>
-    <div class="intro"><p>Khi một agent phải ôm quá nhiều tool, quá nhiều loại việc và một context quá dài, nó bắt đầu chọn nhầm và quên mục tiêu. <strong>Multi-agent</strong> chia việc cho nhiều agent chuyên môn hóa phối hợp với nhau. Nhưng nhiều agent cũng đồng nghĩa nhiều chi phí, nhiều độ trễ và nhiều chỗ để hỏng. Bài này dạy các mẫu kiến trúc, cách chuyển giao và chia sẻ trạng thái, và quan trọng nhất là <strong>khi nào không nên dùng multi-agent</strong>.</p></div></section>
+    <div class="intro"><p>Khi một agent phải ôm quá nhiều tool, quá nhiều loại việc và một context quá dài, nó bắt đầu chọn nhầm và quên mục tiêu. <strong>Multi-agent</strong> chia việc cho nhiều agent chuyên môn hóa phối hợp với nhau. Nhưng nhiều agent cũng đồng nghĩa nhiều chi phí, nhiều độ trễ và nhiều chỗ để hỏng. Bài này dạy các mẫu kiến trúc, cách chuyển giao và chia sẻ trạng thái, cách cài bằng LangGraph, và quan trọng nhất là <strong>khi nào không nên dùng multi-agent</strong>.</p></div></section>
   
-  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">5 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
+  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">6 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
   <div class="lgrid" style="margin-top:22px">
     <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">Khi nào cần nhiều agent</h2>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Multi-agent đang là chủ đề nóng, và rất dễ bị cuốn vào việc dựng một "đội agent" cho bài toán mà một agent tốt đã làm được. Câu hỏi đúng không phải "làm sao dựng multi-agent" mà là "bài toán này có thật sự cần không".</p>
+</div>
 <p>Bắt đầu với <strong>một agent</strong>. Chỉ tách ra khi có lý do đo được:</p>
 <table>
 <thead>
@@ -42,37 +46,117 @@
 </tr>
 <tr>
 <td>Các việc con cần prompt, model hoặc quyền khác nhau</td>
-<td>agent viết code khác agent duyệt chi tiêu</td>
+<td>agent viết code khác agent duyệt chi tiêu; việc dễ dùng model rẻ</td>
 </tr>
 <tr>
 <td>Việc con độc lập, chạy song song được</td>
-<td>nghiên cứu 5 đối thủ cùng lúc</td>
+<td>nghiên cứu 5 đối thủ cùng lúc: nhanh hơn gần 5 lần</td>
 </tr>
 <tr>
 <td>Context quá dài</td>
 <td>mỗi agent con giữ context riêng, chỉ trả về bản tóm tắt</td>
 </tr>
+<tr>
+<td>Cần kiểm tra chéo</td>
+<td>một agent làm, agent khác (prompt khác, có khi model khác) chấm</td>
+</tr>
 </tbody>
 </table>
 <p>Nếu không có dấu hiệu nào, multi-agent chỉ làm hệ thống đắt hơn, chậm hơn và khó debug hơn.</p>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p><strong>Cần multi-agent:</strong> "Viết báo cáo so sánh 5 đối thủ cạnh tranh của shop". Năm phần nghiên cứu độc lập (song song được), mỗi phần cần đọc nhiều trang web (context dài), phần viết cần context sạch chỉ chứa kết quả đã tóm tắt.</p>
+<p><strong>Không cần:</strong> "Chatbot hỗ trợ khách: tra đơn, tra chính sách, tạo yêu cầu đổi trả". Ba tool, việc tuần tự, context ngắn. Một agent với 3 tool rõ ràng (P4.4) làm tốt hơn một supervisor điều phối ba agent con.</p>
+</div>
 <h2 id="lt-2">Các mẫu kiến trúc</h2>
-<ul>
-<li><strong>Supervisor (orchestrator–worker):</strong> một agent điều phối nhận yêu cầu, chia việc, giao cho các worker, tổng hợp kết quả. Phổ biến nhất, dễ kiểm soát.</li>
-<li><strong>Pipeline:</strong> các agent nối tiếp, đầu ra của agent này là đầu vào agent sau (nghiên cứu → phân tích → viết). Đơn giản nhưng lỗi ở đầu lan tới cuối.</li>
-<li><strong>Song song (fan-out / fan-in):</strong> chạy nhiều worker cùng lúc trên các phần độc lập rồi gộp lại. Giảm độ trễ.</li>
-<li><strong>Phản biện (debate / critic):</strong> một agent tạo, một agent khác chấm và yêu cầu sửa. Tăng chất lượng, tốn gấp đôi.</li>
-<li><strong>Mạng ngang hàng (swarm):</strong> agent tự chuyển giao cho nhau. Linh hoạt nhưng khó đoán, khó debug.</li>
-</ul>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Hầu hết hệ multi-agent thực tế là một trong vài mẫu cơ bản hoặc tổ hợp của chúng. Biết các mẫu giúp bạn chọn kiến trúc đơn giản nhất đủ dùng.</p>
+</div>
+<figure class="fig"><img src="../assets/fig/p4-6-patterns.svg" alt="Bốn mẫu hay gặp. Supervisor và song song phổ biến nhất trong production vì dễ kiểm soát." loading="lazy"><figcaption>Bốn mẫu hay gặp. Supervisor và song song phổ biến nhất trong production vì dễ kiểm soát.</figcaption></figure>
+
+<table>
+<thead>
+<tr>
+<th>Mẫu</th>
+<th>Cách hoạt động</th>
+<th>Ưu</th>
+<th>Nhược</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Supervisor</strong> (orchestrator–worker)</td>
+<td>một agent điều phối nhận yêu cầu, chia việc, giao cho worker, tổng hợp</td>
+<td>dễ kiểm soát, dễ log</td>
+<td>supervisor là điểm nghẽn</td>
+</tr>
+<tr>
+<td><strong>Pipeline</strong></td>
+<td>agent nối tiếp, đầu ra của agent này là đầu vào agent sau</td>
+<td>đơn giản, dễ hiểu</td>
+<td>lỗi ở đầu lan tới cuối</td>
+</tr>
+<tr>
+<td><strong>Song song</strong> (fan-out / fan-in)</td>
+<td>chạy nhiều worker cùng lúc trên các phần độc lập rồi gộp</td>
+<td>giảm độ trễ mạnh</td>
+<td>chỉ khi việc tách được</td>
+</tr>
+<tr>
+<td><strong>Phản biện</strong> (critic)</td>
+<td>một agent tạo, một agent khác chấm và yêu cầu sửa, lặp vài vòng</td>
+<td>tăng chất lượng</td>
+<td>tốn gấp đôi trở lên</td>
+</tr>
+<tr>
+<td><strong>Ngang hàng</strong> (swarm)</td>
+<td>agent tự chuyển giao cho nhau, không có trung tâm</td>
+<td>linh hoạt</td>
+<td>khó đoán, khó debug</td>
+</tr>
+</tbody>
+</table>
 <h2 id="lt-3">Chuyển giao và trạng thái chung</h2>
-<p>Cách các agent "nói chuyện" quyết định độ tin cậy:</p>
-<ul>
-<li><strong>Trạng thái có cấu trúc:</strong> thay vì chuyền nhau đoạn hội thoại dài, dùng một state dạng dict (<code>task</code>, <code>findings</code>, <code>draft</code>, <code>feedback</code>). Mỗi agent đọc phần cần và ghi phần của mình.</li>
-<li><strong>Handoff rõ ràng:</strong> khi agent A giao cho B, truyền <strong>mục tiêu, bối cảnh tối thiểu, định dạng kết quả mong đợi</strong>. Lỗi phổ biến nhất là worker không biết đủ bối cảnh và làm sai việc.</li>
-<li><strong>Kết quả tóm tắt:</strong> worker trả về bản tóm tắt gọn chứ không trả toàn bộ quá trình, để context của supervisor không phình.</li>
-</ul>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Phần lớn lỗi của hệ multi-agent nằm ở <strong>chỗ nối</strong>: worker không nhận đủ bối cảnh nên làm sai việc, hoặc trả về quá nhiều làm context của supervisor phình to. Thiết kế cách các agent trao đổi quan trọng hơn chọn framework.</p>
+</div>
+<h3>Trạng thái có cấu trúc</h3>
+<p>Thay vì chuyền nhau đoạn hội thoại dài, dùng một <strong>state dạng dict</strong> với các trường rõ ràng. Mỗi agent đọc phần cần và ghi phần của mình.</p>
+<figure class="fig"><img src="../assets/fig/p4-6-state.svg" alt="Các agent không nói chuyện trực tiếp mà đọc và ghi vào một state chung; supervisor đọc state để quyết định bước tiếp theo." loading="lazy"><figcaption>Các agent không nói chuyện trực tiếp mà đọc và ghi vào một state chung; supervisor đọc state để quyết định bước tiếp theo.</figcaption></figure>
+
+<h3>Handoff rõ ràng</h3>
+<p>Khi agent A giao cho B, truyền đủ ba thứ:</p>
+<ol>
+<li><strong>Mục tiêu</strong> cụ thể: "Tìm giá bán, chính sách giao hàng và đánh giá trung bình của đối thủ X", không phải "nghiên cứu đối thủ X".</li>
+<li><strong>Bối cảnh tối thiểu</strong>: thông tin B cần mà B không tự biết (sản phẩm của ta là gì, đã biết gì rồi).</li>
+<li><strong>Định dạng kết quả</strong>: "Trả về JSON với các trường gia_ban, giao_hang, danh_gia, nguon".</li>
+</ol>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>Handoff tệ: <code>"Nghiên cứu Nội thất Hòa Bình."</code></p>
+<p>Handoff tốt:</p>
+<div class="hl"><pre><span></span><code>Mục tiêu: thu thập thông tin để so sánh Nội thất Hòa Bình với shop của ta về bàn trang điểm.
+Cần tìm: giá 3 mẫu bàn trang điểm bán chạy nhất, phí và thời gian giao hàng ở Hà Nội,
+         chính sách đổi trả, điểm đánh giá trung bình.
+Không cần: lịch sử công ty, sản phẩm khác.
+Trả về JSON: {"gia": [...], "giao_hang": "...", "doi_tra": "...", "danh_gia": số, "nguon": [url]}
+Giới hạn: tối đa 8 lần tìm kiếm.
+</code></pre></div>
+
+</div>
+<h3>Kết quả tóm tắt</h3>
+<p>Worker trả về <strong>bản tóm tắt gọn</strong> chứ không trả toàn bộ quá trình (các trang đã đọc, các lần tìm thất bại). Đây là lợi ích lớn nhất của multi-agent: worker có thể dùng 50.000 token context để làm việc, nhưng chỉ đưa 500 token kết quả cho supervisor.</p>
+<h3>A2A: agent của các hệ thống khác nhau</h3>
 <p><strong>A2A (Agent2Agent)</strong> là giao thức mở để agent của các hệ thống, các công ty khác nhau làm việc với nhau qua HTTP: mỗi agent công bố một "agent card" mô tả khả năng, nhận và cập nhật <strong>task</strong> theo chuẩn chung. MCP (P4.7) nối agent với <strong>tool và dữ liệu</strong>; A2A nối <strong>agent với agent</strong>.</p>
 <h2 id="lt-4">Multi-agent bằng LangGraph</h2>
-<p>Mỗi agent là một node (hoặc một subgraph), supervisor là node quyết định đi đâu tiếp bằng conditional edge. Chạy song song bằng <code>Send</code> để tạo nhiều nhánh worker cùng lúc.</p>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>LangGraph biểu diễn tự nhiên cả supervisor (conditional edge), pipeline (edge nối tiếp) và song song (<code>Send</code>). Một khi đã quen đồ thị một agent ở P4.4, hệ nhiều agent chỉ là thêm node.</p>
+</div>
+<h3>Supervisor</h3>
+<p>Mỗi agent là một node (hoặc một subgraph), supervisor là node quyết định đi đâu tiếp bằng conditional edge:</p>
 <div class="hl"><pre><span></span><code><span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">typing</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">TypedDict</span>
 <span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">langgraph.graph</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">StateGraph</span><span class="tk-p">,</span> <span class="tk-n">START</span><span class="tk-p">,</span> <span class="tk-n">END</span>
 
@@ -102,17 +186,194 @@
 <span class="tk-n">app</span> <span class="tk-o">=</span> <span class="tk-n">g</span><span class="tk-o">.</span><span class="tk-n">compile</span><span class="tk-p">()</span>
 </code></pre></div>
 
-<p>Supervisor ở trên là luật cố định; trong hệ thật, supervisor thường là một LLM chọn bước tiếp theo, kèm giới hạn số vòng.</p>
+<p>Supervisor ở trên là luật cố định (thực chất là một workflow); trong hệ thật, supervisor thường là một LLM chọn bước tiếp theo bằng structured output (<code>{"next": "analyst", "instruction": "..."}</code>), kèm giới hạn số vòng.</p>
+<h3>Song song với Send</h3>
+<p><code>Send</code> tạo nhiều nhánh worker cùng lúc, mỗi nhánh nhận một phần việc. Kết quả được gộp nhờ reducer (<code>operator.add</code> nối các list):</p>
+<div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">operator</span>
+<span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">typing</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">Annotated</span><span class="tk-p">,</span> <span class="tk-n">TypedDict</span>
+<span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">langgraph.graph</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">StateGraph</span><span class="tk-p">,</span> <span class="tk-n">START</span><span class="tk-p">,</span> <span class="tk-n">END</span>
+<span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">langgraph.types</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">Send</span>
+
+<span class="tk-k">class</span><span class="tk-w"> </span><span class="tk-nc">State</span><span class="tk-p">(</span><span class="tk-n">TypedDict</span><span class="tk-p">):</span>
+    <span class="tk-n">competitors</span><span class="tk-p">:</span> <span class="tk-nb">list</span><span class="tk-p">[</span><span class="tk-nb">str</span><span class="tk-p">]</span>
+    <span class="tk-n">results</span><span class="tk-p">:</span> <span class="tk-n">Annotated</span><span class="tk-p">[</span><span class="tk-nb">list</span><span class="tk-p">,</span> <span class="tk-n">operator</span><span class="tk-o">.</span><span class="tk-n">add</span><span class="tk-p">]</span>        <span class="tk-c1"># mỗi worker thêm phần của mình</span>
+    <span class="tk-n">report</span><span class="tk-p">:</span> <span class="tk-nb">str</span>
+
+<span class="tk-k">class</span><span class="tk-w"> </span><span class="tk-nc">WorkerInput</span><span class="tk-p">(</span><span class="tk-n">TypedDict</span><span class="tk-p">):</span>
+    <span class="tk-n">name</span><span class="tk-p">:</span> <span class="tk-nb">str</span>
+
+<span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">fan_out</span><span class="tk-p">(</span><span class="tk-n">s</span><span class="tk-p">:</span> <span class="tk-n">State</span><span class="tk-p">):</span>
+    <span class="tk-k">return</span> <span class="tk-p">[</span><span class="tk-n">Send</span><span class="tk-p">(</span><span class="tk-s2">"research_one"</span><span class="tk-p">,</span> <span class="tk-p">{</span><span class="tk-s2">"name"</span><span class="tk-p">:</span> <span class="tk-n">c</span><span class="tk-p">})</span> <span class="tk-k">for</span> <span class="tk-n">c</span> <span class="tk-ow">in</span> <span class="tk-n">s</span><span class="tk-p">[</span><span class="tk-s2">"competitors"</span><span class="tk-p">]]</span>
+
+<span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">research_one</span><span class="tk-p">(</span><span class="tk-n">w</span><span class="tk-p">:</span> <span class="tk-n">WorkerInput</span><span class="tk-p">):</span>
+    <span class="tk-n">summary</span> <span class="tk-o">=</span> <span class="tk-n">research_agent</span><span class="tk-p">(</span><span class="tk-n">w</span><span class="tk-p">[</span><span class="tk-s2">"name"</span><span class="tk-p">])</span>            <span class="tk-c1"># một agent nhỏ, context riêng</span>
+    <span class="tk-k">return</span> <span class="tk-p">{</span><span class="tk-s2">"results"</span><span class="tk-p">:</span> <span class="tk-p">[{</span><span class="tk-s2">"name"</span><span class="tk-p">:</span> <span class="tk-n">w</span><span class="tk-p">[</span><span class="tk-s2">"name"</span><span class="tk-p">],</span> <span class="tk-s2">"summary"</span><span class="tk-p">:</span> <span class="tk-n">summary</span><span class="tk-p">}]}</span>
+
+<span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">write</span><span class="tk-p">(</span><span class="tk-n">s</span><span class="tk-p">:</span> <span class="tk-n">State</span><span class="tk-p">):</span>
+    <span class="tk-k">return</span> <span class="tk-p">{</span><span class="tk-s2">"report"</span><span class="tk-p">:</span> <span class="tk-n">writer_llm</span><span class="tk-p">(</span><span class="tk-n">s</span><span class="tk-p">[</span><span class="tk-s2">"results"</span><span class="tk-p">])}</span>
+
+<span class="tk-n">g</span> <span class="tk-o">=</span> <span class="tk-n">StateGraph</span><span class="tk-p">(</span><span class="tk-n">State</span><span class="tk-p">)</span>
+<span class="tk-n">g</span><span class="tk-o">.</span><span class="tk-n">add_node</span><span class="tk-p">(</span><span class="tk-s2">"research_one"</span><span class="tk-p">,</span> <span class="tk-n">research_one</span><span class="tk-p">)</span>
+<span class="tk-n">g</span><span class="tk-o">.</span><span class="tk-n">add_node</span><span class="tk-p">(</span><span class="tk-s2">"write"</span><span class="tk-p">,</span> <span class="tk-n">write</span><span class="tk-p">)</span>
+<span class="tk-n">g</span><span class="tk-o">.</span><span class="tk-n">add_conditional_edges</span><span class="tk-p">(</span><span class="tk-n">START</span><span class="tk-p">,</span> <span class="tk-n">fan_out</span><span class="tk-p">,</span> <span class="tk-p">[</span><span class="tk-s2">"research_one"</span><span class="tk-p">])</span>
+<span class="tk-n">g</span><span class="tk-o">.</span><span class="tk-n">add_edge</span><span class="tk-p">(</span><span class="tk-s2">"research_one"</span><span class="tk-p">,</span> <span class="tk-s2">"write"</span><span class="tk-p">)</span>
+<span class="tk-n">g</span><span class="tk-o">.</span><span class="tk-n">add_edge</span><span class="tk-p">(</span><span class="tk-s2">"write"</span><span class="tk-p">,</span> <span class="tk-n">END</span><span class="tk-p">)</span>
+<span class="tk-n">app</span> <span class="tk-o">=</span> <span class="tk-n">g</span><span class="tk-o">.</span><span class="tk-n">compile</span><span class="tk-p">()</span>
+<span class="tk-n">app</span><span class="tk-o">.</span><span class="tk-n">invoke</span><span class="tk-p">({</span><span class="tk-s2">"competitors"</span><span class="tk-p">:</span> <span class="tk-p">[</span><span class="tk-s2">"Hòa Bình"</span><span class="tk-p">,</span> <span class="tk-s2">"An Phát"</span><span class="tk-p">,</span> <span class="tk-s2">"Gỗ Việt"</span><span class="tk-p">],</span> <span class="tk-s2">"results"</span><span class="tk-p">:</span> <span class="tk-p">[]})</span>
+</code></pre></div>
+
 <h2 id="lt-5">Cái giá của multi-agent</h2>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Mỗi agent thêm vào là thêm một system prompt, một lịch sử, thêm vài lần gọi LLM và thêm một chỗ có thể hỏng. Phải tính được cái giá đó trước khi quyết định.</p>
+</div>
+<h3>Chi phí và độ trễ</h3>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>So sánh một agent và một hệ supervisor + 4 worker cho cùng một việc (số liệu giả định để minh họa cách tính):</p>
 <ul>
-<li><strong>Chi phí:</strong> mỗi agent có system prompt, lịch sử và kết quả riêng. Hệ nhiều agent thường tốn gấp vài lần một agent.</li>
-<li><strong>Lỗi lan truyền:</strong> pipeline 3 agent mỗi agent đúng 90% thì cả chuỗi chỉ còn khoảng 73%.</li>
-<li><strong>Khó debug:</strong> cần tracing để thấy agent nào nhận gì, trả gì.</li>
-<li><strong>Phối hợp hỏng:</strong> hai worker làm trùng việc, hoặc chờ nhau mãi.</li>
+<li>Một agent: 6 bước, trung bình 4.500 token vào mỗi bước → <strong>27.000</strong> token.</li>
+<li>Multi-agent: supervisor gọi 3 lần × 2.500 token, 4 worker mỗi worker 3 bước × 3.500 token → 7.500 + 42.000 = <strong>49.500</strong> token, gấp <strong>1.83 lần</strong>.</li>
 </ul>
+<p>Độ trễ: nếu supervisor mất 4 giây mỗi lượt (một lượt giao việc, một lượt tổng hợp) và mỗi worker 15 giây, chạy lần lượt mất 4 + 4 × 15 + 4 = <strong>68 giây</strong>; chạy song song chỉ còn 4 + 15 + 4 = <strong>23 giây</strong>.</p>
+</div>
+<figure class="fig"><img src="../assets/fig/p4-6-cost.svg" alt="Trái: multi-agent tốn nhiều token hơn. Phải: nhưng khi việc con độc lập, chạy song song giảm độ trễ mạnh." loading="lazy"><figcaption>Trái: multi-agent tốn nhiều token hơn. Phải: nhưng khi việc con độc lập, chạy song song giảm độ trễ mạnh.</figcaption></figure>
+
+<h3>Lỗi lan truyền</h3>
+<p>Trong pipeline, lỗi ở agent đầu lan tới cuối. Nếu 4 agent nối tiếp mỗi agent đúng 85%, cả chuỗi chỉ còn 0.85⁴ ≈ <strong>52%</strong>. Giống lỗi cộng dồn của agent đơn (P4.4), nhưng khó phát hiện hơn vì mỗi agent chỉ thấy đầu vào của mình.</p>
+<h3>Các kiểu thất bại khác</h3>
+<table>
+<thead>
+<tr>
+<th>Kiểu</th>
+<th>Biểu hiện</th>
+<th>Phòng thủ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Thiếu bối cảnh</td>
+<td>worker làm đúng chỉ dẫn nhưng sai mục tiêu thật</td>
+<td>handoff đủ mục tiêu, bối cảnh, định dạng</td>
+</tr>
+<tr>
+<td>Làm trùng</td>
+<td>hai worker tìm cùng một thứ</td>
+<td>supervisor chia việc rõ ràng, không chồng lấn</td>
+</tr>
+<tr>
+<td>Supervisor lặp</td>
+<td>gọi đi gọi lại một worker</td>
+<td>giới hạn số vòng, ghi lại việc đã giao</td>
+</tr>
+<tr>
+<td>Kết quả không gộp được</td>
+<td>mỗi worker trả một định dạng</td>
+<td>schema kết quả chung</td>
+</tr>
+<tr>
+<td>Khó debug</td>
+<td>không biết agent nào sai</td>
+<td>tracing: log đầu vào/đầu ra của từng agent (P8.3)</td>
+</tr>
+</tbody>
+</table>
 <div class="keep">
 <p><strong>Ghi nhớ:</strong> multi-agent là một quyết định kiến trúc có chi phí. Đo trên bộ eval: nếu một agent tốt với prompt tốt đạt gần bằng, hãy giữ một agent.</p>
-</div></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p4.6:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 2</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Chi phí token</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Hệ multi-agent: supervisor chạy 4 lượt, mỗi lượt 3.000 token đầu vào; 3 worker, mỗi worker 5 lượt, mỗi lượt 4.000 token. Một agent đơn làm cùng việc cần 8 lượt, mỗi lượt 5.000 token.</p>
+</div>
+<div class="box check">
+<div class="box-h">Tự kiểm tra nhanh</div>
+<p>Một hệ có supervisor và 5 worker chạy song song. Supervisor mất 3 giây mỗi lượt (2 lượt: giao việc và tổng hợp), worker chậm nhất mất 18 giây, worker nhanh nhất 9 giây.</p>
+<div class="ans" id="p4-6-t-b165-a1">
+<div class="ans-fields"><label>Độ trễ khi chạy song song (giây)<input inputmode="decimal" data-ans="24.0" data-tol="0.0" autocomplete="off"></label><label>Pipeline 5 agent, mỗi agent đúng 95%, xác suất cả chuỗi đúng<input inputmode="decimal" data-ans="0.7738" data-tol="0.001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div>
+<div aria-live="polite" class="ans-fb"></div>
+</div>
+</div>
+<h2 id="lt-6">Tóm tắt bài và thuật ngữ</h2>
+<table>
+<thead>
+<tr>
+<th>Câu hỏi</th>
+<th>Trả lời</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Khi nào dùng?</td>
+<td>nhiều tool, việc con khác nhau, song song được, context quá dài, cần kiểm tra chéo</td>
+</tr>
+<tr>
+<td>Mẫu nào?</td>
+<td>supervisor (mặc định), song song (việc độc lập), critic (cần chất lượng)</td>
+</tr>
+<tr>
+<td>Trao đổi thế nào?</td>
+<td>state có cấu trúc; handoff đủ mục tiêu, bối cảnh, định dạng; trả về tóm tắt</td>
+</tr>
+<tr>
+<td>Cài bằng gì?</td>
+<td>LangGraph: conditional edge cho supervisor, <code>Send</code> cho song song</td>
+</tr>
+<tr>
+<td>Cái giá?</td>
+<td>token gấp vài lần, lỗi lan truyền, khó debug; bù lại độ trễ giảm khi song song</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Thuật ngữ</th>
+<th>Nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>multi-agent system</td>
+<td>hệ nhiều agent phối hợp</td>
+</tr>
+<tr>
+<td>supervisor / orchestrator</td>
+<td>agent điều phối, chia và giao việc</td>
+</tr>
+<tr>
+<td>worker / sub-agent</td>
+<td>agent thực hiện một phần việc</td>
+</tr>
+<tr>
+<td>handoff</td>
+<td>chuyển giao việc giữa các agent</td>
+</tr>
+<tr>
+<td>fan-out / fan-in</td>
+<td>chia thành nhiều nhánh song song / gộp kết quả</td>
+</tr>
+<tr>
+<td>critic / evaluator</td>
+<td>agent chấm và góp ý</td>
+</tr>
+<tr>
+<td>shared state</td>
+<td>trạng thái chung các agent đọc và ghi</td>
+</tr>
+<tr>
+<td>reducer</td>
+<td>cách gộp các cập nhật vào state (ví dụ nối list)</td>
+</tr>
+<tr>
+<td>Send</td>
+<td>API LangGraph tạo nhánh song song</td>
+</tr>
+<tr>
+<td>A2A</td>
+<td>giao thức để agent của các hệ thống khác nhau làm việc với nhau</td>
+</tr>
+<tr>
+<td>error propagation</td>
+<td>lỗi lan truyền qua chuỗi agent</td>
+</tr>
+</tbody>
+</table></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p4.6:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 2</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Chi phí token</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Hệ multi-agent: supervisor chạy 4 lượt, mỗi lượt 3.000 token đầu vào; 3 worker, mỗi worker 5 lượt, mỗi lượt 4.000 token. Một agent đơn làm cùng việc cần 8 lượt, mỗi lượt 5.000 token.</p>
 <div class="ans" id="p4-6-e1-a1"><div class="ans-fields"><label>Tổng token multi-agent<input inputmode="decimal" data-ans="72000.0" data-tol="0.0" autocomplete="off"></label><label>Tổng token agent đơn<input inputmode="decimal" data-ans="40000.0" data-tol="0.0" autocomplete="off"></label><label>Multi-agent tốn gấp bao nhiêu lần<input inputmode="decimal" data-ans="1.8" data-tol="0.001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
 
 <details class="fold solution">
@@ -238,7 +499,7 @@ Trả về JSON:
     </div>
     <aside class="aside">
       <div class="abox"><h4>Tiến độ bài này</h4><div class="ring"><svg viewBox="0 0 64 64" aria-hidden="true"><circle class="bg" cx="32" cy="32" r="28"/><circle class="fg" cx="32" cy="32" r="28" stroke-dasharray="176" stroke-dashoffset="176"/></svg><div><b id="ring-n">0/3</b><span id="ring-sub">phần đã xong</span></div></div></div>
-      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Khi nào cần nhiều agent</a></li><li><a href="#lt-2">Các mẫu kiến trúc</a></li><li><a href="#lt-3">Chuyển giao và trạng thái chung</a></li><li><a href="#lt-4">Multi-agent bằng LangGraph</a></li><li><a href="#lt-5">Cái giá của multi-agent</a></li></ol></div>
+      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Khi nào cần nhiều agent</a></li><li><a href="#lt-2">Các mẫu kiến trúc</a></li><li><a href="#lt-3">Chuyển giao và trạng thái chung</a></li><li><a href="#lt-4">Multi-agent bằng LangGraph</a></li><li><a href="#lt-5">Cái giá của multi-agent</a></li><li><a href="#lt-6">Tóm tắt bài và thuật ngữ</a></li></ol></div>
       
       <div class="abox"><h4>Cùng giai đoạn</h4><ul><li><a href="p4-1.html">Bài 4 · Làm việc với LLM</a></li><li><a href="p4-2.html">Bài 5 · Embedding và RAG</a></li><li><a href="p4-3.html">Bài 6 · Đánh giá hệ thống AI</a></li><li><a href="p4-4.html">Bài 7 · Agent</a></li><li><a href="p4-5.html">RAG nâng cao</a></li><li><span class=cur>Multi-agent</span></li><li><a href="p4-7.html">MCP và hệ sinh thái tool</a></li><li><a href="p4-8.html">Guardrails, an toàn và human-in-the-loop</a></li></ul></div>
     </aside>
