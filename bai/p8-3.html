@@ -22,11 +22,16 @@
 <main class="container">
   <div class="crumbs"><a href="../bai-hoc.html">Bài học</a><span>/</span><a href="../bai-hoc.html#p8">P8 · Production và MLOps</a><span>/</span><span>P8.3</span></div>
   <section class="lhero"><div class="code">P8.3</div><h1>Bài 10b · Giám sát và chi phí</h1><div class="lmeta"><span class="m">Giai đoạn P8 · Production và MLOps</span><span class="m">Tuần 35–39</span><span class="chip ready"><span class="dot"></span>Có nội dung đầy đủ</span></div>
-    <div class="intro"><p>Hệ thống chạy tốt hôm deploy chưa chắc chạy tốt tuần sau: người dùng hỏi kiểu mới, dữ liệu thay đổi, nhà cung cấp API đổi model, chi phí tăng vọt vì một tính năng mới. <strong>Giám sát</strong> cho bạn biết sớm khi có chuyện, và <strong>quản lý chi phí</strong> giữ cho sản phẩm có lãi. Bài này dạy các chỉ số cần theo dõi, cách phát hiện dữ liệu trôi, vòng phản hồi từ người dùng, A/B test và các cách giảm chi phí.</p></div></section>
+    <div class="intro"><p>Hệ thống chạy tốt hôm deploy chưa chắc chạy tốt tuần sau: người dùng hỏi kiểu mới, dữ liệu thay đổi, nhà cung cấp API đổi model, chi phí tăng vọt vì một tính năng mới. <strong>Giám sát</strong> cho bạn biết sớm khi có chuyện, và <strong>quản lý chi phí</strong> giữ cho sản phẩm có lãi. Bài này dạy các chỉ số cần theo dõi, cách phát hiện dữ liệu trôi (kèm mô phỏng cho thấy giới hạn của PSI), vòng phản hồi từ người dùng, A/B test đúng cách và các cách giảm chi phí.</p></div></section>
   
-  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">5 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
+  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">8 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
   <div class="lgrid" style="margin-top:22px">
-    <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">Ba lớp chỉ số</h2>
+    <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">Vì sao phải giám sát model</h2>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Phần mềm thường hỏng thì báo lỗi. Model hỏng thì <strong>không báo gì</strong>: vẫn trả lời trơn tru, chỉ là sai nhiều hơn. Không có giám sát, bạn biết chuyện khi khách hàng phàn nàn hoặc khi hóa đơn API cuối tháng gấp ba. Khách hàng thuê AI Engineer để có hệ thống chạy lâu dài, không chỉ để có bản demo.</p>
+</div>
+<h2 id="lt-2">Ba lớp chỉ số</h2>
 <table>
 <thead>
 <tr>
@@ -53,56 +58,239 @@
 </tr>
 </tbody>
 </table>
-<p><strong>Phân vị</strong> quan trọng hơn trung bình: trung bình 1 giây có thể che giấu 5% yêu cầu mất 10 giây. p95 là giá trị mà 95% yêu cầu nhanh hơn.</p>
-<h2 id="lt-2">Log và tracing</h2>
-<p>Mỗi yêu cầu ghi một bản log có cấu trúc (JSON): id, thời gian, phiên bản model và prompt, token vào/ra, độ trễ từng bước, lỗi, phản hồi của người dùng. Với hệ RAG/agent, <strong>tracing</strong> ghi cả cây các bước (truy vấn, đoạn tìm được, từng lần gọi tool). Khi người dùng báo lỗi, bạn tra id và thấy toàn bộ chuyện đã xảy ra. Nhớ che thông tin cá nhân trong log (P4.8).</p>
-<h2 id="lt-3">Dữ liệu trôi (drift)</h2>
-<p>Phân phối đầu vào thay đổi theo thời gian: mùa mua sắm, sản phẩm mới, người dùng mới. Model train trên dữ liệu cũ sẽ tệ dần mà không báo lỗi.</p>
-<p><strong>PSI (Population Stability Index)</strong> so phân phối của một đặc trưng giữa lúc train (e) và hiện tại (a), chia thành các nhóm:</p>
+<p>Lớp hệ thống cho biết service <strong>có chạy</strong> không; lớp model cho biết model <strong>có hành xử như cũ</strong> không; lớp kinh doanh cho biết sản phẩm <strong>có giúp được ai</strong> không. Thiếu lớp nào cũng có thể bỏ sót sự cố.</p>
+<h3>Phân vị quan trọng hơn trung bình</h3>
+<p>p95 là giá trị mà 95% yêu cầu nhanh hơn. Trung bình bị kéo bởi vài giá trị cực đoan và che giấu trải nghiệm của nhóm người dùng chậm.</p>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>10 độ trễ (giây), đã sắp xếp: 0.3, 0.4, 0.4, 0.5, 0.6, 0.6, 0.7, 0.9, 2.8, 6.0.</p>
+<ul>
+<li>Trung bình: 13.2 / 10 = <strong>1,32 s</strong>. Nghe ổn.</li>
+<li>p50 (giá trị thứ ⌈0.5 × 10⌉ = 5): <strong>0,6 s</strong>. Một nửa người dùng rất nhanh.</li>
+<li>p90 (giá trị thứ 9): <strong>2,8 s</strong>. 1/10 người dùng chờ gấp gần 5 lần bình thường, và một người chờ 6 giây.</li>
+</ul>
+<p>Trung bình 1,32 s không cho thấy cả hai điều đó.</p>
+</div>
+<h2 id="lt-3">Log và tracing</h2>
+<p>Mỗi yêu cầu ghi một bản <strong>log có cấu trúc</strong> (JSON, một dòng), để máy đọc và lọc được:</p>
+<div class="hl"><pre><span></span><code><span class="tk-p">{</span><span class="tk-nt">"ts"</span><span class="tk-p">:</span><span class="tk-w"> </span><span class="tk-s2">"2026-11-05T09:12:44Z"</span><span class="tk-p">,</span><span class="tk-w"> </span><span class="tk-nt">"req_id"</span><span class="tk-p">:</span><span class="tk-w"> </span><span class="tk-s2">"a1f3"</span><span class="tk-p">,</span><span class="tk-w"> </span><span class="tk-nt">"path"</span><span class="tk-p">:</span><span class="tk-w"> </span><span class="tk-s2">"/chat"</span><span class="tk-p">,</span><span class="tk-w"> </span><span class="tk-nt">"status"</span><span class="tk-p">:</span><span class="tk-w"> </span><span class="tk-mi">200</span><span class="tk-p">,</span><span class="tk-w"> </span><span class="tk-nt">"latency_ms"</span><span class="tk-p">:</span><span class="tk-w"> </span><span class="tk-mi">1840</span><span class="tk-p">,</span>
+<span class="tk-w"> </span><span class="tk-nt">"model"</span><span class="tk-p">:</span><span class="tk-w"> </span><span class="tk-s2">"qwen2.5-7b-awq"</span><span class="tk-p">,</span><span class="tk-w"> </span><span class="tk-nt">"prompt_version"</span><span class="tk-p">:</span><span class="tk-w"> </span><span class="tk-s2">"cskh-v12"</span><span class="tk-p">,</span><span class="tk-w"> </span><span class="tk-nt">"tokens_in"</span><span class="tk-p">:</span><span class="tk-w"> </span><span class="tk-mi">1420</span><span class="tk-p">,</span><span class="tk-w"> </span><span class="tk-nt">"tokens_out"</span><span class="tk-p">:</span><span class="tk-w"> </span><span class="tk-mi">186</span><span class="tk-p">,</span>
+<span class="tk-w"> </span><span class="tk-nt">"cost_usd"</span><span class="tk-p">:</span><span class="tk-w"> </span><span class="tk-mf">0.0009</span><span class="tk-p">,</span><span class="tk-w"> </span><span class="tk-nt">"retrieved_docs"</span><span class="tk-p">:</span><span class="tk-w"> </span><span class="tk-p">[</span><span class="tk-s2">"chinh-sach-doi-tra#3"</span><span class="tk-p">],</span><span class="tk-w"> </span><span class="tk-nt">"feedback"</span><span class="tk-p">:</span><span class="tk-w"> </span><span class="tk-kc">null</span><span class="tk-p">}</span>
+</code></pre></div>
+
+<p>Với hệ RAG/agent, <strong>tracing</strong> ghi cả cây các bước: truy vấn, các đoạn tìm được, từng lần gọi LLM và tool, thời gian từng bước. Khi người dùng báo "bot trả lời sai", bạn tra <code>req_id</code> và thấy: tìm nhầm tài liệu, hay tìm đúng mà LLM đọc sai. Công cụ: Langfuse, LangSmith, Phoenix (mã nguồn mở), hoặc OpenTelemetry.</p>
+<div class="box pitfall">
+<div class="box-h">Lỗi hay gặp</div>
+<p><strong>Log nguyên văn tin nhắn người dùng vào hệ thống log chung.</strong> Số điện thoại, địa chỉ, thông tin sức khỏe sẽ nằm ở nơi nhiều người truy cập được và lưu rất lâu. Che PII trước khi ghi (P4.8), giới hạn thời gian lưu, phân quyền truy cập log có nội dung.</p>
+</div>
+<h2 id="lt-4">Dữ liệu trôi (drift)</h2>
+<p>Phân phối đầu vào thay đổi theo thời gian: mùa mua sắm, sản phẩm mới, người dùng mới, cách viết mới. Model train trên dữ liệu cũ sẽ tệ dần mà không báo lỗi.</p>
+<p><strong>PSI (Population Stability Index)</strong> so phân phối của một đại lượng giữa lúc train (e) và hiện tại (a), chia thành các nhóm:</p>
 <div class="hl"><pre><span></span><code>PSI = Σ (aᵢ − eᵢ) · ln(aᵢ / eᵢ)
 PSI &lt; 0.1: ổn | 0.1–0.25: thay đổi vừa, theo dõi | &gt; 0.25: thay đổi lớn, xem xét train lại
 </code></pre></div>
 
-<p>Với văn bản, theo dõi phân phối độ dài, chủ đề (cụm embedding), ngôn ngữ, và tỉ lệ câu hỏi mà hệ thống trả lời "không biết".</p>
-<h2 id="lt-4">Vòng phản hồi và A/B test</h2>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>Độ dài tin nhắn chia 3 nhóm (ngắn, vừa, dài). Lúc train: e = [0.5, 0.3, 0.2]. Tuần này: a = [0.3, 0.3, 0.4].</p>
+<ol>
+<li>Ngắn: (0.3 − 0.5) · ln(0.3/0.5) = (−0.2)(−0.511) = 0.102.</li>
+<li>Vừa: 0.</li>
+<li>Dài: (0.4 − 0.2) · ln(0.4/0.2) = 0.2 × 0.693 = 0.139.</li>
+<li>PSI ≈ <strong>0.241</strong>: thay đổi vừa, gần ngưỡng lớn. Người dùng đang viết dài hơn nhiều, cần xem vì sao.</li>
+</ol>
+</div>
+<h3>Giới hạn của PSI</h3>
+<p><strong>Mô phỏng:</strong> một model phân loại 4 ý định, train ở tuần 0. Từ tuần 4, xuất hiện một kiểu viết mới cho ý định "đổi hàng" khiến model nhầm sang ý định khác, tăng dần mỗi tuần. Theo dõi PSI của một đặc trưng đầu vào và PSI của phân phối nhãn dự đoán:</p>
+<figure class="fig"><img src="../assets/fig/p8-3-drift.svg" alt="PSI của cả hai đại lượng đều nằm dưới ngưỡng 0,1 suốt 8 tuần, trong khi accuracy thật tụt từ 91,6% xuống 71,7%. PSI nhãn dự đoán còn nhảy ở tuần 3 khi tỉ lệ các ý định đổi (model vẫn đúng) nhưng không báo động khi model thật sự kém đi." loading="lazy"><figcaption>PSI của cả hai đại lượng đều nằm dưới ngưỡng 0,1 suốt 8 tuần, trong khi accuracy thật tụt từ 91,6% xuống 71,7%. PSI nhãn dự đoán còn nhảy ở tuần 3 khi tỉ lệ các ý định đổi (model vẫn đúng) nhưng không báo động khi model thật sự kém đi.</figcaption></figure>
+
+<p>Bài học: PSI đo <strong>phân phối thay đổi</strong>, không đo <strong>model sai</strong>. Thay đổi lớn có thể vô hại; thay đổi nhỏ ở đúng chỗ có thể rất hại. Cần thêm:</p>
 <ul>
-<li><strong>Phản hồi:</strong> nút thích/không thích, người dùng sửa câu trả lời, chuyển cho nhân viên. Những ca bị chê là nguồn tốt nhất để bổ sung bộ eval và dữ liệu fine-tune.</li>
-<li><strong>A/B test:</strong> chia ngẫu nhiên người dùng thành hai nhóm dùng phiên bản cũ và mới, so chỉ số kinh doanh. Chỉ A/B test sau khi phiên bản mới đã qua eval offline; quyết định đặt trước ngưỡng và cỡ mẫu, không dừng sớm khi thấy kết quả đẹp.</li>
+<li><strong>Kiểm tra mẫu có nhãn định kỳ:</strong> mỗi tuần gán nhãn tay 100–200 yêu cầu ngẫu nhiên, đo accuracy thật. Đây là chỉ số đáng tin nhất, và không đắt.</li>
+<li><strong>Phản hồi người dùng:</strong> tỉ lệ bấm không thích, tỉ lệ chuyển nhân viên.</li>
+<li><strong>Độ tự tin của model:</strong> tỉ lệ dự đoán có xác suất thấp tăng lên là dấu hiệu gặp dữ liệu lạ.</li>
+<li>Với văn bản: phân phối độ dài, chủ đề (cụm embedding), ngôn ngữ, tỉ lệ câu trả lời "không có thông tin".</li>
 </ul>
-<h2 id="lt-5">Giảm chi phí</h2>
+<h2 id="lt-5">Vòng phản hồi</h2>
+<p>Nút thích/không thích, người dùng sửa câu trả lời, chuyển cho nhân viên: đây là dữ liệu quý nhất của hệ thống.</p>
+<ol>
+<li>Thu thập ca bị chê (kèm trace đầy đủ).</li>
+<li>Phân loại nguyên nhân: tìm sai tài liệu, thiếu tài liệu, LLM đọc sai, câu hỏi ngoài phạm vi.</li>
+<li>Bổ sung vào <strong>bộ eval</strong> (P4.3) để lỗi đó không quay lại, và vào dữ liệu fine-tune hoặc preference (P6.2) nếu cần.</li>
+</ol>
+<h2 id="lt-6">A/B test</h2>
+<p>Chia <strong>ngẫu nhiên</strong> người dùng thành hai nhóm dùng phiên bản cũ (A) và mới (B), so chỉ số kinh doanh. Chỉ A/B test sau khi phiên bản mới đã qua eval offline.</p>
+<h3>Cỡ mẫu</h3>
+<p>Cần bao nhiêu người dùng để thấy được một cải tiến? Với tỉ lệ (ví dụ tỉ lệ thích), độ tin cậy 95% và độ mạnh 80%:</p>
+<div class="hl"><pre><span></span><code>n mỗi nhóm ≈ (1.96 + 0.84)² · [p₁(1 − p₁) + p₂(1 − p₂)] / (p₂ − p₁)²
+</code></pre></div>
+
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>Tỉ lệ thích hiện tại 70%, muốn phát hiện được mức tăng lên 73%:</p>
+<p>n ≈ 7.84 × (0.7 × 0.3 + 0.73 × 0.27) / 0.03² = 7.84 × 0.4071 / 0.0009 ≈ <strong>3.550 người dùng mỗi nhóm</strong>.</p>
+<p>Muốn phát hiện mức tăng nhỏ hơn (1 điểm) cần gấp khoảng 9 lần. Nếu sản phẩm chỉ có 500 người dùng mỗi tuần, A/B test cho cải tiến nhỏ là không khả thi; dựa vào eval offline.</p>
+</div>
+<h3>Không dừng sớm</h3>
+<p><strong>Mô phỏng A/A test:</strong> hai nhóm dùng <strong>cùng</strong> một phiên bản (tỉ lệ thích 70%), 4.000 người mỗi nhóm, lặp 3.000 lần.</p>
+<figure class="fig"><img src="../assets/fig/p8-3-peek.svg" alt="Kiểm định một lần khi đủ cỡ mẫu: kết luận sai 4,7% (đúng như mức 5% mong đợi). Nhìn kết quả sau mỗi 200 người và dừng ngay khi thấy &quot;có ý nghĩa&quot;: kết luận sai 23,7%, gấp 5 lần." loading="lazy"><figcaption>Kiểm định một lần khi đủ cỡ mẫu: kết luận sai 4,7% (đúng như mức 5% mong đợi). Nhìn kết quả sau mỗi 200 người và dừng ngay khi thấy &quot;có ý nghĩa&quot;: kết luận sai 23,7%, gấp 5 lần.</figcaption></figure>
+
+<p>Quy tắc: <strong>đặt trước</strong> chỉ số chính, ngưỡng, cỡ mẫu và thời gian chạy (ít nhất một tuần trọn để tránh khác biệt theo ngày trong tuần); chỉ kết luận khi đủ cỡ mẫu.</p>
+<h2 id="lt-7">Giảm chi phí</h2>
 <table>
 <thead>
 <tr>
 <th>Cách</th>
 <th>Ý tưởng</th>
+<th>Lưu ý</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td>Model nhỏ hơn</td>
-<td>dùng model nhỏ nhất qua được eval; định tuyến câu dễ sang model rẻ</td>
+<td>dùng model nhỏ nhất qua được eval</td>
+<td>đo lại eval sau khi đổi</td>
+</tr>
+<tr>
+<td>Định tuyến</td>
+<td>câu dễ sang model rẻ, câu khó sang model mạnh</td>
+<td>cần bộ phân loại độ khó đáng tin</td>
 </tr>
 <tr>
 <td>Cache</td>
-<td>câu hỏi trùng (hoặc gần trùng) trả kết quả đã lưu</td>
+<td>câu hỏi trùng trả kết quả đã lưu</td>
+<td>cache gần trùng (embedding) cần ngưỡng chặt</td>
 </tr>
 <tr>
 <td>Prompt caching</td>
-<td>phần system prompt và tài liệu dài lặp lại được nhà cung cấp tính giá rẻ hơn</td>
+<td>phần đầu prompt lặp lại (system prompt, tài liệu dài) được nhà cung cấp tính giá rẻ hơn nhiều</td>
+<td>đặt phần cố định ở đầu, phần thay đổi ở cuối</td>
 </tr>
 <tr>
 <td>Rút gọn context</td>
 <td>ít đoạn RAG hơn nhưng chọn tốt hơn (reranker), tóm tắt lịch sử</td>
+<td>đo chất lượng sau khi rút</td>
 </tr>
 <tr>
 <td>Batch API</td>
-<td>việc không cần ngay (phân loại hàng loạt) chạy batch giá rẻ hơn</td>
+<td>việc không cần ngay chạy theo lô với giá rẻ hơn</td>
+<td>kết quả trả sau vài giờ</td>
+</tr>
+<tr>
+<td>Giới hạn</td>
+<td>max token đầu ra, số bước agent, ngân sách mỗi người dùng</td>
+<td>chống vòng lặp đốt tiền</td>
 </tr>
 </tbody>
 </table>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>Chi phí LLM 450 USD/ngày. Thêm cache khớp chính xác, tỉ lệ trúng 25%:</p>
+<ul>
+<li>Chi phí còn lại: 450 × 0,75 = <strong>337,5 USD/ngày</strong>.</li>
+<li>Tiết kiệm mỗi tháng 30 ngày: 450 × 0,25 × 30 = <strong>3.375 USD</strong>.</li>
+</ul>
+<p>Đo tỉ lệ trúng thật trong một tuần trước khi hứa với khách: với chatbot có nhiều câu hỏi lặp (giờ mở cửa, phí ship) tỉ lệ cao; với câu hỏi cá nhân hóa (tình trạng đơn của tôi) gần như bằng 0, và <strong>không được</strong> cache vì mỗi người một đáp án.</p>
+</div>
 <div class="keep">
-<p><strong>Ghi nhớ:</strong> đặt cảnh báo cho cả chất lượng lẫn chi phí. Một vòng lặp agent lỗi có thể đốt ngân sách cả tháng trong một đêm.</p>
-</div></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p8.3:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 3</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Phân vị</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>20 độ trễ (giây), đã sắp xếp: 0.4, 0.5, 0.5, 0.6, 0.6, 0.7, 0.7, 0.7, 0.8, 0.8, 0.9, 0.9, 1.0, 1.0, 1.1, 1.2, 1.4, 1.8, 4.5, 9.0. Dùng quy ước p95 = giá trị thứ ⌈0.95·n⌉.</p>
+<p><strong>Ghi nhớ:</strong> đặt cảnh báo cho cả chất lượng lẫn chi phí. Một vòng lặp agent lỗi có thể đốt ngân sách cả tháng trong một đêm. Và chỉ số tốt nhất cho chất lượng model vẫn là một mẫu nhỏ có nhãn mỗi tuần.</p>
+</div>
+<div class="box check">
+<div class="box-h">Tự kiểm tra nhanh</div>
+<div class="ans" id="p8-3-t-b107-a1">
+<div class="ans-fields"><label>Độ trễ 0.3, 0.4, 0.4, 0.5, 0.6, 0.6, 0.7, 0.9, 2.8, 6.0: trung bình (s)<input inputmode="decimal" data-ans="1.32" data-tol="0.001" autocomplete="off"></label><label>PSI với e = [0.5, 0.3, 0.2], a = [0.3, 0.3, 0.4] (3 chữ số)<input inputmode="decimal" data-ans="0.241" data-tol="0.001" autocomplete="off"></label><label>450 USD/ngày, cache trúng 25%: tiết kiệm 30 ngày (USD)<input inputmode="decimal" data-ans="3375.0" data-tol="0.01" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div>
+<div aria-live="polite" class="ans-fb"></div>
+</div>
+</div>
+<h2 id="lt-8">Tóm tắt bài và thuật ngữ</h2>
+<table>
+<thead>
+<tr>
+<th>Chủ đề</th>
+<th>Ý chính</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Chỉ số</td>
+<td>hệ thống, model, kinh doanh; dùng phân vị thay trung bình</td>
+</tr>
+<tr>
+<td>Log, tracing</td>
+<td>JSON mỗi yêu cầu, cây các bước RAG/agent; che PII</td>
+</tr>
+<tr>
+<td>Drift</td>
+<td>PSI đo phân phối đổi, không đo model sai; cần mẫu có nhãn định kỳ</td>
+</tr>
+<tr>
+<td>Phản hồi</td>
+<td>ca bị chê → phân loại nguyên nhân → bộ eval</td>
+</tr>
+<tr>
+<td>A/B test</td>
+<td>tính cỡ mẫu trước; không dừng sớm khi "nhìn trộm"</td>
+</tr>
+<tr>
+<td>Chi phí</td>
+<td>model nhỏ, định tuyến, cache, prompt caching, batch, giới hạn</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Thuật ngữ</th>
+<th>Nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>observability</td>
+<td>khả năng quan sát hệ thống từ log, metric, trace</td>
+</tr>
+<tr>
+<td>p50 / p95 / p99</td>
+<td>phân vị độ trễ</td>
+</tr>
+<tr>
+<td>structured logging</td>
+<td>log dạng có cấu trúc (JSON)</td>
+</tr>
+<tr>
+<td>tracing</td>
+<td>ghi lại cây các bước của một yêu cầu</td>
+</tr>
+<tr>
+<td>data drift / concept drift</td>
+<td>phân phối đầu vào đổi / quan hệ đầu vào–đáp án đổi</td>
+</tr>
+<tr>
+<td>PSI</td>
+<td>Population Stability Index</td>
+</tr>
+<tr>
+<td>A/B test / A/A test</td>
+<td>so hai phiên bản / so một phiên bản với chính nó để kiểm tra quy trình</td>
+</tr>
+<tr>
+<td>statistical power</td>
+<td>xác suất phát hiện được khác biệt có thật</td>
+</tr>
+<tr>
+<td>peeking</td>
+<td>xem kết quả giữa chừng và dừng sớm</td>
+</tr>
+<tr>
+<td>prompt caching</td>
+<td>giảm giá cho phần đầu prompt lặp lại</td>
+</tr>
+<tr>
+<td>Prometheus / Grafana</td>
+<td>thu thập metric / vẽ dashboard</td>
+</tr>
+</tbody>
+</table></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p8.3:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 3</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Phân vị</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>20 độ trễ (giây), đã sắp xếp: 0.4, 0.5, 0.5, 0.6, 0.6, 0.7, 0.7, 0.7, 0.8, 0.8, 0.9, 0.9, 1.0, 1.0, 1.1, 1.2, 1.4, 1.8, 4.5, 9.0. Dùng quy ước p95 = giá trị thứ ⌈0.95·n⌉.</p>
 <div class="ans" id="p8-3-e1-a1"><div class="ans-fields"><label>Trung bình (s)<input inputmode="decimal" data-ans="1.455" data-tol="0.001" autocomplete="off"></label><label>p50 theo quy ước giá trị thứ ⌈0.5·n⌉ (s)<input inputmode="decimal" data-ans="0.8" data-tol="0.001" autocomplete="off"></label><label>p95 (s)<input inputmode="decimal" data-ans="4.5" data-tol="0.001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
 
 <details class="fold solution">
@@ -175,7 +363,7 @@ PSI &lt; 0.1: ổn | 0.1–0.25: thay đổi vừa, theo dõi | &gt; 0.25: thay 
     </div>
     <aside class="aside">
       <div class="abox"><h4>Tiến độ bài này</h4><div class="ring"><svg viewBox="0 0 64 64" aria-hidden="true"><circle class="bg" cx="32" cy="32" r="28"/><circle class="fg" cx="32" cy="32" r="28" stroke-dasharray="176" stroke-dashoffset="176"/></svg><div><b id="ring-n">0/3</b><span id="ring-sub">phần đã xong</span></div></div></div>
-      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Ba lớp chỉ số</a></li><li><a href="#lt-2">Log và tracing</a></li><li><a href="#lt-3">Dữ liệu trôi (drift)</a></li><li><a href="#lt-4">Vòng phản hồi và A/B test</a></li><li><a href="#lt-5">Giảm chi phí</a></li></ol></div>
+      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Vì sao phải giám sát model</a></li><li><a href="#lt-2">Ba lớp chỉ số</a></li><li><a href="#lt-3">Log và tracing</a></li><li><a href="#lt-4">Dữ liệu trôi (drift)</a></li><li><a href="#lt-5">Vòng phản hồi</a></li><li><a href="#lt-6">A/B test</a></li><li><a href="#lt-7">Giảm chi phí</a></li><li><a href="#lt-8">Tóm tắt bài và thuật ngữ</a></li></ol></div>
       
       <div class="abox"><h4>Cùng giai đoạn</h4><ul><li><a href="p8-1.html">Bài 10a · Serving</a></li><li><a href="p8-2.html">MLOps</a></li><li><span class=cur>Bài 10b · Giám sát và chi phí</span></li><li><a href="p8-4.html">Backend và dữ liệu cho AI</a></li></ul></div>
     </aside>

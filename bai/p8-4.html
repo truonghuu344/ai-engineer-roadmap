@@ -22,44 +22,199 @@
 <main class="container">
   <div class="crumbs"><a href="../bai-hoc.html">Bài học</a><span>/</span><a href="../bai-hoc.html#p8">P8 · Production và MLOps</a><span>/</span><span>P8.4</span></div>
   <section class="lhero"><div class="code">P8.4</div><h1>Backend và dữ liệu cho AI</h1><div class="lmeta"><span class="m">Giai đoạn P8 · Production và MLOps</span><span class="m">Tuần 35–39</span><span class="chip ready"><span class="dot"></span>Có nội dung đầy đủ</span></div>
-    <div class="intro"><p>Hệ thống AI thật hiếm khi chỉ có model: có cơ sở dữ liệu lưu người dùng và lịch sử, vector store cho RAG, cache, hàng đợi cho việc chạy lâu, và xác thực để biết ai được làm gì. Theo các phân tích tin tuyển dụng, SQL, data pipeline và kỹ năng backend là nhóm kỹ năng giúp ứng viên AI Engineer nổi bật. Bài này dạy những phần đủ dùng.</p></div></section>
+    <div class="intro"><p>Hệ thống AI thật hiếm khi chỉ có model: có cơ sở dữ liệu lưu người dùng và lịch sử, vector store cho RAG, cache, hàng đợi cho việc chạy lâu, và xác thực để biết ai được làm gì. Theo các phân tích tin tuyển dụng, SQL, data pipeline và kỹ năng backend là nhóm kỹ năng giúp ứng viên AI Engineer nổi bật. Bài này dạy những phần đủ dùng, với truy vấn SQL đã chạy thật và một mô phỏng cho thấy vì sao phân quyền phải nằm trong truy vấn tìm kiếm.</p></div></section>
   
-  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">5 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
+  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">8 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
   <div class="lgrid" style="margin-top:22px">
-    <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">SQL cho kỹ sư AI</h2>
-<p>Phần lớn dữ liệu công ty nằm trong cơ sở dữ liệu quan hệ. Bạn cần viết được truy vấn để lấy dữ liệu train, làm bộ eval, phân tích log.</p>
-<div class="hl"><pre><span></span><code><span class="tk-c1">-- doanh thu và số đơn theo tháng, chỉ đơn không hoàn</span>
-<span class="tk-k">SELECT</span><span class="tk-w"> </span><span class="tk-n">date_trunc</span><span class="tk-p">(</span><span class="tk-s1">'month'</span><span class="tk-p">,</span><span class="tk-w"> </span><span class="tk-n">created_at</span><span class="tk-p">)</span><span class="tk-w"> </span><span class="tk-k">AS</span><span class="tk-w"> </span><span class="tk-k">month</span><span class="tk-p">,</span><span class="tk-w"> </span><span class="tk-k">COUNT</span><span class="tk-p">(</span><span class="tk-o">*</span><span class="tk-p">)</span><span class="tk-w"> </span><span class="tk-k">AS</span><span class="tk-w"> </span><span class="tk-n">orders</span><span class="tk-p">,</span><span class="tk-w"> </span><span class="tk-k">SUM</span><span class="tk-p">(</span><span class="tk-n">total</span><span class="tk-p">)</span><span class="tk-w"> </span><span class="tk-k">AS</span><span class="tk-w"> </span><span class="tk-n">revenue</span>
+    <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">Bức tranh backend của một hệ AI</h2>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Dự án freelance điển hình: "chatbot trả lời dựa trên tài liệu của công ty, mỗi phòng ban chỉ thấy tài liệu của mình, lưu lịch sử hỏi đáp, cho tải PDF lên". Phần model chỉ chiếm một phần nhỏ; phần lớn là lưu trữ, phân quyền, xử lý nền. Ứng viên biết cả hai phần được trả cao hơn và ít phụ thuộc vào người khác.</p>
+</div>
+<table>
+<thead>
+<tr>
+<th>Thành phần</th>
+<th>Dùng để</th>
+<th>Công cụ phổ biến</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Cơ sở dữ liệu quan hệ</td>
+<td>người dùng, quyền, lịch sử, log có cấu trúc</td>
+<td>Postgres, MySQL</td>
+</tr>
+<tr>
+<td>Vector store</td>
+<td>tìm đoạn tài liệu cho RAG</td>
+<td>pgvector, Qdrant, Weaviate</td>
+</tr>
+<tr>
+<td>Cache, bộ đếm</td>
+<td>kết quả lặp lại, phiên, rate limit</td>
+<td>Redis</td>
+</tr>
+<tr>
+<td>Hàng đợi tác vụ</td>
+<td>việc chạy lâu: xử lý PDF, train lại</td>
+<td>Celery, RQ, Arq (trên Redis)</td>
+</tr>
+<tr>
+<td>Kho file</td>
+<td>PDF, ảnh, model</td>
+<td>S3, Google Cloud Storage, MinIO</td>
+</tr>
+</tbody>
+</table>
+<h2 id="lt-2">SQL cho kỹ sư AI</h2>
+<p>Phần lớn dữ liệu công ty nằm trong cơ sở dữ liệu quan hệ. Bạn cần viết được truy vấn để lấy dữ liệu train, làm bộ eval, phân tích log và chi phí.</p>
+<h3>Thứ tự thực hiện</h3>
+<p>SQL được viết theo thứ tự SELECT … FROM … WHERE …, nhưng được <strong>thực hiện</strong> theo thứ tự khác:</p>
+<figure class="fig"><img src="../assets/fig/p8-4-order.svg" alt="Thứ tự logic khi cơ sở dữ liệu chạy một truy vấn. WHERE chạy trước khi gom nhóm nên không dùng được COUNT, SUM; muốn lọc theo giá trị tổng hợp thì dùng HAVING." loading="lazy"><figcaption>Thứ tự logic khi cơ sở dữ liệu chạy một truy vấn. WHERE chạy trước khi gom nhóm nên không dùng được COUNT, SUM; muốn lọc theo giá trị tổng hợp thì dùng HAVING.</figcaption></figure>
+
+<h3>Ví dụ chạy thật</h3>
+<p>Bảng <code>orders</code> (đã chạy bằng SQLite trong Python):</p>
+<table>
+<thead>
+<tr>
+<th>order_id</th>
+<th>customer</th>
+<th>created_at</th>
+<th>total</th>
+<th>status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Bình</td>
+<td>2026-09-03</td>
+<td>450</td>
+<td>done</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Chi</td>
+<td>2026-09-10</td>
+<td>120</td>
+<td>returned</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Bình</td>
+<td>2026-10-01</td>
+<td>300</td>
+<td>done</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Dũng</td>
+<td>2026-10-05</td>
+<td>800</td>
+<td>done</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Chi</td>
+<td>2026-10-20</td>
+<td>250</td>
+<td>done</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Bình</td>
+<td>2026-10-28</td>
+<td>90</td>
+<td>done</td>
+</tr>
+<tr>
+<td>7</td>
+<td>Dũng</td>
+<td>2026-11-02</td>
+<td>60</td>
+<td>returned</td>
+</tr>
+</tbody>
+</table>
+<div class="hl"><pre><span></span><code><span class="tk-c1">-- khách có từ 2 đơn không hoàn trở lên, tổng tiền</span>
+<span class="tk-k">SELECT</span><span class="tk-w"> </span><span class="tk-n">customer</span><span class="tk-p">,</span><span class="tk-w"> </span><span class="tk-k">COUNT</span><span class="tk-p">(</span><span class="tk-o">*</span><span class="tk-p">)</span><span class="tk-w"> </span><span class="tk-k">AS</span><span class="tk-w"> </span><span class="tk-n">n</span><span class="tk-p">,</span><span class="tk-w"> </span><span class="tk-k">SUM</span><span class="tk-p">(</span><span class="tk-n">total</span><span class="tk-p">)</span><span class="tk-w"> </span><span class="tk-k">AS</span><span class="tk-w"> </span><span class="tk-n">s</span>
 <span class="tk-k">FROM</span><span class="tk-w"> </span><span class="tk-n">orders</span>
 <span class="tk-k">WHERE</span><span class="tk-w"> </span><span class="tk-n">status</span><span class="tk-w"> </span><span class="tk-o">&lt;&gt;</span><span class="tk-w"> </span><span class="tk-s1">'returned'</span>
-<span class="tk-k">GROUP</span><span class="tk-w"> </span><span class="tk-k">BY</span><span class="tk-w"> </span><span class="tk-mi">1</span>
-<span class="tk-k">ORDER</span><span class="tk-w"> </span><span class="tk-k">BY</span><span class="tk-w"> </span><span class="tk-mi">1</span><span class="tk-p">;</span>
-
-<span class="tk-c1">-- mỗi khách: đơn gần nhất (window function)</span>
-<span class="tk-k">SELECT</span><span class="tk-w"> </span><span class="tk-n">customer_id</span><span class="tk-p">,</span><span class="tk-w"> </span><span class="tk-n">order_id</span><span class="tk-p">,</span><span class="tk-w"> </span><span class="tk-n">created_at</span>
-<span class="tk-k">FROM</span><span class="tk-w"> </span><span class="tk-p">(</span><span class="tk-k">SELECT</span><span class="tk-w"> </span><span class="tk-o">*</span><span class="tk-p">,</span><span class="tk-w"> </span><span class="tk-n">ROW_NUMBER</span><span class="tk-p">()</span><span class="tk-w"> </span><span class="tk-n">OVER</span><span class="tk-w"> </span><span class="tk-p">(</span><span class="tk-n">PARTITION</span><span class="tk-w"> </span><span class="tk-k">BY</span><span class="tk-w"> </span><span class="tk-n">customer_id</span><span class="tk-w"> </span><span class="tk-k">ORDER</span><span class="tk-w"> </span><span class="tk-k">BY</span><span class="tk-w"> </span><span class="tk-n">created_at</span><span class="tk-w"> </span><span class="tk-k">DESC</span><span class="tk-p">)</span><span class="tk-w"> </span><span class="tk-k">AS</span><span class="tk-w"> </span><span class="tk-n">rn</span><span class="tk-w"> </span><span class="tk-k">FROM</span><span class="tk-w"> </span><span class="tk-n">orders</span><span class="tk-p">)</span><span class="tk-w"> </span><span class="tk-n">t</span>
-<span class="tk-k">WHERE</span><span class="tk-w"> </span><span class="tk-n">rn</span><span class="tk-w"> </span><span class="tk-o">=</span><span class="tk-w"> </span><span class="tk-mi">1</span><span class="tk-p">;</span>
+<span class="tk-k">GROUP</span><span class="tk-w"> </span><span class="tk-k">BY</span><span class="tk-w"> </span><span class="tk-n">customer</span>
+<span class="tk-k">HAVING</span><span class="tk-w"> </span><span class="tk-k">COUNT</span><span class="tk-p">(</span><span class="tk-o">*</span><span class="tk-p">)</span><span class="tk-w"> </span><span class="tk-o">&gt;=</span><span class="tk-w"> </span><span class="tk-mi">2</span>
+<span class="tk-k">ORDER</span><span class="tk-w"> </span><span class="tk-k">BY</span><span class="tk-w"> </span><span class="tk-n">s</span><span class="tk-w"> </span><span class="tk-k">DESC</span><span class="tk-p">;</span>
+<span class="tk-c1">-- kết quả: ('Bình', 3, 840)</span>
 </code></pre></div>
 
-<p>Thứ tự thực hiện logic: FROM/JOIN → WHERE → GROUP BY → HAVING → SELECT → ORDER BY → LIMIT. Hiểu thứ tự này giải thích vì sao không lọc được theo cột tổng hợp trong WHERE (phải dùng HAVING).</p>
-<h2 id="lt-2">Postgres và pgvector</h2>
-<p><strong>pgvector</strong> thêm kiểu vector và tìm kiếm tương đồng vào Postgres. Lợi ích: một cơ sở dữ liệu cho cả dữ liệu nghiệp vụ lẫn embedding, lọc theo metadata bằng SQL bình thường, giao dịch an toàn.</p>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>Đi theo thứ tự thực hiện:</p>
+<ol>
+<li><strong>WHERE</strong> bỏ đơn 2 và 7 (returned), còn 5 đơn.</li>
+<li><strong>GROUP BY customer</strong>: Bình {1, 3, 6}, Chi {5}, Dũng {4}.</li>
+<li><strong>HAVING COUNT(*) &gt;= 2</strong>: chỉ Bình còn lại.</li>
+<li><strong>SELECT</strong>: n = 3, s = 450 + 300 + 90 = <strong>840</strong>.</li>
+</ol>
+<p>Chi có 2 đơn trong bảng, nhưng một đơn đã hoàn và bị WHERE loại <strong>trước</strong> khi đếm, nên không qua HAVING.</p>
+</div>
+<div class="hl"><pre><span></span><code><span class="tk-c1">-- mỗi khách: đơn gần nhất (window function)</span>
+<span class="tk-k">SELECT</span><span class="tk-w"> </span><span class="tk-n">customer</span><span class="tk-p">,</span><span class="tk-w"> </span><span class="tk-n">order_id</span><span class="tk-p">,</span><span class="tk-w"> </span><span class="tk-n">created_at</span>
+<span class="tk-k">FROM</span><span class="tk-w"> </span><span class="tk-p">(</span><span class="tk-k">SELECT</span><span class="tk-w"> </span><span class="tk-o">*</span><span class="tk-p">,</span><span class="tk-w"> </span><span class="tk-n">ROW_NUMBER</span><span class="tk-p">()</span><span class="tk-w"> </span><span class="tk-n">OVER</span><span class="tk-w"> </span><span class="tk-p">(</span><span class="tk-n">PARTITION</span><span class="tk-w"> </span><span class="tk-k">BY</span><span class="tk-w"> </span><span class="tk-n">customer</span><span class="tk-w"> </span><span class="tk-k">ORDER</span><span class="tk-w"> </span><span class="tk-k">BY</span><span class="tk-w"> </span><span class="tk-n">created_at</span><span class="tk-w"> </span><span class="tk-k">DESC</span><span class="tk-p">)</span><span class="tk-w"> </span><span class="tk-k">AS</span><span class="tk-w"> </span><span class="tk-n">rn</span><span class="tk-w"> </span><span class="tk-k">FROM</span><span class="tk-w"> </span><span class="tk-n">orders</span><span class="tk-p">)</span>
+<span class="tk-k">WHERE</span><span class="tk-w"> </span><span class="tk-n">rn</span><span class="tk-w"> </span><span class="tk-o">=</span><span class="tk-w"> </span><span class="tk-mi">1</span><span class="tk-p">;</span>
+<span class="tk-c1">-- ('Bình', 6, '2026-10-28'), ('Chi', 5, '2026-10-20'), ('Dũng', 7, '2026-11-02')</span>
+</code></pre></div>
+
+<p><strong>Window function</strong> (<code>ROW_NUMBER</code>, <code>RANK</code>, <code>LAG</code>, <code>SUM(...) OVER</code>) tính trên một "cửa sổ" các dòng liên quan mà <strong>không gom nhóm</strong>: mỗi dòng giữ nguyên, có thêm cột tính được. Rất hay dùng cho: lấy N bản ghi mới nhất mỗi người dùng, so với lần trước, tổng lũy kế.</p>
+<div class="box pitfall">
+<div class="box-h">Lỗi hay gặp</div>
+<p><strong>Ghép chuỗi người dùng nhập vào câu SQL.</strong> <code>f"SELECT * FROM docs WHERE title = '{q}'"</code> cho phép SQL injection: người dùng gõ <code>' OR '1'='1</code> là đọc được mọi tài liệu. Luôn dùng tham số: <code>cur.execute("SELECT * FROM docs WHERE title = %s", (q,))</code>. Cảnh giác gấp đôi khi để LLM sinh SQL (text-to-SQL): chạy bằng tài khoản chỉ có quyền đọc, trên view đã giới hạn bảng và dòng.</p>
+</div>
+<h2 id="lt-3">Postgres và pgvector</h2>
+<p><strong>pgvector</strong> thêm kiểu <code>vector</code> và tìm kiếm tương đồng vào Postgres. Lợi ích: một cơ sở dữ liệu cho cả dữ liệu nghiệp vụ lẫn embedding, lọc theo metadata bằng SQL bình thường, giao dịch an toàn, sao lưu một chỗ.</p>
 <div class="hl"><pre><span></span><code><span class="tk-k">CREATE</span><span class="tk-w"> </span><span class="tk-n">EXTENSION</span><span class="tk-w"> </span><span class="tk-k">IF</span><span class="tk-w"> </span><span class="tk-k">NOT</span><span class="tk-w"> </span><span class="tk-k">EXISTS</span><span class="tk-w"> </span><span class="tk-n">vector</span><span class="tk-p">;</span>
-<span class="tk-k">CREATE</span><span class="tk-w"> </span><span class="tk-k">TABLE</span><span class="tk-w"> </span><span class="tk-n">chunks</span><span class="tk-w"> </span><span class="tk-p">(</span><span class="tk-n">id</span><span class="tk-w"> </span><span class="tk-n">bigserial</span><span class="tk-w"> </span><span class="tk-k">PRIMARY</span><span class="tk-w"> </span><span class="tk-k">KEY</span><span class="tk-p">,</span><span class="tk-w"> </span><span class="tk-n">doc_id</span><span class="tk-w"> </span><span class="tk-nb">int</span><span class="tk-p">,</span><span class="tk-w"> </span><span class="tk-n">content</span><span class="tk-w"> </span><span class="tk-nb">text</span><span class="tk-p">,</span><span class="tk-w"> </span><span class="tk-n">embedding</span><span class="tk-w"> </span><span class="tk-n">vector</span><span class="tk-p">(</span><span class="tk-mi">1024</span><span class="tk-p">));</span>
+<span class="tk-k">CREATE</span><span class="tk-w"> </span><span class="tk-k">TABLE</span><span class="tk-w"> </span><span class="tk-n">chunks</span><span class="tk-w"> </span><span class="tk-p">(</span><span class="tk-n">id</span><span class="tk-w"> </span><span class="tk-n">bigserial</span><span class="tk-w"> </span><span class="tk-k">PRIMARY</span><span class="tk-w"> </span><span class="tk-k">KEY</span><span class="tk-p">,</span><span class="tk-w"> </span><span class="tk-n">org_id</span><span class="tk-w"> </span><span class="tk-nb">int</span><span class="tk-w"> </span><span class="tk-k">NOT</span><span class="tk-w"> </span><span class="tk-k">NULL</span><span class="tk-p">,</span><span class="tk-w"> </span><span class="tk-n">doc_id</span><span class="tk-w"> </span><span class="tk-nb">int</span><span class="tk-p">,</span>
+<span class="tk-w">                     </span><span class="tk-n">content</span><span class="tk-w"> </span><span class="tk-nb">text</span><span class="tk-p">,</span><span class="tk-w"> </span><span class="tk-n">embedding</span><span class="tk-w"> </span><span class="tk-n">vector</span><span class="tk-p">(</span><span class="tk-mi">1024</span><span class="tk-p">));</span>
 <span class="tk-k">CREATE</span><span class="tk-w"> </span><span class="tk-k">INDEX</span><span class="tk-w"> </span><span class="tk-k">ON</span><span class="tk-w"> </span><span class="tk-n">chunks</span><span class="tk-w"> </span><span class="tk-k">USING</span><span class="tk-w"> </span><span class="tk-n">hnsw</span><span class="tk-w"> </span><span class="tk-p">(</span><span class="tk-n">embedding</span><span class="tk-w"> </span><span class="tk-n">vector_cosine_ops</span><span class="tk-p">);</span>
+<span class="tk-k">CREATE</span><span class="tk-w"> </span><span class="tk-k">INDEX</span><span class="tk-w"> </span><span class="tk-k">ON</span><span class="tk-w"> </span><span class="tk-n">chunks</span><span class="tk-w"> </span><span class="tk-p">(</span><span class="tk-n">org_id</span><span class="tk-p">);</span>
 
 <span class="tk-k">SELECT</span><span class="tk-w"> </span><span class="tk-n">id</span><span class="tk-p">,</span><span class="tk-w"> </span><span class="tk-n">content</span><span class="tk-p">,</span><span class="tk-w"> </span><span class="tk-mi">1</span><span class="tk-w"> </span><span class="tk-o">-</span><span class="tk-w"> </span><span class="tk-p">(</span><span class="tk-n">embedding</span><span class="tk-w"> </span><span class="tk-o">&lt;=&gt;</span><span class="tk-w"> </span><span class="tk-err">$</span><span class="tk-mi">1</span><span class="tk-p">)</span><span class="tk-w"> </span><span class="tk-k">AS</span><span class="tk-w"> </span><span class="tk-n">similarity</span><span class="tk-w">      </span><span class="tk-c1">-- &lt;=&gt; là khoảng cách cosine</span>
-<span class="tk-k">FROM</span><span class="tk-w"> </span><span class="tk-n">chunks</span><span class="tk-w"> </span><span class="tk-k">WHERE</span><span class="tk-w"> </span><span class="tk-n">doc_id</span><span class="tk-w"> </span><span class="tk-o">=</span><span class="tk-w"> </span><span class="tk-k">ANY</span><span class="tk-p">(</span><span class="tk-err">$</span><span class="tk-mi">2</span><span class="tk-p">)</span>
-<span class="tk-k">ORDER</span><span class="tk-w"> </span><span class="tk-k">BY</span><span class="tk-w"> </span><span class="tk-n">embedding</span><span class="tk-w"> </span><span class="tk-o">&lt;=&gt;</span><span class="tk-w"> </span><span class="tk-err">$</span><span class="tk-mi">1</span><span class="tk-w"> </span><span class="tk-k">LIMIT</span><span class="tk-w"> </span><span class="tk-mi">5</span><span class="tk-p">;</span>
+<span class="tk-k">FROM</span><span class="tk-w"> </span><span class="tk-n">chunks</span>
+<span class="tk-k">WHERE</span><span class="tk-w"> </span><span class="tk-n">org_id</span><span class="tk-w"> </span><span class="tk-o">=</span><span class="tk-w"> </span><span class="tk-err">$</span><span class="tk-mi">2</span><span class="tk-w">                                               </span><span class="tk-c1">-- phân quyền ngay trong truy vấn</span>
+<span class="tk-k">ORDER</span><span class="tk-w"> </span><span class="tk-k">BY</span><span class="tk-w"> </span><span class="tk-n">embedding</span><span class="tk-w"> </span><span class="tk-o">&lt;=&gt;</span><span class="tk-w"> </span><span class="tk-err">$</span><span class="tk-mi">1</span>
+<span class="tk-k">LIMIT</span><span class="tk-w"> </span><span class="tk-mi">5</span><span class="tk-p">;</span>
 </code></pre></div>
 
-<h2 id="lt-3">Cache với Redis</h2>
-<p>Redis là kho key-value trong RAM, nhanh cỡ mili giây. Dùng để cache kết quả model, lưu phiên hội thoại, đếm rate limit. Mỗi key có thể đặt thời hạn (TTL) để tự hết hạn.</p>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>2 triệu đoạn, embedding 768 chiều, lưu float4 (4 byte):</p>
+<p>2.000.000 × 768 × 4 = <strong>6,1 GB</strong> chỉ cho vector. Index HNSW thường thêm cỡ tương đương, cộng nội dung văn bản. Postgres muốn giữ index trong RAM để tìm nhanh, nên server cần khoảng 16 GB RAM trở lên. Tính từ đầu, trước khi chọn gói máy chủ.</p>
+</div>
+<p>Khi nào dùng vector store riêng (Qdrant, Weaviate) thay pgvector: hàng chục triệu vector trở lên, cần tìm kiếm lai (vector + từ khóa) có sẵn, hoặc cần mở rộng ngang dễ dàng. Với hầu hết dự án vừa và nhỏ, pgvector là đủ và đơn giản hơn.</p>
+<h2 id="lt-4">Phân quyền trong RAG</h2>
+<p>Hệ RAG phục vụ nhiều công ty (hoặc nhiều phòng ban) dùng chung một bảng <code>chunks</code>. Hai cách:</p>
+<ul>
+<li><strong>Lọc sau:</strong> tìm top-20 đoạn gần nhất trên toàn bảng, rồi bỏ các đoạn không thuộc công ty người hỏi (hoặc bảo LLM "chỉ dùng đoạn của công ty X").</li>
+<li><strong>Lọc trong truy vấn:</strong> <code>WHERE org_id = :org</code> ngay trong câu tìm kiếm, lấy top-5.</li>
+</ul>
+<p><strong>Mô phỏng:</strong> 50 công ty, mỗi công ty 400 đoạn, nhiều công ty có tài liệu cùng chủ đề (chính sách đổi trả, bảo hành…). 500 câu hỏi, mỗi câu từ một công ty:</p>
+<figure class="fig"><img src="../assets/fig/p8-4-tenant.svg" alt="Lọc sau: trung bình chỉ 1,4 trong 20 đoạn thuộc đúng công ty; 18,6 đoạn là của công ty khác. Không câu hỏi nào còn đủ 5 đoạn để trả lời. Lọc trong truy vấn: luôn có 5 đoạn đúng công ty." loading="lazy"><figcaption>Lọc sau: trung bình chỉ 1,4 trong 20 đoạn thuộc đúng công ty; 18,6 đoạn là của công ty khác. Không câu hỏi nào còn đủ 5 đoạn để trả lời. Lọc trong truy vấn: luôn có 5 đoạn đúng công ty.</figcaption></figure>
+
+<p>Lọc sau sai theo <strong>hai</strong> cách cùng lúc:</p>
+<ol>
+<li><strong>Chất lượng:</strong> công ty nhỏ hay có chủ đề giống công ty khác gần như không còn đoạn nào để trả lời.</li>
+<li><strong>Rò rỉ dữ liệu:</strong> nếu 20 đoạn được đưa vào context rồi "bảo LLM chỉ dùng đoạn của công ty X", dữ liệu của 19 công ty khác đã nằm trong prompt. Một câu prompt injection (P4.8), hoặc một lỗi nhỏ của LLM, là đủ để lộ.</li>
+</ol>
+<div class="keep">
+<p><strong>Ghi nhớ:</strong> dữ liệu của người dùng A không bao giờ được lọt vào context khi trả lời người dùng B. Lọc theo quyền ngay trong truy vấn tìm kiếm, với <code>org_id</code> lấy từ phiên đăng nhập, không từ tham số do client hay LLM gửi lên.</p>
+</div>
+<h2 id="lt-5">Cache với Redis</h2>
+<p>Redis là kho key-value trong RAM, đọc ghi cỡ dưới một mili giây. Dùng để cache kết quả model, lưu phiên hội thoại, đếm rate limit. Mỗi key có thể đặt thời hạn (TTL) để tự hết hạn.</p>
 <div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">hashlib</span><span class="tk-o">,</span><span class="tk-w"> </span><span class="tk-nn">json</span><span class="tk-o">,</span><span class="tk-w"> </span><span class="tk-nn">redis</span>
 <span class="tk-n">r</span> <span class="tk-o">=</span> <span class="tk-n">redis</span><span class="tk-o">.</span><span class="tk-n">Redis</span><span class="tk-p">()</span>
 
 <span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">cached_predict</span><span class="tk-p">(</span><span class="tk-n">text</span><span class="tk-p">,</span> <span class="tk-n">ttl</span><span class="tk-o">=</span><span class="tk-mi">3600</span><span class="tk-p">):</span>
-    <span class="tk-n">key</span> <span class="tk-o">=</span> <span class="tk-s2">"pred:"</span> <span class="tk-o">+</span> <span class="tk-n">hashlib</span><span class="tk-o">.</span><span class="tk-n">sha256</span><span class="tk-p">(</span><span class="tk-n">text</span><span class="tk-o">.</span><span class="tk-n">encode</span><span class="tk-p">())</span><span class="tk-o">.</span><span class="tk-n">hexdigest</span><span class="tk-p">()</span>
+    <span class="tk-n">key</span> <span class="tk-o">=</span> <span class="tk-s2">"pred:v3:"</span> <span class="tk-o">+</span> <span class="tk-n">hashlib</span><span class="tk-o">.</span><span class="tk-n">sha256</span><span class="tk-p">(</span><span class="tk-n">text</span><span class="tk-o">.</span><span class="tk-n">encode</span><span class="tk-p">())</span><span class="tk-o">.</span><span class="tk-n">hexdigest</span><span class="tk-p">()</span>   <span class="tk-c1"># v3: phiên bản model/prompt</span>
     <span class="tk-k">if</span> <span class="tk-p">(</span><span class="tk-n">hit</span> <span class="tk-o">:=</span> <span class="tk-n">r</span><span class="tk-o">.</span><span class="tk-n">get</span><span class="tk-p">(</span><span class="tk-n">key</span><span class="tk-p">))</span> <span class="tk-ow">is</span> <span class="tk-ow">not</span> <span class="tk-kc">None</span><span class="tk-p">:</span>
         <span class="tk-k">return</span> <span class="tk-n">json</span><span class="tk-o">.</span><span class="tk-n">loads</span><span class="tk-p">(</span><span class="tk-n">hit</span><span class="tk-p">)</span>
     <span class="tk-n">out</span> <span class="tk-o">=</span> <span class="tk-n">model_predict</span><span class="tk-p">(</span><span class="tk-n">text</span><span class="tk-p">)</span>
@@ -67,17 +222,121 @@
     <span class="tk-k">return</span> <span class="tk-n">out</span>
 </code></pre></div>
 
-<h2 id="lt-4">Hàng đợi tác vụ</h2>
-<p>Việc chạy lâu (xử lý 500 trang PDF, train lại, sinh 100 ảnh) không nên chạy trong request HTTP: client chờ quá lâu và timeout. Thay vào đó: API nhận yêu cầu, đẩy vào <strong>hàng đợi</strong> (Celery, RQ, Arq với Redis), trả về ngay <code>job_id</code>; <strong>worker</strong> chạy nền lấy việc ra làm; client hỏi trạng thái theo <code>job_id</code> hoặc nhận webhook khi xong.</p>
-<h2 id="lt-5">Xác thực và bí mật</h2>
+<div class="box pitfall">
+<div class="box-h">Lỗi hay gặp</div>
+<p><strong>Cache không gắn phiên bản.</strong> Đổi model hoặc prompt mà khóa cache giữ nguyên thì người dùng tiếp tục nhận câu trả lời cũ suốt thời gian TTL, và mọi đo lường sau thay đổi đều sai. Đưa phiên bản model/prompt vào khóa (như <code>v3</code> ở trên), và <strong>không</strong> cache câu trả lời phụ thuộc người dùng (tình trạng đơn hàng của tôi) bằng khóa chỉ gồm câu hỏi.</p>
+</div>
+<h2 id="lt-6">Hàng đợi tác vụ</h2>
+<p>Việc chạy lâu (xử lý 500 trang PDF, train lại, sinh 100 ảnh) không nên chạy trong request HTTP: client chờ quá lâu, proxy cắt kết nối sau 30–60 giây, và một server bận một việc dài thì không phục vụ được ai khác.</p>
+<ol>
+<li>API nhận yêu cầu, ghi vào hàng đợi (Celery, RQ, Arq với Redis), trả về ngay <code>job_id</code>.</li>
+<li><strong>Worker</strong> chạy nền lấy việc ra làm, cập nhật trạng thái (đang chờ, đang chạy, xong, lỗi).</li>
+<li>Client hỏi <code>/jobs/{job_id}</code> định kỳ, hoặc nhận webhook khi xong.</li>
+</ol>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>240 file PDF, mỗi file xử lý (tách đoạn + embedding) 45 giây:</p>
+<ul>
+<li>6 worker: ⌈240 / 6⌉ × 45 = 40 × 45 = <strong>1.800 giây</strong> (30 phút).</li>
+<li>Muốn xong trong 10 phút (600 giây): cần 240 × 45 / 600 = <strong>18 worker</strong>. Nếu embedding chạy trên GPU dùng chung, GPU có thể thành điểm nghẽn trước khi đủ 18 worker; đo thật trước khi hứa.</li>
+</ul>
+</div>
+<p>Thêm vào worker: <strong>thử lại</strong> khi lỗi tạm thời (mạng, API quá tải) với thời gian chờ tăng dần; <strong>idempotent</strong> (chạy lại một việc hai lần không tạo dữ liệu trùng, ví dụ xóa đoạn cũ của file trước khi ghi đoạn mới).</p>
+<h2 id="lt-7">Xác thực và bí mật</h2>
 <ul>
 <li>Mỗi request kiểm tra <strong>ai</strong> gọi (API key, token đăng nhập) và <strong>được làm gì</strong> (chỉ xem tài liệu của tổ chức mình).</li>
 <li>Phân quyền áp ở tầng truy vấn dữ liệu (<code>WHERE org_id = :org</code>), không trông vào prompt.</li>
-<li>Khóa API của nhà cung cấp LLM chỉ nằm ở server, trong biến môi trường hoặc trình quản lý bí mật, không bao giờ ở frontend hay trong git.</li>
+<li>Khóa API của nhà cung cấp LLM chỉ nằm ở server, trong biến môi trường hoặc trình quản lý bí mật; không bao giờ ở frontend, trong git, hay trong Docker image.</li>
+<li>Lưu API key của khách bằng <strong>hash</strong>, như mật khẩu; hiển thị nguyên văn một lần duy nhất khi tạo.</li>
 </ul>
-<div class="keep">
-<p><strong>Ghi nhớ:</strong> dữ liệu của người dùng A không bao giờ được lọt vào context khi trả lời người dùng B. Lọc theo quyền ngay trong truy vấn tìm kiếm.</p>
-</div></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p8.4:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 3</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>SQL bằng tay</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Bảng <code>orders</code>:</p>
+<div class="box check">
+<div class="box-h">Tự kiểm tra nhanh</div>
+<div class="ans" id="p8-4-t-b140-a1">
+<div class="ans-fields"><label>Truy vấn ví dụ: tổng tiền của Bình (đơn không hoàn)<input inputmode="decimal" data-ans="840.0" data-tol="0.0" autocomplete="off"></label><label>2 triệu vector 768 chiều float4 (GB, 1 chữ số)<input inputmode="decimal" data-ans="6.1" data-tol="0.05" autocomplete="off"></label><label>240 file × 45 giây, xong trong 600 giây: số worker<input inputmode="decimal" data-ans="18.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div>
+<div aria-live="polite" class="ans-fb"></div>
+</div>
+</div>
+<h2 id="lt-8">Tóm tắt bài và thuật ngữ</h2>
+<table>
+<thead>
+<tr>
+<th>Chủ đề</th>
+<th>Ý chính</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SQL</td>
+<td>thứ tự FROM → WHERE → GROUP BY → HAVING → SELECT → ORDER BY → LIMIT; window function; luôn dùng tham số</td>
+</tr>
+<tr>
+<td>pgvector</td>
+<td>vector + dữ liệu nghiệp vụ trong Postgres; HNSW; tính RAM từ đầu</td>
+</tr>
+<tr>
+<td>Phân quyền RAG</td>
+<td>lọc <code>org_id</code> trong truy vấn tìm kiếm, lấy từ phiên đăng nhập</td>
+</tr>
+<tr>
+<td>Redis</td>
+<td>cache có TTL và phiên bản trong khóa; rate limit</td>
+</tr>
+<tr>
+<td>Hàng đợi</td>
+<td>trả <code>job_id</code> ngay, worker chạy nền, thử lại, idempotent</td>
+</tr>
+<tr>
+<td>Bí mật</td>
+<td>khóa chỉ ở server; API key của khách lưu bằng hash</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Thuật ngữ</th>
+<th>Nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>HAVING</td>
+<td>lọc sau khi gom nhóm</td>
+</tr>
+<tr>
+<td>window function</td>
+<td>hàm tính trên cửa sổ dòng mà không gom nhóm</td>
+</tr>
+<tr>
+<td>SQL injection</td>
+<td>chèn mã SQL qua dữ liệu người dùng</td>
+</tr>
+<tr>
+<td>pgvector / HNSW</td>
+<td>extension vector cho Postgres / loại index tìm láng giềng gần</td>
+</tr>
+<tr>
+<td>multi-tenant</td>
+<td>nhiều khách hàng dùng chung một hệ thống</td>
+</tr>
+<tr>
+<td>TTL</td>
+<td>thời gian sống của khóa cache</td>
+</tr>
+<tr>
+<td>task queue / worker</td>
+<td>hàng đợi tác vụ / tiến trình xử lý nền</td>
+</tr>
+<tr>
+<td>idempotent</td>
+<td>chạy lại nhiều lần cho cùng kết quả</td>
+</tr>
+<tr>
+<td>webhook</td>
+<td>server gọi lại địa chỉ của client khi có sự kiện</td>
+</tr>
+</tbody>
+</table></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p8.4:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 3</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>SQL bằng tay</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Bảng <code>orders</code>:</p>
 <table>
 <thead>
 <tr>
@@ -188,7 +447,7 @@
     </div>
     <aside class="aside">
       <div class="abox"><h4>Tiến độ bài này</h4><div class="ring"><svg viewBox="0 0 64 64" aria-hidden="true"><circle class="bg" cx="32" cy="32" r="28"/><circle class="fg" cx="32" cy="32" r="28" stroke-dasharray="176" stroke-dashoffset="176"/></svg><div><b id="ring-n">0/3</b><span id="ring-sub">phần đã xong</span></div></div></div>
-      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">SQL cho kỹ sư AI</a></li><li><a href="#lt-2">Postgres và pgvector</a></li><li><a href="#lt-3">Cache với Redis</a></li><li><a href="#lt-4">Hàng đợi tác vụ</a></li><li><a href="#lt-5">Xác thực và bí mật</a></li></ol></div>
+      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Bức tranh backend của một hệ AI</a></li><li><a href="#lt-2">SQL cho kỹ sư AI</a></li><li><a href="#lt-3">Postgres và pgvector</a></li><li><a href="#lt-4">Phân quyền trong RAG</a></li><li><a href="#lt-5">Cache với Redis</a></li><li><a href="#lt-6">Hàng đợi tác vụ</a></li><li><a href="#lt-7">Xác thực và bí mật</a></li><li><a href="#lt-8">Tóm tắt bài và thuật ngữ</a></li></ol></div>
       
       <div class="abox"><h4>Cùng giai đoạn</h4><ul><li><a href="p8-1.html">Bài 10a · Serving</a></li><li><a href="p8-2.html">MLOps</a></li><li><a href="p8-3.html">Bài 10b · Giám sát và chi phí</a></li><li><span class=cur>Backend và dữ liệu cho AI</span></li></ul></div>
     </aside>

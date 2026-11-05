@@ -22,12 +22,54 @@
 <main class="container">
   <div class="crumbs"><a href="../bai-hoc.html">Bài học</a><span>/</span><a href="../bai-hoc.html#p8">P8 · Production và MLOps</a><span>/</span><span>P8.2</span></div>
   <section class="lhero"><div class="code">P8.2</div><h1>MLOps</h1><div class="lmeta"><span class="m">Giai đoạn P8 · Production và MLOps</span><span class="m">Tuần 35–39</span><span class="chip ready"><span class="dot"></span>Có nội dung đầy đủ</span></div>
-    <div class="intro"><p>Sau vài tuần thí nghiệm, câu hỏi "model đang chạy được train từ dữ liệu nào, code nào, siêu tham số nào?" thường không ai trả lời được. <strong>MLOps</strong> là bộ thói quen và công cụ giúp mọi kết quả <strong>tái lập được</strong>, mọi thay đổi <strong>được kiểm tra tự động</strong>, và việc đưa model mới lên production an toàn. Bài này dạy theo dõi thí nghiệm, quản lý phiên bản dữ liệu và model, CI/CD có cổng chặn theo eval.</p></div></section>
+    <div class="intro"><p>Sau vài tuần thí nghiệm, câu hỏi "model đang chạy được train từ dữ liệu nào, code nào, siêu tham số nào?" thường không ai trả lời được. <strong>MLOps</strong> là bộ thói quen và công cụ giúp mọi kết quả <strong>tái lập được</strong>, mọi thay đổi <strong>được kiểm tra tự động</strong>, và việc đưa model mới lên production an toàn. Bài này dạy theo dõi thí nghiệm, quản lý phiên bản dữ liệu và model, tái lập kết quả (kèm thí nghiệm về dao động giữa các seed), và CI/CD có cổng chặn theo eval được thiết kế đúng thống kê.</p></div></section>
   
-  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">4 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
+  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">6 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
   <div class="lgrid" style="margin-top:22px">
-    <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">Theo dõi thí nghiệm</h2>
-<p>Mỗi lần train, ghi lại tự động: commit code, config (siêu tham số), dữ liệu dùng, metric theo thời gian, artifact (model, biểu đồ), môi trường (phiên bản thư viện, GPU).</p>
+    <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">Vì sao cần MLOps</h2>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Ba tình huống rất thường gặp: (1) model tuần trước tốt hơn nhưng không ai nhớ cấu hình; (2) ai đó sửa prompt "cho hay hơn" và chatbot trả lời sai chính sách mà không ai biết cho tới khi khách phàn nàn; (3) "cải tiến" 1% hóa ra chỉ là may rủi của seed. MLOps giải quyết cả ba. Với người làm freelance, một repo có theo dõi thí nghiệm và CI là bằng chứng mạnh về tính chuyên nghiệp.</p>
+</div>
+<table>
+<thead>
+<tr>
+<th>Vấn đề</th>
+<th>Thói quen / công cụ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Không biết cấu hình của lần chạy tốt nhất</td>
+<td>theo dõi thí nghiệm (W&amp;B, MLflow)</td>
+</tr>
+<tr>
+<td>Dữ liệu đổi mà không ai biết</td>
+<td>phiên bản dữ liệu (DVC, Hugging Face Hub)</td>
+</tr>
+<tr>
+<td>Chạy lại không ra kết quả cũ</td>
+<td>seed, config ra file, khóa thư viện, Docker</td>
+</tr>
+<tr>
+<td>Thay đổi làm hỏng chất lượng</td>
+<td>CI với cổng eval</td>
+</tr>
+<tr>
+<td>Deploy model mới gây sự cố</td>
+<td>CD: staging, smoke test, triển khai dần</td>
+</tr>
+</tbody>
+</table>
+<h2 id="lt-2">Theo dõi thí nghiệm</h2>
+<p>Mỗi lần train, ghi lại <strong>tự động</strong> (không dựa vào trí nhớ hay file Excel):</p>
+<ul>
+<li>Commit code và config (siêu tham số).</li>
+<li>Phiên bản dữ liệu dùng.</li>
+<li>Metric theo thời gian (loss mỗi bước, metric val mỗi epoch) và metric cuối trên test.</li>
+<li>Artifact: model, biểu đồ, bảng lỗi.</li>
+<li>Môi trường: phiên bản thư viện, loại GPU.</li>
+</ul>
 <div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">wandb</span>
 <span class="tk-n">run</span> <span class="tk-o">=</span> <span class="tk-n">wandb</span><span class="tk-o">.</span><span class="tk-n">init</span><span class="tk-p">(</span><span class="tk-n">project</span><span class="tk-o">=</span><span class="tk-s2">"lab08-extract"</span><span class="tk-p">,</span> <span class="tk-n">config</span><span class="tk-o">=</span><span class="tk-p">{</span><span class="tk-s2">"lr"</span><span class="tk-p">:</span> <span class="tk-mf">2e-4</span><span class="tk-p">,</span> <span class="tk-s2">"r"</span><span class="tk-p">:</span> <span class="tk-mi">16</span><span class="tk-p">,</span> <span class="tk-s2">"epochs"</span><span class="tk-p">:</span> <span class="tk-mi">3</span><span class="tk-p">,</span> <span class="tk-s2">"data"</span><span class="tk-p">:</span> <span class="tk-s2">"v3"</span><span class="tk-p">})</span>
 <span class="tk-k">for</span> <span class="tk-n">step</span><span class="tk-p">,</span> <span class="tk-n">loss</span> <span class="tk-ow">in</span> <span class="tk-n">train</span><span class="tk-p">():</span>
@@ -36,32 +78,186 @@
 <span class="tk-n">run</span><span class="tk-o">.</span><span class="tk-n">finish</span><span class="tk-p">()</span>
 </code></pre></div>
 
-<p><strong>Weights &amp; Biases</strong> (dịch vụ) và <strong>MLflow</strong> (tự host được) là hai lựa chọn phổ biến. Lợi ích lớn nhất: so sánh hàng chục lần chạy trên cùng biểu đồ và biết chính xác cấu hình của lần tốt nhất.</p>
-<h2 id="lt-2">Phiên bản dữ liệu và model</h2>
+<p><strong>Weights &amp; Biases</strong> (dịch vụ, miễn phí cho cá nhân) và <strong>MLflow</strong> (mã nguồn mở, tự host được) là hai lựa chọn phổ biến. <code>transformers</code> và TRL có sẵn tham số <code>report_to="wandb"</code> hoặc <code>"mlflow"</code>. Lợi ích lớn nhất: so sánh hàng chục lần chạy trên cùng biểu đồ và biết chính xác cấu hình của lần tốt nhất.</p>
+<h2 id="lt-3">Phiên bản dữ liệu và model</h2>
 <p>Git không hợp với file lớn. Các cách:</p>
 <ul>
 <li><strong>DVC:</strong> lưu file lớn ở kho ngoài (S3, Google Drive), git chỉ giữ một file nhỏ chứa mã hash. <code>git checkout</code> một commit cũ rồi <code>dvc pull</code> là có đúng dữ liệu của lúc đó.</li>
-<li><strong>Hugging Face Hub:</strong> dataset và model có phiên bản (mỗi lần đẩy là một commit), có model card.</li>
-<li><strong>Model registry</strong> (MLflow, W&amp;B): đánh dấu phiên bản model nào đang ở "staging", "production".</li>
+<li><strong>Hugging Face Hub:</strong> dataset và model có phiên bản (mỗi lần đẩy là một commit), có model card; nạp đúng phiên bản bằng tham số <code>revision=</code>.</li>
+<li><strong>Model registry</strong> (MLflow, W&amp;B): đánh dấu phiên bản model nào đang ở "staging", "production"; rollback bằng cách chuyển nhãn về phiên bản cũ.</li>
 </ul>
-<h2 id="lt-3">Tái lập kết quả</h2>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>8 lần chạy, mỗi lần lưu 4 checkpoint, mỗi checkpoint 450 MB:</p>
 <ul>
-<li>Cố định <strong>seed</strong> (Python, numpy, torch) và ghi lại; với GPU vẫn có sai khác nhỏ, nên chạy 3 seed và báo trung bình.</li>
-<li><strong>Config ra file</strong> (YAML) thay vì sửa số trong code; mỗi lần chạy lưu kèm config.</li>
-<li><strong>Khóa phiên bản thư viện</strong> (<code>requirements.txt</code> có số phiên bản cụ thể, hoặc <code>uv.lock</code>), Docker image cho môi trường.</li>
-<li>Chia dữ liệu train/val/test <strong>một lần</strong>, lưu danh sách id, dùng lại cho mọi thí nghiệm.</li>
+<li>Giữ tất cả: 8 × 4 × 450 = <strong>14,4 GB</strong>.</li>
+<li>Chỉ giữ checkpoint tốt nhất (theo val) và cuối cùng: 8 × 2 × 450 = <strong>7,2 GB</strong>.</li>
+<li>Với LoRA (P5.5, P6.1) chỉ lưu adapter vài chục MB, vấn đề gần như biến mất.</li>
 </ul>
-<h2 id="lt-4">CI/CD cho hệ thống ML</h2>
+</div>
+<h2 id="lt-4">Tái lập kết quả</h2>
+<h3>Dao động giữa các seed</h3>
+<p><strong>Thí nghiệm:</strong> train hai cấu hình mạng nơ-ron nhỏ (32 và 48 nơ-ron ẩn) trên chữ số viết tay, mỗi cấu hình 10 seed khác nhau, cùng dữ liệu:</p>
+<figure class="fig"><img src="../assets/fig/p8-2-seeds.svg" alt="Cấu hình B trung bình cao hơn A 0,2 điểm, nhưng mỗi cấu hình dao động hơn 2 điểm giữa các seed. Chọn ngẫu nhiên một lần chạy mỗi bên thì A thắng B khá thường xuyên." loading="lazy"><figcaption>Cấu hình B trung bình cao hơn A 0,2 điểm, nhưng mỗi cấu hình dao động hơn 2 điểm giữa các seed. Chọn ngẫu nhiên một lần chạy mỗi bên thì A thắng B khá thường xuyên.</figcaption></figure>
+
+<p>Nếu chỉ chạy mỗi cấu hình một lần và thấy B hơn A 1 điểm, bạn có thể kết luận sai hoàn toàn. Quy tắc:</p>
+<ul>
+<li>Cố định <strong>seed</strong> (Python, numpy, torch) và ghi lại. Trên GPU vẫn có sai khác nhỏ do phép tính song song không tất định.</li>
+<li>So sánh quan trọng: chạy <strong>3–5 seed</strong>, báo trung bình và độ lệch chuẩn.</li>
+<li>Chỉ tin cải tiến lớn hơn rõ ràng độ dao động giữa các seed.</li>
+</ul>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>Năm seed cho F1: 0.71, 0.74, 0.73, 0.69, 0.73.</p>
+<ul>
+<li>Trung bình: <strong>0.72</strong>.</li>
+<li>Độ lệch chuẩn (chia cho n): khoảng <strong>0.018</strong>.</li>
+<li>Một thay đổi cho F1 0.73 trong một lần chạy chưa nói lên gì: nằm gọn trong dao động.</li>
+</ul>
+</div>
+<h3>Các thói quen khác</h3>
+<ul>
+<li><strong>Config ra file</strong> (YAML) thay vì sửa số trong code; mỗi lần chạy lưu kèm config.</li>
+<li><strong>Khóa phiên bản thư viện</strong> (<code>requirements.txt</code> có số phiên bản cụ thể, hoặc <code>uv.lock</code>); Docker image cho môi trường.</li>
+<li>Chia dữ liệu train/val/test <strong>một lần</strong>, lưu danh sách id, dùng lại cho mọi thí nghiệm.</li>
+<li>Chuyển code từ notebook sang <strong>script</strong> chạy được từ đầu tới cuối bằng một lệnh. Notebook chạy không theo thứ tự là nguồn không tái lập được phổ biến nhất.</li>
+</ul>
+<h2 id="lt-5">CI/CD cho hệ thống ML</h2>
+<figure class="fig"><img src="../assets/fig/p8-2-pipeline.svg" alt="CI chạy cho mỗi pull request và có thể chặn merge; CD chạy khi đã merge, đưa model lên dần dần." loading="lazy"><figcaption>CI chạy cho mỗi pull request và có thể chặn merge; CD chạy khi đã merge, đưa model lên dần dần.</figcaption></figure>
+
 <p><strong>CI (continuous integration):</strong> mỗi pull request tự động chạy:</p>
 <ol>
-<li>Kiểm tra code: lint, unit test (hàm tiền xử lý, parser đầu ra).</li>
-<li><strong>Eval nhanh:</strong> chạy bộ eval nhỏ (50–100 mẫu) với prompt/model mới.</li>
-<li><strong>Cổng chặn:</strong> nếu metric tụt quá ngưỡng so với baseline đang chạy, CI báo đỏ, không cho merge.</li>
+<li>Kiểm tra code: lint, unit test (hàm tiền xử lý, parser đầu ra JSON).</li>
+<li><strong>Eval nhanh:</strong> chạy bộ eval cố định với prompt/model mới.</li>
+<li><strong>Cổng chặn:</strong> nếu metric tụt so với baseline đang chạy, CI báo đỏ, không cho merge.</li>
 </ol>
-<p><strong>CD (continuous delivery):</strong> khi merge vào main, tự build Docker image, deploy lên staging, chạy smoke test, rồi lên production (có thể dần dần: 10% lưu lượng trước).</p>
+<p><strong>CD (continuous delivery):</strong> khi merge vào main, tự build Docker image, deploy lên staging, chạy smoke test (vài yêu cầu thật, kiểm tra trả lời đúng định dạng), rồi lên production; có thể <strong>dần dần</strong> (10% lưu lượng trước, theo dõi lỗi, rồi 100%), và rollback được bằng một lệnh.</p>
+<h3>Thiết kế cổng chặn đúng</h3>
+<p>Cổng "chặn nếu tụt quá 0,01" nghe hợp lý, nhưng bộ eval nhỏ có sai số lấy mẫu (P4.3). <strong>Mô phỏng:</strong> hai model có chất lượng <strong>như nhau</strong>, đánh giá trên bộ eval kích thước khác nhau, đếm số lần cổng chặn nhầm:</p>
+<figure class="fig"><img src="../assets/fig/p8-2-gate.svg" alt="Cổng &quot;tụt quá 0,01&quot; chặn nhầm 38% số lần với 100 mẫu, 23% với 300 mẫu, 7% với 1.000 mẫu. Cổng dựa trên khoảng tin cậy của chênh lệch theo cặp giữ tỉ lệ chặn nhầm khoảng 2% ở mọi kích thước." loading="lazy"><figcaption>Cổng &quot;tụt quá 0,01&quot; chặn nhầm 38% số lần với 100 mẫu, 23% với 300 mẫu, 7% với 1.000 mẫu. Cổng dựa trên khoảng tin cậy của chênh lệch theo cặp giữ tỉ lệ chặn nhầm khoảng 2% ở mọi kích thước.</figcaption></figure>
+
+<p>Cách làm tốt hơn:</p>
+<ol>
+<li>Chạy <strong>cả hai</strong> model (baseline và mới) trên <strong>cùng</strong> các mẫu, tính chênh lệch từng mẫu (so theo cặp loại bỏ được độ khó khác nhau giữa các mẫu).</li>
+<li>Tính khoảng tin cậy 95% của chênh lệch trung bình.</li>
+<li>Chặn nếu <strong>cả khoảng</strong> nằm dưới 0 (chắc chắn tệ hơn), hoặc dưới một mức tụt cho phép.</li>
+<li>Bộ eval càng lớn thì khoảng càng hẹp, cổng càng nhạy với tụt thật.</li>
+</ol>
+<div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">numpy</span><span class="tk-w"> </span><span class="tk-k">as</span><span class="tk-w"> </span><span class="tk-nn">np</span>
+<span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">gate</span><span class="tk-p">(</span><span class="tk-n">scores_new</span><span class="tk-p">,</span> <span class="tk-n">scores_base</span><span class="tk-p">,</span> <span class="tk-n">max_drop</span><span class="tk-o">=</span><span class="tk-mf">0.0</span><span class="tk-p">):</span>
+    <span class="tk-n">d</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">asarray</span><span class="tk-p">(</span><span class="tk-n">scores_new</span><span class="tk-p">,</span> <span class="tk-nb">float</span><span class="tk-p">)</span> <span class="tk-o">-</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">asarray</span><span class="tk-p">(</span><span class="tk-n">scores_base</span><span class="tk-p">,</span> <span class="tk-nb">float</span><span class="tk-p">)</span>   <span class="tk-c1"># chênh lệch từng mẫu, cùng thứ tự</span>
+    <span class="tk-n">mean</span><span class="tk-p">,</span> <span class="tk-n">se</span> <span class="tk-o">=</span> <span class="tk-n">d</span><span class="tk-o">.</span><span class="tk-n">mean</span><span class="tk-p">(),</span> <span class="tk-n">d</span><span class="tk-o">.</span><span class="tk-n">std</span><span class="tk-p">(</span><span class="tk-n">ddof</span><span class="tk-o">=</span><span class="tk-mi">1</span><span class="tk-p">)</span> <span class="tk-o">/</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">sqrt</span><span class="tk-p">(</span><span class="tk-nb">len</span><span class="tk-p">(</span><span class="tk-n">d</span><span class="tk-p">))</span>
+    <span class="tk-n">upper</span> <span class="tk-o">=</span> <span class="tk-n">mean</span> <span class="tk-o">+</span> <span class="tk-mf">1.96</span> <span class="tk-o">*</span> <span class="tk-n">se</span>                                            <span class="tk-c1"># cận trên khoảng tin cậy 95%</span>
+    <span class="tk-k">return</span> <span class="tk-p">(</span><span class="tk-s2">"CHẶN"</span> <span class="tk-k">if</span> <span class="tk-n">upper</span> <span class="tk-o">&lt;</span> <span class="tk-o">-</span><span class="tk-n">max_drop</span> <span class="tk-k">else</span> <span class="tk-s2">"QUA"</span><span class="tk-p">),</span> <span class="tk-nb">round</span><span class="tk-p">(</span><span class="tk-n">mean</span><span class="tk-p">,</span> <span class="tk-mi">4</span><span class="tk-p">),</span> <span class="tk-nb">round</span><span class="tk-p">(</span><span class="tk-n">upper</span><span class="tk-p">,</span> <span class="tk-mi">4</span><span class="tk-p">)</span>
+</code></pre></div>
+
+<div class="box pitfall">
+<div class="box-h">Lỗi hay gặp</div>
+<p><strong>Prompt nằm ngoài git.</strong> Prompt sửa trực tiếp trên giao diện quản trị hoặc trong biến môi trường thì không đi qua CI, không có lịch sử, không rollback được. Với hệ thống LLM, prompt là "code": để trong repo, review như code, chạy qua cùng cổng eval.</p>
+</div>
 <div class="keep">
-<p><strong>Ghi nhớ:</strong> với hệ thống LLM, thay đổi prompt cũng là thay đổi model. Prompt nằm trong git và đi qua cùng cổng eval như code.</p>
-</div></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p8.2:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 3</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Cổng chặn eval</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Model đang chạy có F1 0.82. Pull request mới đạt 0.80. Quy tắc: chặn nếu tụt quá 0.01.</p>
+<p><strong>Ghi nhớ:</strong> với hệ thống LLM, thay đổi prompt cũng là thay đổi model. Prompt nằm trong git và đi qua cùng cổng eval như code; và cổng eval phải tính tới sai số lấy mẫu, nếu không nó chặn nhầm hoặc cho qua nhầm.</p>
+</div>
+<div class="box check">
+<div class="box-h">Tự kiểm tra nhanh</div>
+<div class="ans" id="p8-2-t-b105-a1">
+<div class="ans-fields"><label>8 lần chạy × 4 checkpoint × 450 MB (GB)<input inputmode="decimal" data-ans="14.4" data-tol="0.001" autocomplete="off"></label><label>F1 năm seed 0.71, 0.74, 0.73, 0.69, 0.73: trung bình<input inputmode="decimal" data-ans="0.72" data-tol="0.0001" autocomplete="off"></label><label>Độ lệch chuẩn (chia n, 3 chữ số)<input inputmode="decimal" data-ans="0.018" data-tol="0.001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div>
+<div aria-live="polite" class="ans-fb"></div>
+</div>
+</div>
+<h2 id="lt-6">Tóm tắt bài và thuật ngữ</h2>
+<table>
+<thead>
+<tr>
+<th>Chủ đề</th>
+<th>Ý chính</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Theo dõi thí nghiệm</td>
+<td>tự động ghi commit, config, dữ liệu, metric, artifact</td>
+</tr>
+<tr>
+<td>Phiên bản</td>
+<td>DVC / Hub cho dữ liệu; registry cho model; giữ best + last</td>
+</tr>
+<tr>
+<td>Tái lập</td>
+<td>seed, config YAML, khóa thư viện, Docker, chia dữ liệu một lần, script thay notebook</td>
+</tr>
+<tr>
+<td>Seed</td>
+<td>báo trung bình ± độ lệch chuẩn của 3–5 seed</td>
+</tr>
+<tr>
+<td>CI</td>
+<td>lint, test, eval, cổng chặn theo khoảng tin cậy so theo cặp</td>
+</tr>
+<tr>
+<td>CD</td>
+<td>build image, staging, smoke test, triển khai dần, rollback</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Thuật ngữ</th>
+<th>Nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>MLOps</td>
+<td>vận hành hệ thống ML có kỷ luật như phần mềm</td>
+</tr>
+<tr>
+<td>experiment tracking</td>
+<td>theo dõi thí nghiệm</td>
+</tr>
+<tr>
+<td>artifact</td>
+<td>sản phẩm của lần chạy (model, biểu đồ)</td>
+</tr>
+<tr>
+<td>DVC</td>
+<td>Data Version Control</td>
+</tr>
+<tr>
+<td>model registry</td>
+<td>kho model có phiên bản và nhãn giai đoạn</td>
+</tr>
+<tr>
+<td>reproducibility</td>
+<td>khả năng tái lập</td>
+</tr>
+<tr>
+<td>CI / CD</td>
+<td>tích hợp liên tục / triển khai liên tục</td>
+</tr>
+<tr>
+<td>eval gate</td>
+<td>cổng chặn theo kết quả eval</td>
+</tr>
+<tr>
+<td>paired comparison</td>
+<td>so sánh theo cặp trên cùng mẫu</td>
+</tr>
+<tr>
+<td>canary / gradual rollout</td>
+<td>triển khai dần một phần lưu lượng</td>
+</tr>
+<tr>
+<td>smoke test</td>
+<td>kiểm tra nhanh xem hệ thống có chạy không</td>
+</tr>
+<tr>
+<td>rollback</td>
+<td>quay về phiên bản trước</td>
+</tr>
+</tbody>
+</table></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p8.2:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 3</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Cổng chặn eval</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Model đang chạy có F1 0.82. Pull request mới đạt 0.80. Quy tắc: chặn nếu tụt quá 0.01.</p>
 <div class="ans" id="p8-2-e1-a1"><div class="ans-fields"><label>Mức tụt<input inputmode="decimal" data-ans="0.02" data-tol="0.0001" autocomplete="off"></label><label>CI cho qua? (1 = qua, 0 = chặn)<input inputmode="decimal" data-ans="0.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
 
 <details class="fold solution">
@@ -146,7 +342,7 @@
     </div>
     <aside class="aside">
       <div class="abox"><h4>Tiến độ bài này</h4><div class="ring"><svg viewBox="0 0 64 64" aria-hidden="true"><circle class="bg" cx="32" cy="32" r="28"/><circle class="fg" cx="32" cy="32" r="28" stroke-dasharray="176" stroke-dashoffset="176"/></svg><div><b id="ring-n">0/3</b><span id="ring-sub">phần đã xong</span></div></div></div>
-      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Theo dõi thí nghiệm</a></li><li><a href="#lt-2">Phiên bản dữ liệu và model</a></li><li><a href="#lt-3">Tái lập kết quả</a></li><li><a href="#lt-4">CI/CD cho hệ thống ML</a></li></ol></div>
+      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Vì sao cần MLOps</a></li><li><a href="#lt-2">Theo dõi thí nghiệm</a></li><li><a href="#lt-3">Phiên bản dữ liệu và model</a></li><li><a href="#lt-4">Tái lập kết quả</a></li><li><a href="#lt-5">CI/CD cho hệ thống ML</a></li><li><a href="#lt-6">Tóm tắt bài và thuật ngữ</a></li></ol></div>
       
       <div class="abox"><h4>Cùng giai đoạn</h4><ul><li><a href="p8-1.html">Bài 10a · Serving</a></li><li><span class=cur>MLOps</span></li><li><a href="p8-3.html">Bài 10b · Giám sát và chi phí</a></li><li><a href="p8-4.html">Backend và dữ liệu cho AI</a></li></ul></div>
     </aside>

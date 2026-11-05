@@ -22,12 +22,24 @@
 <main class="container">
   <div class="crumbs"><a href="../bai-hoc.html">Bài học</a><span>/</span><a href="../bai-hoc.html#p8">P8 · Production và MLOps</a><span>/</span><span>P8.1</span></div>
   <section class="lhero"><div class="code">P8.1</div><h1>Bài 10a · Serving</h1><div class="lmeta"><span class="m">Giai đoạn P8 · Production và MLOps</span><span class="m">Tuần 35–39</span><span class="chip ready"><span class="dot"></span>Có nội dung đầy đủ</span></div>
-    <div class="intro"><p>Model nằm trong notebook thì chỉ bạn dùng được. Bài này đưa model ra thành một <strong>API</strong> mà ứng dụng khác gọi được: FastAPI cho logic, streaming để người dùng thấy chữ chạy, Docker để chạy giống nhau ở mọi nơi, vLLM để phục vụ LLM hiệu quả, và cách tính cần bao nhiêu GPU. Đây là nhóm kỹ năng "production" mà tin tuyển dụng nhắc nhiều sau Python và LLM.</p></div></section>
+    <div class="intro"><p>Model nằm trong notebook thì chỉ bạn dùng được. Bài này đưa model ra thành một <strong>API</strong> mà ứng dụng khác gọi được: FastAPI cho logic, streaming để người dùng thấy chữ chạy, Docker để chạy giống nhau ở mọi nơi, vLLM để phục vụ LLM hiệu quả, và cách tính cần bao nhiêu GPU. Code trong bài đã chạy thật (FastAPI 0.162), kèm số đo độ trễ streaming. Đây là nhóm kỹ năng "production" mà tin tuyển dụng nhắc nhiều sau Python và LLM.</p></div></section>
   
-  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">5 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
+  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">7 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
   <div class="lgrid" style="margin-top:22px">
-    <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">API với FastAPI</h2>
-<p>FastAPI dựng API bằng type hint của Python: tự kiểm tra dữ liệu vào, tự sinh tài liệu tại <code>/docs</code>, hỗ trợ <code>async</code>.</p>
+    <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">Từ notebook tới service</h2>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Tin tuyển dụng AI Engineer remote gần như luôn có các từ khóa FastAPI, Docker, deploy, "production". Khách hàng freelance cũng không nhận notebook: họ cần một địa chỉ gọi được, chạy ổn định, có giới hạn và log. Bài này biến model của bạn thành thứ người khác dùng được.</p>
+</div>
+<figure class="fig"><img src="../assets/fig/p8-1-arch.svg" alt="Kiến trúc thường gặp: service FastAPI lo mọi logic nghiệp vụ, vLLM chỉ lo sinh token trên GPU. Mỗi khối là một container riêng." loading="lazy"><figcaption>Kiến trúc thường gặp: service FastAPI lo mọi logic nghiệp vụ, vLLM chỉ lo sinh token trên GPU. Mỗi khối là một container riêng.</figcaption></figure>
+
+<p>Tách hai lớp như hình có lợi:</p>
+<ul>
+<li><strong>vLLM</strong> tối ưu cho đúng một việc (batching, KV cache), cập nhật phiên bản độc lập.</li>
+<li><strong>Service của bạn</strong> chứa phần riêng của sản phẩm: xác thực, prompt, RAG (P4.2), guardrails (P4.8), log. Đổi model hay nhà cung cấp (vLLM tự host ↔ API thương mại) chỉ cần đổi <code>base_url</code>.</li>
+</ul>
+<h2 id="lt-2">API với FastAPI</h2>
+<p>FastAPI dựng API bằng type hint của Python: tự kiểm tra dữ liệu vào bằng Pydantic, tự sinh tài liệu tương tác tại <code>/docs</code>, hỗ trợ <code>async</code>.</p>
 <div class="hl"><pre><span></span><code><span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">fastapi</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">FastAPI</span><span class="tk-p">,</span> <span class="tk-n">HTTPException</span>
 <span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">pydantic</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">BaseModel</span><span class="tk-p">,</span> <span class="tk-n">Field</span>
 
@@ -50,21 +62,85 @@
     <span class="tk-k">return</span> <span class="tk-n">Resp</span><span class="tk-p">(</span><span class="tk-n">label</span><span class="tk-o">=</span><span class="tk-n">label</span><span class="tk-p">,</span> <span class="tk-n">score</span><span class="tk-o">=</span><span class="tk-n">score</span><span class="tk-p">)</span>
 </code></pre></div>
 
-<p>Nguyên tắc: <strong>nạp model một lần</strong> khi khởi động; <strong>kiểm tra đầu vào</strong> (độ dài, định dạng); trả lỗi có mã HTTP rõ ràng (400 dữ liệu sai, 429 quá tải, 503 model chưa sẵn sàng); có endpoint <code>/health</code> để hệ thống giám sát và load balancer biết service còn sống.</p>
-<h2 id="lt-2">Streaming</h2>
-<p>LLM sinh 50 token/giây, câu trả lời 500 token mất 10 giây. Streaming gửi từng mảnh ngay khi có, người dùng thấy chữ sau vài trăm mili giây. Phổ biến nhất là <strong>Server-Sent Events (SSE)</strong>: một kết nối HTTP giữ mở, server đẩy các dòng <code>data: ...</code>.</p>
-<div class="hl"><pre><span></span><code><span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">fastapi.responses</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">StreamingResponse</span>
+<p>Chạy: <code>uvicorn app:app --host 0.0.0.0 --port 8000</code>, mở <code>http://localhost:8000/docs</code> để thử trực tiếp trên trình duyệt.</p>
+<h3>Nguyên tắc của một endpoint tốt</h3>
+<table>
+<thead>
+<tr>
+<th>Nguyên tắc</th>
+<th>Cách làm</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Nạp model một lần</td>
+<td>ở cấp module hoặc trong hàm <code>lifespan</code> khi khởi động, không trong hàm xử lý</td>
+</tr>
+<tr>
+<td>Kiểm tra đầu vào</td>
+<td><code>Field(min_length, max_length)</code>, kiểu dữ liệu, giá trị cho phép</td>
+</tr>
+<tr>
+<td>Mã lỗi rõ ràng</td>
+<td>422 dữ liệu sai (FastAPI tự trả khi Pydantic từ chối), 429 quá tải, 503 model chưa sẵn sàng hoặc lỗi phía sau, 504 quá thời gian</td>
+</tr>
+<tr>
+<td>Health check</td>
+<td><code>/health</code> để Docker, load balancer, hệ thống giám sát biết service còn sống</td>
+</tr>
+<tr>
+<td>Log mỗi yêu cầu</td>
+<td>thời gian, độ dài đầu vào/ra, mã lỗi, độ trễ; <strong>không</strong> log nội dung nhạy cảm</td>
+</tr>
+</tbody>
+</table>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>Đã chạy thử service ở trên với uvicorn và gửi yêu cầu bằng <code>httpx</code>:</p>
+<ul>
+<li><code>{"message": ""}</code> → <strong>422</strong> (vi phạm <code>min_length=1</code>).</li>
+<li>Chuỗi 2.001 ký tự → <strong>422</strong> (vi phạm <code>max_length=2000</code>).</li>
+<li>Không cần viết dòng kiểm tra nào: Pydantic làm, và trả JSON mô tả lỗi ở trường nào.</li>
+</ul>
+</div>
+<h3>Đồng bộ hay async</h3>
+<ul>
+<li><code>def</code> (đồng bộ): FastAPI chạy hàm trong một thread pool. Phù hợp cho model chạy CPU/GPU trực tiếp trong process.</li>
+<li><code>async def</code>: phù hợp khi hàm chủ yếu <strong>chờ</strong> (gọi vLLM, gọi API, đọc database). Trong lúc chờ, server phục vụ yêu cầu khác.</li>
+</ul>
+<p>Trong thí nghiệm, 20 yêu cầu gửi cùng lúc tới endpoint <code>async</code> gọi một LLM giả lập (mỗi yêu cầu chờ 3 giây) hoàn tất sau <strong>3,17 giây</strong> tổng cộng, không phải 60 giây: server chỉ chờ, không bận tính toán.</p>
+<div class="box pitfall">
+<div class="box-h">Lỗi hay gặp</div>
+<p><strong>Gọi hàm chặn trong <code>async def</code>.</strong> Viết <code>async def chat()</code> rồi bên trong gọi <code>requests.post(...)</code> hay <code>model.generate(...)</code> (đồng bộ, mất vài giây) thì toàn bộ server đứng im trong lúc đó, mọi người dùng khác phải chờ. Trong <code>async def</code> dùng client async (<code>httpx.AsyncClient</code>, <code>openai.AsyncOpenAI</code>); việc tính toán nặng thì để trong <code>def</code> thường hoặc chuyển sang worker riêng.</p>
+</div>
+<h2 id="lt-3">Streaming</h2>
+<p>LLM sinh khoảng 50 token/giây; câu trả lời 500 token mất 10 giây. Không streaming, người dùng nhìn màn hình trống 10 giây. Streaming gửi từng mảnh ngay khi có.</p>
+<p>Phổ biến nhất là <strong>Server-Sent Events (SSE)</strong>: một kết nối HTTP giữ mở, server đẩy các dòng <code>data: ...</code> cách nhau bởi một dòng trống. API của OpenAI, Anthropic đều dùng SSE.</p>
+<div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">asyncio</span>
+<span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">fastapi.responses</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">StreamingResponse</span>
 
-<span class="tk-nd">@app</span><span class="tk-o">.</span><span class="tk-n">post</span><span class="tk-p">(</span><span class="tk-s2">"/chat"</span><span class="tk-p">)</span>
-<span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">chat</span><span class="tk-p">(</span><span class="tk-n">req</span><span class="tk-p">:</span> <span class="tk-n">Req</span><span class="tk-p">):</span>
-    <span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">gen</span><span class="tk-p">():</span>
-        <span class="tk-k">for</span> <span class="tk-n">piece</span> <span class="tk-ow">in</span> <span class="tk-n">llm_stream</span><span class="tk-p">(</span><span class="tk-n">req</span><span class="tk-o">.</span><span class="tk-n">text</span><span class="tk-p">):</span>
+<span class="tk-k">async</span> <span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">fake_llm</span><span class="tk-p">(</span><span class="tk-n">text</span><span class="tk-p">,</span> <span class="tk-n">n</span><span class="tk-o">=</span><span class="tk-mi">150</span><span class="tk-p">):</span>                 <span class="tk-c1"># giả lập LLM 50 token/giây</span>
+    <span class="tk-k">for</span> <span class="tk-n">i</span> <span class="tk-ow">in</span> <span class="tk-nb">range</span><span class="tk-p">(</span><span class="tk-n">n</span><span class="tk-p">):</span>
+        <span class="tk-k">await</span> <span class="tk-n">asyncio</span><span class="tk-o">.</span><span class="tk-n">sleep</span><span class="tk-p">(</span><span class="tk-mf">0.02</span><span class="tk-p">)</span>
+        <span class="tk-k">yield</span> <span class="tk-sa">f</span><span class="tk-s2">"tok</span><span class="tk-si">{</span><span class="tk-n">i</span><span class="tk-si">}</span><span class="tk-s2"> "</span>
+
+<span class="tk-nd">@app</span><span class="tk-o">.</span><span class="tk-n">post</span><span class="tk-p">(</span><span class="tk-s2">"/chat/stream"</span><span class="tk-p">)</span>
+<span class="tk-k">async</span> <span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">chat_stream</span><span class="tk-p">(</span><span class="tk-n">req</span><span class="tk-p">:</span> <span class="tk-n">Req</span><span class="tk-p">):</span>
+    <span class="tk-k">async</span> <span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">gen</span><span class="tk-p">():</span>
+        <span class="tk-k">async</span> <span class="tk-k">for</span> <span class="tk-n">piece</span> <span class="tk-ow">in</span> <span class="tk-n">fake_llm</span><span class="tk-p">(</span><span class="tk-n">req</span><span class="tk-o">.</span><span class="tk-n">text</span><span class="tk-p">):</span>
             <span class="tk-k">yield</span> <span class="tk-sa">f</span><span class="tk-s2">"data: </span><span class="tk-si">{</span><span class="tk-n">piece</span><span class="tk-si">}</span><span class="tk-se">\n\n</span><span class="tk-s2">"</span>
         <span class="tk-k">yield</span> <span class="tk-s2">"data: [DONE]</span><span class="tk-se">\n\n</span><span class="tk-s2">"</span>
     <span class="tk-k">return</span> <span class="tk-n">StreamingResponse</span><span class="tk-p">(</span><span class="tk-n">gen</span><span class="tk-p">(),</span> <span class="tk-n">media_type</span><span class="tk-o">=</span><span class="tk-s2">"text/event-stream"</span><span class="tk-p">)</span>
 </code></pre></div>
 
-<h2 id="lt-3">Docker</h2>
+<figure class="fig"><img src="../assets/fig/p8-1-stream.svg" alt="Đo thật trên service ở trên: tổng thời gian như nhau (khoảng 3,05 giây), nhưng với streaming, mảnh đầu tiên tới sau 23 mili giây." loading="lazy"><figcaption>Đo thật trên service ở trên: tổng thời gian như nhau (khoảng 3,05 giây), nhưng với streaming, mảnh đầu tiên tới sau 23 mili giây.</figcaption></figure>
+
+<p>Tổng thời gian không đổi, nhưng <strong>cảm nhận</strong> khác hẳn: người dùng bắt đầu đọc gần như ngay lập tức. Con số quan trọng nhất với chatbot là <strong>thời gian tới token đầu</strong> (TTFT, P6.3).</p>
+<div class="box pitfall">
+<div class="box-h">Lỗi hay gặp</div>
+<p><strong>Streaming qua proxy bị gom lại.</strong> Nginx và một số proxy mặc định buffer phản hồi, nên người dùng vẫn nhận cả cục sau 10 giây dù server stream đúng. Tắt buffering cho endpoint SSE (header <code>X-Accel-Buffering: no</code> với Nginx) và kiểm tra bằng <code>curl -N</code> từ ngoài vào.</p>
+</div>
+<h2 id="lt-4">Docker</h2>
 <p>Docker đóng gói code, thư viện, phiên bản Python, thậm chí CUDA vào một <strong>image</strong>. Chạy image ở đâu cũng giống nhau: hết cảnh "máy tôi chạy được mà".</p>
 <div class="hl"><pre><span></span><code><span class="tk-k">FROM</span><span class="tk-w"> </span><span class="tk-s">python:3.11-slim</span>
 <span class="tk-k">WORKDIR</span><span class="tk-w"> </span><span class="tk-s">/app</span>
@@ -76,24 +152,164 @@
 <span class="tk-k">CMD</span><span class="tk-w"> </span><span class="tk-p">[</span><span class="tk-s2">"uvicorn"</span><span class="tk-p">,</span><span class="tk-w"> </span><span class="tk-s2">"app:app"</span><span class="tk-p">,</span><span class="tk-w"> </span><span class="tk-s2">"--host"</span><span class="tk-p">,</span><span class="tk-w"> </span><span class="tk-s2">"0.0.0.0"</span><span class="tk-p">,</span><span class="tk-w"> </span><span class="tk-s2">"--port"</span><span class="tk-p">,</span><span class="tk-w"> </span><span class="tk-s2">"8000"</span><span class="tk-p">]</span>
 </code></pre></div>
 
+<h3>Cache theo lớp</h3>
+<p>Mỗi lệnh trong Dockerfile tạo một <strong>lớp</strong> (layer). Khi build lại, Docker dùng lại các lớp không đổi, và <strong>chỉ cần một lớp đổi là mọi lớp sau nó phải build lại</strong>.</p>
+<table>
+<thead>
+<tr>
+<th>Thứ tự</th>
+<th>Sửa một dòng code thì</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>COPY requirements.txt</code> → <code>pip install</code> → <code>COPY . .</code></td>
+<td>chỉ chạy lại <code>COPY . .</code> (vài giây)</td>
+</tr>
+<tr>
+<td><code>COPY . .</code> → <code>pip install</code></td>
+<td>cài lại mọi thư viện (có khi 5–10 phút)</td>
+</tr>
+</tbody>
+</table>
+<p>Thêm các thói quen:</p>
 <ul>
-<li>Copy <code>requirements.txt</code> và cài thư viện <strong>trước</strong> khi copy code: Docker cache bước cài đặt, sửa code không phải cài lại.</li>
-<li>Không đóng trọng số model nhiều GB vào image nếu không cần; tải lúc khởi động hoặc gắn volume.</li>
-<li>Image cho GPU dùng base có CUDA (ví dụ image của PyTorch hoặc vLLM) và chạy với <code>--gpus all</code>.</li>
+<li>File <code>.dockerignore</code> loại <code>.git</code>, <code>data/</code>, checkpoint, <code>__pycache__</code> để không gửi chúng vào build.</li>
+<li>Không đóng trọng số model nhiều GB vào image; tải khi khởi động (có cache) hoặc gắn volume.</li>
+<li>Image cho GPU dùng base có CUDA (image của PyTorch hoặc vLLM) và chạy với <code>--gpus all</code>.</li>
+<li><strong>Không</strong> đưa khóa API vào image; truyền qua biến môi trường lúc chạy.</li>
 </ul>
-<h2 id="lt-4">Phục vụ LLM với vLLM</h2>
+<h3>docker compose</h3>
+<p>Khi có nhiều container (service + vLLM + database), <code>docker compose</code> khai báo tất cả trong một file và khởi động cùng nhau; <code>depends_on</code> với điều kiện <code>service_healthy</code> giúp service chỉ nhận yêu cầu khi vLLM đã nạp xong model.</p>
+<h2 id="lt-5">Phục vụ LLM với vLLM</h2>
 <p>vLLM có server tương thích API OpenAI, kèm continuous batching và PagedAttention (P6.3):</p>
 <div class="hl"><pre><span></span><code>vllm<span class="tk-w"> </span>serve<span class="tk-w"> </span>Qwen/Qwen2.5-1.5B-Instruct<span class="tk-w"> </span>--max-model-len<span class="tk-w"> </span><span class="tk-m">4096</span><span class="tk-w"> </span>--gpu-memory-utilization<span class="tk-w"> </span><span class="tk-m">0</span>.85
 <span class="tk-c1"># rồi gọi bằng bất kỳ client OpenAI nào tới http://localhost:8000/v1</span>
 </code></pre></div>
 
-<p>Kiến trúc thường gặp: FastAPI của bạn (xác thực, prompt, RAG, guardrails, log) gọi tới vLLM (chỉ lo sinh token).</p>
-<h2 id="lt-5">Ước tính năng lực</h2>
-<p><strong>Định luật Little:</strong> số yêu cầu đang xử lý đồng thời = lưu lượng × thời gian xử lý trung bình. 20 yêu cầu/giây, mỗi cái 2 giây thì lúc nào cũng có khoảng 40 yêu cầu đang chạy.</p>
-<p>Đo <strong>thông lượng tối đa</strong> một GPU chịu được ở độ trễ chấp nhận được (bằng load test), rồi chia lưu lượng đỉnh cho con số đó, cộng dư 30–50% cho đột biến. Theo dõi <strong>p95/p99 latency</strong>, không chỉ trung bình: người dùng nhớ những lần chậm nhất.</p>
+<ul>
+<li><code>--max-model-len</code>: độ dài context tối đa; nhỏ hơn thì còn nhiều bộ nhớ cho KV cache, phục vụ được nhiều người cùng lúc.</li>
+<li><code>--gpu-memory-utilization</code>: phần VRAM vLLM được dùng (trọng số + KV cache).</li>
+</ul>
+<p>Từ service, gọi bằng <code>openai.AsyncOpenAI(base_url="http://vllm:8000/v1", api_key="...")</code> với <code>stream=True</code>, rồi chuyển từng mảnh sang SSE của bạn.</p>
+<h2 id="lt-6">Ước tính năng lực</h2>
+<h3>Định luật Little</h3>
+<p><strong>Số yêu cầu đang xử lý đồng thời = lưu lượng × thời gian xử lý trung bình.</strong></p>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>Lưu lượng đỉnh 6 yêu cầu/giây, mỗi yêu cầu (streaming tới hết) mất trung bình 3,5 giây:</p>
+<p>6 × 3,5 = <strong>21</strong> yêu cầu đang chạy cùng lúc. Server, proxy và vLLM phải chịu được ít nhất 21 kết nối mở và 21 chuỗi trong batch.</p>
+</div>
+<h3>Bao nhiêu GPU</h3>
+<ol>
+<li><strong>Load test</strong> một GPU: tăng dần số yêu cầu đồng thời (công cụ như <code>locust</code>, <code>k6</code>), tìm thông lượng tối đa mà p95 độ trễ vẫn chấp nhận được.</li>
+<li>Chia lưu lượng đỉnh cho con số đó, làm tròn lên.</li>
+<li>Cộng dư 30–50% cho đột biến và khi một GPU gặp sự cố.</li>
+</ol>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>Load test: một GPU phục vụ 5 yêu cầu/giây với p95 dưới 4 giây. Lưu lượng đỉnh 12 yêu cầu/giây.</p>
+<ul>
+<li>Không dư: 12 / 5 = 2,4 → <strong>3 GPU</strong>.</li>
+<li>Dư 40%: 12 × 1,4 / 5 = 3,36 → <strong>4 GPU</strong>.</li>
+</ul>
+</div>
+<p>Theo dõi <strong>p95/p99 latency</strong>, không chỉ trung bình: người dùng nhớ những lần chậm nhất, và hàng đợi bùng nổ khi gần hết công suất (đã thấy ở mô phỏng P5.7).</p>
 <div class="keep">
 <p><strong>Ghi nhớ:</strong> demo chạy được chưa phải là sản phẩm. Sản phẩm cần health check, giới hạn đầu vào, xử lý lỗi, log, và con số về thông lượng, độ trễ đo bằng load test.</p>
-</div></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p8.1:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 3</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Định luật Little</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Lưu lượng đỉnh 20 yêu cầu/giây, mỗi yêu cầu xử lý trung bình 2 giây.</p>
+</div>
+<div class="box check">
+<div class="box-h">Tự kiểm tra nhanh</div>
+<div class="ans" id="p8-1-t-b161-a1">
+<div class="ans-fields"><label>Lưu lượng 6 yêu cầu/giây, mỗi yêu cầu 3,5 giây: số yêu cầu đồng thời<input inputmode="decimal" data-ans="21.0" data-tol="0.001" autocomplete="off"></label><label>GPU chịu 5 yêu cầu/giây, đỉnh 12, dư 40%: số GPU<input inputmode="decimal" data-ans="4.0" data-tol="0.0" autocomplete="off"></label><label>Pydantic từ chối dữ liệu vào: FastAPI trả mã HTTP<input inputmode="decimal" data-ans="422.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div>
+<div aria-live="polite" class="ans-fb"></div>
+</div>
+</div>
+<h2 id="lt-7">Tóm tắt bài và thuật ngữ</h2>
+<table>
+<thead>
+<tr>
+<th>Chủ đề</th>
+<th>Ý chính</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Kiến trúc</td>
+<td>service FastAPI (logic) + vLLM (sinh token), mỗi cái một container</td>
+</tr>
+<tr>
+<td>FastAPI</td>
+<td>Pydantic kiểm tra đầu vào, <code>/docs</code>, <code>/health</code>, mã lỗi rõ ràng</td>
+</tr>
+<tr>
+<td>async</td>
+<td>dùng khi chờ I/O; không gọi hàm chặn trong <code>async def</code></td>
+</tr>
+<tr>
+<td>Streaming</td>
+<td>SSE; TTFT vài chục ms thay vì chờ cả câu; tắt buffering ở proxy</td>
+</tr>
+<tr>
+<td>Docker</td>
+<td>cài thư viện trước khi copy code; <code>.dockerignore</code>; không đóng model, khóa vào image</td>
+</tr>
+<tr>
+<td>Năng lực</td>
+<td>Little: đồng thời = lưu lượng × thời gian; load test, chia, dư 30–50%</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Thuật ngữ</th>
+<th>Nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>endpoint</td>
+<td>một địa chỉ API (<code>POST /chat</code>)</td>
+</tr>
+<tr>
+<td>Pydantic</td>
+<td>thư viện kiểm tra dữ liệu bằng type hint</td>
+</tr>
+<tr>
+<td>uvicorn</td>
+<td>server ASGI chạy app FastAPI</td>
+</tr>
+<tr>
+<td>SSE</td>
+<td>Server-Sent Events, server đẩy dữ liệu qua kết nối HTTP mở</td>
+</tr>
+<tr>
+<td>image / container</td>
+<td>gói đóng sẵn / một lần chạy của image</td>
+</tr>
+<tr>
+<td>layer cache</td>
+<td>Docker dùng lại các lớp không đổi khi build</td>
+</tr>
+<tr>
+<td>health check</td>
+<td>kiểm tra service còn sống</td>
+</tr>
+<tr>
+<td>load test</td>
+<td>thử tải để đo thông lượng và độ trễ</td>
+</tr>
+<tr>
+<td>Little's law</td>
+<td>L = λ × W</td>
+</tr>
+<tr>
+<td>p95 / p99</td>
+<td>95% / 99% yêu cầu nhanh hơn mức này</td>
+</tr>
+</tbody>
+</table></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p8.1:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 3</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Định luật Little</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Lưu lượng đỉnh 20 yêu cầu/giây, mỗi yêu cầu xử lý trung bình 2 giây.</p>
 <div class="ans" id="p8-1-e1-a1"><div class="ans-fields"><label>Số yêu cầu đồng thời trung bình<input inputmode="decimal" data-ans="40.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
 
 <details class="fold solution">
@@ -189,7 +405,7 @@
     </div>
     <aside class="aside">
       <div class="abox"><h4>Tiến độ bài này</h4><div class="ring"><svg viewBox="0 0 64 64" aria-hidden="true"><circle class="bg" cx="32" cy="32" r="28"/><circle class="fg" cx="32" cy="32" r="28" stroke-dasharray="176" stroke-dashoffset="176"/></svg><div><b id="ring-n">0/3</b><span id="ring-sub">phần đã xong</span></div></div></div>
-      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">API với FastAPI</a></li><li><a href="#lt-2">Streaming</a></li><li><a href="#lt-3">Docker</a></li><li><a href="#lt-4">Phục vụ LLM với vLLM</a></li><li><a href="#lt-5">Ước tính năng lực</a></li></ol></div>
+      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Từ notebook tới service</a></li><li><a href="#lt-2">API với FastAPI</a></li><li><a href="#lt-3">Streaming</a></li><li><a href="#lt-4">Docker</a></li><li><a href="#lt-5">Phục vụ LLM với vLLM</a></li><li><a href="#lt-6">Ước tính năng lực</a></li><li><a href="#lt-7">Tóm tắt bài và thuật ngữ</a></li></ol></div>
       
       <div class="abox"><h4>Cùng giai đoạn</h4><ul><li><span class=cur>Bài 10a · Serving</span></li><li><a href="p8-2.html">MLOps</a></li><li><a href="p8-3.html">Bài 10b · Giám sát và chi phí</a></li><li><a href="p8-4.html">Backend và dữ liệu cho AI</a></li></ul></div>
     </aside>
