@@ -24,7 +24,7 @@
   <section class="lhero"><div class="code">P0.5</div><h1>Toán cho AI: đại số tuyến tính, giải tích, xác suất</h1><div class="lmeta"><span class="m">Giai đoạn P0 · Nền móng</span><span class="m">Tuần 1–3</span><span class="chip ready"><span class="dot"></span>Có nội dung đầy đủ</span></div>
     <div class="intro"><p>Ba nhánh toán chống lưng cho mọi model: <strong>đại số tuyến tính</strong> (dữ liệu và trọng số là ma trận), <strong>giải tích</strong> (gradient cho biết sửa trọng số theo hướng nào), <strong>xác suất</strong> (loss và dữ liệu nhiễu). Bài này chỉ dạy phần bạn thật sự dùng, đi từ trực giác tới công thức, và mỗi công thức đều kiểm chứng được bằng vài dòng numpy.</p></div></section>
   
-  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">7 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">6 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
+  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">7 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">9 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
   <div class="lgrid" style="margin-top:22px">
     <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">Vector và tích vô hướng</h2>
 <div class="box why">
@@ -600,36 +600,14 @@ P(B) = P(B | A)·P(A) + P(B | không A)·P(không A)
 <td>điểm thô trước softmax</td>
 </tr>
 </tbody>
-</table></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p0.5:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 5</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Nhân ma trận bằng tay</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>A = <code>[[1, 2, 0], [0, 1, 3]]</code> (2×3), B = <code>[[1, 0], [2, 1], [0, 4]]</code> (3×2). Tính C = A @ B.</p>
+</table></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p0.5:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 8</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Nhân ma trận bằng tay</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>A = <code>[[1, 2, 0], [0, 1, 3]]</code> (2×3), B = <code>[[1, 0], [2, 1], [0, 4]]</code> (3×2). Tính C = A @ B.</p>
 <div class="ans" id="p0-5-e1-a1"><div class="ans-fields"><label>C[0,0]<input inputmode="decimal" data-ans="5.0" data-tol="0.0" autocomplete="off"></label><label>C[0,1]<input inputmode="decimal" data-ans="2.0" data-tol="0.0" autocomplete="off"></label><label>C[1,1]<input inputmode="decimal" data-ans="13.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
 
 <details class="fold solution">
 <summary>Lời giải</summary>
 <p>C[0,0] = hàng 1 của A · cột 1 của B = 1·1 + 2·2 + 0·0 = 5. C[0,1] = 1·0 + 2·1 + 0·4 = 2. C[1,1] = 0·0 + 1·1 + 3·4 = 13. Kết quả C = [[5, 2], [2, 13]], shape (2, 2).</p>
-</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 2</span><h3>Cosine similarity</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>u = [6, 8], v = [8, −6].</p>
-<div class="ans" id="p0-5-e2-a1"><div class="ans-fields"><label>u · v<input inputmode="decimal" data-ans="0.0" data-tol="0.0" autocomplete="off"></label><label>‖u‖<input inputmode="decimal" data-ans="10.0" data-tol="0.0" autocomplete="off"></label><label>cos(u, v)<input inputmode="decimal" data-ans="0.0" data-tol="0.001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
-
-<details class="fold solution">
-<summary>Lời giải</summary>
-<p>u · v = 48 − 48 = 0. ‖u‖ = ‖v‖ = √(36 + 64) = 10. cos = 0: hai vector <strong>vuông góc</strong>, không giống nhau chút nào về hướng dù có cùng độ dài.</p>
-</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 3</span><h3>Gradient của MSE</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>L(w, b) = (w·x + b − y)² với x = 2, y = 7. Tính gradient tại w = 1, b = 1.</p>
-<div class="ans" id="p0-5-e3-a1"><div class="ans-fields"><label>∂L/∂w<input inputmode="decimal" data-ans="-16.0" data-tol="0.0" autocomplete="off"></label><label>∂L/∂b<input inputmode="decimal" data-ans="-8.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
-
-<details class="fold hint">
-<summary>Gợi ý</summary>
-<p>Đặt e = w·x + b − y. Theo quy tắc dây chuyền: ∂L/∂w = 2e · x và ∂L/∂b = 2e.</p>
-</details>
-<details class="fold solution">
-<summary>Lời giải</summary>
-<p>e = 1·2 + 1 − 7 = −4. ∂L/∂w = 2·(−4)·2 = −16, ∂L/∂b = 2·(−4) = −8. Gradient âm nghĩa là tăng w và b sẽ làm loss giảm, đúng vì dự đoán 3 đang thấp hơn 7.</p>
-</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 4</span><h3>Trung bình và độ lệch chuẩn</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Dữ liệu: 2, 4, 4, 4, 5, 5, 7, 9. Dùng công thức chia cho n (như <code>np.std</code> mặc định).</p>
-<div class="ans" id="p0-5-e4-a1"><div class="ans-fields"><label>Trung bình<input inputmode="decimal" data-ans="5.0" data-tol="0.0" autocomplete="off"></label><label>Độ lệch chuẩn<input inputmode="decimal" data-ans="2.0" data-tol="0.001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
-
-<details class="fold solution">
-<summary>Lời giải</summary>
-<p>Tổng 40, chia 8 được 5. Bình phương độ lệch: 9, 1, 1, 1, 0, 0, 4, 16, tổng 32, chia 8 được phương sai 4, độ lệch chuẩn 2.</p>
-</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 5</span><h3>Xét nghiệm và Bayes</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Một bệnh có ở 1% dân số. Xét nghiệm phát hiện đúng 99% người bệnh, nhưng cũng báo dương tính nhầm 5% người khỏe. Một người có kết quả dương tính. Xác suất người đó thật sự mắc bệnh là bao nhiêu?</p>
-<div class="ans" id="p0-5-e5-a1"><div class="ans-fields"><label>P(bệnh khi dương tính)<input inputmode="decimal" data-ans="0.1667" data-tol="0.002" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 2</span><h3>Xét nghiệm và Bayes</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Một bệnh có ở 1% dân số. Xét nghiệm phát hiện đúng 99% người bệnh, nhưng cũng báo dương tính nhầm 5% người khỏe. Một người có kết quả dương tính. Xác suất người đó thật sự mắc bệnh là bao nhiêu?</p>
+<div class="ans" id="p0-5-e2-a1"><div class="ans-fields"><label>P(bệnh khi dương tính)<input inputmode="decimal" data-ans="0.1667" data-tol="0.002" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
 
 <details class="fold hint">
 <summary>Gợi ý</summary>
@@ -638,7 +616,7 @@ P(B) = P(B | A)·P(A) + P(B | không A)·P(không A)
 <details class="fold solution">
 <summary>Lời giải</summary>
 <p>Tử số: 0.99 × 0.01 = 0.0099. Mẫu số: 0.0099 + 0.05 × 0.99 = 0.0594. Kết quả ≈ 0.167, chỉ khoảng 1/6. Bài học cho ML: khi lớp dương hiếm, precision thấp dù recall cao. Bạn sẽ gặp lại ở bài đánh giá model.</p>
-</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 6</span><h3>Kiểm tra gradient bằng số</h3><span class="ex-tag code">code</span></div><div class="prose"><p>Viết <code>numeric_grad(f, w, h=1e-5)</code> trả về gradient số của hàm <code>f</code> tại vector <code>w</code>. Dùng nó kiểm tra gradient giải tích của loss logistic L(w) = −[y·log σ(w·x) + (1−y)·log(1 − σ(w·x))], biết ∇L = (σ(w·x) − y)·x.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 3</span><h3>Kiểm tra gradient bằng số</h3><span class="ex-tag code">code</span></div><div class="prose"><p>Viết <code>numeric_grad(f, w, h=1e-5)</code> trả về gradient số của hàm <code>f</code> tại vector <code>w</code>. Dùng nó kiểm tra gradient giải tích của loss logistic L(w) = −[y·log σ(w·x) + (1−y)·log(1 − σ(w·x))], biết ∇L = (σ(w·x) − y)·x.</p>
 <details class="fold code">
 <summary>Code tham khảo</summary>
 <div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">numpy</span><span class="tk-w"> </span><span class="tk-k">as</span><span class="tk-w"> </span><span class="tk-nn">np</span>
@@ -658,10 +636,223 @@ P(B) = P(B | A)·P(A) + P(B | không A)·P(không A)
 <span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">abs</span><span class="tk-p">(</span><span class="tk-n">numeric_grad</span><span class="tk-p">(</span><span class="tk-n">loss</span><span class="tk-p">,</span> <span class="tk-n">w</span><span class="tk-p">)</span> <span class="tk-o">-</span> <span class="tk-n">analytic</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">max</span><span class="tk-p">())</span>   <span class="tk-c1"># cỡ 1e-10</span>
 </code></pre></div>
 
-<div class="run" data-group="e6" data-mode="py">
+<div class="run" data-group="e3" data-mode="py">
 <div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span></div>
 <pre class="run-out">1.2864820320146464e-11</pre>
 </div>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 4</span><h3>Gợi ý phim bằng cosine similarity</h3><span class="ex-tag code">ứng dụng</span></div><div class="prose"><p><em>Dùng: vector, norm, tích vô hướng, cosine similarity.</em></p>
+<p>Mỗi người dùng là một vector điểm chấm cho 5 phim (0 = chưa xem). Tìm người dùng <strong>giống Lan nhất</strong> theo cosine similarity, rồi gợi ý cho Lan phim mà người đó chấm cao nhất trong số phim Lan chưa xem.</p>
+<div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">numpy</span><span class="tk-w"> </span><span class="tk-k">as</span><span class="tk-w"> </span><span class="tk-nn">np</span>
+<span class="tk-n">phim</span> <span class="tk-o">=</span> <span class="tk-p">[</span><span class="tk-s2">"Avengers"</span><span class="tk-p">,</span> <span class="tk-s2">"Titanic"</span><span class="tk-p">,</span> <span class="tk-s2">"Toy Story"</span><span class="tk-p">,</span> <span class="tk-s2">"Inception"</span><span class="tk-p">,</span> <span class="tk-s2">"Frozen"</span><span class="tk-p">]</span>
+<span class="tk-n">nguoi</span> <span class="tk-o">=</span> <span class="tk-p">[</span><span class="tk-s2">"Lan"</span><span class="tk-p">,</span> <span class="tk-s2">"Minh"</span><span class="tk-p">,</span> <span class="tk-s2">"Hoa"</span><span class="tk-p">,</span> <span class="tk-s2">"Tuấn"</span><span class="tk-p">]</span>
+<span class="tk-n">R</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">array</span><span class="tk-p">([[</span><span class="tk-mi">5</span><span class="tk-p">,</span> <span class="tk-mi">0</span><span class="tk-p">,</span> <span class="tk-mi">4</span><span class="tk-p">,</span> <span class="tk-mi">5</span><span class="tk-p">,</span> <span class="tk-mi">0</span><span class="tk-p">],</span>     <span class="tk-c1"># Lan</span>
+              <span class="tk-p">[</span><span class="tk-mi">4</span><span class="tk-p">,</span> <span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-mi">5</span><span class="tk-p">,</span> <span class="tk-mi">4</span><span class="tk-p">,</span> <span class="tk-mi">5</span><span class="tk-p">],</span>     <span class="tk-c1"># Minh</span>
+              <span class="tk-p">[</span><span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-mi">5</span><span class="tk-p">,</span> <span class="tk-mi">0</span><span class="tk-p">,</span> <span class="tk-mi">2</span><span class="tk-p">,</span> <span class="tk-mi">4</span><span class="tk-p">],</span>     <span class="tk-c1"># Hoa</span>
+              <span class="tk-p">[</span><span class="tk-mi">0</span><span class="tk-p">,</span> <span class="tk-mi">4</span><span class="tk-p">,</span> <span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-mi">0</span><span class="tk-p">,</span> <span class="tk-mi">5</span><span class="tk-p">]],</span>    <span class="tk-c1"># Tuấn</span>
+             <span class="tk-n">dtype</span><span class="tk-o">=</span><span class="tk-nb">float</span><span class="tk-p">)</span>
+<span class="tk-c1"># TODO: cos (độ giống của Lan với từng người), giong_nhat, goi_y</span>
+</code></pre></div>
+
+<div class="run" data-mode="py" data-group="e4"><div class="run-bar"><span class="run-lbl">Code của bạn</span></div><pre class="run-out run-empty">Viết code vào chỗ trống rồi bấm Chạy.</pre></div>
+
+<div class="ans" id="p0-5-e4-a1"><div class="ans-fields"><label>cos(Lan, Minh) (3 chữ số)<input inputmode="decimal" data-ans="0.811" data-tol="0.001" autocomplete="off"></label><label>cos(Lan, Tuấn) (3 chữ số)<input inputmode="decimal" data-ans="0.076" data-tol="0.001" autocomplete="off"></label><label>Chỉ số phim được gợi ý (0 = Avengers)<input inputmode="decimal" data-ans="4.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+
+<details class="fold hint">
+<summary>Gợi ý</summary>
+<p><code>cos = R @ R[0] / (np.linalg.norm(R, axis=1) * np.linalg.norm(R[0]))</code>: một phép nhân ma trận–vector cho tích vô hướng với mọi người cùng lúc. Bỏ chính Lan khi tìm người giống nhất. Phim Lan chưa xem: <code>R[0] == 0</code>.</p>
+</details>
+<details class="fold code">
+<summary>Code tham khảo</summary>
+<div class="hl"><pre><span></span><code><span class="tk-n">cos</span> <span class="tk-o">=</span> <span class="tk-n">R</span> <span class="tk-o">@</span> <span class="tk-n">R</span><span class="tk-p">[</span><span class="tk-mi">0</span><span class="tk-p">]</span> <span class="tk-o">/</span> <span class="tk-p">(</span><span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">linalg</span><span class="tk-o">.</span><span class="tk-n">norm</span><span class="tk-p">(</span><span class="tk-n">R</span><span class="tk-p">,</span> <span class="tk-n">axis</span><span class="tk-o">=</span><span class="tk-mi">1</span><span class="tk-p">)</span> <span class="tk-o">*</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">linalg</span><span class="tk-o">.</span><span class="tk-n">norm</span><span class="tk-p">(</span><span class="tk-n">R</span><span class="tk-p">[</span><span class="tk-mi">0</span><span class="tk-p">]))</span>
+<span class="tk-n">giong_nhat</span> <span class="tk-o">=</span> <span class="tk-nb">int</span><span class="tk-p">(</span><span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">argmax</span><span class="tk-p">(</span><span class="tk-n">cos</span><span class="tk-p">[</span><span class="tk-mi">1</span><span class="tk-p">:])</span> <span class="tk-o">+</span> <span class="tk-mi">1</span><span class="tk-p">)</span>
+<span class="tk-n">chua_xem</span> <span class="tk-o">=</span> <span class="tk-n">R</span><span class="tk-p">[</span><span class="tk-mi">0</span><span class="tk-p">]</span> <span class="tk-o">==</span> <span class="tk-mi">0</span>
+<span class="tk-n">diem</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">where</span><span class="tk-p">(</span><span class="tk-n">chua_xem</span><span class="tk-p">,</span> <span class="tk-n">R</span><span class="tk-p">[</span><span class="tk-n">giong_nhat</span><span class="tk-p">],</span> <span class="tk-o">-</span><span class="tk-mi">1</span><span class="tk-p">)</span>          <span class="tk-c1"># phim đã xem thì cho -1 để không được chọn</span>
+<span class="tk-n">goi_y</span> <span class="tk-o">=</span> <span class="tk-nb">int</span><span class="tk-p">(</span><span class="tk-n">diem</span><span class="tk-o">.</span><span class="tk-n">argmax</span><span class="tk-p">())</span>
+<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-nb">dict</span><span class="tk-p">(</span><span class="tk-nb">zip</span><span class="tk-p">(</span><span class="tk-n">nguoi</span><span class="tk-p">,</span> <span class="tk-n">cos</span><span class="tk-o">.</span><span class="tk-n">round</span><span class="tk-p">(</span><span class="tk-mi">3</span><span class="tk-p">))))</span>
+<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-sa">f</span><span class="tk-s2">"giống Lan nhất: </span><span class="tk-si">{</span><span class="tk-n">nguoi</span><span class="tk-p">[</span><span class="tk-n">giong_nhat</span><span class="tk-p">]</span><span class="tk-si">}</span><span class="tk-s2"> → gợi ý </span><span class="tk-si">{</span><span class="tk-n">phim</span><span class="tk-p">[</span><span class="tk-n">goi_y</span><span class="tk-p">]</span><span class="tk-si">}</span><span class="tk-s2">"</span><span class="tk-p">)</span>
+</code></pre></div>
+
+<div class="run" data-group="e4" data-mode="py">
+<div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span></div>
+<pre class="run-out">{&#x27;Lan&#x27;: 1.0, &#x27;Minh&#x27;: 0.811, &#x27;Hoa&#x27;: 0.272, &#x27;Tuấn&#x27;: 0.076}&#10;giống Lan nhất: Minh → gợi ý Frozen</pre>
+</div>
+<p>Đây là ý tưởng của <strong>collaborative filtering</strong>, và cũng là cách tìm văn bản liên quan trong RAG (P4.2): thay điểm phim bằng vector embedding của câu.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 5</span><h3>Lớp Linear dự đoán giá nhà</h3><span class="ex-tag code">ứng dụng</span></div><div class="prose"><p><em>Dùng: ma trận, shape, phép nhân ma trận, <code>X @ W.T + b</code>.</em></p>
+<p>Một model nhỏ dự đoán <strong>hai</strong> đại lượng cho mỗi căn nhà (giá bán, tỷ đồng; giá thuê, triệu/tháng) từ ba đặc trưng (diện tích m², số phòng ngủ, khoảng cách tới trung tâm km). Trọng số đã học sẵn. Tính dự đoán cho cả 4 căn bằng <strong>một</strong> phép nhân ma trận, rồi kiểm tra shape từng bước.</p>
+<div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">numpy</span><span class="tk-w"> </span><span class="tk-k">as</span><span class="tk-w"> </span><span class="tk-nn">np</span>
+<span class="tk-n">X</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">array</span><span class="tk-p">([[</span><span class="tk-mi">60</span><span class="tk-p">,</span> <span class="tk-mi">2</span><span class="tk-p">,</span> <span class="tk-mf">5.0</span><span class="tk-p">],</span>
+              <span class="tk-p">[</span><span class="tk-mi">85</span><span class="tk-p">,</span> <span class="tk-mi">3</span><span class="tk-p">,</span> <span class="tk-mf">8.0</span><span class="tk-p">],</span>
+              <span class="tk-p">[</span><span class="tk-mi">45</span><span class="tk-p">,</span> <span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-mf">2.0</span><span class="tk-p">],</span>
+              <span class="tk-p">[</span><span class="tk-mi">120</span><span class="tk-p">,</span> <span class="tk-mi">4</span><span class="tk-p">,</span> <span class="tk-mf">12.0</span><span class="tk-p">]])</span>                 <span class="tk-c1"># 4 căn × 3 đặc trưng</span>
+<span class="tk-n">W</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">array</span><span class="tk-p">([[</span><span class="tk-mf">0.04</span><span class="tk-p">,</span> <span class="tk-mf">0.3</span><span class="tk-p">,</span> <span class="tk-o">-</span><span class="tk-mf">0.10</span><span class="tk-p">],</span>              <span class="tk-c1"># hàng 1: giá bán</span>
+              <span class="tk-p">[</span><span class="tk-mf">0.12</span><span class="tk-p">,</span> <span class="tk-mf">1.5</span><span class="tk-p">,</span> <span class="tk-o">-</span><span class="tk-mf">0.40</span><span class="tk-p">]])</span>             <span class="tk-c1"># hàng 2: giá thuê</span>
+<span class="tk-n">b</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">array</span><span class="tk-p">([</span><span class="tk-mf">0.5</span><span class="tk-p">,</span> <span class="tk-mf">2.0</span><span class="tk-p">])</span>
+<span class="tk-c1"># TODO: Y = ...; in Y.shape</span>
+</code></pre></div>
+
+<div class="run" data-mode="py" data-group="e5"><div class="run-bar"><span class="run-lbl">Code của bạn</span></div><pre class="run-out run-empty">Viết code vào chỗ trống rồi bấm Chạy.</pre></div>
+
+<div class="ans" id="p0-5-e5-a1"><div class="ans-fields"><label>Y.shape[1]<input inputmode="decimal" data-ans="2.0" data-tol="0.0" autocomplete="off"></label><label>Giá bán dự đoán của căn thứ 3 (tỷ, 2 chữ số)<input inputmode="decimal" data-ans="2.4" data-tol="0.01" autocomplete="off"></label><label>Giá thuê dự đoán của căn thứ 4 (triệu, 2 chữ số)<input inputmode="decimal" data-ans="17.6" data-tol="0.01" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+
+<details class="fold hint">
+<summary>Gợi ý</summary>
+<p><code>X</code> (4, 3), <code>W.T</code> (3, 2): tích (4, 2), cộng <code>b</code> (2,) bằng broadcasting. Đây chính là <code>nn.Linear(3, 2)</code> của PyTorch.</p>
+</details>
+<details class="fold code">
+<summary>Code tham khảo</summary>
+<div class="hl"><pre><span></span><code><span class="tk-n">Y</span> <span class="tk-o">=</span> <span class="tk-n">X</span> <span class="tk-o">@</span> <span class="tk-n">W</span><span class="tk-o">.</span><span class="tk-n">T</span> <span class="tk-o">+</span> <span class="tk-n">b</span>
+<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-n">X</span><span class="tk-o">.</span><span class="tk-n">shape</span><span class="tk-p">,</span> <span class="tk-n">W</span><span class="tk-o">.</span><span class="tk-n">T</span><span class="tk-o">.</span><span class="tk-n">shape</span><span class="tk-p">,</span> <span class="tk-n">Y</span><span class="tk-o">.</span><span class="tk-n">shape</span><span class="tk-p">)</span>
+<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-n">Y</span><span class="tk-o">.</span><span class="tk-n">round</span><span class="tk-p">(</span><span class="tk-mi">2</span><span class="tk-p">))</span>
+</code></pre></div>
+
+<div class="run" data-group="e5" data-mode="py">
+<div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span></div>
+<pre class="run-out">(4, 3) (3, 2) (4, 2)&#10;[[ 3.  10.2]&#10; [ 4.  13.5]&#10; [ 2.4  8.1]&#10; [ 5.3 17.6]]</pre>
+</div>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 6</span><h3>Học điểm thi từ số giờ ôn bằng gradient descent</h3><span class="ex-tag code">ứng dụng</span></div><div class="prose"><p><em>Dùng: đạo hàm riêng, gradient, quy tắc dây chuyền, gradient descent, kiểm tra gradient bằng số.</em></p>
+<p>Dữ liệu: số giờ ôn và điểm thi của 8 bạn. Model <code>điểm = w·giờ + b</code>, loss MSE. Viết hàm <code>grad(w, b)</code> theo công thức đạo hàm tự tính, kiểm tra nó bằng đạo hàm số tại <code>w = 0, b = 0</code>, rồi chạy gradient descent 2000 bước với learning rate 0,01. So kết quả với <code>np.polyfit</code>.</p>
+<div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">numpy</span><span class="tk-w"> </span><span class="tk-k">as</span><span class="tk-w"> </span><span class="tk-nn">np</span>
+<span class="tk-n">gio</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">array</span><span class="tk-p">([</span><span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-mi">2</span><span class="tk-p">,</span> <span class="tk-mi">3</span><span class="tk-p">,</span> <span class="tk-mi">4</span><span class="tk-p">,</span> <span class="tk-mi">5</span><span class="tk-p">,</span> <span class="tk-mi">6</span><span class="tk-p">,</span> <span class="tk-mi">7</span><span class="tk-p">,</span> <span class="tk-mi">8</span><span class="tk-p">],</span> <span class="tk-n">dtype</span><span class="tk-o">=</span><span class="tk-nb">float</span><span class="tk-p">)</span>
+<span class="tk-n">diem</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">array</span><span class="tk-p">([</span><span class="tk-mf">3.2</span><span class="tk-p">,</span> <span class="tk-mf">4.1</span><span class="tk-p">,</span> <span class="tk-mf">5.3</span><span class="tk-p">,</span> <span class="tk-mf">5.8</span><span class="tk-p">,</span> <span class="tk-mf">6.9</span><span class="tk-p">,</span> <span class="tk-mf">7.4</span><span class="tk-p">,</span> <span class="tk-mf">8.6</span><span class="tk-p">,</span> <span class="tk-mf">9.0</span><span class="tk-p">])</span>
+
+<span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">loss</span><span class="tk-p">(</span><span class="tk-n">w</span><span class="tk-p">,</span> <span class="tk-n">b</span><span class="tk-p">):</span>
+    <span class="tk-k">return</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">mean</span><span class="tk-p">((</span><span class="tk-n">w</span> <span class="tk-o">*</span> <span class="tk-n">gio</span> <span class="tk-o">+</span> <span class="tk-n">b</span> <span class="tk-o">-</span> <span class="tk-n">diem</span><span class="tk-p">)</span> <span class="tk-o">**</span> <span class="tk-mi">2</span><span class="tk-p">)</span>
+
+<span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">grad</span><span class="tk-p">(</span><span class="tk-n">w</span><span class="tk-p">,</span> <span class="tk-n">b</span><span class="tk-p">):</span>
+    <span class="tk-c1"># TODO: trả về (dL/dw, dL/db)</span>
+    <span class="tk-k">return</span> <span class="tk-mf">0.0</span><span class="tk-p">,</span> <span class="tk-mf">0.0</span>
+</code></pre></div>
+
+<div class="run" data-mode="py" data-group="e6"><div class="run-bar"><span class="run-lbl">Code của bạn</span></div><pre class="run-out run-empty">Viết code vào chỗ trống rồi bấm Chạy.</pre></div>
+
+<div class="ans" id="p0-5-e6-a1"><div class="ans-fields"><label>dL/dw tại w = 0, b = 0 (2 chữ số)<input inputmode="decimal" data-ans="-65.4" data-tol="0.01" autocomplete="off"></label><label>w sau 2000 bước (3 chữ số)<input inputmode="decimal" data-ans="0.839" data-tol="0.002" autocomplete="off"></label><label>b sau 2000 bước (3 chữ số)<input inputmode="decimal" data-ans="2.51" data-tol="0.005" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+
+<details class="fold hint">
+<summary>Gợi ý</summary>
+<p>Với <code>e = w·giờ + b − điểm</code>: <code>dL/dw = 2·mean(e·giờ)</code>, <code>dL/db = 2·mean(e)</code> (quy tắc dây chuyền: đạo hàm của e² là 2e, đạo hàm của e theo w là giờ). Đạo hàm số: <code>(loss(w + h, b) − loss(w − h, b)) / (2h)</code> với <code>h = 1e-5</code>.</p>
+</details>
+<details class="fold code">
+<summary>Code tham khảo</summary>
+<div class="hl"><pre><span></span><code><span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">grad</span><span class="tk-p">(</span><span class="tk-n">w</span><span class="tk-p">,</span> <span class="tk-n">b</span><span class="tk-p">):</span>
+    <span class="tk-n">e</span> <span class="tk-o">=</span> <span class="tk-n">w</span> <span class="tk-o">*</span> <span class="tk-n">gio</span> <span class="tk-o">+</span> <span class="tk-n">b</span> <span class="tk-o">-</span> <span class="tk-n">diem</span>
+    <span class="tk-k">return</span> <span class="tk-mi">2</span> <span class="tk-o">*</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">mean</span><span class="tk-p">(</span><span class="tk-n">e</span> <span class="tk-o">*</span> <span class="tk-n">gio</span><span class="tk-p">),</span> <span class="tk-mi">2</span> <span class="tk-o">*</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">mean</span><span class="tk-p">(</span><span class="tk-n">e</span><span class="tk-p">)</span>
+
+<span class="tk-n">h</span> <span class="tk-o">=</span> <span class="tk-mf">1e-5</span>
+<span class="tk-n">so</span> <span class="tk-o">=</span> <span class="tk-p">((</span><span class="tk-n">loss</span><span class="tk-p">(</span><span class="tk-n">h</span><span class="tk-p">,</span> <span class="tk-mi">0</span><span class="tk-p">)</span> <span class="tk-o">-</span> <span class="tk-n">loss</span><span class="tk-p">(</span><span class="tk-o">-</span><span class="tk-n">h</span><span class="tk-p">,</span> <span class="tk-mi">0</span><span class="tk-p">))</span> <span class="tk-o">/</span> <span class="tk-p">(</span><span class="tk-mi">2</span> <span class="tk-o">*</span> <span class="tk-n">h</span><span class="tk-p">),</span> <span class="tk-p">(</span><span class="tk-n">loss</span><span class="tk-p">(</span><span class="tk-mi">0</span><span class="tk-p">,</span> <span class="tk-n">h</span><span class="tk-p">)</span> <span class="tk-o">-</span> <span class="tk-n">loss</span><span class="tk-p">(</span><span class="tk-mi">0</span><span class="tk-p">,</span> <span class="tk-o">-</span><span class="tk-n">h</span><span class="tk-p">))</span> <span class="tk-o">/</span> <span class="tk-p">(</span><span class="tk-mi">2</span> <span class="tk-o">*</span> <span class="tk-n">h</span><span class="tk-p">))</span>
+<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-s2">"công thức:"</span><span class="tk-p">,</span> <span class="tk-n">grad</span><span class="tk-p">(</span><span class="tk-mi">0</span><span class="tk-p">,</span> <span class="tk-mi">0</span><span class="tk-p">),</span> <span class="tk-s2">" đạo hàm số:"</span><span class="tk-p">,</span> <span class="tk-n">so</span><span class="tk-p">)</span>
+
+<span class="tk-n">w</span><span class="tk-p">,</span> <span class="tk-n">b</span><span class="tk-p">,</span> <span class="tk-n">lr</span> <span class="tk-o">=</span> <span class="tk-mf">0.0</span><span class="tk-p">,</span> <span class="tk-mf">0.0</span><span class="tk-p">,</span> <span class="tk-mf">0.01</span>
+<span class="tk-k">for</span> <span class="tk-n">step</span> <span class="tk-ow">in</span> <span class="tk-nb">range</span><span class="tk-p">(</span><span class="tk-mi">2000</span><span class="tk-p">):</span>
+    <span class="tk-n">gw</span><span class="tk-p">,</span> <span class="tk-n">gb</span> <span class="tk-o">=</span> <span class="tk-n">grad</span><span class="tk-p">(</span><span class="tk-n">w</span><span class="tk-p">,</span> <span class="tk-n">b</span><span class="tk-p">)</span>
+    <span class="tk-n">w</span><span class="tk-p">,</span> <span class="tk-n">b</span> <span class="tk-o">=</span> <span class="tk-n">w</span> <span class="tk-o">-</span> <span class="tk-n">lr</span> <span class="tk-o">*</span> <span class="tk-n">gw</span><span class="tk-p">,</span> <span class="tk-n">b</span> <span class="tk-o">-</span> <span class="tk-n">lr</span> <span class="tk-o">*</span> <span class="tk-n">gb</span>
+<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-sa">f</span><span class="tk-s2">"gradient descent: w = </span><span class="tk-si">{</span><span class="tk-n">w</span><span class="tk-si">:</span><span class="tk-s2">.3f</span><span class="tk-si">}</span><span class="tk-s2">, b = </span><span class="tk-si">{</span><span class="tk-n">b</span><span class="tk-si">:</span><span class="tk-s2">.3f</span><span class="tk-si">}</span><span class="tk-s2">, loss = </span><span class="tk-si">{</span><span class="tk-n">loss</span><span class="tk-p">(</span><span class="tk-n">w</span><span class="tk-p">,</span><span class="tk-w"> </span><span class="tk-n">b</span><span class="tk-p">)</span><span class="tk-si">:</span><span class="tk-s2">.4f</span><span class="tk-si">}</span><span class="tk-s2">"</span><span class="tk-p">)</span>
+<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-s2">"np.polyfit:      "</span><span class="tk-p">,</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">polyfit</span><span class="tk-p">(</span><span class="tk-n">gio</span><span class="tk-p">,</span> <span class="tk-n">diem</span><span class="tk-p">,</span> <span class="tk-mi">1</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">round</span><span class="tk-p">(</span><span class="tk-mi">3</span><span class="tk-p">))</span>
+</code></pre></div>
+
+<div class="run" data-group="e6" data-mode="py">
+<div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span></div>
+<pre class="run-out">công thức: (-65.39999999999999, -12.575)  đạo hàm số: (-65.39999999972679, -12.574999999870327)&#10;gradient descent: w = 0.839, b = 2.510, loss = 0.0330&#10;np.polyfit:       [0.839 2.511]</pre>
+</div>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 7</span><h3>Nhà vận chuyển nào đáng tin hơn</h3><span class="ex-tag code">ứng dụng</span></div><div class="prose"><p><em>Dùng: trung bình, phương sai, độ lệch chuẩn, phân phối chuẩn.</em></p>
+<p>Thời gian giao hàng (giờ) của hai nhà vận chuyển. Tính trung bình và độ lệch chuẩn của mỗi nhà. Giả sử thời gian giao gần với phân phối chuẩn, ước lượng xác suất một đơn giao <strong>quá 60 giờ</strong> của mỗi nhà, rồi kiểm tra ước lượng đó bằng mô phỏng 100.000 đơn.</p>
+<div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">math</span>
+<span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">numpy</span><span class="tk-w"> </span><span class="tk-k">as</span><span class="tk-w"> </span><span class="tk-nn">np</span>
+<span class="tk-n">A</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">array</span><span class="tk-p">([</span><span class="tk-mi">46</span><span class="tk-p">,</span> <span class="tk-mi">50</span><span class="tk-p">,</span> <span class="tk-mi">48</span><span class="tk-p">,</span> <span class="tk-mi">52</span><span class="tk-p">,</span> <span class="tk-mi">47</span><span class="tk-p">,</span> <span class="tk-mi">49</span><span class="tk-p">,</span> <span class="tk-mi">51</span><span class="tk-p">,</span> <span class="tk-mi">45</span><span class="tk-p">,</span> <span class="tk-mi">53</span><span class="tk-p">,</span> <span class="tk-mi">49</span><span class="tk-p">],</span> <span class="tk-n">dtype</span><span class="tk-o">=</span><span class="tk-nb">float</span><span class="tk-p">)</span>
+<span class="tk-n">B</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">array</span><span class="tk-p">([</span><span class="tk-mi">38</span><span class="tk-p">,</span> <span class="tk-mi">60</span><span class="tk-p">,</span> <span class="tk-mi">41</span><span class="tk-p">,</span> <span class="tk-mi">55</span><span class="tk-p">,</span> <span class="tk-mi">36</span><span class="tk-p">,</span> <span class="tk-mi">62</span><span class="tk-p">,</span> <span class="tk-mi">40</span><span class="tk-p">,</span> <span class="tk-mi">58</span><span class="tk-p">,</span> <span class="tk-mi">39</span><span class="tk-p">,</span> <span class="tk-mi">61</span><span class="tk-p">],</span> <span class="tk-n">dtype</span><span class="tk-o">=</span><span class="tk-nb">float</span><span class="tk-p">)</span>
+
+<span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">p_qua</span><span class="tk-p">(</span><span class="tk-n">nguong</span><span class="tk-p">,</span> <span class="tk-n">mu</span><span class="tk-p">,</span> <span class="tk-n">sigma</span><span class="tk-p">):</span>
+<span class="tk-w">    </span><span class="tk-sd">"""P(X &gt; nguong) với X ~ N(mu, sigma²)."""</span>
+    <span class="tk-n">z</span> <span class="tk-o">=</span> <span class="tk-p">(</span><span class="tk-n">nguong</span> <span class="tk-o">-</span> <span class="tk-n">mu</span><span class="tk-p">)</span> <span class="tk-o">/</span> <span class="tk-n">sigma</span>
+    <span class="tk-k">return</span> <span class="tk-mf">0.5</span> <span class="tk-o">*</span> <span class="tk-p">(</span><span class="tk-mi">1</span> <span class="tk-o">-</span> <span class="tk-n">math</span><span class="tk-o">.</span><span class="tk-n">erf</span><span class="tk-p">(</span><span class="tk-n">z</span> <span class="tk-o">/</span> <span class="tk-n">math</span><span class="tk-o">.</span><span class="tk-n">sqrt</span><span class="tk-p">(</span><span class="tk-mi">2</span><span class="tk-p">)))</span>
+<span class="tk-c1"># TODO: in mean, std của A, B; pA, pB = xác suất quá 60 giờ</span>
+</code></pre></div>
+
+<div class="run" data-mode="py" data-group="e7"><div class="run-bar"><span class="run-lbl">Code của bạn</span></div><pre class="run-out run-empty">Viết code vào chỗ trống rồi bấm Chạy.</pre></div>
+
+<div class="ans" id="p0-5-e7-a1"><div class="ans-fields"><label>Độ lệch chuẩn của B (2 chữ số)<input inputmode="decimal" data-ans="10.42" data-tol="0.01" autocomplete="off"></label><label>P(B giao quá 60 giờ) (3 chữ số)<input inputmode="decimal" data-ans="0.146" data-tol="0.002" autocomplete="off"></label><label>P(A giao quá 60 giờ) (lấy 4 chữ số)<input inputmode="decimal" data-ans="0.0" data-tol="0.0005" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+
+<details class="fold hint">
+<summary>Gợi ý</summary>
+<p><code>B.std()</code> là độ lệch chuẩn. Mô phỏng: <code>rng.normal(B.mean(), B.std(), 100_000)</code> rồi tính tỉ lệ <code>&gt; 60</code>, phải gần <code>pB</code>.</p>
+</details>
+<details class="fold code">
+<summary>Code tham khảo</summary>
+<div class="hl"><pre><span></span><code><span class="tk-k">for</span> <span class="tk-n">ten</span><span class="tk-p">,</span> <span class="tk-n">x</span> <span class="tk-ow">in</span> <span class="tk-p">[(</span><span class="tk-s2">"A"</span><span class="tk-p">,</span> <span class="tk-n">A</span><span class="tk-p">),</span> <span class="tk-p">(</span><span class="tk-s2">"B"</span><span class="tk-p">,</span> <span class="tk-n">B</span><span class="tk-p">)]:</span>
+    <span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-sa">f</span><span class="tk-s2">"</span><span class="tk-si">{</span><span class="tk-n">ten</span><span class="tk-si">}</span><span class="tk-s2">: trung bình </span><span class="tk-si">{</span><span class="tk-n">x</span><span class="tk-o">.</span><span class="tk-n">mean</span><span class="tk-p">()</span><span class="tk-si">:</span><span class="tk-s2">.1f</span><span class="tk-si">}</span><span class="tk-s2"> giờ, độ lệch chuẩn </span><span class="tk-si">{</span><span class="tk-n">x</span><span class="tk-o">.</span><span class="tk-n">std</span><span class="tk-p">()</span><span class="tk-si">:</span><span class="tk-s2">.2f</span><span class="tk-si">}</span><span class="tk-s2">"</span><span class="tk-p">)</span>
+<span class="tk-n">pA</span> <span class="tk-o">=</span> <span class="tk-n">p_qua</span><span class="tk-p">(</span><span class="tk-mi">60</span><span class="tk-p">,</span> <span class="tk-n">A</span><span class="tk-o">.</span><span class="tk-n">mean</span><span class="tk-p">(),</span> <span class="tk-n">A</span><span class="tk-o">.</span><span class="tk-n">std</span><span class="tk-p">())</span>
+<span class="tk-n">pB</span> <span class="tk-o">=</span> <span class="tk-n">p_qua</span><span class="tk-p">(</span><span class="tk-mi">60</span><span class="tk-p">,</span> <span class="tk-n">B</span><span class="tk-o">.</span><span class="tk-n">mean</span><span class="tk-p">(),</span> <span class="tk-n">B</span><span class="tk-o">.</span><span class="tk-n">std</span><span class="tk-p">())</span>
+<span class="tk-n">rng</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">random</span><span class="tk-o">.</span><span class="tk-n">default_rng</span><span class="tk-p">(</span><span class="tk-mi">0</span><span class="tk-p">)</span>
+<span class="tk-n">mo_phong</span> <span class="tk-o">=</span> <span class="tk-p">(</span><span class="tk-n">rng</span><span class="tk-o">.</span><span class="tk-n">normal</span><span class="tk-p">(</span><span class="tk-n">B</span><span class="tk-o">.</span><span class="tk-n">mean</span><span class="tk-p">(),</span> <span class="tk-n">B</span><span class="tk-o">.</span><span class="tk-n">std</span><span class="tk-p">(),</span> <span class="tk-mi">100_000</span><span class="tk-p">)</span> <span class="tk-o">&gt;</span> <span class="tk-mi">60</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">mean</span><span class="tk-p">()</span>
+<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-sa">f</span><span class="tk-s2">"P(quá 60 giờ): A ≈ </span><span class="tk-si">{</span><span class="tk-n">pA</span><span class="tk-si">:</span><span class="tk-s2">.4f</span><span class="tk-si">}</span><span class="tk-s2">, B ≈ </span><span class="tk-si">{</span><span class="tk-n">pB</span><span class="tk-si">:</span><span class="tk-s2">.3f</span><span class="tk-si">}</span><span class="tk-s2">, mô phỏng B ≈ </span><span class="tk-si">{</span><span class="tk-n">mo_phong</span><span class="tk-si">:</span><span class="tk-s2">.3f</span><span class="tk-si">}</span><span class="tk-s2">"</span><span class="tk-p">)</span>
+</code></pre></div>
+
+<div class="run" data-group="e7" data-mode="py">
+<div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span></div>
+<pre class="run-out">A: trung bình 49.0 giờ, độ lệch chuẩn 2.45&#10;B: trung bình 49.0 giờ, độ lệch chuẩn 10.42&#10;P(quá 60 giờ): A ≈ 0.0000, B ≈ 0.146, mô phỏng B ≈ 0.144</pre>
+</div>
+<p>B nhanh hơn một chút về trung bình nhưng trải rộng gấp mấy lần A, nên khoảng 15% số đơn trễ quá 60 giờ, trong khi A gần như không bao giờ trễ. Với cam kết giao trong 60 giờ, độ lệch chuẩn quan trọng hơn trung bình.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 8</span><h3>Lọc thư rác bằng Bayes</h3><span class="ex-tag code">ứng dụng</span></div><div class="prose"><p><em>Dùng: xác suất có điều kiện, công thức Bayes, giả định độc lập (naive Bayes).</em></p>
+<p>Từ 1.000 email đã gắn nhãn: 200 là thư rác. Từ "khuyến mãi" xuất hiện trong 120 thư rác và 40 thư thường; từ "miễn phí" xuất hiện trong 90 thư rác và 16 thư thường. Tính P(rác | có "khuyến mãi"), rồi P(rác | có cả hai từ) với giả định hai từ độc lập khi đã biết nhãn.</p>
+<div class="hl"><pre><span></span><code><span class="tk-n">p_rac</span> <span class="tk-o">=</span> <span class="tk-mi">200</span> <span class="tk-o">/</span> <span class="tk-mi">1000</span>
+<span class="tk-n">p_km_rac</span><span class="tk-p">,</span> <span class="tk-n">p_km_thuong</span> <span class="tk-o">=</span> <span class="tk-mi">120</span> <span class="tk-o">/</span> <span class="tk-mi">200</span><span class="tk-p">,</span> <span class="tk-mi">40</span> <span class="tk-o">/</span> <span class="tk-mi">800</span>
+<span class="tk-n">p_mp_rac</span><span class="tk-p">,</span> <span class="tk-n">p_mp_thuong</span> <span class="tk-o">=</span> <span class="tk-mi">90</span> <span class="tk-o">/</span> <span class="tk-mi">200</span><span class="tk-p">,</span> <span class="tk-mi">16</span> <span class="tk-o">/</span> <span class="tk-mi">800</span>
+<span class="tk-c1"># TODO: post_km, post_ca_hai</span>
+</code></pre></div>
+
+<div class="run" data-mode="py" data-group="e8"><div class="run-bar"><span class="run-lbl">Code của bạn</span></div><pre class="run-out run-empty">Viết code vào chỗ trống rồi bấm Chạy.</pre></div>
+
+<div class="ans" id="p0-5-e8-a1"><div class="ans-fields"><label>P(rác khi có &quot;khuyến mãi&quot;) (3 chữ số)<input inputmode="decimal" data-ans="0.75" data-tol="0.002" autocomplete="off"></label><label>P(rác khi có cả hai từ) (3 chữ số)<input inputmode="decimal" data-ans="0.985" data-tol="0.002" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+
+<details class="fold hint">
+<summary>Gợi ý</summary>
+<p>Bayes: P(rác | từ) = P(từ | rác)·P(rác) / [P(từ | rác)·P(rác) + P(từ | thường)·P(thường)]. Với hai từ độc lập theo nhãn: nhân hai likelihood, <code>P(km | rác)·P(mp | rác)</code>, tương tự cho thư thường.</p>
+</details>
+<details class="fold code">
+<summary>Code tham khảo</summary>
+<div class="hl"><pre><span></span><code><span class="tk-n">p_thuong</span> <span class="tk-o">=</span> <span class="tk-mi">1</span> <span class="tk-o">-</span> <span class="tk-n">p_rac</span>
+<span class="tk-n">post_km</span> <span class="tk-o">=</span> <span class="tk-n">p_km_rac</span> <span class="tk-o">*</span> <span class="tk-n">p_rac</span> <span class="tk-o">/</span> <span class="tk-p">(</span><span class="tk-n">p_km_rac</span> <span class="tk-o">*</span> <span class="tk-n">p_rac</span> <span class="tk-o">+</span> <span class="tk-n">p_km_thuong</span> <span class="tk-o">*</span> <span class="tk-n">p_thuong</span><span class="tk-p">)</span>
+<span class="tk-n">tu_rac</span> <span class="tk-o">=</span> <span class="tk-n">p_km_rac</span> <span class="tk-o">*</span> <span class="tk-n">p_mp_rac</span> <span class="tk-o">*</span> <span class="tk-n">p_rac</span>
+<span class="tk-n">tu_thuong</span> <span class="tk-o">=</span> <span class="tk-n">p_km_thuong</span> <span class="tk-o">*</span> <span class="tk-n">p_mp_thuong</span> <span class="tk-o">*</span> <span class="tk-n">p_thuong</span>
+<span class="tk-n">post_ca_hai</span> <span class="tk-o">=</span> <span class="tk-n">tu_rac</span> <span class="tk-o">/</span> <span class="tk-p">(</span><span class="tk-n">tu_rac</span> <span class="tk-o">+</span> <span class="tk-n">tu_thuong</span><span class="tk-p">)</span>
+<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-sa">f</span><span class="tk-s2">"P(rác | khuyến mãi) = </span><span class="tk-si">{</span><span class="tk-n">post_km</span><span class="tk-si">:</span><span class="tk-s2">.3f</span><span class="tk-si">}</span><span class="tk-s2">, P(rác | cả hai) = </span><span class="tk-si">{</span><span class="tk-n">post_ca_hai</span><span class="tk-si">:</span><span class="tk-s2">.3f</span><span class="tk-si">}</span><span class="tk-s2">"</span><span class="tk-p">)</span>
+</code></pre></div>
+
+<div class="run" data-group="e8" data-mode="py">
+<div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span></div>
+<pre class="run-out">P(rác | khuyến mãi) = 0.750, P(rác | cả hai) = 0.985</pre>
+</div>
+<p>Mỗi từ thêm vào nhân thêm một tỉ số likelihood: đây là <strong>naive Bayes</strong>, bộ lọc thư rác đầu tiên được dùng rộng rãi, và vẫn là baseline tốt cho phân loại văn bản.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 9</span><h3>Ước lượng tỉ lệ click bằng maximum likelihood</h3><span class="ex-tag code">ứng dụng</span></div><div class="prose"><p><em>Dùng: likelihood, log-likelihood, maximum likelihood, liên hệ với cross-entropy loss.</em></p>
+<p>Một quảng cáo được hiển thị 50 lần, có 7 lần được click (1 = click). Với mỗi tỉ lệ click <code>p</code> trên lưới 0,01–0,99, tính log-likelihood của dữ liệu, tìm <code>p</code> cho log-likelihood lớn nhất, và so với công thức <code>số click / số lần hiển thị</code>. Cuối cùng chứng tỏ rằng <strong>binary cross-entropy</strong> trung bình chính là log-likelihood đổi dấu chia cho số mẫu.</p>
+<div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">numpy</span><span class="tk-w"> </span><span class="tk-k">as</span><span class="tk-w"> </span><span class="tk-nn">np</span>
+<span class="tk-n">clicks</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">array</span><span class="tk-p">([</span><span class="tk-mi">1</span><span class="tk-p">]</span> <span class="tk-o">*</span> <span class="tk-mi">7</span> <span class="tk-o">+</span> <span class="tk-p">[</span><span class="tk-mi">0</span><span class="tk-p">]</span> <span class="tk-o">*</span> <span class="tk-mi">43</span><span class="tk-p">)</span>
+<span class="tk-n">ps</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">linspace</span><span class="tk-p">(</span><span class="tk-mf">0.01</span><span class="tk-p">,</span> <span class="tk-mf">0.99</span><span class="tk-p">,</span> <span class="tk-mi">99</span><span class="tk-p">)</span>
+<span class="tk-c1"># TODO: loglik (99 số), p_best, bce tại p_best</span>
+</code></pre></div>
+
+<div class="run" data-mode="py" data-group="e9"><div class="run-bar"><span class="run-lbl">Code của bạn</span></div><pre class="run-out run-empty">Viết code vào chỗ trống rồi bấm Chạy.</pre></div>
+
+<div class="ans" id="p0-5-e9-a1"><div class="ans-fields"><label>p tốt nhất trên lưới<input inputmode="decimal" data-ans="0.14" data-tol="0.001" autocomplete="off"></label><label>Binary cross-entropy tại p tốt nhất (3 chữ số)<input inputmode="decimal" data-ans="0.405" data-tol="0.002" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+
+<details class="fold hint">
+<summary>Gợi ý</summary>
+<p>Log-likelihood của một tỉ lệ p: <code>clicks.sum()·log p + (n − clicks.sum())·log(1 − p)</code>. Viết cho cả lưới cùng lúc bằng numpy. BCE: <code>−mean(y·log p + (1 − y)·log(1 − p))</code>.</p>
+</details>
+<details class="fold code">
+<summary>Code tham khảo</summary>
+<div class="hl"><pre><span></span><code><span class="tk-n">k</span><span class="tk-p">,</span> <span class="tk-n">n</span> <span class="tk-o">=</span> <span class="tk-n">clicks</span><span class="tk-o">.</span><span class="tk-n">sum</span><span class="tk-p">(),</span> <span class="tk-nb">len</span><span class="tk-p">(</span><span class="tk-n">clicks</span><span class="tk-p">)</span>
+<span class="tk-n">loglik</span> <span class="tk-o">=</span> <span class="tk-n">k</span> <span class="tk-o">*</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">log</span><span class="tk-p">(</span><span class="tk-n">ps</span><span class="tk-p">)</span> <span class="tk-o">+</span> <span class="tk-p">(</span><span class="tk-n">n</span> <span class="tk-o">-</span> <span class="tk-n">k</span><span class="tk-p">)</span> <span class="tk-o">*</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">log</span><span class="tk-p">(</span><span class="tk-mi">1</span> <span class="tk-o">-</span> <span class="tk-n">ps</span><span class="tk-p">)</span>
+<span class="tk-n">p_best</span> <span class="tk-o">=</span> <span class="tk-n">ps</span><span class="tk-p">[</span><span class="tk-n">loglik</span><span class="tk-o">.</span><span class="tk-n">argmax</span><span class="tk-p">()]</span>
+<span class="tk-n">bce</span> <span class="tk-o">=</span> <span class="tk-o">-</span><span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">mean</span><span class="tk-p">(</span><span class="tk-n">clicks</span> <span class="tk-o">*</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">log</span><span class="tk-p">(</span><span class="tk-n">p_best</span><span class="tk-p">)</span> <span class="tk-o">+</span> <span class="tk-p">(</span><span class="tk-mi">1</span> <span class="tk-o">-</span> <span class="tk-n">clicks</span><span class="tk-p">)</span> <span class="tk-o">*</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">log</span><span class="tk-p">(</span><span class="tk-mi">1</span> <span class="tk-o">-</span> <span class="tk-n">p_best</span><span class="tk-p">))</span>
+<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-sa">f</span><span class="tk-s2">"p tốt nhất = </span><span class="tk-si">{</span><span class="tk-n">p_best</span><span class="tk-si">:</span><span class="tk-s2">.2f</span><span class="tk-si">}</span><span class="tk-s2">, công thức k/n = </span><span class="tk-si">{</span><span class="tk-n">k</span><span class="tk-w"> </span><span class="tk-o">/</span><span class="tk-w"> </span><span class="tk-n">n</span><span class="tk-si">:</span><span class="tk-s2">.2f</span><span class="tk-si">}</span><span class="tk-s2">"</span><span class="tk-p">)</span>
+<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-sa">f</span><span class="tk-s2">"BCE = </span><span class="tk-si">{</span><span class="tk-n">bce</span><span class="tk-si">:</span><span class="tk-s2">.4f</span><span class="tk-si">}</span><span class="tk-s2">, -loglik/n = </span><span class="tk-si">{</span><span class="tk-o">-</span><span class="tk-n">loglik</span><span class="tk-o">.</span><span class="tk-n">max</span><span class="tk-p">()</span><span class="tk-w"> </span><span class="tk-o">/</span><span class="tk-w"> </span><span class="tk-n">n</span><span class="tk-si">:</span><span class="tk-s2">.4f</span><span class="tk-si">}</span><span class="tk-s2">"</span><span class="tk-p">)</span>
+</code></pre></div>
+
+<div class="run" data-group="e9" data-mode="py">
+<div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span></div>
+<pre class="run-out">p tốt nhất = 0.14, công thức k/n = 0.14&#10;BCE = 0.4050, -loglik/n = 0.4050</pre>
+</div>
+<p>Hai số cuối bằng nhau: train một model phân loại bằng cross-entropy chính là tìm tham số làm dữ liệu "có khả năng xảy ra nhất".</p>
 </details></div></article><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p0.5:b">Tôi đã xong phần bài tập</label><button class="btn" type="button" data-goto="thuc-hanh">Sang thực hành <span class="arr">→</span></button></div></section><section class="panel" id="thuc-hanh" role="tabpanel" hidden><div class="prose"><h2>Notebook "toán bằng code"</h2>
 <p>Mỗi khái niệm trong bài một ô code kiểm chứng. Đây là cách học toán hiệu quả nhất cho kỹ sư: không tin công thức cho tới khi code xác nhận.</p>
 <p><strong>Các bước</strong></p>
