@@ -70,13 +70,23 @@
 <li>Artifact: model, biểu đồ, bảng lỗi.</li>
 <li>Môi trường: phiên bản thư viện, loại GPU.</li>
 </ul>
-<div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">wandb</span>
-<span class="tk-n">run</span> <span class="tk-o">=</span> <span class="tk-n">wandb</span><span class="tk-o">.</span><span class="tk-n">init</span><span class="tk-p">(</span><span class="tk-n">project</span><span class="tk-o">=</span><span class="tk-s2">"lab08-extract"</span><span class="tk-p">,</span> <span class="tk-n">config</span><span class="tk-o">=</span><span class="tk-p">{</span><span class="tk-s2">"lr"</span><span class="tk-p">:</span> <span class="tk-mf">2e-4</span><span class="tk-p">,</span> <span class="tk-s2">"r"</span><span class="tk-p">:</span> <span class="tk-mi">16</span><span class="tk-p">,</span> <span class="tk-s2">"epochs"</span><span class="tk-p">:</span> <span class="tk-mi">3</span><span class="tk-p">,</span> <span class="tk-s2">"data"</span><span class="tk-p">:</span> <span class="tk-s2">"v3"</span><span class="tk-p">})</span>
+<div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">wandb</span><span class="tk-o">,</span><span class="tk-w"> </span><span class="tk-nn">math</span>
+<span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">train</span><span class="tk-p">():</span>                                   <span class="tk-c1"># thay cho vòng train thật: trả về (bước, loss)</span>
+    <span class="tk-k">for</span> <span class="tk-n">step</span> <span class="tk-ow">in</span> <span class="tk-nb">range</span><span class="tk-p">(</span><span class="tk-mi">100</span><span class="tk-p">):</span>
+        <span class="tk-k">yield</span> <span class="tk-n">step</span><span class="tk-p">,</span> <span class="tk-mf">2.0</span> <span class="tk-o">*</span> <span class="tk-n">math</span><span class="tk-o">.</span><span class="tk-n">exp</span><span class="tk-p">(</span><span class="tk-o">-</span><span class="tk-n">step</span> <span class="tk-o">/</span> <span class="tk-mi">30</span><span class="tk-p">)</span> <span class="tk-o">+</span> <span class="tk-mf">0.1</span>
+<span class="tk-n">f1</span> <span class="tk-o">=</span> <span class="tk-mf">0.83</span>
+
+<span class="tk-c1"># mode="offline": chạy không cần tài khoản, log lưu ở thư mục wandb/; bỏ đi để đẩy lên trang W&amp;B</span>
+<span class="tk-n">run</span> <span class="tk-o">=</span> <span class="tk-n">wandb</span><span class="tk-o">.</span><span class="tk-n">init</span><span class="tk-p">(</span><span class="tk-n">project</span><span class="tk-o">=</span><span class="tk-s2">"lab08-extract"</span><span class="tk-p">,</span> <span class="tk-n">mode</span><span class="tk-o">=</span><span class="tk-s2">"offline"</span><span class="tk-p">,</span> <span class="tk-n">config</span><span class="tk-o">=</span><span class="tk-p">{</span><span class="tk-s2">"lr"</span><span class="tk-p">:</span> <span class="tk-mf">2e-4</span><span class="tk-p">,</span> <span class="tk-s2">"r"</span><span class="tk-p">:</span> <span class="tk-mi">16</span><span class="tk-p">,</span> <span class="tk-s2">"epochs"</span><span class="tk-p">:</span> <span class="tk-mi">3</span><span class="tk-p">,</span> <span class="tk-s2">"data"</span><span class="tk-p">:</span> <span class="tk-s2">"v3"</span><span class="tk-p">})</span>
 <span class="tk-k">for</span> <span class="tk-n">step</span><span class="tk-p">,</span> <span class="tk-n">loss</span> <span class="tk-ow">in</span> <span class="tk-n">train</span><span class="tk-p">():</span>
     <span class="tk-n">wandb</span><span class="tk-o">.</span><span class="tk-n">log</span><span class="tk-p">({</span><span class="tk-s2">"train/loss"</span><span class="tk-p">:</span> <span class="tk-n">loss</span><span class="tk-p">},</span> <span class="tk-n">step</span><span class="tk-o">=</span><span class="tk-n">step</span><span class="tk-p">)</span>
 <span class="tk-n">wandb</span><span class="tk-o">.</span><span class="tk-n">log</span><span class="tk-p">({</span><span class="tk-s2">"test/f1"</span><span class="tk-p">:</span> <span class="tk-n">f1</span><span class="tk-p">})</span>
 <span class="tk-n">run</span><span class="tk-o">.</span><span class="tk-n">finish</span><span class="tk-p">()</span>
+<span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">os</span>
+<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-s2">"đã ghi log vào"</span><span class="tk-p">,</span> <span class="tk-n">os</span><span class="tk-o">.</span><span class="tk-n">path</span><span class="tk-o">.</span><span class="tk-n">relpath</span><span class="tk-p">(</span><span class="tk-n">run</span><span class="tk-o">.</span><span class="tk-n">dir</span><span class="tk-p">))</span>
 </code></pre></div>
+
+<div class="run" data-mode="static" data-group="t"><div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span><span class="run-note">đã chạy sẵn cần wandb</span><a class="run-colab" href="https://colab.research.google.com/github/truonghuu344/ai-engineer-roadmap/blob/main/notebooks/ly-thuyet/p8-2.ipynb" target="_blank" rel="noopener">Mở trên Colab ↗</a></div><pre class="run-out">đã ghi log vào wandb/offline-run-20261106_092346-4w7u3znx/files</pre></div>
 
 <p><strong>Weights &amp; Biases</strong> (dịch vụ, miễn phí cho cá nhân) và <strong>MLflow</strong> (mã nguồn mở, tự host được) là hai lựa chọn phổ biến. <code>transformers</code> và TRL có sẵn tham số <code>report_to="wandb"</code> hoặc <code>"mlflow"</code>. Lợi ích lớn nhất: so sánh hàng chục lần chạy trên cùng biểu đồ và biết chính xác cấu hình của lần tốt nhất.</p>
 <h2 id="lt-3">Phiên bản dữ liệu và model</h2>
@@ -149,7 +159,16 @@
     <span class="tk-n">mean</span><span class="tk-p">,</span> <span class="tk-n">se</span> <span class="tk-o">=</span> <span class="tk-n">d</span><span class="tk-o">.</span><span class="tk-n">mean</span><span class="tk-p">(),</span> <span class="tk-n">d</span><span class="tk-o">.</span><span class="tk-n">std</span><span class="tk-p">(</span><span class="tk-n">ddof</span><span class="tk-o">=</span><span class="tk-mi">1</span><span class="tk-p">)</span> <span class="tk-o">/</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">sqrt</span><span class="tk-p">(</span><span class="tk-nb">len</span><span class="tk-p">(</span><span class="tk-n">d</span><span class="tk-p">))</span>
     <span class="tk-n">upper</span> <span class="tk-o">=</span> <span class="tk-n">mean</span> <span class="tk-o">+</span> <span class="tk-mf">1.96</span> <span class="tk-o">*</span> <span class="tk-n">se</span>                                            <span class="tk-c1"># cận trên khoảng tin cậy 95%</span>
     <span class="tk-k">return</span> <span class="tk-p">(</span><span class="tk-s2">"CHẶN"</span> <span class="tk-k">if</span> <span class="tk-n">upper</span> <span class="tk-o">&lt;</span> <span class="tk-o">-</span><span class="tk-n">max_drop</span> <span class="tk-k">else</span> <span class="tk-s2">"QUA"</span><span class="tk-p">),</span> <span class="tk-nb">round</span><span class="tk-p">(</span><span class="tk-n">mean</span><span class="tk-p">,</span> <span class="tk-mi">4</span><span class="tk-p">),</span> <span class="tk-nb">round</span><span class="tk-p">(</span><span class="tk-n">upper</span><span class="tk-p">,</span> <span class="tk-mi">4</span><span class="tk-p">)</span>
+
+<span class="tk-c1"># thử: 300 mẫu, model mới sai thêm 30 mẫu so với baseline</span>
+<span class="tk-n">rng</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">random</span><span class="tk-o">.</span><span class="tk-n">default_rng</span><span class="tk-p">(</span><span class="tk-mi">0</span><span class="tk-p">)</span>
+<span class="tk-n">base</span> <span class="tk-o">=</span> <span class="tk-p">(</span><span class="tk-n">rng</span><span class="tk-o">.</span><span class="tk-n">random</span><span class="tk-p">(</span><span class="tk-mi">300</span><span class="tk-p">)</span> <span class="tk-o">&lt;</span> <span class="tk-mf">0.8</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">astype</span><span class="tk-p">(</span><span class="tk-nb">float</span><span class="tk-p">)</span>
+<span class="tk-n">new</span> <span class="tk-o">=</span> <span class="tk-n">base</span><span class="tk-o">.</span><span class="tk-n">copy</span><span class="tk-p">();</span> <span class="tk-n">new</span><span class="tk-p">[:</span><span class="tk-mi">30</span><span class="tk-p">]</span> <span class="tk-o">=</span> <span class="tk-mi">0</span>
+<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-n">gate</span><span class="tk-p">(</span><span class="tk-n">new</span><span class="tk-p">,</span> <span class="tk-n">base</span><span class="tk-p">))</span>                 <span class="tk-c1"># tụt thật: chặn</span>
+<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-n">gate</span><span class="tk-p">(</span><span class="tk-n">base</span><span class="tk-p">,</span> <span class="tk-n">base</span><span class="tk-p">))</span>                <span class="tk-c1"># như nhau: qua</span>
 </code></pre></div>
+
+<div class="run" data-mode="static" data-group="t"><div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span><span class="run-note">đã chạy sẵn</span><a class="run-colab" href="https://colab.research.google.com/github/truonghuu344/ai-engineer-roadmap/blob/main/notebooks/ly-thuyet/p8-2.ipynb" target="_blank" rel="noopener">Mở trên Colab ↗</a></div><pre class="run-out">(&#x27;CHẶN&#x27;, -0.0733, -0.0438)&#10;(&#x27;QUA&#x27;, 0.0, 0.0)</pre></div>
 
 <div class="box pitfall">
 <div class="box-h">Lỗi hay gặp</div>
@@ -160,7 +179,7 @@
 </div>
 <div class="box check">
 <div class="box-h">Tự kiểm tra nhanh</div>
-<div class="ans" id="p8-2-t-b105-a1">
+<div class="ans" id="p8-2-t-b126-a1">
 <div class="ans-fields"><label>8 lần chạy × 4 checkpoint × 450 MB (GB)<input inputmode="decimal" data-ans="14.4" data-tol="0.001" autocomplete="off"></label><label>F1 năm seed 0.71, 0.74, 0.73, 0.69, 0.73: trung bình<input inputmode="decimal" data-ans="0.72" data-tol="0.0001" autocomplete="off"></label><label>Độ lệch chuẩn (chia n, 3 chữ số)<input inputmode="decimal" data-ans="0.018" data-tol="0.001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div>
 <div aria-live="polite" class="ans-fb"></div>
 </div>
@@ -284,7 +303,8 @@
 </details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 5</span><h3>Workflow CI có cổng eval</h3><span class="ex-tag code">code</span></div><div class="prose"><p>Viết workflow GitHub Actions chạy test và script eval cho mỗi pull request, và script <code>eval_gate.py</code> so kết quả với baseline.</p>
 <details class="fold code">
 <summary>Code tham khảo</summary>
-<div class="hl"><pre><span></span><code><span class="tk-c1"># eval_gate.py: chạy bộ eval nhỏ, so với baseline đã lưu, thoát mã 1 nếu tụt quá ngưỡng</span>
+<div class="hl"><pre><span></span><code><span class="tk-o">%%</span><span class="tk-n">writefile</span> <span class="tk-n">eval_gate</span><span class="tk-o">.</span><span class="tk-n">py</span>
+<span class="tk-c1"># eval_gate.py: chạy bộ eval nhỏ, so với baseline đã lưu, thoát mã 1 nếu tụt quá ngưỡng</span>
 <span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">json</span><span class="tk-o">,</span><span class="tk-w"> </span><span class="tk-nn">sys</span>
 
 <span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">main</span><span class="tk-p">(</span><span class="tk-n">results_path</span><span class="tk-o">=</span><span class="tk-s2">"eval_results.json"</span><span class="tk-p">,</span> <span class="tk-n">baseline_path</span><span class="tk-o">=</span><span class="tk-s2">"baseline.json"</span><span class="tk-p">,</span> <span class="tk-n">max_drop</span><span class="tk-o">=</span><span class="tk-mf">0.01</span><span class="tk-p">):</span>
@@ -303,6 +323,27 @@
     <span class="tk-n">main</span><span class="tk-p">()</span>
 </code></pre></div>
 
+<div class="run" data-group="e5" data-mode="py">
+<div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span></div>
+<pre class="run-out">Writing eval_gate.py</pre>
+</div>
+<p>Thử với hai file kết quả mẫu, rồi chạy như CI sẽ chạy (mã thoát khác 0 thì CI báo đỏ):</p>
+<div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">json</span>
+<span class="tk-n">json</span><span class="tk-o">.</span><span class="tk-n">dump</span><span class="tk-p">({</span><span class="tk-s2">"f1"</span><span class="tk-p">:</span> <span class="tk-mf">0.84</span><span class="tk-p">,</span> <span class="tk-s2">"json_valid"</span><span class="tk-p">:</span> <span class="tk-mf">0.99</span><span class="tk-p">},</span> <span class="tk-nb">open</span><span class="tk-p">(</span><span class="tk-s2">"baseline.json"</span><span class="tk-p">,</span> <span class="tk-s2">"w"</span><span class="tk-p">))</span>
+<span class="tk-n">json</span><span class="tk-o">.</span><span class="tk-n">dump</span><span class="tk-p">({</span><span class="tk-s2">"f1"</span><span class="tk-p">:</span> <span class="tk-mf">0.81</span><span class="tk-p">,</span> <span class="tk-s2">"json_valid"</span><span class="tk-p">:</span> <span class="tk-mf">0.99</span><span class="tk-p">},</span> <span class="tk-nb">open</span><span class="tk-p">(</span><span class="tk-s2">"eval_results.json"</span><span class="tk-p">,</span> <span class="tk-s2">"w"</span><span class="tk-p">))</span>
+</code></pre></div>
+
+<div class="run" data-group="e5" data-mode="py">
+<div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span></div>
+<pre class="run-out run-empty">(chạy xong, không in ra gì)</pre>
+</div>
+<div class="hl"><pre><span></span><code><span class="tk-err">!</span><span class="tk-n">python</span> <span class="tk-n">eval_gate</span><span class="tk-o">.</span><span class="tk-n">py</span><span class="tk-p">;</span> <span class="tk-n">echo</span> <span class="tk-s2">"mã thoát: $?"</span>
+</code></pre></div>
+
+<div class="run" data-group="e5" data-mode="py">
+<div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span></div>
+<pre class="run-out">f1           baseline 0.840 | mới 0.810 | TỤT&#10;json_valid   baseline 0.990 | mới 0.990 | OK&#10;mã thoát: 1</pre>
+</div>
 <div class="hl"><pre><span></span><code><span class="tk-c1"># .github/workflows/ci.yml</span>
 <span class="tk-nt">name</span><span class="tk-p">:</span><span class="tk-w"> </span><span class="tk-l tk-l-Scalar tk-l-Scalar-Plain">ci</span>
 <span class="tk-nt">on</span><span class="tk-p">:</span><span class="tk-w"> </span><span class="tk-l tk-l-Scalar tk-l-Scalar-Plain">pull_request</span>
@@ -343,7 +384,7 @@
     <aside class="aside">
       <div class="abox"><h4>Tiến độ bài này</h4><div class="ring"><svg viewBox="0 0 64 64" aria-hidden="true"><circle class="bg" cx="32" cy="32" r="28"/><circle class="fg" cx="32" cy="32" r="28" stroke-dasharray="176" stroke-dashoffset="176"/></svg><div><b id="ring-n">0/3</b><span id="ring-sub">phần đã xong</span></div></div></div>
       <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Vì sao cần MLOps</a></li><li><a href="#lt-2">Theo dõi thí nghiệm</a></li><li><a href="#lt-3">Phiên bản dữ liệu và model</a></li><li><a href="#lt-4">Tái lập kết quả</a></li><li><a href="#lt-5">CI/CD cho hệ thống ML</a></li><li><a href="#lt-6">Tóm tắt bài và thuật ngữ</a></li></ol></div>
-      
+      <div class="abox"><h4>Notebook</h4><div style="display:grid;gap:8px"><a class="dl" href="https://colab.research.google.com/github/truonghuu344/ai-engineer-roadmap/blob/main/notebooks/ly-thuyet/p8-2.ipynb" target="_blank" rel="noopener"><span class="ext">COLAB</span><span>Chạy toàn bộ code của bài<span style="display:block;font:400 12px var(--f-mono);color:var(--muted)">notebook có sẵn kết quả</span></span></a></div></div>
       <div class="abox"><h4>Cùng giai đoạn</h4><ul><li><a href="p8-1.html">Bài 10a · Serving</a></li><li><span class=cur>MLOps</span></li><li><a href="p8-3.html">Bài 10b · Giám sát và chi phí</a></li><li><a href="p8-4.html">Backend và dữ liệu cho AI</a></li></ul></div>
     </aside>
   </div>
@@ -447,6 +488,134 @@
       b.textContent = "Đã chép ✓"; b.classList.add("done"); setTimeout(() => { b.textContent = "Chép"; b.classList.remove("done"); }, 1600);
     }).catch(() => {}));
     h.appendChild(b);
+  });
+
+  /* runnable code: Pyodide (Python chạy ngay trong trình duyệt) */
+  const RUNS = [...document.querySelectorAll(".run")];
+  const HELPER = `
+import ast, sys, io, base64, traceback, os, warnings
+os.environ.setdefault("MPLBACKEND", "AGG")
+warnings.filterwarnings("ignore", message=".*non-interactive.*")
+import ast
+ACTION = {"manual_seed", "seed", "write_text", "write", "load_dotenv", "savefig", "set_title", "set_xlabel", "set_ylabel",
+          "legend", "plot", "scatter", "bar", "barh", "hist", "imshow", "append", "extend", "update", "add", "fit", "backward",
+          "step", "zero_grad", "mkdir", "makedirs", "sleep", "close", "flush", "print", "show", "axhline", "axvline", "text",
+          "tight_layout", "subplots_adjust", "set_xlim", "set_ylim", "grid", "insert", "remove", "clear", "sort", "shuffle",
+          "to_csv", "save", "load_state_dict", "train", "eval", "requires_grad_", "set_printoptions", "filterwarnings",
+          "use", "setdefault", "register_buffer", "rc", "add_node", "add_edge", "add_conditional_edges", "set_entry_point", "login", "mount", "seed_everything", "log", "finish", "init", "info", "debug", "warning", "put", "add_argument", "set_xticks", "set_yticks", "annotate", "fill_between", "suptitle", "figure", "subplot"}
+
+
+def legacy_numpy_repr():
+    import sys
+    if "numpy" in sys.modules:
+        sys.modules["numpy"].set_printoptions(legacy="1.25")     # in 0.87 thay vì np.float64(0.87)
+
+
+def transform(code):
+    lines = code.split("\\n")
+    tree = ast.parse(code)
+    n = len(tree.body)
+    for k, node in enumerate(tree.body):
+        if not isinstance(node, ast.Expr):
+            continue
+        v = node.value
+        if isinstance(v, ast.Constant) and isinstance(v.value, str):          # docstring / string literal alone
+            continue
+        if isinstance(v, ast.Await):
+            continue
+        name = None
+        if isinstance(v, ast.Call):
+            f = v.func
+            name = f.attr if isinstance(f, ast.Attribute) else (f.id if isinstance(f, ast.Name) else None)
+        tail = lines[node.end_lineno - 1][node.end_col_offset:]
+        commented = "#" in tail
+        last = k == n - 1
+        if name in ACTION:
+            continue
+        if last or commented:
+            node.value = ast.Call(func=ast.Name("__show__", ast.Load()), args=[v], keywords=[])
+    ast.fix_missing_locations(tree)
+    return tree
+
+def __aie_run(code, ns):
+    buf = io.StringIO(); so, se = sys.stdout, sys.stderr; sys.stdout = sys.stderr = buf; ok = True
+    def show(v):
+        if v is None: return
+        try:
+            import pandas as pd
+            if isinstance(v, (pd.DataFrame, pd.Series)):
+                print(v.to_string(max_rows=20)); return
+        except Exception:
+            pass
+        print(repr(v))
+    ns["__show__"] = show
+    try:
+        legacy_numpy_repr(); exec(compile(transform(code), "<cell>", "exec"), ns)
+    except BaseException:
+        ok = False
+        et, ev, tb = sys.exc_info(); lines = traceback.format_exception(et, ev, tb)
+        print("".join(l for l in lines if "<cell>" in l or l is lines[-1]), end="")
+    finally:
+        sys.stdout, sys.stderr = so, se
+    imgs = []
+    if "matplotlib.pyplot" in sys.modules:
+        plt = sys.modules["matplotlib.pyplot"]
+        for n in plt.get_fignums():
+            b = io.BytesIO(); plt.figure(n).savefig(b, format="png", dpi=100, bbox_inches="tight", facecolor="white")
+            imgs.append(base64.b64encode(b.getvalue()).decode())
+        plt.close("all")
+    return [buf.getvalue()[-20000:], imgs, ok]
+`;
+  let pyP = null; const NS = {}, done = new Set();
+  function loadPy() {
+    if (pyP) return pyP;
+    const base = window.AIE_PYODIDE || "https://cdn.jsdelivr.net/pyodide/v0.28.3/full/";
+    pyP = new Promise((res, rej) => {
+      if (window.loadPyodide) return res();
+      const s = document.createElement("script"); s.src = base + "pyodide.js"; s.onload = () => res(); s.onerror = () => rej(new Error("load"));
+      document.head.appendChild(s);
+    }).then(() => window.loadPyodide({ indexURL: base })).then((py) => { py.runPython(HELPER); return py; });
+    pyP.catch(() => { pyP = null; });
+    return pyP;
+  }
+  const codeOf = (r) => r.previousElementSibling.querySelector("pre").innerText.replace(/\n$/, "");
+  async function exec(py, r, code) {
+    const g = r.dataset.group;
+    if (!NS[g]) NS[g] = py.globals.get("dict")();
+    try { await py.loadPackagesFromImports(code); } catch (e) {}
+    const res = py.globals.get("__aie_run")(code, NS[g]); const [out, imgs, ok] = res.toJs(); res.destroy();
+    return { out, imgs, ok };
+  }
+  function paint(r, res) {
+    r.querySelectorAll(".run-out, img").forEach((x) => x.remove());
+    const pre = document.createElement("pre"); pre.className = "run-out" + (res.out ? "" : " run-empty");
+    pre.textContent = res.out || "(chạy xong, không in ra gì)"; r.appendChild(pre);
+    res.imgs.forEach((b) => { const im = document.createElement("img"); im.alt = "Hình do đoạn code vẽ"; im.src = "data:image/png;base64," + b; r.appendChild(im); });
+    r.classList.toggle("err", !res.ok);
+  }
+  RUNS.filter((r) => r.dataset.mode === "py" && r.previousElementSibling && r.previousElementSibling.classList.contains("hl")).forEach((r) => {
+    const hl = r.previousElementSibling, pre = hl.querySelector("pre"), orig = pre.innerHTML;
+    const bar = r.querySelector(".run-bar"), box = document.createElement("span"); box.className = "run-btns";
+    const st = document.createElement("span"); st.className = "run-status";
+    const mk = (t, cls) => { const b = document.createElement("button"); b.type = "button"; b.className = "run-btn " + cls; b.textContent = t; box.appendChild(b); return b; };
+    const ed = mk("Sửa code", ""), go = mk("▶ Chạy", "go");
+    bar.appendChild(st); bar.appendChild(box);
+    ed.addEventListener("click", () => {
+      if (pre.hasAttribute("contenteditable")) { pre.removeAttribute("contenteditable"); pre.innerHTML = orig; ed.textContent = "Sửa code"; return; }
+      try { pre.contentEditable = "plaintext-only"; } catch (e) { pre.contentEditable = "true"; }
+      if (pre.contentEditable !== "plaintext-only") pre.contentEditable = "true";
+      pre.spellcheck = false; pre.focus(); ed.textContent = "Khôi phục code gốc";
+    });
+    go.addEventListener("click", async () => {
+      go.disabled = true; st.textContent = pyP ? "Đang chạy…" : "Đang tải Python trong trình duyệt (lần đầu khoảng 10–30 giây)…";
+      try {
+        const py = await loadPy(); st.textContent = "Đang chạy…";
+        const same = RUNS.filter((x) => x.dataset.group === r.dataset.group && x.dataset.mode === "py");
+        for (const x of same.slice(0, same.indexOf(r))) if (!done.has(x)) { await exec(py, x, codeOf(x)); done.add(x); }
+        const res = await exec(py, r, codeOf(r)); done.add(r); paint(r, res); st.textContent = res.ok ? "" : "Có lỗi, xem bên dưới";
+      } catch (e) { console.error("aie-run", e); st.textContent = "Không tải được Python trong trình duyệt. Kiểm tra mạng rồi thử lại."; }
+      go.disabled = false;
+    });
   });
 
   /* highlight current theory section in the toc */

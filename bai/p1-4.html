@@ -91,12 +91,26 @@
 </code></pre></div>
 
 <p>Bước gán và bước cập nhật mỗi bước đều không làm inertia tăng, nên thuật toán luôn dừng. Nhưng nó chỉ tìm được <strong>cực tiểu cục bộ</strong>, phụ thuộc tâm ban đầu. Vì vậy scikit-learn chạy nhiều lần với các khởi tạo khác nhau (<code>n_init</code>) và giữ kết quả có inertia thấp nhất.</p>
-<div class="hl"><pre><span></span><code><span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">sklearn.cluster</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">KMeans</span>
+<div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">numpy</span><span class="tk-w"> </span><span class="tk-k">as</span><span class="tk-w"> </span><span class="tk-nn">np</span>
+<span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">sklearn.cluster</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">KMeans</span>
+
+<span class="tk-c1"># kiểm tra ví dụ 6 điểm ở trên, với đúng hai tâm khởi tạo kém 1 và 3</span>
+<span class="tk-n">x6</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">array</span><span class="tk-p">([[</span><span class="tk-mi">1</span><span class="tk-p">],</span> <span class="tk-p">[</span><span class="tk-mi">3</span><span class="tk-p">],</span> <span class="tk-p">[</span><span class="tk-mi">5</span><span class="tk-p">],</span> <span class="tk-p">[</span><span class="tk-mi">20</span><span class="tk-p">],</span> <span class="tk-p">[</span><span class="tk-mi">22</span><span class="tk-p">],</span> <span class="tk-p">[</span><span class="tk-mi">24</span><span class="tk-p">]])</span>
+<span class="tk-n">km6</span> <span class="tk-o">=</span> <span class="tk-n">KMeans</span><span class="tk-p">(</span><span class="tk-n">n_clusters</span><span class="tk-o">=</span><span class="tk-mi">2</span><span class="tk-p">,</span> <span class="tk-n">init</span><span class="tk-o">=</span><span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">array</span><span class="tk-p">([[</span><span class="tk-mf">1.0</span><span class="tk-p">],</span> <span class="tk-p">[</span><span class="tk-mf">3.0</span><span class="tk-p">]]),</span> <span class="tk-n">n_init</span><span class="tk-o">=</span><span class="tk-mi">1</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">fit</span><span class="tk-p">(</span><span class="tk-n">x6</span><span class="tk-p">)</span>
+<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-n">km6</span><span class="tk-o">.</span><span class="tk-n">labels_</span><span class="tk-p">,</span> <span class="tk-n">km6</span><span class="tk-o">.</span><span class="tk-n">cluster_centers_</span><span class="tk-o">.</span><span class="tk-n">ravel</span><span class="tk-p">(),</span> <span class="tk-n">km6</span><span class="tk-o">.</span><span class="tk-n">n_iter_</span><span class="tk-p">)</span>   <span class="tk-c1"># tâm 3 và 22</span>
+
+<span class="tk-c1"># 400 "khách hàng" giả lập có 4 nhóm, 2 đặc trưng đã chuẩn hóa</span>
+<span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">sklearn.datasets</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">make_blobs</span>
+<span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">sklearn.preprocessing</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">StandardScaler</span>
+<span class="tk-n">X</span><span class="tk-p">,</span> <span class="tk-n">_</span> <span class="tk-o">=</span> <span class="tk-n">make_blobs</span><span class="tk-p">(</span><span class="tk-n">n_samples</span><span class="tk-o">=</span><span class="tk-mi">400</span><span class="tk-p">,</span> <span class="tk-n">centers</span><span class="tk-o">=</span><span class="tk-mi">4</span><span class="tk-p">,</span> <span class="tk-n">cluster_std</span><span class="tk-o">=</span><span class="tk-mf">1.2</span><span class="tk-p">,</span> <span class="tk-n">random_state</span><span class="tk-o">=</span><span class="tk-mi">0</span><span class="tk-p">)</span>
+<span class="tk-n">X_scaled</span> <span class="tk-o">=</span> <span class="tk-n">StandardScaler</span><span class="tk-p">()</span><span class="tk-o">.</span><span class="tk-n">fit_transform</span><span class="tk-p">(</span><span class="tk-n">X</span><span class="tk-p">)</span>
 <span class="tk-n">km</span> <span class="tk-o">=</span> <span class="tk-n">KMeans</span><span class="tk-p">(</span><span class="tk-n">n_clusters</span><span class="tk-o">=</span><span class="tk-mi">4</span><span class="tk-p">,</span> <span class="tk-n">n_init</span><span class="tk-o">=</span><span class="tk-mi">10</span><span class="tk-p">,</span> <span class="tk-n">random_state</span><span class="tk-o">=</span><span class="tk-mi">0</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">fit</span><span class="tk-p">(</span><span class="tk-n">X_scaled</span><span class="tk-p">)</span>
-<span class="tk-n">km</span><span class="tk-o">.</span><span class="tk-n">labels_</span>             <span class="tk-c1"># cụm của từng điểm</span>
-<span class="tk-n">km</span><span class="tk-o">.</span><span class="tk-n">cluster_centers_</span>    <span class="tk-c1"># tọa độ tâm (trên thang đã chuẩn hóa)</span>
-<span class="tk-n">km</span><span class="tk-o">.</span><span class="tk-n">inertia_</span>
+<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-n">km</span><span class="tk-o">.</span><span class="tk-n">labels_</span><span class="tk-p">[:</span><span class="tk-mi">12</span><span class="tk-p">])</span>                   <span class="tk-c1"># cụm của từng điểm</span>
+<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-n">km</span><span class="tk-o">.</span><span class="tk-n">cluster_centers_</span><span class="tk-o">.</span><span class="tk-n">round</span><span class="tk-p">(</span><span class="tk-mi">2</span><span class="tk-p">))</span>      <span class="tk-c1"># tọa độ tâm (trên thang đã chuẩn hóa)</span>
+<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-nb">round</span><span class="tk-p">(</span><span class="tk-n">km</span><span class="tk-o">.</span><span class="tk-n">inertia_</span><span class="tk-p">,</span> <span class="tk-mi">1</span><span class="tk-p">))</span>
 </code></pre></div>
+
+<div class="run" data-mode="py" data-group="t"><div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span></div><pre class="run-out">[0 0 0 1 1 1] [ 3. 22.] 3&#10;[1 3 3 1 3 0 2 3 3 2 0 2]&#10;[[-0.68  1.36]&#10; [ 0.39  0.09]&#10; [ 1.13 -1.15]&#10; [-1.11 -0.48]]&#10;186.9</pre></div>
 
 <h3>Giả định của k-means và khi nào nó sai</h3>
 <p>k-means giả định các cụm <strong>tròn, cỡ tương đương</strong>, và dùng khoảng cách Euclid. Hệ quả:</p>
@@ -110,7 +124,7 @@
 <div class="box check">
 <div class="box-h">Tự kiểm tra nhanh</div>
 <p>Điểm 1D: 2, 4, 6, 14, 16, 18, k = 2, tâm ban đầu 2 và 7.</p>
-<div class="ans" id="p1-4-t-b60-a1">
+<div class="ans" id="p1-4-t-b75-a1">
 <div class="ans-fields"><label>Tâm thứ hai sau vòng cập nhật đầu tiên<input inputmode="decimal" data-ans="13.5" data-tol="0.001" autocomplete="off"></label><label>Tâm thứ nhất sau khi hội tụ<input inputmode="decimal" data-ans="4.0" data-tol="0.001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div>
 <div aria-live="polite" class="ans-fb"></div>
 </div>
@@ -204,11 +218,16 @@
 <p>Vẽ phương sai <strong>tích lũy</strong> theo số thành phần, chọn số nhỏ nhất đạt ngưỡng (thường 90–95%), hoặc đúng 2–3 nếu mục đích là vẽ.</p>
 <figure class="fig"><img src="../assets/fig/p1-4-pcadigits.svg" alt="Bộ chữ số viết tay 8×8 (64 chiều): 21 thành phần giữ 80% phương sai, 40 thành phần giữ 95%. Chiếu xuống chỉ 2 chiều, các chữ số 0, 4, 6 đã tách khá rõ." loading="lazy"><figcaption>Bộ chữ số viết tay 8×8 (64 chiều): 21 thành phần giữ 80% phương sai, 40 thành phần giữ 95%. Chiếu xuống chỉ 2 chiều, các chữ số 0, 4, 6 đã tách khá rõ.</figcaption></figure>
 
-<div class="hl"><pre><span></span><code><span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">sklearn.decomposition</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">PCA</span>
-<span class="tk-n">pca</span> <span class="tk-o">=</span> <span class="tk-n">PCA</span><span class="tk-p">(</span><span class="tk-n">n_components</span><span class="tk-o">=</span><span class="tk-mf">0.95</span><span class="tk-p">)</span>          <span class="tk-c1"># giữ đủ thành phần để đạt 95% phương sai</span>
+<div class="hl"><pre><span></span><code><span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">sklearn.datasets</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">load_digits</span>
+<span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">sklearn.decomposition</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">PCA</span>
+<span class="tk-n">X_digits</span> <span class="tk-o">=</span> <span class="tk-n">load_digits</span><span class="tk-p">()</span><span class="tk-o">.</span><span class="tk-n">data</span>             <span class="tk-c1"># 1797 ảnh 8×8 = 64 chiều</span>
+<span class="tk-n">X_scaled</span> <span class="tk-o">=</span> <span class="tk-n">StandardScaler</span><span class="tk-p">()</span><span class="tk-o">.</span><span class="tk-n">fit_transform</span><span class="tk-p">(</span><span class="tk-n">X_digits</span><span class="tk-p">)</span>   <span class="tk-c1"># chuẩn hóa như trong hình ở trên</span>
+<span class="tk-n">pca</span> <span class="tk-o">=</span> <span class="tk-n">PCA</span><span class="tk-p">(</span><span class="tk-n">n_components</span><span class="tk-o">=</span><span class="tk-mf">0.95</span><span class="tk-p">)</span>              <span class="tk-c1"># giữ đủ thành phần để đạt 95% phương sai</span>
 <span class="tk-n">Z</span> <span class="tk-o">=</span> <span class="tk-n">pca</span><span class="tk-o">.</span><span class="tk-n">fit_transform</span><span class="tk-p">(</span><span class="tk-n">X_scaled</span><span class="tk-p">)</span>
-<span class="tk-n">pca</span><span class="tk-o">.</span><span class="tk-n">n_components_</span><span class="tk-p">,</span> <span class="tk-n">pca</span><span class="tk-o">.</span><span class="tk-n">explained_variance_ratio_</span><span class="tk-p">[:</span><span class="tk-mi">3</span><span class="tk-p">]</span>
+<span class="tk-n">pca</span><span class="tk-o">.</span><span class="tk-n">n_components_</span><span class="tk-p">,</span> <span class="tk-n">pca</span><span class="tk-o">.</span><span class="tk-n">explained_variance_ratio_</span><span class="tk-p">[:</span><span class="tk-mi">3</span><span class="tk-p">]</span><span class="tk-o">.</span><span class="tk-n">round</span><span class="tk-p">(</span><span class="tk-mi">3</span><span class="tk-p">)</span>
 </code></pre></div>
+
+<div class="run" data-mode="py" data-group="t"><div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span></div><pre class="run-out">(40, array([0.12 , 0.096, 0.084]))</pre></div>
 
 <div class="box pitfall">
 <div class="box-h">Lỗi hay gặp</div>
@@ -221,7 +240,7 @@
 <div class="box check">
 <div class="box-h">Tự kiểm tra nhanh</div>
 <p>Ba thành phần có trị riêng 6, 3, 1.</p>
-<div class="ans" id="p1-4-t-b123-a1">
+<div class="ans" id="p1-4-t-b144-a1">
 <div class="ans-fields"><label>Tỉ lệ phương sai của PC1<input inputmode="decimal" data-ans="0.6" data-tol="0.001" autocomplete="off"></label><label>Phương sai tích lũy của 2 PC đầu<input inputmode="decimal" data-ans="0.9" data-tol="0.001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div>
 <div aria-live="polite" class="ans-fb"></div>
 </div>
@@ -321,8 +340,10 @@
 <p>Một dự án thật có 5–10 bước tiền xử lý cho các nhóm cột khác nhau. Viết tay từng bước thì dễ quên áp dụng bước nào đó cho test, hoặc fit nhầm trên test. <code>Pipeline</code> gói tất cả thành <strong>một</strong> đối tượng: <code>fit</code> một lần trên train, <code>predict</code> ở mọi nơi khác, lưu thành một file để triển khai.</p>
 </div>
 <p>Gói mọi bước tiền xử lý vào cùng model. Khi gọi <code>fit</code>, mọi scaler và encoder chỉ học từ train. Khi <code>predict</code>, cùng phép biến đổi được áp lên dữ liệu mới.</p>
-<div class="hl"><pre><span></span><code><span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">sklearn.compose</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">ColumnTransformer</span>
+<div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">numpy</span><span class="tk-w"> </span><span class="tk-k">as</span><span class="tk-w"> </span><span class="tk-nn">np</span><span class="tk-o">,</span><span class="tk-w"> </span><span class="tk-nn">pandas</span><span class="tk-w"> </span><span class="tk-k">as</span><span class="tk-w"> </span><span class="tk-nn">pd</span>
+<span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">sklearn.compose</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">ColumnTransformer</span>
 <span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">sklearn.pipeline</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">Pipeline</span>
+<span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">sklearn.model_selection</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">train_test_split</span><span class="tk-p">,</span> <span class="tk-n">cross_val_score</span>
 <span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">sklearn.impute</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">SimpleImputer</span>
 <span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">sklearn.preprocessing</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">StandardScaler</span><span class="tk-p">,</span> <span class="tk-n">OneHotEncoder</span>
 <span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">sklearn.linear_model</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">LogisticRegression</span>
@@ -335,9 +356,20 @@
                       <span class="tk-p">(</span><span class="tk-s2">"oh"</span><span class="tk-p">,</span> <span class="tk-n">OneHotEncoder</span><span class="tk-p">(</span><span class="tk-n">handle_unknown</span><span class="tk-o">=</span><span class="tk-s2">"ignore"</span><span class="tk-p">))]),</span> <span class="tk-n">cat</span><span class="tk-p">),</span>
 <span class="tk-p">])</span>
 <span class="tk-n">model</span> <span class="tk-o">=</span> <span class="tk-n">Pipeline</span><span class="tk-p">([(</span><span class="tk-s2">"pre"</span><span class="tk-p">,</span> <span class="tk-n">pre</span><span class="tk-p">),</span> <span class="tk-p">(</span><span class="tk-s2">"clf"</span><span class="tk-p">,</span> <span class="tk-n">LogisticRegression</span><span class="tk-p">(</span><span class="tk-n">max_iter</span><span class="tk-o">=</span><span class="tk-mi">1000</span><span class="tk-p">))])</span>
+
+<span class="tk-c1"># dữ liệu khách hàng giả lập, có ô trống</span>
+<span class="tk-n">rng</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">random</span><span class="tk-o">.</span><span class="tk-n">default_rng</span><span class="tk-p">(</span><span class="tk-mi">0</span><span class="tk-p">);</span> <span class="tk-n">n</span> <span class="tk-o">=</span> <span class="tk-mi">800</span>
+<span class="tk-n">df</span> <span class="tk-o">=</span> <span class="tk-n">pd</span><span class="tk-o">.</span><span class="tk-n">DataFrame</span><span class="tk-p">({</span><span class="tk-s2">"tuổi"</span><span class="tk-p">:</span> <span class="tk-n">rng</span><span class="tk-o">.</span><span class="tk-n">integers</span><span class="tk-p">(</span><span class="tk-mi">18</span><span class="tk-p">,</span> <span class="tk-mi">65</span><span class="tk-p">,</span> <span class="tk-n">n</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">astype</span><span class="tk-p">(</span><span class="tk-nb">float</span><span class="tk-p">),</span> <span class="tk-s2">"thu_nhập"</span><span class="tk-p">:</span> <span class="tk-n">rng</span><span class="tk-o">.</span><span class="tk-n">gamma</span><span class="tk-p">(</span><span class="tk-mi">2</span><span class="tk-p">,</span> <span class="tk-mi">8</span><span class="tk-p">,</span> <span class="tk-n">n</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">round</span><span class="tk-p">(</span><span class="tk-mi">1</span><span class="tk-p">),</span>
+                   <span class="tk-s2">"thành_phố"</span><span class="tk-p">:</span> <span class="tk-n">rng</span><span class="tk-o">.</span><span class="tk-n">choice</span><span class="tk-p">([</span><span class="tk-s2">"HN"</span><span class="tk-p">,</span> <span class="tk-s2">"HCM"</span><span class="tk-p">,</span> <span class="tk-s2">"ĐN"</span><span class="tk-p">],</span> <span class="tk-n">n</span><span class="tk-p">),</span> <span class="tk-s2">"kênh"</span><span class="tk-p">:</span> <span class="tk-n">rng</span><span class="tk-o">.</span><span class="tk-n">choice</span><span class="tk-p">([</span><span class="tk-s2">"web"</span><span class="tk-p">,</span> <span class="tk-s2">"app"</span><span class="tk-p">,</span> <span class="tk-s2">"zalo"</span><span class="tk-p">],</span> <span class="tk-n">n</span><span class="tk-p">)})</span>
+<span class="tk-n">y</span> <span class="tk-o">=</span> <span class="tk-p">((</span><span class="tk-n">df</span><span class="tk-p">[</span><span class="tk-s2">"thu_nhập"</span><span class="tk-p">]</span> <span class="tk-o">&gt;</span> <span class="tk-mi">15</span><span class="tk-p">)</span> <span class="tk-o">&amp;</span> <span class="tk-p">(</span><span class="tk-n">df</span><span class="tk-p">[</span><span class="tk-s2">"kênh"</span><span class="tk-p">]</span> <span class="tk-o">!=</span> <span class="tk-s2">"zalo"</span><span class="tk-p">))</span><span class="tk-o">.</span><span class="tk-n">astype</span><span class="tk-p">(</span><span class="tk-nb">int</span><span class="tk-p">)</span> <span class="tk-o">^</span> <span class="tk-p">(</span><span class="tk-n">rng</span><span class="tk-o">.</span><span class="tk-n">random</span><span class="tk-p">(</span><span class="tk-n">n</span><span class="tk-p">)</span> <span class="tk-o">&lt;</span> <span class="tk-mf">0.1</span><span class="tk-p">)</span>
+<span class="tk-n">df</span><span class="tk-o">.</span><span class="tk-n">loc</span><span class="tk-p">[</span><span class="tk-n">rng</span><span class="tk-o">.</span><span class="tk-n">random</span><span class="tk-p">(</span><span class="tk-n">n</span><span class="tk-p">)</span> <span class="tk-o">&lt;</span> <span class="tk-mf">0.1</span><span class="tk-p">,</span> <span class="tk-s2">"thu_nhập"</span><span class="tk-p">]</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">nan</span><span class="tk-p">;</span> <span class="tk-n">df</span><span class="tk-o">.</span><span class="tk-n">loc</span><span class="tk-p">[</span><span class="tk-n">rng</span><span class="tk-o">.</span><span class="tk-n">random</span><span class="tk-p">(</span><span class="tk-n">n</span><span class="tk-p">)</span> <span class="tk-o">&lt;</span> <span class="tk-mf">0.05</span><span class="tk-p">,</span> <span class="tk-s2">"thành_phố"</span><span class="tk-p">]</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">nan</span>
+<span class="tk-n">X_train</span><span class="tk-p">,</span> <span class="tk-n">X_test</span><span class="tk-p">,</span> <span class="tk-n">y_train</span><span class="tk-p">,</span> <span class="tk-n">y_test</span> <span class="tk-o">=</span> <span class="tk-n">train_test_split</span><span class="tk-p">(</span><span class="tk-n">df</span><span class="tk-p">,</span> <span class="tk-n">y</span><span class="tk-p">,</span> <span class="tk-n">test_size</span><span class="tk-o">=</span><span class="tk-mf">0.25</span><span class="tk-p">,</span> <span class="tk-n">random_state</span><span class="tk-o">=</span><span class="tk-mi">0</span><span class="tk-p">)</span>
+
 <span class="tk-n">model</span><span class="tk-o">.</span><span class="tk-n">fit</span><span class="tk-p">(</span><span class="tk-n">X_train</span><span class="tk-p">,</span> <span class="tk-n">y_train</span><span class="tk-p">)</span>                 <span class="tk-c1"># một lệnh, không rò rỉ</span>
-<span class="tk-n">cross_val_score</span><span class="tk-p">(</span><span class="tk-n">model</span><span class="tk-p">,</span> <span class="tk-n">X_train</span><span class="tk-p">,</span> <span class="tk-n">y_train</span><span class="tk-p">)</span>    <span class="tk-c1"># mỗi fold tự fit lại toàn bộ tiền xử lý</span>
+<span class="tk-n">cross_val_score</span><span class="tk-p">(</span><span class="tk-n">model</span><span class="tk-p">,</span> <span class="tk-n">X_train</span><span class="tk-p">,</span> <span class="tk-n">y_train</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">round</span><span class="tk-p">(</span><span class="tk-mi">3</span><span class="tk-p">)</span>    <span class="tk-c1"># mỗi fold tự fit lại toàn bộ tiền xử lý</span>
 </code></pre></div>
+
+<div class="run" data-mode="py" data-group="t"><div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span></div><pre class="run-out">array([0.875, 0.833, 0.858, 0.875, 0.858])</pre></div>
 
 <p>Lợi ích cụ thể:</p>
 <ul>
@@ -509,6 +541,10 @@
 <span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-s2">"Rò rỉ CV:"</span><span class="tk-p">,</span> <span class="tk-n">cross_val_score</span><span class="tk-p">(</span><span class="tk-n">LogisticRegression</span><span class="tk-p">(</span><span class="tk-n">max_iter</span><span class="tk-o">=</span><span class="tk-mi">1000</span><span class="tk-p">),</span> <span class="tk-n">Xall</span><span class="tk-p">,</span> <span class="tk-n">y</span><span class="tk-p">,</span> <span class="tk-n">cv</span><span class="tk-o">=</span><span class="tk-mi">5</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">mean</span><span class="tk-p">()</span><span class="tk-o">.</span><span class="tk-n">round</span><span class="tk-p">(</span><span class="tk-mi">4</span><span class="tk-p">))</span>
 </code></pre></div>
 
+<div class="run" data-group="e5" data-mode="static">
+<div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span><span class="run-note">đã chạy sẵn cần seaborn</span><a class="run-colab" href="https://colab.research.google.com/github/truonghuu344/ai-engineer-roadmap/blob/main/notebooks/ly-thuyet/p1-4.ipynb" target="_blank" rel="noopener">Mở trên Colab ↗</a></div>
+<pre class="run-out">Pipeline CV: 0.789&#10;Rò rỉ CV: 0.789</pre>
+</div>
 </details></div></article><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p1.4:b">Tôi đã xong phần bài tập</label><button class="btn" type="button" data-goto="thuc-hanh">Sang thực hành <span class="arr">→</span></button></div></section><section class="panel" id="thuc-hanh" role="tabpanel" hidden><div class="prose"><h2>Phân cụm khách hàng theo RFM</h2>
 <p>RFM là cách phân khúc khách hàng kinh điển trong thương mại điện tử:</p>
 <ul>
@@ -565,7 +601,7 @@
     <aside class="aside">
       <div class="abox"><h4>Tiến độ bài này</h4><div class="ring"><svg viewBox="0 0 64 64" aria-hidden="true"><circle class="bg" cx="32" cy="32" r="28"/><circle class="fg" cx="32" cy="32" r="28" stroke-dasharray="176" stroke-dashoffset="176"/></svg><div><b id="ring-n">0/3</b><span id="ring-sub">phần đã xong</span></div></div></div>
       <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Học không giám sát dùng để làm gì</a></li><li><a href="#lt-2">k-means</a></li><li><a href="#lt-3">Chọn k</a></li><li><a href="#lt-4">PCA: giảm chiều</a></li><li><a href="#lt-5">Chuẩn hóa và mã hóa đặc trưng</a></li><li><a href="#lt-6">Pipeline và ColumnTransformer</a></li><li><a href="#lt-7">Tóm tắt bài và thuật ngữ</a></li></ol></div>
-      
+      <div class="abox"><h4>Notebook</h4><div style="display:grid;gap:8px"><a class="dl" href="https://colab.research.google.com/github/truonghuu344/ai-engineer-roadmap/blob/main/notebooks/ly-thuyet/p1-4.ipynb" target="_blank" rel="noopener"><span class="ext">COLAB</span><span>Chạy toàn bộ code của bài<span style="display:block;font:400 12px var(--f-mono);color:var(--muted)">notebook có sẵn kết quả</span></span></a></div></div>
       <div class="abox"><h4>Cùng giai đoạn</h4><ul><li><a href="p1-1.html">Hồi quy tuyến tính và logistic</a></li><li><a href="p1-2.html">Đánh giá model đúng cách</a></li><li><a href="p1-3.html">Cây quyết định và ensemble</a></li><li><span class=cur>Học không giám sát và feature engineering</span></li></ul></div>
     </aside>
   </div>
@@ -669,6 +705,134 @@
       b.textContent = "Đã chép ✓"; b.classList.add("done"); setTimeout(() => { b.textContent = "Chép"; b.classList.remove("done"); }, 1600);
     }).catch(() => {}));
     h.appendChild(b);
+  });
+
+  /* runnable code: Pyodide (Python chạy ngay trong trình duyệt) */
+  const RUNS = [...document.querySelectorAll(".run")];
+  const HELPER = `
+import ast, sys, io, base64, traceback, os, warnings
+os.environ.setdefault("MPLBACKEND", "AGG")
+warnings.filterwarnings("ignore", message=".*non-interactive.*")
+import ast
+ACTION = {"manual_seed", "seed", "write_text", "write", "load_dotenv", "savefig", "set_title", "set_xlabel", "set_ylabel",
+          "legend", "plot", "scatter", "bar", "barh", "hist", "imshow", "append", "extend", "update", "add", "fit", "backward",
+          "step", "zero_grad", "mkdir", "makedirs", "sleep", "close", "flush", "print", "show", "axhline", "axvline", "text",
+          "tight_layout", "subplots_adjust", "set_xlim", "set_ylim", "grid", "insert", "remove", "clear", "sort", "shuffle",
+          "to_csv", "save", "load_state_dict", "train", "eval", "requires_grad_", "set_printoptions", "filterwarnings",
+          "use", "setdefault", "register_buffer", "rc", "add_node", "add_edge", "add_conditional_edges", "set_entry_point", "login", "mount", "seed_everything", "log", "finish", "init", "info", "debug", "warning", "put", "add_argument", "set_xticks", "set_yticks", "annotate", "fill_between", "suptitle", "figure", "subplot"}
+
+
+def legacy_numpy_repr():
+    import sys
+    if "numpy" in sys.modules:
+        sys.modules["numpy"].set_printoptions(legacy="1.25")     # in 0.87 thay vì np.float64(0.87)
+
+
+def transform(code):
+    lines = code.split("\\n")
+    tree = ast.parse(code)
+    n = len(tree.body)
+    for k, node in enumerate(tree.body):
+        if not isinstance(node, ast.Expr):
+            continue
+        v = node.value
+        if isinstance(v, ast.Constant) and isinstance(v.value, str):          # docstring / string literal alone
+            continue
+        if isinstance(v, ast.Await):
+            continue
+        name = None
+        if isinstance(v, ast.Call):
+            f = v.func
+            name = f.attr if isinstance(f, ast.Attribute) else (f.id if isinstance(f, ast.Name) else None)
+        tail = lines[node.end_lineno - 1][node.end_col_offset:]
+        commented = "#" in tail
+        last = k == n - 1
+        if name in ACTION:
+            continue
+        if last or commented:
+            node.value = ast.Call(func=ast.Name("__show__", ast.Load()), args=[v], keywords=[])
+    ast.fix_missing_locations(tree)
+    return tree
+
+def __aie_run(code, ns):
+    buf = io.StringIO(); so, se = sys.stdout, sys.stderr; sys.stdout = sys.stderr = buf; ok = True
+    def show(v):
+        if v is None: return
+        try:
+            import pandas as pd
+            if isinstance(v, (pd.DataFrame, pd.Series)):
+                print(v.to_string(max_rows=20)); return
+        except Exception:
+            pass
+        print(repr(v))
+    ns["__show__"] = show
+    try:
+        legacy_numpy_repr(); exec(compile(transform(code), "<cell>", "exec"), ns)
+    except BaseException:
+        ok = False
+        et, ev, tb = sys.exc_info(); lines = traceback.format_exception(et, ev, tb)
+        print("".join(l for l in lines if "<cell>" in l or l is lines[-1]), end="")
+    finally:
+        sys.stdout, sys.stderr = so, se
+    imgs = []
+    if "matplotlib.pyplot" in sys.modules:
+        plt = sys.modules["matplotlib.pyplot"]
+        for n in plt.get_fignums():
+            b = io.BytesIO(); plt.figure(n).savefig(b, format="png", dpi=100, bbox_inches="tight", facecolor="white")
+            imgs.append(base64.b64encode(b.getvalue()).decode())
+        plt.close("all")
+    return [buf.getvalue()[-20000:], imgs, ok]
+`;
+  let pyP = null; const NS = {}, done = new Set();
+  function loadPy() {
+    if (pyP) return pyP;
+    const base = window.AIE_PYODIDE || "https://cdn.jsdelivr.net/pyodide/v0.28.3/full/";
+    pyP = new Promise((res, rej) => {
+      if (window.loadPyodide) return res();
+      const s = document.createElement("script"); s.src = base + "pyodide.js"; s.onload = () => res(); s.onerror = () => rej(new Error("load"));
+      document.head.appendChild(s);
+    }).then(() => window.loadPyodide({ indexURL: base })).then((py) => { py.runPython(HELPER); return py; });
+    pyP.catch(() => { pyP = null; });
+    return pyP;
+  }
+  const codeOf = (r) => r.previousElementSibling.querySelector("pre").innerText.replace(/\n$/, "");
+  async function exec(py, r, code) {
+    const g = r.dataset.group;
+    if (!NS[g]) NS[g] = py.globals.get("dict")();
+    try { await py.loadPackagesFromImports(code); } catch (e) {}
+    const res = py.globals.get("__aie_run")(code, NS[g]); const [out, imgs, ok] = res.toJs(); res.destroy();
+    return { out, imgs, ok };
+  }
+  function paint(r, res) {
+    r.querySelectorAll(".run-out, img").forEach((x) => x.remove());
+    const pre = document.createElement("pre"); pre.className = "run-out" + (res.out ? "" : " run-empty");
+    pre.textContent = res.out || "(chạy xong, không in ra gì)"; r.appendChild(pre);
+    res.imgs.forEach((b) => { const im = document.createElement("img"); im.alt = "Hình do đoạn code vẽ"; im.src = "data:image/png;base64," + b; r.appendChild(im); });
+    r.classList.toggle("err", !res.ok);
+  }
+  RUNS.filter((r) => r.dataset.mode === "py" && r.previousElementSibling && r.previousElementSibling.classList.contains("hl")).forEach((r) => {
+    const hl = r.previousElementSibling, pre = hl.querySelector("pre"), orig = pre.innerHTML;
+    const bar = r.querySelector(".run-bar"), box = document.createElement("span"); box.className = "run-btns";
+    const st = document.createElement("span"); st.className = "run-status";
+    const mk = (t, cls) => { const b = document.createElement("button"); b.type = "button"; b.className = "run-btn " + cls; b.textContent = t; box.appendChild(b); return b; };
+    const ed = mk("Sửa code", ""), go = mk("▶ Chạy", "go");
+    bar.appendChild(st); bar.appendChild(box);
+    ed.addEventListener("click", () => {
+      if (pre.hasAttribute("contenteditable")) { pre.removeAttribute("contenteditable"); pre.innerHTML = orig; ed.textContent = "Sửa code"; return; }
+      try { pre.contentEditable = "plaintext-only"; } catch (e) { pre.contentEditable = "true"; }
+      if (pre.contentEditable !== "plaintext-only") pre.contentEditable = "true";
+      pre.spellcheck = false; pre.focus(); ed.textContent = "Khôi phục code gốc";
+    });
+    go.addEventListener("click", async () => {
+      go.disabled = true; st.textContent = pyP ? "Đang chạy…" : "Đang tải Python trong trình duyệt (lần đầu khoảng 10–30 giây)…";
+      try {
+        const py = await loadPy(); st.textContent = "Đang chạy…";
+        const same = RUNS.filter((x) => x.dataset.group === r.dataset.group && x.dataset.mode === "py");
+        for (const x of same.slice(0, same.indexOf(r))) if (!done.has(x)) { await exec(py, x, codeOf(x)); done.add(x); }
+        const res = await exec(py, r, codeOf(r)); done.add(r); paint(r, res); st.textContent = res.ok ? "" : "Có lỗi, xem bên dưới";
+      } catch (e) { console.error("aie-run", e); st.textContent = "Không tải được Python trong trình duyệt. Kiểm tra mạng rồi thử lại."; }
+      go.disabled = false;
+    });
   });
 
   /* highlight current theory section in the toc */

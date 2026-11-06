@@ -210,8 +210,13 @@
 </div>
 <h2 id="lt-5">Cache với Redis</h2>
 <p>Redis là kho key-value trong RAM, đọc ghi cỡ dưới một mili giây. Dùng để cache kết quả model, lưu phiên hội thoại, đếm rate limit. Mỗi key có thể đặt thời hạn (TTL) để tự hết hạn.</p>
-<div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">hashlib</span><span class="tk-o">,</span><span class="tk-w"> </span><span class="tk-nn">json</span><span class="tk-o">,</span><span class="tk-w"> </span><span class="tk-nn">redis</span>
-<span class="tk-n">r</span> <span class="tk-o">=</span> <span class="tk-n">redis</span><span class="tk-o">.</span><span class="tk-n">Redis</span><span class="tk-p">()</span>
+<div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">hashlib</span><span class="tk-o">,</span><span class="tk-w"> </span><span class="tk-nn">json</span><span class="tk-o">,</span><span class="tk-w"> </span><span class="tk-nn">fakeredis</span>
+<span class="tk-n">r</span> <span class="tk-o">=</span> <span class="tk-n">fakeredis</span><span class="tk-o">.</span><span class="tk-n">FakeRedis</span><span class="tk-p">()</span>          <span class="tk-c1"># chạy thử không cần server; thật: import redis; r = redis.Redis(host="localhost", port=6379)</span>
+
+<span class="tk-n">calls</span> <span class="tk-o">=</span> <span class="tk-mi">0</span>
+<span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">model_predict</span><span class="tk-p">(</span><span class="tk-n">text</span><span class="tk-p">):</span>            <span class="tk-c1"># thay cho model thật, đếm số lần bị gọi</span>
+    <span class="tk-k">global</span> <span class="tk-n">calls</span><span class="tk-p">;</span> <span class="tk-n">calls</span> <span class="tk-o">+=</span> <span class="tk-mi">1</span>
+    <span class="tk-k">return</span> <span class="tk-p">{</span><span class="tk-s2">"label"</span><span class="tk-p">:</span> <span class="tk-s2">"tích cực"</span><span class="tk-p">,</span> <span class="tk-s2">"len"</span><span class="tk-p">:</span> <span class="tk-nb">len</span><span class="tk-p">(</span><span class="tk-n">text</span><span class="tk-p">)}</span>
 
 <span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">cached_predict</span><span class="tk-p">(</span><span class="tk-n">text</span><span class="tk-p">,</span> <span class="tk-n">ttl</span><span class="tk-o">=</span><span class="tk-mi">3600</span><span class="tk-p">):</span>
     <span class="tk-n">key</span> <span class="tk-o">=</span> <span class="tk-s2">"pred:v3:"</span> <span class="tk-o">+</span> <span class="tk-n">hashlib</span><span class="tk-o">.</span><span class="tk-n">sha256</span><span class="tk-p">(</span><span class="tk-n">text</span><span class="tk-o">.</span><span class="tk-n">encode</span><span class="tk-p">())</span><span class="tk-o">.</span><span class="tk-n">hexdigest</span><span class="tk-p">()</span>   <span class="tk-c1"># v3: phiên bản model/prompt</span>
@@ -220,7 +225,13 @@
     <span class="tk-n">out</span> <span class="tk-o">=</span> <span class="tk-n">model_predict</span><span class="tk-p">(</span><span class="tk-n">text</span><span class="tk-p">)</span>
     <span class="tk-n">r</span><span class="tk-o">.</span><span class="tk-n">setex</span><span class="tk-p">(</span><span class="tk-n">key</span><span class="tk-p">,</span> <span class="tk-n">ttl</span><span class="tk-p">,</span> <span class="tk-n">json</span><span class="tk-o">.</span><span class="tk-n">dumps</span><span class="tk-p">(</span><span class="tk-n">out</span><span class="tk-p">))</span>
     <span class="tk-k">return</span> <span class="tk-n">out</span>
+
+<span class="tk-k">for</span> <span class="tk-n">q</span> <span class="tk-ow">in</span> <span class="tk-p">[</span><span class="tk-s2">"ghế đẹp"</span><span class="tk-p">,</span> <span class="tk-s2">"ghế đẹp"</span><span class="tk-p">,</span> <span class="tk-s2">"giao chậm"</span><span class="tk-p">,</span> <span class="tk-s2">"ghế đẹp"</span><span class="tk-p">]:</span>
+    <span class="tk-n">cached_predict</span><span class="tk-p">(</span><span class="tk-n">q</span><span class="tk-p">)</span>
+<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-s2">"4 yêu cầu, model chỉ chạy"</span><span class="tk-p">,</span> <span class="tk-n">calls</span><span class="tk-p">,</span> <span class="tk-s2">"lần; TTL còn lại:"</span><span class="tk-p">,</span> <span class="tk-n">r</span><span class="tk-o">.</span><span class="tk-n">ttl</span><span class="tk-p">(</span><span class="tk-s2">"pred:v3:"</span> <span class="tk-o">+</span> <span class="tk-n">hashlib</span><span class="tk-o">.</span><span class="tk-n">sha256</span><span class="tk-p">(</span><span class="tk-s2">"ghế đẹp"</span><span class="tk-o">.</span><span class="tk-n">encode</span><span class="tk-p">())</span><span class="tk-o">.</span><span class="tk-n">hexdigest</span><span class="tk-p">()),</span> <span class="tk-s2">"giây"</span><span class="tk-p">)</span>
 </code></pre></div>
+
+<div class="run" data-mode="py" data-group="t"><div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span></div><pre class="run-out">4 yêu cầu, model chỉ chạy 2 lần; TTL còn lại: 3599 giây</pre></div>
 
 <div class="box pitfall">
 <div class="box-h">Lỗi hay gặp</div>
@@ -251,7 +262,7 @@
 </ul>
 <div class="box check">
 <div class="box-h">Tự kiểm tra nhanh</div>
-<div class="ans" id="p8-4-t-b140-a1">
+<div class="ans" id="p8-4-t-b152-a1">
 <div class="ans-fields"><label>Truy vấn ví dụ: tổng tiền của Bình (đơn không hoàn)<input inputmode="decimal" data-ans="840.0" data-tol="0.0" autocomplete="off"></label><label>2 triệu vector 768 chiều float4 (GB, 1 chữ số)<input inputmode="decimal" data-ans="6.1" data-tol="0.05" autocomplete="off"></label><label>240 file × 45 giây, xong trong 600 giây: số worker<input inputmode="decimal" data-ans="18.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div>
 <div aria-live="polite" class="ans-fb"></div>
 </div>
@@ -406,7 +417,8 @@
 </details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 5</span><h3>Truy vấn cho bộ eval</h3><span class="ex-tag code">code</span></div><div class="prose"><p>Viết truy vấn SQL lấy 200 câu hỏi khách hàng tháng trước để làm bộ eval: chỉ các hội thoại bị đánh giá "không thích" hoặc bị chuyển nhân viên, mỗi khách tối đa 2 câu, ưu tiên câu dài. Rồi viết hàm Python chạy truy vấn bằng <code>psycopg</code> và lưu ra JSONL.</p>
 <details class="fold code">
 <summary>Code tham khảo</summary>
-<div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">json</span><span class="tk-o">,</span><span class="tk-w"> </span><span class="tk-nn">psycopg</span>
+<div class="hl"><pre><span></span><code><span class="tk-c1"># Cần Postgres có bảng conversations, messages của hệ thống bạn</span>
+<span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">json</span><span class="tk-o">,</span><span class="tk-w"> </span><span class="tk-nn">psycopg</span>
 
 <span class="tk-n">SQL</span> <span class="tk-o">=</span> <span class="tk-s2">"""</span>
 <span class="tk-s2">WITH ranked AS (</span>
@@ -427,6 +439,9 @@
             <span class="tk-n">f</span><span class="tk-o">.</span><span class="tk-n">write</span><span class="tk-p">(</span><span class="tk-n">json</span><span class="tk-o">.</span><span class="tk-n">dumps</span><span class="tk-p">({</span><span class="tk-s2">"customer_id"</span><span class="tk-p">:</span> <span class="tk-n">customer_id</span><span class="tk-p">,</span> <span class="tk-s2">"question"</span><span class="tk-p">:</span> <span class="tk-n">question</span><span class="tk-p">},</span> <span class="tk-n">ensure_ascii</span><span class="tk-o">=</span><span class="tk-kc">False</span><span class="tk-p">)</span> <span class="tk-o">+</span> <span class="tk-s2">"</span><span class="tk-se">\n</span><span class="tk-s2">"</span><span class="tk-p">)</span>
 </code></pre></div>
 
+<div class="run run-skip" data-group="e5" data-mode="static">
+<div class="run-bar"><span class="run-lbl">Không chạy trên trang</span><span class="run-note">Cần Postgres có bảng conversations, messages của hệ thống bạn</span><a class="run-colab" href="https://colab.research.google.com/github/truonghuu344/ai-engineer-roadmap/blob/main/notebooks/ly-thuyet/p8-4.ipynb" target="_blank" rel="noopener">Mở trên Colab ↗</a></div>
+</div>
 </details></div></article><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p8.4:b">Tôi đã xong phần bài tập</label><button class="btn" type="button" data-goto="thuc-hanh">Sang thực hành <span class="arr">→</span></button></div></section><section class="panel" id="thuc-hanh" role="tabpanel" hidden><div class="prose"><h2>Thêm cơ sở dữ liệu, cache và hàng đợi vào API</h2>
 <p><strong>Các bước</strong></p>
 <ol>
@@ -448,7 +463,7 @@
     <aside class="aside">
       <div class="abox"><h4>Tiến độ bài này</h4><div class="ring"><svg viewBox="0 0 64 64" aria-hidden="true"><circle class="bg" cx="32" cy="32" r="28"/><circle class="fg" cx="32" cy="32" r="28" stroke-dasharray="176" stroke-dashoffset="176"/></svg><div><b id="ring-n">0/3</b><span id="ring-sub">phần đã xong</span></div></div></div>
       <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Bức tranh backend của một hệ AI</a></li><li><a href="#lt-2">SQL cho kỹ sư AI</a></li><li><a href="#lt-3">Postgres và pgvector</a></li><li><a href="#lt-4">Phân quyền trong RAG</a></li><li><a href="#lt-5">Cache với Redis</a></li><li><a href="#lt-6">Hàng đợi tác vụ</a></li><li><a href="#lt-7">Xác thực và bí mật</a></li><li><a href="#lt-8">Tóm tắt bài và thuật ngữ</a></li></ol></div>
-      
+      <div class="abox"><h4>Notebook</h4><div style="display:grid;gap:8px"><a class="dl" href="https://colab.research.google.com/github/truonghuu344/ai-engineer-roadmap/blob/main/notebooks/ly-thuyet/p8-4.ipynb" target="_blank" rel="noopener"><span class="ext">COLAB</span><span>Chạy toàn bộ code của bài<span style="display:block;font:400 12px var(--f-mono);color:var(--muted)">notebook có sẵn kết quả</span></span></a></div></div>
       <div class="abox"><h4>Cùng giai đoạn</h4><ul><li><a href="p8-1.html">Bài 10a · Serving</a></li><li><a href="p8-2.html">MLOps</a></li><li><a href="p8-3.html">Bài 10b · Giám sát và chi phí</a></li><li><span class=cur>Backend và dữ liệu cho AI</span></li></ul></div>
     </aside>
   </div>
@@ -552,6 +567,134 @@
       b.textContent = "Đã chép ✓"; b.classList.add("done"); setTimeout(() => { b.textContent = "Chép"; b.classList.remove("done"); }, 1600);
     }).catch(() => {}));
     h.appendChild(b);
+  });
+
+  /* runnable code: Pyodide (Python chạy ngay trong trình duyệt) */
+  const RUNS = [...document.querySelectorAll(".run")];
+  const HELPER = `
+import ast, sys, io, base64, traceback, os, warnings
+os.environ.setdefault("MPLBACKEND", "AGG")
+warnings.filterwarnings("ignore", message=".*non-interactive.*")
+import ast
+ACTION = {"manual_seed", "seed", "write_text", "write", "load_dotenv", "savefig", "set_title", "set_xlabel", "set_ylabel",
+          "legend", "plot", "scatter", "bar", "barh", "hist", "imshow", "append", "extend", "update", "add", "fit", "backward",
+          "step", "zero_grad", "mkdir", "makedirs", "sleep", "close", "flush", "print", "show", "axhline", "axvline", "text",
+          "tight_layout", "subplots_adjust", "set_xlim", "set_ylim", "grid", "insert", "remove", "clear", "sort", "shuffle",
+          "to_csv", "save", "load_state_dict", "train", "eval", "requires_grad_", "set_printoptions", "filterwarnings",
+          "use", "setdefault", "register_buffer", "rc", "add_node", "add_edge", "add_conditional_edges", "set_entry_point", "login", "mount", "seed_everything", "log", "finish", "init", "info", "debug", "warning", "put", "add_argument", "set_xticks", "set_yticks", "annotate", "fill_between", "suptitle", "figure", "subplot"}
+
+
+def legacy_numpy_repr():
+    import sys
+    if "numpy" in sys.modules:
+        sys.modules["numpy"].set_printoptions(legacy="1.25")     # in 0.87 thay vì np.float64(0.87)
+
+
+def transform(code):
+    lines = code.split("\\n")
+    tree = ast.parse(code)
+    n = len(tree.body)
+    for k, node in enumerate(tree.body):
+        if not isinstance(node, ast.Expr):
+            continue
+        v = node.value
+        if isinstance(v, ast.Constant) and isinstance(v.value, str):          # docstring / string literal alone
+            continue
+        if isinstance(v, ast.Await):
+            continue
+        name = None
+        if isinstance(v, ast.Call):
+            f = v.func
+            name = f.attr if isinstance(f, ast.Attribute) else (f.id if isinstance(f, ast.Name) else None)
+        tail = lines[node.end_lineno - 1][node.end_col_offset:]
+        commented = "#" in tail
+        last = k == n - 1
+        if name in ACTION:
+            continue
+        if last or commented:
+            node.value = ast.Call(func=ast.Name("__show__", ast.Load()), args=[v], keywords=[])
+    ast.fix_missing_locations(tree)
+    return tree
+
+def __aie_run(code, ns):
+    buf = io.StringIO(); so, se = sys.stdout, sys.stderr; sys.stdout = sys.stderr = buf; ok = True
+    def show(v):
+        if v is None: return
+        try:
+            import pandas as pd
+            if isinstance(v, (pd.DataFrame, pd.Series)):
+                print(v.to_string(max_rows=20)); return
+        except Exception:
+            pass
+        print(repr(v))
+    ns["__show__"] = show
+    try:
+        legacy_numpy_repr(); exec(compile(transform(code), "<cell>", "exec"), ns)
+    except BaseException:
+        ok = False
+        et, ev, tb = sys.exc_info(); lines = traceback.format_exception(et, ev, tb)
+        print("".join(l for l in lines if "<cell>" in l or l is lines[-1]), end="")
+    finally:
+        sys.stdout, sys.stderr = so, se
+    imgs = []
+    if "matplotlib.pyplot" in sys.modules:
+        plt = sys.modules["matplotlib.pyplot"]
+        for n in plt.get_fignums():
+            b = io.BytesIO(); plt.figure(n).savefig(b, format="png", dpi=100, bbox_inches="tight", facecolor="white")
+            imgs.append(base64.b64encode(b.getvalue()).decode())
+        plt.close("all")
+    return [buf.getvalue()[-20000:], imgs, ok]
+`;
+  let pyP = null; const NS = {}, done = new Set();
+  function loadPy() {
+    if (pyP) return pyP;
+    const base = window.AIE_PYODIDE || "https://cdn.jsdelivr.net/pyodide/v0.28.3/full/";
+    pyP = new Promise((res, rej) => {
+      if (window.loadPyodide) return res();
+      const s = document.createElement("script"); s.src = base + "pyodide.js"; s.onload = () => res(); s.onerror = () => rej(new Error("load"));
+      document.head.appendChild(s);
+    }).then(() => window.loadPyodide({ indexURL: base })).then((py) => { py.runPython(HELPER); return py; });
+    pyP.catch(() => { pyP = null; });
+    return pyP;
+  }
+  const codeOf = (r) => r.previousElementSibling.querySelector("pre").innerText.replace(/\n$/, "");
+  async function exec(py, r, code) {
+    const g = r.dataset.group;
+    if (!NS[g]) NS[g] = py.globals.get("dict")();
+    try { await py.loadPackagesFromImports(code); } catch (e) {}
+    const res = py.globals.get("__aie_run")(code, NS[g]); const [out, imgs, ok] = res.toJs(); res.destroy();
+    return { out, imgs, ok };
+  }
+  function paint(r, res) {
+    r.querySelectorAll(".run-out, img").forEach((x) => x.remove());
+    const pre = document.createElement("pre"); pre.className = "run-out" + (res.out ? "" : " run-empty");
+    pre.textContent = res.out || "(chạy xong, không in ra gì)"; r.appendChild(pre);
+    res.imgs.forEach((b) => { const im = document.createElement("img"); im.alt = "Hình do đoạn code vẽ"; im.src = "data:image/png;base64," + b; r.appendChild(im); });
+    r.classList.toggle("err", !res.ok);
+  }
+  RUNS.filter((r) => r.dataset.mode === "py" && r.previousElementSibling && r.previousElementSibling.classList.contains("hl")).forEach((r) => {
+    const hl = r.previousElementSibling, pre = hl.querySelector("pre"), orig = pre.innerHTML;
+    const bar = r.querySelector(".run-bar"), box = document.createElement("span"); box.className = "run-btns";
+    const st = document.createElement("span"); st.className = "run-status";
+    const mk = (t, cls) => { const b = document.createElement("button"); b.type = "button"; b.className = "run-btn " + cls; b.textContent = t; box.appendChild(b); return b; };
+    const ed = mk("Sửa code", ""), go = mk("▶ Chạy", "go");
+    bar.appendChild(st); bar.appendChild(box);
+    ed.addEventListener("click", () => {
+      if (pre.hasAttribute("contenteditable")) { pre.removeAttribute("contenteditable"); pre.innerHTML = orig; ed.textContent = "Sửa code"; return; }
+      try { pre.contentEditable = "plaintext-only"; } catch (e) { pre.contentEditable = "true"; }
+      if (pre.contentEditable !== "plaintext-only") pre.contentEditable = "true";
+      pre.spellcheck = false; pre.focus(); ed.textContent = "Khôi phục code gốc";
+    });
+    go.addEventListener("click", async () => {
+      go.disabled = true; st.textContent = pyP ? "Đang chạy…" : "Đang tải Python trong trình duyệt (lần đầu khoảng 10–30 giây)…";
+      try {
+        const py = await loadPy(); st.textContent = "Đang chạy…";
+        const same = RUNS.filter((x) => x.dataset.group === r.dataset.group && x.dataset.mode === "py");
+        for (const x of same.slice(0, same.indexOf(r))) if (!done.has(x)) { await exec(py, x, codeOf(x)); done.add(x); }
+        const res = await exec(py, r, codeOf(r)); done.add(r); paint(r, res); st.textContent = res.ok ? "" : "Có lỗi, xem bên dưới";
+      } catch (e) { console.error("aie-run", e); st.textContent = "Không tải được Python trong trình duyệt. Kiểm tra mạng rồi thử lại."; }
+      go.disabled = false;
+    });
   });
 
   /* highlight current theory section in the toc */

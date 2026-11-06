@@ -170,11 +170,18 @@
 <div class="box example">
 <div class="box-h">Ví dụ từng bước</div>
 <p><strong>Tool kém:</strong></p>
-<div class="hl"><pre><span></span><code><span class="tk-nd">@mcp</span><span class="tk-o">.</span><span class="tk-n">tool</span><span class="tk-p">()</span>
+<div class="hl"><pre><span></span><code><span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">mcp.server.fastmcp</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">FastMCP</span>
+<span class="tk-n">mcp</span> <span class="tk-o">=</span> <span class="tk-n">FastMCP</span><span class="tk-p">(</span><span class="tk-s2">"vi-du"</span><span class="tk-p">)</span>
+
+<span class="tk-nd">@mcp</span><span class="tk-o">.</span><span class="tk-n">tool</span><span class="tk-p">()</span>
 <span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">orders</span><span class="tk-p">(</span><span class="tk-n">q</span><span class="tk-p">:</span> <span class="tk-nb">str</span><span class="tk-p">)</span> <span class="tk-o">-&gt;</span> <span class="tk-nb">str</span><span class="tk-p">:</span>
 <span class="tk-w">    </span><span class="tk-sd">"""Orders."""</span>
 </code></pre></div>
 
+<div class="run" data-group="t" data-mode="static">
+<div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span><span class="run-note">đã chạy sẵn cần MCP SDK</span><a class="run-colab" href="https://colab.research.google.com/github/truonghuu344/ai-engineer-roadmap/blob/main/notebooks/ly-thuyet/p4-7.ipynb" target="_blank" rel="noopener">Mở trên Colab ↗</a></div>
+<pre class="run-out run-empty">(chạy xong, không in ra gì)</pre>
+</div>
 <p>Model không biết <code>q</code> là mã đơn, số điện thoại hay câu hỏi; không biết trả về gì.</p>
 <p><strong>Tool tốt:</strong></p>
 <div class="hl"><pre><span></span><code><span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">typing</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">Literal</span>
@@ -185,8 +192,16 @@
 <span class="tk-w">    </span><span class="tk-sd">"""Tìm đơn của một khách theo số điện thoại (10 chữ số).</span>
 <span class="tk-sd">    Lọc theo trạng thái nếu cần. Trả về tối đa `limit` đơn, mới nhất trước.</span>
 <span class="tk-sd">    Dùng khi khách không nhớ mã đơn. Nếu đã có mã đơn, dùng get_order."""</span>
+
+<span class="tk-c1"># model chỉ thấy tên, mô tả và schema tham số của tool (await chạy được trong notebook)</span>
+<span class="tk-k">for</span> <span class="tk-n">t</span> <span class="tk-ow">in</span> <span class="tk-k">await</span> <span class="tk-n">mcp</span><span class="tk-o">.</span><span class="tk-n">list_tools</span><span class="tk-p">():</span>
+    <span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-n">t</span><span class="tk-o">.</span><span class="tk-n">name</span><span class="tk-p">,</span> <span class="tk-s2">"|"</span><span class="tk-p">,</span> <span class="tk-n">t</span><span class="tk-o">.</span><span class="tk-n">description</span><span class="tk-o">.</span><span class="tk-n">splitlines</span><span class="tk-p">()[</span><span class="tk-mi">0</span><span class="tk-p">],</span> <span class="tk-s2">"|"</span><span class="tk-p">,</span> <span class="tk-n">t</span><span class="tk-o">.</span><span class="tk-n">inputSchema</span><span class="tk-p">[</span><span class="tk-s2">"properties"</span><span class="tk-p">])</span>
 </code></pre></div>
 
+<div class="run" data-group="t" data-mode="static">
+<div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span><span class="run-note">đã chạy sẵn</span><a class="run-colab" href="https://colab.research.google.com/github/truonghuu344/ai-engineer-roadmap/blob/main/notebooks/ly-thuyet/p4-7.ipynb" target="_blank" rel="noopener">Mở trên Colab ↗</a></div>
+<pre class="run-out">orders | Orders. | {&#x27;q&#x27;: {&#x27;title&#x27;: &#x27;Q&#x27;, &#x27;type&#x27;: &#x27;string&#x27;}}&#10;search_orders | Tìm đơn của một khách theo số điện thoại (10 chữ số). | {&#x27;phone&#x27;: {&#x27;title&#x27;: &#x27;Phone&#x27;, &#x27;type&#x27;: &#x27;string&#x27;}, &#x27;status&#x27;: {&#x27;anyOf&#x27;: [{&#x27;enum&#x27;: [&#x27;đang giao&#x27;, &#x27;đã giao&#x27;, &#x27;đã hủy&#x27;], &#x27;type&#x27;: &#x27;string&#x27;}, {&#x27;type&#x27;: &#x27;null&#x27;}], &#x27;default&#x27;: None, &#x27;title&#x27;: &#x27;Status&#x27;}, &#x27;limit&#x27;: {&#x27;default&#x27;: 5, &#x27;title&#x27;: &#x27;Limit&#x27;, &#x27;type&#x27;: &#x27;integer&#x27;}}</pre>
+</div>
 <p>SDK sinh schema có <code>enum</code> cho <code>status</code> từ kiểu <code>Literal</code>, nên model không thể gửi trạng thái lạ như "đang ship".</p>
 </div>
 <h3>Tool tốn token ở mọi yêu cầu</h3>
@@ -203,7 +218,8 @@
 <div class="box-h">Lỗi hay gặp</div>
 <p><strong>Phiên bản SDK.</strong> Code trong bài dùng <strong>MCP Python SDK 1.x</strong> (<code>pip install "mcp&lt;2"</code>), phiên bản phổ biến trong hầu hết tài liệu và ví dụ hiện có. Ở bản 2.x, <code>FastMCP</code> được đổi tên thành <code>MCPServer</code> (<code>from mcp.server.mcpserver import MCPServer</code>) và nhiều trường đổi sang kiểu snake_case (ví dụ <code>tool.input_schema</code> thay cho <code>tool.inputSchema</code>). Ghi rõ phiên bản trong <code>requirements.txt</code> để code không hỏng khi thư viện cập nhật.</p>
 </div>
-<div class="hl"><pre><span></span><code><span class="tk-c1"># server.py</span>
+<p>Trong notebook, dòng <code>%%writefile server.py</code> ghi cả ô thành file <code>server.py</code> (ngoài notebook thì lưu đoạn code, bỏ dòng đầu, thành file đó):</p>
+<div class="hl"><pre><span></span><code><span class="tk-o">%%</span><span class="tk-n">writefile</span> <span class="tk-n">server</span><span class="tk-o">.</span><span class="tk-n">py</span>
 <span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">typing</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">Literal</span>
 <span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">mcp.server.fastmcp</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">FastMCP</span>
 
@@ -245,12 +261,14 @@
     <span class="tk-n">mcp</span><span class="tk-o">.</span><span class="tk-n">run</span><span class="tk-p">()</span>          <span class="tk-c1"># mặc định chạy qua stdio</span>
 </code></pre></div>
 
+<div class="run" data-mode="static" data-group="t"><div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span><span class="run-note">đã chạy sẵn cần MCP SDK</span><a class="run-colab" href="https://colab.research.google.com/github/truonghuu344/ai-engineer-roadmap/blob/main/notebooks/ly-thuyet/p4-7.ipynb" target="_blank" rel="noopener">Mở trên Colab ↗</a></div><pre class="run-out">Writing server.py</pre></div>
+
 <p>SDK đọc <strong>type hint</strong> và <strong>docstring</strong> để tự sinh JSON schema và mô tả. Ví dụ schema sinh ra cho <code>get_order</code>:</p>
 <div class="hl"><pre><span></span><code><span class="tk-p">{</span><span class="tk-nt">"type"</span><span class="tk-p">:</span><span class="tk-w"> </span><span class="tk-s2">"object"</span><span class="tk-p">,</span><span class="tk-w"> </span><span class="tk-nt">"properties"</span><span class="tk-p">:</span><span class="tk-w"> </span><span class="tk-p">{</span><span class="tk-nt">"order_id"</span><span class="tk-p">:</span><span class="tk-w"> </span><span class="tk-p">{</span><span class="tk-nt">"title"</span><span class="tk-p">:</span><span class="tk-w"> </span><span class="tk-s2">"Order Id"</span><span class="tk-p">,</span><span class="tk-w"> </span><span class="tk-nt">"type"</span><span class="tk-p">:</span><span class="tk-w"> </span><span class="tk-s2">"string"</span><span class="tk-p">}},</span><span class="tk-w"> </span><span class="tk-nt">"required"</span><span class="tk-p">:</span><span class="tk-w"> </span><span class="tk-p">[</span><span class="tk-s2">"order_id"</span><span class="tk-p">]}</span>
 </code></pre></div>
 
 <h3>Client: gọi server từ code của bạn</h3>
-<div class="hl"><pre><span></span><code><span class="tk-c1"># client.py</span>
+<div class="hl"><pre><span></span><code><span class="tk-o">%%</span><span class="tk-n">writefile</span> <span class="tk-n">client</span><span class="tk-o">.</span><span class="tk-n">py</span>
 <span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">asyncio</span><span class="tk-o">,</span><span class="tk-w"> </span><span class="tk-nn">os</span><span class="tk-o">,</span><span class="tk-w"> </span><span class="tk-nn">sys</span>
 <span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">mcp</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">ClientSession</span><span class="tk-p">,</span> <span class="tk-n">StdioServerParameters</span>
 <span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">mcp.client.stdio</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">stdio_client</span>
@@ -269,6 +287,14 @@
 
 <span class="tk-n">asyncio</span><span class="tk-o">.</span><span class="tk-n">run</span><span class="tk-p">(</span><span class="tk-n">main</span><span class="tk-p">())</span>
 </code></pre></div>
+
+<div class="run" data-mode="static" data-group="t"><div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span><span class="run-note">đã chạy sẵn cần MCP SDK</span><a class="run-colab" href="https://colab.research.google.com/github/truonghuu344/ai-engineer-roadmap/blob/main/notebooks/ly-thuyet/p4-7.ipynb" target="_blank" rel="noopener">Mở trên Colab ↗</a></div><pre class="run-out">Writing client.py</pre></div>
+
+<p>Chạy client như một script riêng (client tự khởi động <code>server.py</code> làm tiến trình con):</p>
+<div class="hl"><pre><span></span><code><span class="tk-err">!</span><span class="tk-n">python</span> <span class="tk-n">client</span><span class="tk-o">.</span><span class="tk-n">py</span>
+</code></pre></div>
+
+<div class="run" data-mode="static" data-group="t"><div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span><span class="run-note">đã chạy sẵn</span><a class="run-colab" href="https://colab.research.google.com/github/truonghuu344/ai-engineer-roadmap/blob/main/notebooks/ly-thuyet/p4-7.ipynb" target="_blank" rel="noopener">Mở trên Colab ↗</a></div><pre class="run-out">[&#x27;get_order&#x27;, &#x27;search_orders&#x27;]&#10;{&#10;  &quot;error&quot;: &quot;Không có đơn DH9. Kiểm tra lại mã, dạng DH + 4 chữ số.&quot;&#10;}&#10;đang giao: 1&#10;đã giao: 1</pre></div>
 
 <p>Đã chạy thử đúng như trên. Trong agent thật, bạn chuyển <code>tools.tools</code> thành danh sách tool cho LLM (tên, mô tả, <code>inputSchema</code>), và khi LLM yêu cầu gọi tool thì gọi <code>session.call_tool</code>, như vòng lặp ở P4.4.</p>
 <div class="box pitfall">
@@ -310,7 +336,7 @@
 <div class="box check">
 <div class="box-h">Tự kiểm tra nhanh</div>
 <p>Một host bật 3 MCP server: server A có 8 tool, server B có 14 tool, server C có 6 tool. Mô tả trung bình 180 token mỗi tool.</p>
-<div class="ans" id="p4-7-t-b184-a1">
+<div class="ans" id="p4-7-t-b201-a1">
 <div class="ans-fields"><label>Tổng số tool<input inputmode="decimal" data-ans="28.0" data-tol="0.0" autocomplete="off"></label><label>Token cố định thêm vào mỗi yêu cầu<input inputmode="decimal" data-ans="5040.0" data-tol="0.0" autocomplete="off"></label><label>Nếu tắt server B khi không cần, token còn lại<input inputmode="decimal" data-ans="2520.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div>
 <div aria-live="polite" class="ans-fb"></div>
 </div>
@@ -457,7 +483,8 @@
 </details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 5</span><h3>MCP client</h3><span class="ex-tag code">code</span></div><div class="prose"><p>Viết một client Python kết nối tới server ở phần lý thuyết qua stdio, liệt kê tool, rồi gọi <code>get_order</code> với mã DH1024.</p>
 <details class="fold code">
 <summary>Code tham khảo</summary>
-<div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">asyncio</span>
+<div class="hl"><pre><span></span><code><span class="tk-o">%%</span><span class="tk-n">writefile</span> <span class="tk-n">check_server</span><span class="tk-o">.</span><span class="tk-n">py</span>
+<span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">asyncio</span>
 <span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">mcp</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">ClientSession</span><span class="tk-p">,</span> <span class="tk-n">StdioServerParameters</span>
 <span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">mcp.client.stdio</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">stdio_client</span>
 
@@ -474,6 +501,17 @@
 <span class="tk-n">asyncio</span><span class="tk-o">.</span><span class="tk-n">run</span><span class="tk-p">(</span><span class="tk-n">main</span><span class="tk-p">())</span>
 </code></pre></div>
 
+<div class="run" data-group="e5" data-mode="static">
+<div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span><span class="run-note">đã chạy sẵn cần MCP SDK</span><a class="run-colab" href="https://colab.research.google.com/github/truonghuu344/ai-engineer-roadmap/blob/main/notebooks/ly-thuyet/p4-7.ipynb" target="_blank" rel="noopener">Mở trên Colab ↗</a></div>
+<pre class="run-out">Writing check_server.py</pre>
+</div>
+<div class="hl"><pre><span></span><code><span class="tk-err">!</span><span class="tk-n">python</span> <span class="tk-n">check_server</span><span class="tk-o">.</span><span class="tk-n">py</span>
+</code></pre></div>
+
+<div class="run" data-group="e5" data-mode="py">
+<div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span></div>
+<pre class="run-out">[&#x27;get_order&#x27;, &#x27;search_orders&#x27;]&#10;[TextContent(type=&#x27;text&#x27;, text=&#x27;{\n  &quot;status&quot;: &quot;đang giao&quot;,\n  &quot;eta&quot;: &quot;2026-11-06&quot;,\n  &quot;items&quot;: [\n    &quot;bàn trang điểm&quot;\n  ]\n}&#x27;, annotations=None, meta=None)]</pre>
+</div>
 </details></div></article><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p4.7:b">Tôi đã xong phần bài tập</label><button class="btn" type="button" data-goto="thuc-hanh">Sang thực hành <span class="arr">→</span></button></div></section><section class="panel" id="thuc-hanh" role="tabpanel" hidden><div class="prose"><h2>MCP server cho dữ liệu của bạn</h2>
 <p>Viết một MCP server cho một nguồn dữ liệu bạn thật sự dùng: đơn hàng của shop (từ file CSV ở P0.1), ghi chú học tập, hoặc tiến độ lộ trình.</p>
 <p><strong>Các bước</strong></p>
@@ -498,7 +536,7 @@
     <aside class="aside">
       <div class="abox"><h4>Tiến độ bài này</h4><div class="ring"><svg viewBox="0 0 64 64" aria-hidden="true"><circle class="bg" cx="32" cy="32" r="28"/><circle class="fg" cx="32" cy="32" r="28" stroke-dasharray="176" stroke-dashoffset="176"/></svg><div><b id="ring-n">0/3</b><span id="ring-sub">phần đã xong</span></div></div></div>
       <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Vì sao cần một chuẩn</a></li><li><a href="#lt-2">Kiến trúc MCP</a></li><li><a href="#lt-3">Thiết kế tool tốt</a></li><li><a href="#lt-4">Viết MCP server bằng Python</a></li><li><a href="#lt-5">Bảo mật tool</a></li><li><a href="#lt-6">Tóm tắt bài và thuật ngữ</a></li></ol></div>
-      
+      <div class="abox"><h4>Notebook</h4><div style="display:grid;gap:8px"><a class="dl" href="https://colab.research.google.com/github/truonghuu344/ai-engineer-roadmap/blob/main/notebooks/ly-thuyet/p4-7.ipynb" target="_blank" rel="noopener"><span class="ext">COLAB</span><span>Chạy toàn bộ code của bài<span style="display:block;font:400 12px var(--f-mono);color:var(--muted)">notebook có sẵn kết quả</span></span></a></div></div>
       <div class="abox"><h4>Cùng giai đoạn</h4><ul><li><a href="p4-1.html">Bài 4 · Làm việc với LLM</a></li><li><a href="p4-2.html">Bài 5 · Embedding và RAG</a></li><li><a href="p4-3.html">Bài 6 · Đánh giá hệ thống AI</a></li><li><a href="p4-4.html">Bài 7 · Agent</a></li><li><a href="p4-5.html">RAG nâng cao</a></li><li><a href="p4-6.html">Multi-agent</a></li><li><span class=cur>MCP và hệ sinh thái tool</span></li><li><a href="p4-8.html">Guardrails, an toàn và human-in-the-loop</a></li></ul></div>
     </aside>
   </div>
@@ -602,6 +640,134 @@
       b.textContent = "Đã chép ✓"; b.classList.add("done"); setTimeout(() => { b.textContent = "Chép"; b.classList.remove("done"); }, 1600);
     }).catch(() => {}));
     h.appendChild(b);
+  });
+
+  /* runnable code: Pyodide (Python chạy ngay trong trình duyệt) */
+  const RUNS = [...document.querySelectorAll(".run")];
+  const HELPER = `
+import ast, sys, io, base64, traceback, os, warnings
+os.environ.setdefault("MPLBACKEND", "AGG")
+warnings.filterwarnings("ignore", message=".*non-interactive.*")
+import ast
+ACTION = {"manual_seed", "seed", "write_text", "write", "load_dotenv", "savefig", "set_title", "set_xlabel", "set_ylabel",
+          "legend", "plot", "scatter", "bar", "barh", "hist", "imshow", "append", "extend", "update", "add", "fit", "backward",
+          "step", "zero_grad", "mkdir", "makedirs", "sleep", "close", "flush", "print", "show", "axhline", "axvline", "text",
+          "tight_layout", "subplots_adjust", "set_xlim", "set_ylim", "grid", "insert", "remove", "clear", "sort", "shuffle",
+          "to_csv", "save", "load_state_dict", "train", "eval", "requires_grad_", "set_printoptions", "filterwarnings",
+          "use", "setdefault", "register_buffer", "rc", "add_node", "add_edge", "add_conditional_edges", "set_entry_point", "login", "mount", "seed_everything", "log", "finish", "init", "info", "debug", "warning", "put", "add_argument", "set_xticks", "set_yticks", "annotate", "fill_between", "suptitle", "figure", "subplot"}
+
+
+def legacy_numpy_repr():
+    import sys
+    if "numpy" in sys.modules:
+        sys.modules["numpy"].set_printoptions(legacy="1.25")     # in 0.87 thay vì np.float64(0.87)
+
+
+def transform(code):
+    lines = code.split("\\n")
+    tree = ast.parse(code)
+    n = len(tree.body)
+    for k, node in enumerate(tree.body):
+        if not isinstance(node, ast.Expr):
+            continue
+        v = node.value
+        if isinstance(v, ast.Constant) and isinstance(v.value, str):          # docstring / string literal alone
+            continue
+        if isinstance(v, ast.Await):
+            continue
+        name = None
+        if isinstance(v, ast.Call):
+            f = v.func
+            name = f.attr if isinstance(f, ast.Attribute) else (f.id if isinstance(f, ast.Name) else None)
+        tail = lines[node.end_lineno - 1][node.end_col_offset:]
+        commented = "#" in tail
+        last = k == n - 1
+        if name in ACTION:
+            continue
+        if last or commented:
+            node.value = ast.Call(func=ast.Name("__show__", ast.Load()), args=[v], keywords=[])
+    ast.fix_missing_locations(tree)
+    return tree
+
+def __aie_run(code, ns):
+    buf = io.StringIO(); so, se = sys.stdout, sys.stderr; sys.stdout = sys.stderr = buf; ok = True
+    def show(v):
+        if v is None: return
+        try:
+            import pandas as pd
+            if isinstance(v, (pd.DataFrame, pd.Series)):
+                print(v.to_string(max_rows=20)); return
+        except Exception:
+            pass
+        print(repr(v))
+    ns["__show__"] = show
+    try:
+        legacy_numpy_repr(); exec(compile(transform(code), "<cell>", "exec"), ns)
+    except BaseException:
+        ok = False
+        et, ev, tb = sys.exc_info(); lines = traceback.format_exception(et, ev, tb)
+        print("".join(l for l in lines if "<cell>" in l or l is lines[-1]), end="")
+    finally:
+        sys.stdout, sys.stderr = so, se
+    imgs = []
+    if "matplotlib.pyplot" in sys.modules:
+        plt = sys.modules["matplotlib.pyplot"]
+        for n in plt.get_fignums():
+            b = io.BytesIO(); plt.figure(n).savefig(b, format="png", dpi=100, bbox_inches="tight", facecolor="white")
+            imgs.append(base64.b64encode(b.getvalue()).decode())
+        plt.close("all")
+    return [buf.getvalue()[-20000:], imgs, ok]
+`;
+  let pyP = null; const NS = {}, done = new Set();
+  function loadPy() {
+    if (pyP) return pyP;
+    const base = window.AIE_PYODIDE || "https://cdn.jsdelivr.net/pyodide/v0.28.3/full/";
+    pyP = new Promise((res, rej) => {
+      if (window.loadPyodide) return res();
+      const s = document.createElement("script"); s.src = base + "pyodide.js"; s.onload = () => res(); s.onerror = () => rej(new Error("load"));
+      document.head.appendChild(s);
+    }).then(() => window.loadPyodide({ indexURL: base })).then((py) => { py.runPython(HELPER); return py; });
+    pyP.catch(() => { pyP = null; });
+    return pyP;
+  }
+  const codeOf = (r) => r.previousElementSibling.querySelector("pre").innerText.replace(/\n$/, "");
+  async function exec(py, r, code) {
+    const g = r.dataset.group;
+    if (!NS[g]) NS[g] = py.globals.get("dict")();
+    try { await py.loadPackagesFromImports(code); } catch (e) {}
+    const res = py.globals.get("__aie_run")(code, NS[g]); const [out, imgs, ok] = res.toJs(); res.destroy();
+    return { out, imgs, ok };
+  }
+  function paint(r, res) {
+    r.querySelectorAll(".run-out, img").forEach((x) => x.remove());
+    const pre = document.createElement("pre"); pre.className = "run-out" + (res.out ? "" : " run-empty");
+    pre.textContent = res.out || "(chạy xong, không in ra gì)"; r.appendChild(pre);
+    res.imgs.forEach((b) => { const im = document.createElement("img"); im.alt = "Hình do đoạn code vẽ"; im.src = "data:image/png;base64," + b; r.appendChild(im); });
+    r.classList.toggle("err", !res.ok);
+  }
+  RUNS.filter((r) => r.dataset.mode === "py" && r.previousElementSibling && r.previousElementSibling.classList.contains("hl")).forEach((r) => {
+    const hl = r.previousElementSibling, pre = hl.querySelector("pre"), orig = pre.innerHTML;
+    const bar = r.querySelector(".run-bar"), box = document.createElement("span"); box.className = "run-btns";
+    const st = document.createElement("span"); st.className = "run-status";
+    const mk = (t, cls) => { const b = document.createElement("button"); b.type = "button"; b.className = "run-btn " + cls; b.textContent = t; box.appendChild(b); return b; };
+    const ed = mk("Sửa code", ""), go = mk("▶ Chạy", "go");
+    bar.appendChild(st); bar.appendChild(box);
+    ed.addEventListener("click", () => {
+      if (pre.hasAttribute("contenteditable")) { pre.removeAttribute("contenteditable"); pre.innerHTML = orig; ed.textContent = "Sửa code"; return; }
+      try { pre.contentEditable = "plaintext-only"; } catch (e) { pre.contentEditable = "true"; }
+      if (pre.contentEditable !== "plaintext-only") pre.contentEditable = "true";
+      pre.spellcheck = false; pre.focus(); ed.textContent = "Khôi phục code gốc";
+    });
+    go.addEventListener("click", async () => {
+      go.disabled = true; st.textContent = pyP ? "Đang chạy…" : "Đang tải Python trong trình duyệt (lần đầu khoảng 10–30 giây)…";
+      try {
+        const py = await loadPy(); st.textContent = "Đang chạy…";
+        const same = RUNS.filter((x) => x.dataset.group === r.dataset.group && x.dataset.mode === "py");
+        for (const x of same.slice(0, same.indexOf(r))) if (!done.has(x)) { await exec(py, x, codeOf(x)); done.add(x); }
+        const res = await exec(py, r, codeOf(r)); done.add(r); paint(r, res); st.textContent = res.ok ? "" : "Có lỗi, xem bên dưới";
+      } catch (e) { console.error("aie-run", e); st.textContent = "Không tải được Python trong trình duyệt. Kiểm tra mạng rồi thử lại."; }
+      go.disabled = false;
+    });
   });
 
   /* highlight current theory section in the toc */

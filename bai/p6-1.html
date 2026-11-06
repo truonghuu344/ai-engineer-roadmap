@@ -106,6 +106,8 @@ Tôi muốn đổi size áo đơn DH1024&lt;|im_end|&gt;
  <span class="tk-s2">"completion"</span><span class="tk-p">:</span> <span class="tk-p">[{</span><span class="tk-s2">"role"</span><span class="tk-p">:</span> <span class="tk-s2">"assistant"</span><span class="tk-p">,</span> <span class="tk-s2">"content"</span><span class="tk-p">:</span> <span class="tk-s2">"{</span><span class="tk-se">\"</span><span class="tk-s2">intent</span><span class="tk-se">\"</span><span class="tk-s2">: </span><span class="tk-se">\"</span><span class="tk-s2">đổi hàng</span><span class="tk-se">\"</span><span class="tk-s2">, </span><span class="tk-se">\"</span><span class="tk-s2">order</span><span class="tk-se">\"</span><span class="tk-s2">: </span><span class="tk-se">\"</span><span class="tk-s2">DH1024</span><span class="tk-se">\"</span><span class="tk-s2">}"</span><span class="tk-p">}]}</span>
 </code></pre></div>
 
+<div class="run" data-mode="py" data-group="t"><div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span></div><pre class="run-out">{&#x27;prompt&#x27;: [{&#x27;role&#x27;: &#x27;system&#x27;, &#x27;content&#x27;: &#x27;Trích xuất ý định và mã đơn. Chỉ trả JSON.&#x27;}, {&#x27;role&#x27;: &#x27;user&#x27;, &#x27;content&#x27;: &#x27;Tôi muốn đổi size áo đơn DH1024&#x27;}], &#x27;completion&#x27;: [{&#x27;role&#x27;: &#x27;assistant&#x27;, &#x27;content&#x27;: &#x27;{&quot;intent&quot;: &quot;đổi hàng&quot;, &quot;order&quot;: &quot;DH1024&quot;}&#x27;}]}</pre></div>
+
 <h2 id="lt-3">LoRA và QLoRA cho LLM</h2>
 <h3>Bộ nhớ khi fine-tune toàn bộ</h3>
 <p>Fine-tune toàn bộ với Adam (mixed precision) tốn khoảng 16 byte mỗi tham số: trọng số và gradient, cộng hai trạng thái Adam và bản sao trọng số fp32. Chưa tính activation (phụ thuộc độ dài chuỗi và batch).</p>
@@ -250,7 +252,7 @@ Tôi muốn đổi size áo đơn DH1024&lt;|im_end|&gt;
 </div>
 <div class="box check">
 <div class="box-h">Tự kiểm tra nhanh</div>
-<div class="ans" id="p6-1-t-b111-a1">
+<div class="ans" id="p6-1-t-b114-a1">
 <div class="ans-fields"><label>Ví dụ 220 token prompt + 60 token câu trả lời: tỉ lệ token tính loss (2 chữ số thập phân)<input inputmode="decimal" data-ans="0.21" data-tol="0.01" autocomplete="off"></label><label>960 ví dụ train, batch hiệu dụng 16, 3 epoch: tổng số bước<input inputmode="decimal" data-ans="180.0" data-tol="0.0" autocomplete="off"></label><label>Ma trận 3584 → 512, LoRA r = 16: số tham số<input inputmode="decimal" data-ans="65536.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div>
 <div aria-live="polite" class="ans-fb"></div>
 </div>
@@ -366,27 +368,42 @@ Tôi muốn đổi size áo đơn DH1024&lt;|im_end|&gt;
 <li>Fine-tune model nhỏ (hoặc encoder như PhoBERT) bằng dữ liệu LLM lớn đã gán nhãn: rẻ hơn hàng chục lần, nhanh hơn.</li>
 <li>Thử structured output của API và thêm validate + thử lại trước; nếu vẫn chưa đủ, fine-tune nhẹ trên các ca lỗi.</li>
 </ol>
-</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 5</span><h3>Định dạng dữ liệu hội thoại</h3><span class="ex-tag code">code</span></div><div class="prose"><p>Chuyển một file CSV có cột <code>text</code> (email khách hàng) và <code>json_label</code> (đáp án trích xuất) thành file JSONL dạng <code>messages</code> cho SFT, có system prompt cố định. In ra một mẫu sau khi áp chat template của tokenizer.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 5</span><h3>Định dạng dữ liệu hội thoại</h3><span class="ex-tag code">code</span></div><div class="prose"><p>Chuyển một file CSV có cột <code>text</code> (email khách hàng) và <code>json_label</code> (đáp án trích xuất) thành file JSONL dạng <code>prompt</code>/<code>completion</code> cho SFT (để loss chỉ tính trên câu trả lời), có system prompt cố định. In ra một mẫu sau khi áp chat template của tokenizer.</p>
 <details class="fold code">
 <summary>Code tham khảo</summary>
 <div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">json</span><span class="tk-o">,</span><span class="tk-w"> </span><span class="tk-nn">pandas</span><span class="tk-w"> </span><span class="tk-k">as</span><span class="tk-w"> </span><span class="tk-nn">pd</span>
-<span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">transformers</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">AutoTokenizer</span>
+
+<span class="tk-c1"># file mẫu 2 dòng để chạy thử (dữ liệu thật: vài trăm tới vài nghìn dòng)</span>
+<span class="tk-n">pd</span><span class="tk-o">.</span><span class="tk-n">DataFrame</span><span class="tk-p">({</span><span class="tk-s2">"text"</span><span class="tk-p">:</span> <span class="tk-p">[</span><span class="tk-s2">"Đơn DH1024 giao sai màu ghế, mình cần đổi gấp trước thứ 7."</span><span class="tk-p">,</span> <span class="tk-s2">"Cho hỏi bàn trang điểm còn hàng không?"</span><span class="tk-p">],</span>
+              <span class="tk-s2">"json_label"</span><span class="tk-p">:</span> <span class="tk-p">[</span><span class="tk-s1">'{"intent": "đổi hàng", "order": "DH1024", "product": "ghế", "urgent": true}'</span><span class="tk-p">,</span>
+                             <span class="tk-s1">'{"intent": "hỏi hàng", "order": null, "product": "bàn trang điểm", "urgent": false}'</span><span class="tk-p">]}</span>
+             <span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">to_csv</span><span class="tk-p">(</span><span class="tk-s2">"emails.csv"</span><span class="tk-p">,</span> <span class="tk-n">index</span><span class="tk-o">=</span><span class="tk-kc">False</span><span class="tk-p">)</span>
 
 <span class="tk-n">SYSTEM</span> <span class="tk-o">=</span> <span class="tk-s2">"Trích xuất ý định, mã đơn, sản phẩm và mức khẩn từ email khách hàng. Chỉ trả JSON."</span>
 <span class="tk-n">df</span> <span class="tk-o">=</span> <span class="tk-n">pd</span><span class="tk-o">.</span><span class="tk-n">read_csv</span><span class="tk-p">(</span><span class="tk-s2">"emails.csv"</span><span class="tk-p">)</span>
 <span class="tk-k">with</span> <span class="tk-nb">open</span><span class="tk-p">(</span><span class="tk-s2">"train.jsonl"</span><span class="tk-p">,</span> <span class="tk-s2">"w"</span><span class="tk-p">,</span> <span class="tk-n">encoding</span><span class="tk-o">=</span><span class="tk-s2">"utf-8"</span><span class="tk-p">)</span> <span class="tk-k">as</span> <span class="tk-n">f</span><span class="tk-p">:</span>
     <span class="tk-k">for</span> <span class="tk-n">_</span><span class="tk-p">,</span> <span class="tk-n">r</span> <span class="tk-ow">in</span> <span class="tk-n">df</span><span class="tk-o">.</span><span class="tk-n">iterrows</span><span class="tk-p">():</span>
-        <span class="tk-n">f</span><span class="tk-o">.</span><span class="tk-n">write</span><span class="tk-p">(</span><span class="tk-n">json</span><span class="tk-o">.</span><span class="tk-n">dumps</span><span class="tk-p">({</span><span class="tk-s2">"messages"</span><span class="tk-p">:</span> <span class="tk-p">[</span>
-            <span class="tk-p">{</span><span class="tk-s2">"role"</span><span class="tk-p">:</span> <span class="tk-s2">"system"</span><span class="tk-p">,</span> <span class="tk-s2">"content"</span><span class="tk-p">:</span> <span class="tk-n">SYSTEM</span><span class="tk-p">},</span>
-            <span class="tk-p">{</span><span class="tk-s2">"role"</span><span class="tk-p">:</span> <span class="tk-s2">"user"</span><span class="tk-p">,</span> <span class="tk-s2">"content"</span><span class="tk-p">:</span> <span class="tk-n">r</span><span class="tk-p">[</span><span class="tk-s2">"text"</span><span class="tk-p">]},</span>
-            <span class="tk-p">{</span><span class="tk-s2">"role"</span><span class="tk-p">:</span> <span class="tk-s2">"assistant"</span><span class="tk-p">,</span> <span class="tk-s2">"content"</span><span class="tk-p">:</span> <span class="tk-n">r</span><span class="tk-p">[</span><span class="tk-s2">"json_label"</span><span class="tk-p">]},</span>
-        <span class="tk-p">]},</span> <span class="tk-n">ensure_ascii</span><span class="tk-o">=</span><span class="tk-kc">False</span><span class="tk-p">)</span> <span class="tk-o">+</span> <span class="tk-s2">"</span><span class="tk-se">\n</span><span class="tk-s2">"</span><span class="tk-p">)</span>
-
-<span class="tk-n">tok</span> <span class="tk-o">=</span> <span class="tk-n">AutoTokenizer</span><span class="tk-o">.</span><span class="tk-n">from_pretrained</span><span class="tk-p">(</span><span class="tk-s2">"Qwen/Qwen2.5-0.5B-Instruct"</span><span class="tk-p">)</span>
-<span class="tk-n">sample</span> <span class="tk-o">=</span> <span class="tk-n">json</span><span class="tk-o">.</span><span class="tk-n">loads</span><span class="tk-p">(</span><span class="tk-nb">open</span><span class="tk-p">(</span><span class="tk-s2">"train.jsonl"</span><span class="tk-p">,</span> <span class="tk-n">encoding</span><span class="tk-o">=</span><span class="tk-s2">"utf-8"</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">readline</span><span class="tk-p">())</span>
-<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-n">tok</span><span class="tk-o">.</span><span class="tk-n">apply_chat_template</span><span class="tk-p">(</span><span class="tk-n">sample</span><span class="tk-p">[</span><span class="tk-s2">"messages"</span><span class="tk-p">],</span> <span class="tk-n">tokenize</span><span class="tk-o">=</span><span class="tk-kc">False</span><span class="tk-p">))</span>
+        <span class="tk-n">f</span><span class="tk-o">.</span><span class="tk-n">write</span><span class="tk-p">(</span><span class="tk-n">json</span><span class="tk-o">.</span><span class="tk-n">dumps</span><span class="tk-p">({</span>
+            <span class="tk-s2">"prompt"</span><span class="tk-p">:</span> <span class="tk-p">[{</span><span class="tk-s2">"role"</span><span class="tk-p">:</span> <span class="tk-s2">"system"</span><span class="tk-p">,</span> <span class="tk-s2">"content"</span><span class="tk-p">:</span> <span class="tk-n">SYSTEM</span><span class="tk-p">},</span> <span class="tk-p">{</span><span class="tk-s2">"role"</span><span class="tk-p">:</span> <span class="tk-s2">"user"</span><span class="tk-p">,</span> <span class="tk-s2">"content"</span><span class="tk-p">:</span> <span class="tk-n">r</span><span class="tk-p">[</span><span class="tk-s2">"text"</span><span class="tk-p">]}],</span>
+            <span class="tk-s2">"completion"</span><span class="tk-p">:</span> <span class="tk-p">[{</span><span class="tk-s2">"role"</span><span class="tk-p">:</span> <span class="tk-s2">"assistant"</span><span class="tk-p">,</span> <span class="tk-s2">"content"</span><span class="tk-p">:</span> <span class="tk-n">r</span><span class="tk-p">[</span><span class="tk-s2">"json_label"</span><span class="tk-p">]}],</span>
+        <span class="tk-p">},</span> <span class="tk-n">ensure_ascii</span><span class="tk-o">=</span><span class="tk-kc">False</span><span class="tk-p">)</span> <span class="tk-o">+</span> <span class="tk-s2">"</span><span class="tk-se">\n</span><span class="tk-s2">"</span><span class="tk-p">)</span>
+<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-nb">open</span><span class="tk-p">(</span><span class="tk-s2">"train.jsonl"</span><span class="tk-p">,</span> <span class="tk-n">encoding</span><span class="tk-o">=</span><span class="tk-s2">"utf-8"</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">readline</span><span class="tk-p">())</span>
 </code></pre></div>
 
+<div class="run" data-group="e5" data-mode="py">
+<div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span></div>
+<pre class="run-out">{&quot;prompt&quot;: [{&quot;role&quot;: &quot;system&quot;, &quot;content&quot;: &quot;Trích xuất ý định, mã đơn, sản phẩm và mức khẩn từ email khách hàng. Chỉ trả JSON.&quot;}, {&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: &quot;Đơn DH1024 giao sai màu ghế, mình cần đổi gấp trước thứ 7.&quot;}], &quot;completion&quot;: [{&quot;role&quot;: &quot;assistant&quot;, &quot;content&quot;: &quot;{\&quot;intent\&quot;: \&quot;đổi hàng\&quot;, \&quot;order\&quot;: \&quot;DH1024\&quot;, \&quot;product\&quot;: \&quot;ghế\&quot;, \&quot;urgent\&quot;: true}&quot;}]}</pre>
+</div>
+<div class="hl"><pre><span></span><code><span class="tk-c1"># Cần mạng: tải tokenizer Qwen từ Hugging Face (chạy trên Colab)</span>
+<span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">transformers</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">AutoTokenizer</span>
+<span class="tk-n">tok</span> <span class="tk-o">=</span> <span class="tk-n">AutoTokenizer</span><span class="tk-o">.</span><span class="tk-n">from_pretrained</span><span class="tk-p">(</span><span class="tk-s2">"Qwen/Qwen2.5-0.5B-Instruct"</span><span class="tk-p">)</span>
+<span class="tk-n">sample</span> <span class="tk-o">=</span> <span class="tk-n">json</span><span class="tk-o">.</span><span class="tk-n">loads</span><span class="tk-p">(</span><span class="tk-nb">open</span><span class="tk-p">(</span><span class="tk-s2">"train.jsonl"</span><span class="tk-p">,</span> <span class="tk-n">encoding</span><span class="tk-o">=</span><span class="tk-s2">"utf-8"</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">readline</span><span class="tk-p">())</span>
+<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-n">tok</span><span class="tk-o">.</span><span class="tk-n">apply_chat_template</span><span class="tk-p">(</span><span class="tk-n">sample</span><span class="tk-p">[</span><span class="tk-s2">"prompt"</span><span class="tk-p">]</span> <span class="tk-o">+</span> <span class="tk-n">sample</span><span class="tk-p">[</span><span class="tk-s2">"completion"</span><span class="tk-p">],</span> <span class="tk-n">tokenize</span><span class="tk-o">=</span><span class="tk-kc">False</span><span class="tk-p">))</span>
+</code></pre></div>
+
+<div class="run run-skip" data-group="e5" data-mode="static">
+<div class="run-bar"><span class="run-lbl">Không chạy trên trang</span><span class="run-note">Cần mạng: tải tokenizer Qwen từ Hugging Face (chạy trên Colab)</span><a class="run-colab" href="https://colab.research.google.com/github/truonghuu344/ai-engineer-roadmap/blob/main/notebooks/ly-thuyet/p6-1.ipynb" target="_blank" rel="noopener">Mở trên Colab ↗</a></div>
+</div>
 </details></div></article><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p6.1:b">Tôi đã xong phần bài tập</label><button class="btn" type="button" data-goto="thuc-hanh">Sang thực hành <span class="arr">→</span></button></div></section><section class="panel" id="thuc-hanh" role="tabpanel" hidden><div class="prose"><h2>Lab 8: fine-tune Qwen bằng LoRA cho một tác vụ tiếng Việt</h2>
 <p>Chọn một tác vụ hẹp, ví dụ trích xuất thông tin từ email khách hàng (dùng lại dữ liệu Lab 4), phân loại cảm xúc review, hoặc chuyển văn nói sang văn viết.</p>
 <p><strong>Các bước</strong></p>
@@ -412,7 +429,7 @@ Tôi muốn đổi size áo đơn DH1024&lt;|im_end|&gt;
 <span class="tk-n">ds</span> <span class="tk-o">=</span> <span class="tk-n">load_dataset</span><span class="tk-p">(</span><span class="tk-s2">"json"</span><span class="tk-p">,</span> <span class="tk-n">data_files</span><span class="tk-o">=</span><span class="tk-p">{</span><span class="tk-s2">"train"</span><span class="tk-p">:</span> <span class="tk-s2">"train.jsonl"</span><span class="tk-p">,</span> <span class="tk-s2">"validation"</span><span class="tk-p">:</span> <span class="tk-s2">"val.jsonl"</span><span class="tk-p">})</span>
 <span class="tk-n">peft_cfg</span> <span class="tk-o">=</span> <span class="tk-n">LoraConfig</span><span class="tk-p">(</span><span class="tk-n">r</span><span class="tk-o">=</span><span class="tk-mi">16</span><span class="tk-p">,</span> <span class="tk-n">lora_alpha</span><span class="tk-o">=</span><span class="tk-mi">32</span><span class="tk-p">,</span> <span class="tk-n">lora_dropout</span><span class="tk-o">=</span><span class="tk-mf">0.05</span><span class="tk-p">,</span> <span class="tk-n">target_modules</span><span class="tk-o">=</span><span class="tk-s2">"all-linear"</span><span class="tk-p">,</span> <span class="tk-n">task_type</span><span class="tk-o">=</span><span class="tk-s2">"CAUSAL_LM"</span><span class="tk-p">)</span>
 <span class="tk-n">args</span> <span class="tk-o">=</span> <span class="tk-n">SFTConfig</span><span class="tk-p">(</span><span class="tk-n">output_dir</span><span class="tk-o">=</span><span class="tk-s2">"qwen-extract-lora"</span><span class="tk-p">,</span> <span class="tk-n">num_train_epochs</span><span class="tk-o">=</span><span class="tk-mi">3</span><span class="tk-p">,</span> <span class="tk-n">per_device_train_batch_size</span><span class="tk-o">=</span><span class="tk-mi">8</span><span class="tk-p">,</span>
-                 <span class="tk-n">gradient_accumulation_steps</span><span class="tk-o">=</span><span class="tk-mi">2</span><span class="tk-p">,</span> <span class="tk-n">learning_rate</span><span class="tk-o">=</span><span class="tk-mf">2e-4</span><span class="tk-p">,</span> <span class="tk-n">lr_scheduler_type</span><span class="tk-o">=</span><span class="tk-s2">"cosine"</span><span class="tk-p">,</span> <span class="tk-n">warmup_ratio</span><span class="tk-o">=</span><span class="tk-mf">0.05</span><span class="tk-p">,</span>
+                 <span class="tk-n">gradient_accumulation_steps</span><span class="tk-o">=</span><span class="tk-mi">2</span><span class="tk-p">,</span> <span class="tk-n">learning_rate</span><span class="tk-o">=</span><span class="tk-mf">2e-4</span><span class="tk-p">,</span> <span class="tk-n">lr_scheduler_type</span><span class="tk-o">=</span><span class="tk-s2">"cosine"</span><span class="tk-p">,</span> <span class="tk-n">warmup_steps</span><span class="tk-o">=</span><span class="tk-mf">0.05</span><span class="tk-p">,</span>
                  <span class="tk-n">logging_steps</span><span class="tk-o">=</span><span class="tk-mi">10</span><span class="tk-p">,</span> <span class="tk-n">eval_strategy</span><span class="tk-o">=</span><span class="tk-s2">"epoch"</span><span class="tk-p">,</span> <span class="tk-n">save_strategy</span><span class="tk-o">=</span><span class="tk-s2">"epoch"</span><span class="tk-p">,</span> <span class="tk-n">fp16</span><span class="tk-o">=</span><span class="tk-kc">True</span><span class="tk-p">,</span> <span class="tk-n">report_to</span><span class="tk-o">=</span><span class="tk-s2">"none"</span><span class="tk-p">)</span>
 <span class="tk-n">trainer</span> <span class="tk-o">=</span> <span class="tk-n">SFTTrainer</span><span class="tk-p">(</span><span class="tk-n">model</span><span class="tk-o">=</span><span class="tk-s2">"Qwen/Qwen2.5-0.5B-Instruct"</span><span class="tk-p">,</span> <span class="tk-n">args</span><span class="tk-o">=</span><span class="tk-n">args</span><span class="tk-p">,</span> <span class="tk-n">train_dataset</span><span class="tk-o">=</span><span class="tk-n">ds</span><span class="tk-p">[</span><span class="tk-s2">"train"</span><span class="tk-p">],</span>
                      <span class="tk-n">eval_dataset</span><span class="tk-o">=</span><span class="tk-n">ds</span><span class="tk-p">[</span><span class="tk-s2">"validation"</span><span class="tk-p">],</span> <span class="tk-n">peft_config</span><span class="tk-o">=</span><span class="tk-n">peft_cfg</span><span class="tk-p">)</span>
@@ -427,7 +444,7 @@ Tôi muốn đổi size áo đơn DH1024&lt;|im_end|&gt;
     <aside class="aside">
       <div class="abox"><h4>Tiến độ bài này</h4><div class="ring"><svg viewBox="0 0 64 64" aria-hidden="true"><circle class="bg" cx="32" cy="32" r="28"/><circle class="fg" cx="32" cy="32" r="28" stroke-dasharray="176" stroke-dashoffset="176"/></svg><div><b id="ring-n">0/3</b><span id="ring-sub">phần đã xong</span></div></div></div>
       <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Khi nào fine-tune</a></li><li><a href="#lt-2">Supervised fine-tuning</a></li><li><a href="#lt-3">LoRA và QLoRA cho LLM</a></li><li><a href="#lt-4">Dữ liệu</a></li><li><a href="#lt-5">Bẫy thường gặp</a></li><li><a href="#lt-6">Tóm tắt bài và thuật ngữ</a></li></ol></div>
-      
+      <div class="abox"><h4>Notebook</h4><div style="display:grid;gap:8px"><a class="dl" href="https://colab.research.google.com/github/truonghuu344/ai-engineer-roadmap/blob/main/notebooks/ly-thuyet/p6-1.ipynb" target="_blank" rel="noopener"><span class="ext">COLAB</span><span>Chạy toàn bộ code của bài<span style="display:block;font:400 12px var(--f-mono);color:var(--muted)">notebook có sẵn kết quả</span></span></a></div></div>
       <div class="abox"><h4>Cùng giai đoạn</h4><ul><li><span class=cur>Bài 8a · SFT và PEFT</span></li><li><a href="p6-2.html">Bài 8b · Preference tuning</a></li><li><a href="p6-3.html">Quantization và inference nhanh</a></li></ul></div>
     </aside>
   </div>
@@ -531,6 +548,134 @@ Tôi muốn đổi size áo đơn DH1024&lt;|im_end|&gt;
       b.textContent = "Đã chép ✓"; b.classList.add("done"); setTimeout(() => { b.textContent = "Chép"; b.classList.remove("done"); }, 1600);
     }).catch(() => {}));
     h.appendChild(b);
+  });
+
+  /* runnable code: Pyodide (Python chạy ngay trong trình duyệt) */
+  const RUNS = [...document.querySelectorAll(".run")];
+  const HELPER = `
+import ast, sys, io, base64, traceback, os, warnings
+os.environ.setdefault("MPLBACKEND", "AGG")
+warnings.filterwarnings("ignore", message=".*non-interactive.*")
+import ast
+ACTION = {"manual_seed", "seed", "write_text", "write", "load_dotenv", "savefig", "set_title", "set_xlabel", "set_ylabel",
+          "legend", "plot", "scatter", "bar", "barh", "hist", "imshow", "append", "extend", "update", "add", "fit", "backward",
+          "step", "zero_grad", "mkdir", "makedirs", "sleep", "close", "flush", "print", "show", "axhline", "axvline", "text",
+          "tight_layout", "subplots_adjust", "set_xlim", "set_ylim", "grid", "insert", "remove", "clear", "sort", "shuffle",
+          "to_csv", "save", "load_state_dict", "train", "eval", "requires_grad_", "set_printoptions", "filterwarnings",
+          "use", "setdefault", "register_buffer", "rc", "add_node", "add_edge", "add_conditional_edges", "set_entry_point", "login", "mount", "seed_everything", "log", "finish", "init", "info", "debug", "warning", "put", "add_argument", "set_xticks", "set_yticks", "annotate", "fill_between", "suptitle", "figure", "subplot"}
+
+
+def legacy_numpy_repr():
+    import sys
+    if "numpy" in sys.modules:
+        sys.modules["numpy"].set_printoptions(legacy="1.25")     # in 0.87 thay vì np.float64(0.87)
+
+
+def transform(code):
+    lines = code.split("\\n")
+    tree = ast.parse(code)
+    n = len(tree.body)
+    for k, node in enumerate(tree.body):
+        if not isinstance(node, ast.Expr):
+            continue
+        v = node.value
+        if isinstance(v, ast.Constant) and isinstance(v.value, str):          # docstring / string literal alone
+            continue
+        if isinstance(v, ast.Await):
+            continue
+        name = None
+        if isinstance(v, ast.Call):
+            f = v.func
+            name = f.attr if isinstance(f, ast.Attribute) else (f.id if isinstance(f, ast.Name) else None)
+        tail = lines[node.end_lineno - 1][node.end_col_offset:]
+        commented = "#" in tail
+        last = k == n - 1
+        if name in ACTION:
+            continue
+        if last or commented:
+            node.value = ast.Call(func=ast.Name("__show__", ast.Load()), args=[v], keywords=[])
+    ast.fix_missing_locations(tree)
+    return tree
+
+def __aie_run(code, ns):
+    buf = io.StringIO(); so, se = sys.stdout, sys.stderr; sys.stdout = sys.stderr = buf; ok = True
+    def show(v):
+        if v is None: return
+        try:
+            import pandas as pd
+            if isinstance(v, (pd.DataFrame, pd.Series)):
+                print(v.to_string(max_rows=20)); return
+        except Exception:
+            pass
+        print(repr(v))
+    ns["__show__"] = show
+    try:
+        legacy_numpy_repr(); exec(compile(transform(code), "<cell>", "exec"), ns)
+    except BaseException:
+        ok = False
+        et, ev, tb = sys.exc_info(); lines = traceback.format_exception(et, ev, tb)
+        print("".join(l for l in lines if "<cell>" in l or l is lines[-1]), end="")
+    finally:
+        sys.stdout, sys.stderr = so, se
+    imgs = []
+    if "matplotlib.pyplot" in sys.modules:
+        plt = sys.modules["matplotlib.pyplot"]
+        for n in plt.get_fignums():
+            b = io.BytesIO(); plt.figure(n).savefig(b, format="png", dpi=100, bbox_inches="tight", facecolor="white")
+            imgs.append(base64.b64encode(b.getvalue()).decode())
+        plt.close("all")
+    return [buf.getvalue()[-20000:], imgs, ok]
+`;
+  let pyP = null; const NS = {}, done = new Set();
+  function loadPy() {
+    if (pyP) return pyP;
+    const base = window.AIE_PYODIDE || "https://cdn.jsdelivr.net/pyodide/v0.28.3/full/";
+    pyP = new Promise((res, rej) => {
+      if (window.loadPyodide) return res();
+      const s = document.createElement("script"); s.src = base + "pyodide.js"; s.onload = () => res(); s.onerror = () => rej(new Error("load"));
+      document.head.appendChild(s);
+    }).then(() => window.loadPyodide({ indexURL: base })).then((py) => { py.runPython(HELPER); return py; });
+    pyP.catch(() => { pyP = null; });
+    return pyP;
+  }
+  const codeOf = (r) => r.previousElementSibling.querySelector("pre").innerText.replace(/\n$/, "");
+  async function exec(py, r, code) {
+    const g = r.dataset.group;
+    if (!NS[g]) NS[g] = py.globals.get("dict")();
+    try { await py.loadPackagesFromImports(code); } catch (e) {}
+    const res = py.globals.get("__aie_run")(code, NS[g]); const [out, imgs, ok] = res.toJs(); res.destroy();
+    return { out, imgs, ok };
+  }
+  function paint(r, res) {
+    r.querySelectorAll(".run-out, img").forEach((x) => x.remove());
+    const pre = document.createElement("pre"); pre.className = "run-out" + (res.out ? "" : " run-empty");
+    pre.textContent = res.out || "(chạy xong, không in ra gì)"; r.appendChild(pre);
+    res.imgs.forEach((b) => { const im = document.createElement("img"); im.alt = "Hình do đoạn code vẽ"; im.src = "data:image/png;base64," + b; r.appendChild(im); });
+    r.classList.toggle("err", !res.ok);
+  }
+  RUNS.filter((r) => r.dataset.mode === "py" && r.previousElementSibling && r.previousElementSibling.classList.contains("hl")).forEach((r) => {
+    const hl = r.previousElementSibling, pre = hl.querySelector("pre"), orig = pre.innerHTML;
+    const bar = r.querySelector(".run-bar"), box = document.createElement("span"); box.className = "run-btns";
+    const st = document.createElement("span"); st.className = "run-status";
+    const mk = (t, cls) => { const b = document.createElement("button"); b.type = "button"; b.className = "run-btn " + cls; b.textContent = t; box.appendChild(b); return b; };
+    const ed = mk("Sửa code", ""), go = mk("▶ Chạy", "go");
+    bar.appendChild(st); bar.appendChild(box);
+    ed.addEventListener("click", () => {
+      if (pre.hasAttribute("contenteditable")) { pre.removeAttribute("contenteditable"); pre.innerHTML = orig; ed.textContent = "Sửa code"; return; }
+      try { pre.contentEditable = "plaintext-only"; } catch (e) { pre.contentEditable = "true"; }
+      if (pre.contentEditable !== "plaintext-only") pre.contentEditable = "true";
+      pre.spellcheck = false; pre.focus(); ed.textContent = "Khôi phục code gốc";
+    });
+    go.addEventListener("click", async () => {
+      go.disabled = true; st.textContent = pyP ? "Đang chạy…" : "Đang tải Python trong trình duyệt (lần đầu khoảng 10–30 giây)…";
+      try {
+        const py = await loadPy(); st.textContent = "Đang chạy…";
+        const same = RUNS.filter((x) => x.dataset.group === r.dataset.group && x.dataset.mode === "py");
+        for (const x of same.slice(0, same.indexOf(r))) if (!done.has(x)) { await exec(py, x, codeOf(x)); done.add(x); }
+        const res = await exec(py, r, codeOf(r)); done.add(r); paint(r, res); st.textContent = res.ok ? "" : "Có lỗi, xem bên dưới";
+      } catch (e) { console.error("aie-run", e); st.textContent = "Không tải được Python trong trình duyệt. Kiểm tra mạng rồi thử lại."; }
+      go.disabled = false;
+    });
   });
 
   /* highlight current theory section in the toc */

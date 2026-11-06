@@ -65,10 +65,13 @@
 </table>
 <p>Mỗi model trên Hub là một <strong>repo Git</strong>: <code>config.json</code> (kiến trúc), trọng số (<code>model.safetensors</code>), file tokenizer, và <code>README.md</code> (model card).</p>
 <h3>Thử nhanh bằng pipeline</h3>
-<div class="hl"><pre><span></span><code><span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">transformers</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">pipeline</span>
+<div class="hl"><pre><span></span><code><span class="tk-c1"># Cần mạng: tải model từ Hugging Face (chạy trên Colab); thay &lt;tên-model-trên-Hub&gt; bằng model bạn đã đẩy lên</span>
+<span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">transformers</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">pipeline</span>
 <span class="tk-n">clf</span> <span class="tk-o">=</span> <span class="tk-n">pipeline</span><span class="tk-p">(</span><span class="tk-s2">"sentiment-analysis"</span><span class="tk-p">,</span> <span class="tk-n">model</span><span class="tk-o">=</span><span class="tk-s2">"&lt;tên-model-trên-Hub&gt;"</span><span class="tk-p">)</span>
 <span class="tk-n">clf</span><span class="tk-p">(</span><span class="tk-s2">"Giảng viên dạy rất dễ hiểu"</span><span class="tk-p">)</span>      <span class="tk-c1"># [{'label': ..., 'score': ...}]</span>
 </code></pre></div>
+
+<div class="run run-skip" data-mode="static" data-group="t"><div class="run-bar"><span class="run-lbl">Không chạy trên trang</span><span class="run-note">Cần mạng: tải model từ Hugging Face (chạy trên Colab); thay &lt;tên-model-trên-Hub&gt; bằng model bạn đã đẩy lên</span><a class="run-colab" href="https://colab.research.google.com/github/truonghuu344/ai-engineer-roadmap/blob/main/notebooks/ly-thuyet/p3-4.ipynb" target="_blank" rel="noopener">Mở trên Colab ↗</a></div></div>
 
 <p><code>pipeline</code> gói tokenizer, model và hậu xử lý thành một lệnh. Dùng để thử nhanh một model trước khi quyết định fine-tune.</p>
 <h2 id="lt-2">Auto classes: tải model trong 3 dòng</h2>
@@ -76,13 +79,16 @@
 <div class="box-h">Vì sao cần học</div>
 <p>Có hàng trăm kiến trúc khác nhau. Auto classes cho phép bạn viết một đoạn code dùng được cho mọi model, chỉ đổi tên repo.</p>
 </div>
-<div class="hl"><pre><span></span><code><span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">transformers</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">AutoTokenizer</span><span class="tk-p">,</span> <span class="tk-n">AutoModelForSequenceClassification</span>
+<div class="hl"><pre><span></span><code><span class="tk-c1"># Cần mạng: tải PhoBERT từ Hugging Face (chạy trên Colab)</span>
+<span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">transformers</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">AutoTokenizer</span><span class="tk-p">,</span> <span class="tk-n">AutoModelForSequenceClassification</span>
 <span class="tk-n">tok</span> <span class="tk-o">=</span> <span class="tk-n">AutoTokenizer</span><span class="tk-o">.</span><span class="tk-n">from_pretrained</span><span class="tk-p">(</span><span class="tk-s2">"vinai/phobert-base-v2"</span><span class="tk-p">)</span>
 <span class="tk-n">model</span> <span class="tk-o">=</span> <span class="tk-n">AutoModelForSequenceClassification</span><span class="tk-o">.</span><span class="tk-n">from_pretrained</span><span class="tk-p">(</span>
     <span class="tk-s2">"vinai/phobert-base-v2"</span><span class="tk-p">,</span> <span class="tk-n">num_labels</span><span class="tk-o">=</span><span class="tk-mi">3</span><span class="tk-p">,</span>
     <span class="tk-n">id2label</span><span class="tk-o">=</span><span class="tk-p">{</span><span class="tk-mi">0</span><span class="tk-p">:</span> <span class="tk-s2">"tiêu cực"</span><span class="tk-p">,</span> <span class="tk-mi">1</span><span class="tk-p">:</span> <span class="tk-s2">"trung tính"</span><span class="tk-p">,</span> <span class="tk-mi">2</span><span class="tk-p">:</span> <span class="tk-s2">"tích cực"</span><span class="tk-p">},</span>
     <span class="tk-n">label2id</span><span class="tk-o">=</span><span class="tk-p">{</span><span class="tk-s2">"tiêu cực"</span><span class="tk-p">:</span> <span class="tk-mi">0</span><span class="tk-p">,</span> <span class="tk-s2">"trung tính"</span><span class="tk-p">:</span> <span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-s2">"tích cực"</span><span class="tk-p">:</span> <span class="tk-mi">2</span><span class="tk-p">})</span>
 </code></pre></div>
+
+<div class="run run-skip" data-mode="static" data-group="t"><div class="run-bar"><span class="run-lbl">Không chạy trên trang</span><span class="run-note">Cần mạng: tải PhoBERT từ Hugging Face (chạy trên Colab)</span><a class="run-colab" href="https://colab.research.google.com/github/truonghuu344/ai-engineer-roadmap/blob/main/notebooks/ly-thuyet/p3-4.ipynb" target="_blank" rel="noopener">Mở trên Colab ↗</a></div></div>
 
 <p><code>Auto*</code> đọc <code>config.json</code> của repo để biết kiến trúc. Hậu tố cho biết <strong>head</strong> gắn trên thân model:</p>
 <table>
@@ -137,11 +143,14 @@
 <div class="box-h">Vì sao cần học</div>
 <p>GPU xử lý batch dưới dạng tensor chữ nhật, nhưng các câu dài ngắn khác nhau. Padding, truncation và attention mask là cách biến các câu lệch nhau thành tensor mà model vẫn hiểu đúng.</p>
 </div>
-<div class="hl"><pre><span></span><code><span class="tk-n">batch</span> <span class="tk-o">=</span> <span class="tk-n">tok</span><span class="tk-p">([</span><span class="tk-s2">"Thầy dạy hay"</span><span class="tk-p">,</span> <span class="tk-s2">"Phòng_học nóng quá , không"</span><span class="tk-p">],</span>
+<div class="hl"><pre><span></span><code><span class="tk-c1"># Cần tokenizer PhoBERT ở ô trên (chạy trên Colab)</span>
+<span class="tk-n">batch</span> <span class="tk-o">=</span> <span class="tk-n">tok</span><span class="tk-p">([</span><span class="tk-s2">"Thầy dạy hay"</span><span class="tk-p">,</span> <span class="tk-s2">"Phòng_học nóng quá , không"</span><span class="tk-p">],</span>
             <span class="tk-n">padding</span><span class="tk-o">=</span><span class="tk-kc">True</span><span class="tk-p">,</span> <span class="tk-n">truncation</span><span class="tk-o">=</span><span class="tk-kc">True</span><span class="tk-p">,</span> <span class="tk-n">max_length</span><span class="tk-o">=</span><span class="tk-mi">256</span><span class="tk-p">,</span> <span class="tk-n">return_tensors</span><span class="tk-o">=</span><span class="tk-s2">"pt"</span><span class="tk-p">)</span>
 <span class="tk-n">batch</span><span class="tk-p">[</span><span class="tk-s2">"input_ids"</span><span class="tk-p">]</span>        <span class="tk-c1"># (2, T): id token, câu ngắn được đệm bằng pad_token_id</span>
 <span class="tk-n">batch</span><span class="tk-p">[</span><span class="tk-s2">"attention_mask"</span><span class="tk-p">]</span>   <span class="tk-c1"># (2, T): 1 = token thật, 0 = đệm</span>
 </code></pre></div>
+
+<div class="run run-skip" data-mode="static" data-group="t"><div class="run-bar"><span class="run-lbl">Không chạy trên trang</span><span class="run-note">Cần tokenizer PhoBERT ở ô trên (chạy trên Colab)</span><a class="run-colab" href="https://colab.research.google.com/github/truonghuu344/ai-engineer-roadmap/blob/main/notebooks/ly-thuyet/p3-4.ipynb" target="_blank" rel="noopener">Mở trên Colab ↗</a></div></div>
 
 <figure class="fig"><img src="../assets/fig/p3-4-padding.svg" alt="Câu ngắn được đệm bằng &lt;pad&gt; cho bằng câu dài nhất trong batch. Attention mask bằng 0 ở các vị trí đệm để attention bỏ qua chúng (điểm attention bị đặt −∞, giống causal mask ở P3.2)." loading="lazy"><figcaption>Câu ngắn được đệm bằng &lt;pad&gt; cho bằng câu dài nhất trong batch. Attention mask bằng 0 ở các vị trí đệm để attention bỏ qua chúng (điểm attention bị đặt −∞, giống causal mask ở P3.2).</figcaption></figure>
 
@@ -182,6 +191,8 @@ Tách từ:  Phòng_học nóng quá , không bật được điều_hòa
 <span class="tk-n">ViTokenizer</span><span class="tk-o">.</span><span class="tk-n">tokenize</span><span class="tk-p">(</span><span class="tk-s2">"Phòng học nóng quá, không bật được điều hòa"</span><span class="tk-p">)</span>
 </code></pre></div>
 
+<div class="run" data-mode="static" data-group="t"><div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span><span class="run-note">đã chạy sẵn cần pyvi</span><a class="run-colab" href="https://colab.research.google.com/github/truonghuu344/ai-engineer-roadmap/blob/main/notebooks/ly-thuyet/p3-4.ipynb" target="_blank" rel="noopener">Mở trên Colab ↗</a></div><pre class="run-out">&#x27;Phòng học nóng quá , không bật được điều hòa&#x27;</pre></div>
+
 <p>PhoBERT cũng chỉ nhận tối đa <strong>256</strong> token (ít hơn 512 của BERT gốc).</p>
 <div class="box pitfall">
 <div class="box-h">Lỗi hay gặp</div>
@@ -215,14 +226,15 @@ Tách từ:  Phòng_học nóng quá , không bật được điều_hòa
 </table>
 <p>Đệm tới 256 tốn gấp 8.5 lần tính toán cho các token <code>&lt;pad&gt;</code> vô dụng.</p>
 </div>
-<figure class="fig"><img src="../assets/fig/p3-4-dynpad.svg" alt="Phần lớn câu ngắn hơn nhiều so với max_length. Đệm theo batch (DataCollatorWithPadding) rẻ hơn hẳn; gom câu cùng độ dài (`group_by_length=True` trong TrainingArguments) còn rẻ hơn nữa." loading="lazy"><figcaption>Phần lớn câu ngắn hơn nhiều so với max_length. Đệm theo batch (DataCollatorWithPadding) rẻ hơn hẳn; gom câu cùng độ dài (`group_by_length=True` trong TrainingArguments) còn rẻ hơn nữa.</figcaption></figure>
+<figure class="fig"><img src="../assets/fig/p3-4-dynpad.svg" alt="Phần lớn câu ngắn hơn nhiều so với max_length. Đệm theo batch (DataCollatorWithPadding) rẻ hơn hẳn; gom câu cùng độ dài (`train_sampling_strategy=&quot;group_by_length&quot;` trong TrainingArguments của transformers 5) còn rẻ hơn nữa." loading="lazy"><figcaption>Phần lớn câu ngắn hơn nhiều so với max_length. Đệm theo batch (DataCollatorWithPadding) rẻ hơn hẳn; gom câu cùng độ dài (`train_sampling_strategy=&quot;group_by_length&quot;` trong TrainingArguments của transformers 5) còn rẻ hơn nữa.</figcaption></figure>
 
 <h2 id="lt-4">datasets: xử lý dữ liệu nhanh</h2>
 <div class="box why">
 <div class="box-h">Vì sao cần học</div>
 <p>Dữ liệu train thường lớn hơn RAM. Thư viện <code>datasets</code> lưu dữ liệu dạng cột trên đĩa (Apache Arrow), đọc theo nhu cầu, và cache kết quả xử lý, nên bạn xử lý được dataset vài GB trên laptop và không phải chạy lại bước token hóa mỗi lần.</p>
 </div>
-<div class="hl"><pre><span></span><code><span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">datasets</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">load_dataset</span>
+<div class="hl"><pre><span></span><code><span class="tk-c1"># Cần mạng: tải dataset và tokenizer từ Hugging Face (chạy trên Colab)</span>
+<span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">datasets</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">load_dataset</span>
 <span class="tk-n">ds</span> <span class="tk-o">=</span> <span class="tk-n">load_dataset</span><span class="tk-p">(</span><span class="tk-s2">"uitnlp/vietnamese_students_feedback"</span><span class="tk-p">)</span>        <span class="tk-c1"># DatasetDict: train / validation / test</span>
 <span class="tk-n">ds</span><span class="tk-p">[</span><span class="tk-s2">"train"</span><span class="tk-p">][</span><span class="tk-mi">0</span><span class="tk-p">]</span>                                                  <span class="tk-c1"># một dòng dạng dict</span>
 <span class="tk-n">ds</span><span class="tk-p">[</span><span class="tk-s2">"train"</span><span class="tk-p">]</span><span class="tk-o">.</span><span class="tk-n">features</span>                                            <span class="tk-c1"># kiểu từng cột, tên nhãn</span>
@@ -233,6 +245,8 @@ Tách từ:  Phòng_học nóng quá , không bật được điều_hòa
 <span class="tk-n">ds</span> <span class="tk-o">=</span> <span class="tk-n">ds</span><span class="tk-o">.</span><span class="tk-n">rename_column</span><span class="tk-p">(</span><span class="tk-s2">"sentiment"</span><span class="tk-p">,</span> <span class="tk-s2">"labels"</span><span class="tk-p">)</span>                    <span class="tk-c1"># Trainer tìm cột tên "labels"</span>
 <span class="tk-n">ds</span> <span class="tk-o">=</span> <span class="tk-n">ds</span><span class="tk-o">.</span><span class="tk-n">remove_columns</span><span class="tk-p">([</span><span class="tk-s2">"topic"</span><span class="tk-p">])</span>                               <span class="tk-c1"># bỏ cột không dùng</span>
 </code></pre></div>
+
+<div class="run run-skip" data-mode="static" data-group="t"><div class="run-bar"><span class="run-lbl">Không chạy trên trang</span><span class="run-note">Cần mạng: tải dataset và tokenizer từ Hugging Face (chạy trên Colab)</span><a class="run-colab" href="https://colab.research.google.com/github/truonghuu344/ai-engineer-roadmap/blob/main/notebooks/ly-thuyet/p3-4.ipynb" target="_blank" rel="noopener">Mở trên Colab ↗</a></div></div>
 
 <p>Các thao tác hay dùng:</p>
 <table>
@@ -275,7 +289,8 @@ Tách từ:  Phòng_học nóng quá , không bật được điều_hòa
 <div class="box-h">Vì sao cần học</div>
 <p>Vòng lặp train bạn tự viết ở Lab 1 rất tốt để hiểu, nhưng dự án thật cần thêm mixed precision, gradient accumulation, đánh giá định kỳ, lưu checkpoint tốt nhất, log lên dashboard. <code>Trainer</code> có sẵn tất cả, ít bug hơn code tự viết.</p>
 </div>
-<div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">numpy</span><span class="tk-w"> </span><span class="tk-k">as</span><span class="tk-w"> </span><span class="tk-nn">np</span>
+<div class="hl"><pre><span></span><code><span class="tk-c1"># Cần GPU và các ô trên: chạy trên Colab (T4, khoảng 10 phút)</span>
+<span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">numpy</span><span class="tk-w"> </span><span class="tk-k">as</span><span class="tk-w"> </span><span class="tk-nn">np</span>
 <span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">sklearn.metrics</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">f1_score</span><span class="tk-p">,</span> <span class="tk-n">accuracy_score</span>
 <span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">transformers</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">TrainingArguments</span><span class="tk-p">,</span> <span class="tk-n">Trainer</span><span class="tk-p">,</span> <span class="tk-n">DataCollatorWithPadding</span>
 
@@ -287,15 +302,17 @@ Tách từ:  Phòng_học nóng quá , không bật được điều_hòa
 <span class="tk-n">args</span> <span class="tk-o">=</span> <span class="tk-n">TrainingArguments</span><span class="tk-p">(</span>
     <span class="tk-s2">"phobert-sentiment"</span><span class="tk-p">,</span>
     <span class="tk-n">learning_rate</span><span class="tk-o">=</span><span class="tk-mf">2e-5</span><span class="tk-p">,</span> <span class="tk-n">per_device_train_batch_size</span><span class="tk-o">=</span><span class="tk-mi">32</span><span class="tk-p">,</span> <span class="tk-n">num_train_epochs</span><span class="tk-o">=</span><span class="tk-mi">3</span><span class="tk-p">,</span>
-    <span class="tk-n">warmup_ratio</span><span class="tk-o">=</span><span class="tk-mf">0.1</span><span class="tk-p">,</span> <span class="tk-n">weight_decay</span><span class="tk-o">=</span><span class="tk-mf">0.01</span><span class="tk-p">,</span> <span class="tk-n">fp16</span><span class="tk-o">=</span><span class="tk-kc">True</span><span class="tk-p">,</span>
+    <span class="tk-n">warmup_steps</span><span class="tk-o">=</span><span class="tk-mf">0.1</span><span class="tk-p">,</span> <span class="tk-n">weight_decay</span><span class="tk-o">=</span><span class="tk-mf">0.01</span><span class="tk-p">,</span> <span class="tk-n">fp16</span><span class="tk-o">=</span><span class="tk-kc">True</span><span class="tk-p">,</span>     <span class="tk-c1"># số &lt; 1 nghĩa là tỉ lệ (10% số bước)</span>
     <span class="tk-n">eval_strategy</span><span class="tk-o">=</span><span class="tk-s2">"epoch"</span><span class="tk-p">,</span> <span class="tk-n">save_strategy</span><span class="tk-o">=</span><span class="tk-s2">"epoch"</span><span class="tk-p">,</span>
     <span class="tk-n">load_best_model_at_end</span><span class="tk-o">=</span><span class="tk-kc">True</span><span class="tk-p">,</span> <span class="tk-n">metric_for_best_model</span><span class="tk-o">=</span><span class="tk-s2">"f1_macro"</span><span class="tk-p">,</span>
-    <span class="tk-n">group_by_length</span><span class="tk-o">=</span><span class="tk-kc">True</span><span class="tk-p">,</span> <span class="tk-n">report_to</span><span class="tk-o">=</span><span class="tk-s2">"none"</span><span class="tk-p">)</span>
+    <span class="tk-n">train_sampling_strategy</span><span class="tk-o">=</span><span class="tk-s2">"group_by_length"</span><span class="tk-p">,</span> <span class="tk-n">report_to</span><span class="tk-o">=</span><span class="tk-s2">"none"</span><span class="tk-p">)</span>
 <span class="tk-n">trainer</span> <span class="tk-o">=</span> <span class="tk-n">Trainer</span><span class="tk-p">(</span><span class="tk-n">model</span><span class="tk-o">=</span><span class="tk-n">model</span><span class="tk-p">,</span> <span class="tk-n">args</span><span class="tk-o">=</span><span class="tk-n">args</span><span class="tk-p">,</span> <span class="tk-n">train_dataset</span><span class="tk-o">=</span><span class="tk-n">ds</span><span class="tk-p">[</span><span class="tk-s2">"train"</span><span class="tk-p">],</span> <span class="tk-n">eval_dataset</span><span class="tk-o">=</span><span class="tk-n">ds</span><span class="tk-p">[</span><span class="tk-s2">"validation"</span><span class="tk-p">],</span>
                   <span class="tk-n">data_collator</span><span class="tk-o">=</span><span class="tk-n">DataCollatorWithPadding</span><span class="tk-p">(</span><span class="tk-n">tok</span><span class="tk-p">),</span> <span class="tk-n">compute_metrics</span><span class="tk-o">=</span><span class="tk-n">compute_metrics</span><span class="tk-p">)</span>
 <span class="tk-n">trainer</span><span class="tk-o">.</span><span class="tk-n">train</span><span class="tk-p">()</span>
 <span class="tk-n">trainer</span><span class="tk-o">.</span><span class="tk-n">evaluate</span><span class="tk-p">(</span><span class="tk-n">ds</span><span class="tk-p">[</span><span class="tk-s2">"test"</span><span class="tk-p">])</span>          <span class="tk-c1"># đo test một lần, ở cuối</span>
 </code></pre></div>
+
+<div class="run run-skip" data-mode="static" data-group="t"><div class="run-bar"><span class="run-lbl">Không chạy trên trang</span><span class="run-note">Cần GPU và các ô trên: chạy trên Colab (T4, khoảng 10 phút)</span><a class="run-colab" href="https://colab.research.google.com/github/truonghuu344/ai-engineer-roadmap/blob/main/notebooks/ly-thuyet/p3-4.ipynb" target="_blank" rel="noopener">Mở trên Colab ↗</a></div></div>
 
 <h3>Các tham số quan trọng</h3>
 <table>
@@ -328,8 +345,8 @@ Tách từ:  Phòng_học nóng quá , không bật được điều_hòa
 <td>2–5</td>
 </tr>
 <tr>
-<td><code>warmup_ratio</code></td>
-<td>tỉ lệ bước warmup</td>
+<td><code>warmup_steps</code></td>
+<td>số bước warmup; số &lt; 1 là tỉ lệ (bản 4.x dùng <code>warmup_ratio</code>)</td>
 <td>0.06–0.1</td>
 </tr>
 <tr>
@@ -357,7 +374,7 @@ Tách từ:  Phòng_học nóng quá , không bật được điều_hòa
 <ul>
 <li>Batch hiệu dụng: 16 × 4 = <strong>64</strong> câu mỗi lần cập nhật.</li>
 <li>Mỗi epoch: ⌈12.000 / 16⌉ = 750 batch, chia 4 → <strong>188</strong> bước cập nhật.</li>
-<li>3 epoch: 564 bước; <code>warmup_ratio=0.1</code> → khoảng 57 bước warmup.</li>
+<li>3 epoch: 564 bước; <code>warmup_steps=0.1</code> (10%) → khoảng 57 bước warmup.</li>
 </ul>
 <p>Gradient accumulation cho kết quả gần giống batch 64 thật mà chỉ cần bộ nhớ cho batch 16.</p>
 </div>
@@ -370,10 +387,13 @@ Tách từ:  Phòng_học nóng quá , không bật được điều_hòa
 <div class="box-h">Vì sao cần học</div>
 <p>Model nằm trong máy bạn thì không ai thấy. Model trên Hub có model card tốt là bằng chứng cụ thể trong portfolio: nhà tuyển dụng tải về chạy thử được ngay, và thấy bạn biết đo lường, biết nói rõ giới hạn.</p>
 </div>
-<div class="hl"><pre><span></span><code><span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">huggingface_hub</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">login</span>
+<div class="hl"><pre><span></span><code><span class="tk-c1"># Cần tài khoản Hugging Face: chạy trên Colab sau khi train</span>
+<span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">huggingface_hub</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">login</span>
 <span class="tk-n">login</span><span class="tk-p">()</span>                                   <span class="tk-c1"># token có quyền write, lấy ở trang Settings → Access Tokens</span>
 <span class="tk-n">trainer</span><span class="tk-o">.</span><span class="tk-n">push_to_hub</span><span class="tk-p">(</span><span class="tk-n">commit_message</span><span class="tk-o">=</span><span class="tk-s2">"PhoBERT cảm xúc, macro F1 0.xx trên test"</span><span class="tk-p">)</span>
 </code></pre></div>
+
+<div class="run run-skip" data-mode="static" data-group="t"><div class="run-bar"><span class="run-lbl">Không chạy trên trang</span><span class="run-note">Cần tài khoản Hugging Face: chạy trên Colab sau khi train</span><a class="run-colab" href="https://colab.research.google.com/github/truonghuu344/ai-engineer-roadmap/blob/main/notebooks/ly-thuyet/p3-4.ipynb" target="_blank" rel="noopener">Mở trên Colab ↗</a></div></div>
 
 <p><code>push_to_hub</code> đẩy trọng số (<code>.safetensors</code>), config, tokenizer, và tạo model card cơ bản. Người khác dùng lại chỉ với <code>from_pretrained("tên-bạn/phobert-sentiment")</code>.</p>
 <h3>Model card cần có gì</h3>
@@ -433,7 +453,7 @@ Kém với lớp trung tính (ít dữ liệu). Chỉ train trên phản hồi g
 <div class="box check">
 <div class="box-h">Tự kiểm tra nhanh</div>
 <p>Fine-tune với 8.000 câu train, batch 32, gradient accumulation 2, 4 epoch.</p>
-<div class="ans" id="p3-4-t-b228-a1">
+<div class="ans" id="p3-4-t-b255-a1">
 <div class="ans-fields"><label>Batch hiệu dụng<input inputmode="decimal" data-ans="64.0" data-tol="0.0" autocomplete="off"></label><label>Số bước cập nhật mỗi epoch<input inputmode="decimal" data-ans="125.0" data-tol="0.0" autocomplete="off"></label><label>Tổng số bước cập nhật<input inputmode="decimal" data-ans="500.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div>
 <div aria-live="polite" class="ans-fb"></div>
 </div>
@@ -534,7 +554,7 @@ Kém với lớp trung tính (ít dữ liệu). Chỉ train trên phản hồi g
 <td>định dạng lưu trọng số an toàn, tải nhanh</td>
 </tr>
 </tbody>
-</table></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p3.4:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 3</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Số bước train</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>20.000 câu train, batch 32, 3 epoch, <code>warmup_ratio=0.1</code>.</p>
+</table></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p3.4:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 3</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Số bước train</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>20.000 câu train, batch 32, 3 epoch, warmup 10% số bước.</p>
 <div class="ans" id="p3-4-e1-a1"><div class="ans-fields"><label>Số bước mỗi epoch<input inputmode="decimal" data-ans="625.0" data-tol="0.0" autocomplete="off"></label><label>Tổng số bước<input inputmode="decimal" data-ans="1875.0" data-tol="0.0" autocomplete="off"></label><label>Số bước warmup (làm tròn lên)<input inputmode="decimal" data-ans="188.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
 
 <details class="fold solution">
@@ -594,6 +614,10 @@ Kém với lớp trung tính (ít dữ liệu). Chỉ train trên phản hồi g
     <span class="tk-k">return</span> <span class="tk-p">{</span><span class="tk-s2">"accuracy"</span><span class="tk-p">:</span> <span class="tk-n">accuracy_score</span><span class="tk-p">(</span><span class="tk-n">labels</span><span class="tk-p">,</span> <span class="tk-n">preds</span><span class="tk-p">),</span> <span class="tk-s2">"f1_macro"</span><span class="tk-p">:</span> <span class="tk-n">f1_score</span><span class="tk-p">(</span><span class="tk-n">labels</span><span class="tk-p">,</span> <span class="tk-n">preds</span><span class="tk-p">,</span> <span class="tk-n">average</span><span class="tk-o">=</span><span class="tk-s2">"macro"</span><span class="tk-p">)}</span>
 </code></pre></div>
 
+<div class="run" data-group="e5" data-mode="py">
+<div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span></div>
+<pre class="run-out run-empty">(chạy xong, không in ra gì)</pre>
+</div>
 </details></div></article><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p3.4:b">Tôi đã xong phần bài tập</label><button class="btn" type="button" data-goto="thuc-hanh">Sang thực hành <span class="arr">→</span></button></div></section><section class="panel" id="thuc-hanh" role="tabpanel" hidden><div class="prose"><h2>Fine-tune PhoBERT phân loại cảm xúc</h2>
 <p>Dùng dataset <strong>UIT-VSFC</strong> (<code>uitnlp/vietnamese_students_feedback</code>, khoảng 16.000 câu đánh giá của sinh viên, nhãn negative / neutral / positive).</p>
 <p><strong>Các bước</strong></p>
@@ -633,7 +657,7 @@ Kém với lớp trung tính (ít dữ liệu). Chỉ train trên phản hồi g
     <span class="tk-k">return</span> <span class="tk-p">{</span><span class="tk-s2">"accuracy"</span><span class="tk-p">:</span> <span class="tk-n">accuracy_score</span><span class="tk-p">(</span><span class="tk-n">p</span><span class="tk-o">.</span><span class="tk-n">label_ids</span><span class="tk-p">,</span> <span class="tk-n">preds</span><span class="tk-p">),</span> <span class="tk-s2">"f1_macro"</span><span class="tk-p">:</span> <span class="tk-n">f1_score</span><span class="tk-p">(</span><span class="tk-n">p</span><span class="tk-o">.</span><span class="tk-n">label_ids</span><span class="tk-p">,</span> <span class="tk-n">preds</span><span class="tk-p">,</span> <span class="tk-n">average</span><span class="tk-o">=</span><span class="tk-s2">"macro"</span><span class="tk-p">)}</span>
 
 <span class="tk-n">args</span> <span class="tk-o">=</span> <span class="tk-n">TrainingArguments</span><span class="tk-p">(</span><span class="tk-s2">"phobert-vsfc-sentiment"</span><span class="tk-p">,</span> <span class="tk-n">learning_rate</span><span class="tk-o">=</span><span class="tk-mf">2e-5</span><span class="tk-p">,</span> <span class="tk-n">per_device_train_batch_size</span><span class="tk-o">=</span><span class="tk-mi">32</span><span class="tk-p">,</span> <span class="tk-n">per_device_eval_batch_size</span><span class="tk-o">=</span><span class="tk-mi">64</span><span class="tk-p">,</span>
-                         <span class="tk-n">num_train_epochs</span><span class="tk-o">=</span><span class="tk-mi">3</span><span class="tk-p">,</span> <span class="tk-n">warmup_ratio</span><span class="tk-o">=</span><span class="tk-mf">0.1</span><span class="tk-p">,</span> <span class="tk-n">weight_decay</span><span class="tk-o">=</span><span class="tk-mf">0.01</span><span class="tk-p">,</span> <span class="tk-n">fp16</span><span class="tk-o">=</span><span class="tk-kc">True</span><span class="tk-p">,</span> <span class="tk-n">eval_strategy</span><span class="tk-o">=</span><span class="tk-s2">"epoch"</span><span class="tk-p">,</span>
+                         <span class="tk-n">num_train_epochs</span><span class="tk-o">=</span><span class="tk-mi">3</span><span class="tk-p">,</span> <span class="tk-n">warmup_steps</span><span class="tk-o">=</span><span class="tk-mf">0.1</span><span class="tk-p">,</span> <span class="tk-n">weight_decay</span><span class="tk-o">=</span><span class="tk-mf">0.01</span><span class="tk-p">,</span> <span class="tk-n">fp16</span><span class="tk-o">=</span><span class="tk-kc">True</span><span class="tk-p">,</span> <span class="tk-n">eval_strategy</span><span class="tk-o">=</span><span class="tk-s2">"epoch"</span><span class="tk-p">,</span>
                          <span class="tk-n">save_strategy</span><span class="tk-o">=</span><span class="tk-s2">"epoch"</span><span class="tk-p">,</span> <span class="tk-n">load_best_model_at_end</span><span class="tk-o">=</span><span class="tk-kc">True</span><span class="tk-p">,</span> <span class="tk-n">metric_for_best_model</span><span class="tk-o">=</span><span class="tk-s2">"f1_macro"</span><span class="tk-p">,</span> <span class="tk-n">report_to</span><span class="tk-o">=</span><span class="tk-s2">"none"</span><span class="tk-p">)</span>
 <span class="tk-n">trainer</span> <span class="tk-o">=</span> <span class="tk-n">Trainer</span><span class="tk-p">(</span><span class="tk-n">model</span><span class="tk-o">=</span><span class="tk-n">model</span><span class="tk-p">,</span> <span class="tk-n">args</span><span class="tk-o">=</span><span class="tk-n">args</span><span class="tk-p">,</span> <span class="tk-n">train_dataset</span><span class="tk-o">=</span><span class="tk-n">ds</span><span class="tk-p">[</span><span class="tk-s2">"train"</span><span class="tk-p">],</span> <span class="tk-n">eval_dataset</span><span class="tk-o">=</span><span class="tk-n">ds</span><span class="tk-p">[</span><span class="tk-s2">"validation"</span><span class="tk-p">],</span>
                   <span class="tk-n">data_collator</span><span class="tk-o">=</span><span class="tk-n">DataCollatorWithPadding</span><span class="tk-p">(</span><span class="tk-n">tok</span><span class="tk-p">),</span> <span class="tk-n">compute_metrics</span><span class="tk-o">=</span><span class="tk-n">compute_metrics</span><span class="tk-p">)</span>
@@ -650,7 +674,7 @@ Kém với lớp trung tính (ít dữ liệu). Chỉ train trên phản hồi g
     <aside class="aside">
       <div class="abox"><h4>Tiến độ bài này</h4><div class="ring"><svg viewBox="0 0 64 64" aria-hidden="true"><circle class="bg" cx="32" cy="32" r="28"/><circle class="fg" cx="32" cy="32" r="28" stroke-dasharray="176" stroke-dashoffset="176"/></svg><div><b id="ring-n">0/3</b><span id="ring-sub">phần đã xong</span></div></div></div>
       <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Hệ sinh thái Hugging Face</a></li><li><a href="#lt-2">Auto classes: tải model trong 3 dòng</a></li><li><a href="#lt-3">Tokenizer: padding, truncation, attention mask</a></li><li><a href="#lt-4">datasets: xử lý dữ liệu nhanh</a></li><li><a href="#lt-5">Trainer</a></li><li><a href="#lt-6">Hub, model card và giấy phép</a></li><li><a href="#lt-7">Tóm tắt bài và thuật ngữ</a></li></ol></div>
-      
+      <div class="abox"><h4>Notebook</h4><div style="display:grid;gap:8px"><a class="dl" href="https://colab.research.google.com/github/truonghuu344/ai-engineer-roadmap/blob/main/notebooks/ly-thuyet/p3-4.ipynb" target="_blank" rel="noopener"><span class="ext">COLAB</span><span>Chạy toàn bộ code của bài<span style="display:block;font:400 12px var(--f-mono);color:var(--muted)">notebook có sẵn kết quả</span></span></a></div></div>
       <div class="abox"><h4>Cùng giai đoạn</h4><ul><li><a href="p3-1.html">Tokenization và embedding</a></li><li><a href="p3-2.html">Bài 3 · Attention và Transformer</a></li><li><a href="p3-3.html">Language model và sinh văn bản</a></li><li><span class=cur>Hệ sinh thái Hugging Face</span></li></ul></div>
     </aside>
   </div>
@@ -754,6 +778,134 @@ Kém với lớp trung tính (ít dữ liệu). Chỉ train trên phản hồi g
       b.textContent = "Đã chép ✓"; b.classList.add("done"); setTimeout(() => { b.textContent = "Chép"; b.classList.remove("done"); }, 1600);
     }).catch(() => {}));
     h.appendChild(b);
+  });
+
+  /* runnable code: Pyodide (Python chạy ngay trong trình duyệt) */
+  const RUNS = [...document.querySelectorAll(".run")];
+  const HELPER = `
+import ast, sys, io, base64, traceback, os, warnings
+os.environ.setdefault("MPLBACKEND", "AGG")
+warnings.filterwarnings("ignore", message=".*non-interactive.*")
+import ast
+ACTION = {"manual_seed", "seed", "write_text", "write", "load_dotenv", "savefig", "set_title", "set_xlabel", "set_ylabel",
+          "legend", "plot", "scatter", "bar", "barh", "hist", "imshow", "append", "extend", "update", "add", "fit", "backward",
+          "step", "zero_grad", "mkdir", "makedirs", "sleep", "close", "flush", "print", "show", "axhline", "axvline", "text",
+          "tight_layout", "subplots_adjust", "set_xlim", "set_ylim", "grid", "insert", "remove", "clear", "sort", "shuffle",
+          "to_csv", "save", "load_state_dict", "train", "eval", "requires_grad_", "set_printoptions", "filterwarnings",
+          "use", "setdefault", "register_buffer", "rc", "add_node", "add_edge", "add_conditional_edges", "set_entry_point", "login", "mount", "seed_everything", "log", "finish", "init", "info", "debug", "warning", "put", "add_argument", "set_xticks", "set_yticks", "annotate", "fill_between", "suptitle", "figure", "subplot"}
+
+
+def legacy_numpy_repr():
+    import sys
+    if "numpy" in sys.modules:
+        sys.modules["numpy"].set_printoptions(legacy="1.25")     # in 0.87 thay vì np.float64(0.87)
+
+
+def transform(code):
+    lines = code.split("\\n")
+    tree = ast.parse(code)
+    n = len(tree.body)
+    for k, node in enumerate(tree.body):
+        if not isinstance(node, ast.Expr):
+            continue
+        v = node.value
+        if isinstance(v, ast.Constant) and isinstance(v.value, str):          # docstring / string literal alone
+            continue
+        if isinstance(v, ast.Await):
+            continue
+        name = None
+        if isinstance(v, ast.Call):
+            f = v.func
+            name = f.attr if isinstance(f, ast.Attribute) else (f.id if isinstance(f, ast.Name) else None)
+        tail = lines[node.end_lineno - 1][node.end_col_offset:]
+        commented = "#" in tail
+        last = k == n - 1
+        if name in ACTION:
+            continue
+        if last or commented:
+            node.value = ast.Call(func=ast.Name("__show__", ast.Load()), args=[v], keywords=[])
+    ast.fix_missing_locations(tree)
+    return tree
+
+def __aie_run(code, ns):
+    buf = io.StringIO(); so, se = sys.stdout, sys.stderr; sys.stdout = sys.stderr = buf; ok = True
+    def show(v):
+        if v is None: return
+        try:
+            import pandas as pd
+            if isinstance(v, (pd.DataFrame, pd.Series)):
+                print(v.to_string(max_rows=20)); return
+        except Exception:
+            pass
+        print(repr(v))
+    ns["__show__"] = show
+    try:
+        legacy_numpy_repr(); exec(compile(transform(code), "<cell>", "exec"), ns)
+    except BaseException:
+        ok = False
+        et, ev, tb = sys.exc_info(); lines = traceback.format_exception(et, ev, tb)
+        print("".join(l for l in lines if "<cell>" in l or l is lines[-1]), end="")
+    finally:
+        sys.stdout, sys.stderr = so, se
+    imgs = []
+    if "matplotlib.pyplot" in sys.modules:
+        plt = sys.modules["matplotlib.pyplot"]
+        for n in plt.get_fignums():
+            b = io.BytesIO(); plt.figure(n).savefig(b, format="png", dpi=100, bbox_inches="tight", facecolor="white")
+            imgs.append(base64.b64encode(b.getvalue()).decode())
+        plt.close("all")
+    return [buf.getvalue()[-20000:], imgs, ok]
+`;
+  let pyP = null; const NS = {}, done = new Set();
+  function loadPy() {
+    if (pyP) return pyP;
+    const base = window.AIE_PYODIDE || "https://cdn.jsdelivr.net/pyodide/v0.28.3/full/";
+    pyP = new Promise((res, rej) => {
+      if (window.loadPyodide) return res();
+      const s = document.createElement("script"); s.src = base + "pyodide.js"; s.onload = () => res(); s.onerror = () => rej(new Error("load"));
+      document.head.appendChild(s);
+    }).then(() => window.loadPyodide({ indexURL: base })).then((py) => { py.runPython(HELPER); return py; });
+    pyP.catch(() => { pyP = null; });
+    return pyP;
+  }
+  const codeOf = (r) => r.previousElementSibling.querySelector("pre").innerText.replace(/\n$/, "");
+  async function exec(py, r, code) {
+    const g = r.dataset.group;
+    if (!NS[g]) NS[g] = py.globals.get("dict")();
+    try { await py.loadPackagesFromImports(code); } catch (e) {}
+    const res = py.globals.get("__aie_run")(code, NS[g]); const [out, imgs, ok] = res.toJs(); res.destroy();
+    return { out, imgs, ok };
+  }
+  function paint(r, res) {
+    r.querySelectorAll(".run-out, img").forEach((x) => x.remove());
+    const pre = document.createElement("pre"); pre.className = "run-out" + (res.out ? "" : " run-empty");
+    pre.textContent = res.out || "(chạy xong, không in ra gì)"; r.appendChild(pre);
+    res.imgs.forEach((b) => { const im = document.createElement("img"); im.alt = "Hình do đoạn code vẽ"; im.src = "data:image/png;base64," + b; r.appendChild(im); });
+    r.classList.toggle("err", !res.ok);
+  }
+  RUNS.filter((r) => r.dataset.mode === "py" && r.previousElementSibling && r.previousElementSibling.classList.contains("hl")).forEach((r) => {
+    const hl = r.previousElementSibling, pre = hl.querySelector("pre"), orig = pre.innerHTML;
+    const bar = r.querySelector(".run-bar"), box = document.createElement("span"); box.className = "run-btns";
+    const st = document.createElement("span"); st.className = "run-status";
+    const mk = (t, cls) => { const b = document.createElement("button"); b.type = "button"; b.className = "run-btn " + cls; b.textContent = t; box.appendChild(b); return b; };
+    const ed = mk("Sửa code", ""), go = mk("▶ Chạy", "go");
+    bar.appendChild(st); bar.appendChild(box);
+    ed.addEventListener("click", () => {
+      if (pre.hasAttribute("contenteditable")) { pre.removeAttribute("contenteditable"); pre.innerHTML = orig; ed.textContent = "Sửa code"; return; }
+      try { pre.contentEditable = "plaintext-only"; } catch (e) { pre.contentEditable = "true"; }
+      if (pre.contentEditable !== "plaintext-only") pre.contentEditable = "true";
+      pre.spellcheck = false; pre.focus(); ed.textContent = "Khôi phục code gốc";
+    });
+    go.addEventListener("click", async () => {
+      go.disabled = true; st.textContent = pyP ? "Đang chạy…" : "Đang tải Python trong trình duyệt (lần đầu khoảng 10–30 giây)…";
+      try {
+        const py = await loadPy(); st.textContent = "Đang chạy…";
+        const same = RUNS.filter((x) => x.dataset.group === r.dataset.group && x.dataset.mode === "py");
+        for (const x of same.slice(0, same.indexOf(r))) if (!done.has(x)) { await exec(py, x, codeOf(x)); done.add(x); }
+        const res = await exec(py, r, codeOf(r)); done.add(r); paint(r, res); st.textContent = res.ok ? "" : "Có lỗi, xem bên dưới";
+      } catch (e) { console.error("aie-run", e); st.textContent = "Không tải được Python trong trình duyệt. Kiểm tra mạng rồi thử lại."; }
+      go.disabled = false;
+    });
   });
 
   /* highlight current theory section in the toc */

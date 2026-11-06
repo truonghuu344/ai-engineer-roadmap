@@ -141,11 +141,14 @@
 <li>Các model mới (GPT-4o, Qwen2.5, Gemma) có từ vựng lớn hơn và học trên nhiều ngôn ngữ hơn nên tiếng Việt đỡ tốn hơn nhiều, nhưng chênh lệch vẫn còn.</li>
 <li>Luôn đo số token thực tế bằng tokenizer của <strong>đúng model bạn dùng</strong>, đừng ước lượng theo số từ.</li>
 </ul>
-<div class="hl"><pre><span></span><code><span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">transformers</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">AutoTokenizer</span>
+<div class="hl"><pre><span></span><code><span class="tk-c1"># Cần mạng: tải tokenizer từ Hugging Face (chạy trên Colab)</span>
+<span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">transformers</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">AutoTokenizer</span>
 <span class="tk-n">tok</span> <span class="tk-o">=</span> <span class="tk-n">AutoTokenizer</span><span class="tk-o">.</span><span class="tk-n">from_pretrained</span><span class="tk-p">(</span><span class="tk-s2">"Qwen/Qwen2.5-0.5B-Instruct"</span><span class="tk-p">)</span>
 <span class="tk-n">ids</span> <span class="tk-o">=</span> <span class="tk-n">tok</span><span class="tk-p">(</span><span class="tk-s2">"Tôi đang học trí tuệ nhân tạo."</span><span class="tk-p">)[</span><span class="tk-s2">"input_ids"</span><span class="tk-p">]</span>
 <span class="tk-nb">len</span><span class="tk-p">(</span><span class="tk-n">ids</span><span class="tk-p">),</span> <span class="tk-n">tok</span><span class="tk-o">.</span><span class="tk-n">convert_ids_to_tokens</span><span class="tk-p">(</span><span class="tk-n">ids</span><span class="tk-p">)</span>
 </code></pre></div>
+
+<div class="run run-skip" data-mode="static" data-group="t"><div class="run-bar"><span class="run-lbl">Không chạy trên trang</span><span class="run-note">Cần mạng: tải tokenizer từ Hugging Face (chạy trên Colab)</span><a class="run-colab" href="https://colab.research.google.com/github/truonghuu344/ai-engineer-roadmap/blob/main/notebooks/ly-thuyet/p3-1.ipynb" target="_blank" rel="noopener">Mở trên Colab ↗</a></div></div>
 
 <div class="box pitfall">
 <div class="box-h">Lỗi hay gặp</div>
@@ -154,7 +157,7 @@
 <div class="box check">
 <div class="box-h">Tự kiểm tra nhanh</div>
 <p>Một API tính 3 USD cho mỗi triệu token đầu vào. Mỗi ngày có 20.000 câu hỏi, mỗi câu trung bình 150 token tiếng Anh. Với tiếng Việt, giả sử số token gấp 1.7 lần.</p>
-<div class="ans" id="p3-1-t-b69-a1">
+<div class="ans" id="p3-1-t-b73-a1">
 <div class="ans-fields"><label>Chi phí mỗi ngày với tiếng Anh (USD)<input inputmode="decimal" data-ans="9.0" data-tol="0.001" autocomplete="off"></label><label>Chi phí mỗi ngày với tiếng Việt (USD)<input inputmode="decimal" data-ans="15.3" data-tol="0.001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div>
 <div aria-live="polite" class="ans-fb"></div>
 </div>
@@ -172,7 +175,10 @@
 <span class="tk-n">emb</span> <span class="tk-o">=</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">Embedding</span><span class="tk-p">(</span><span class="tk-n">num_embeddings</span><span class="tk-o">=</span><span class="tk-mi">32_000</span><span class="tk-p">,</span> <span class="tk-n">embedding_dim</span><span class="tk-o">=</span><span class="tk-mi">512</span><span class="tk-p">)</span>
 <span class="tk-n">ids</span> <span class="tk-o">=</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">tensor</span><span class="tk-p">([[</span><span class="tk-mi">51</span><span class="tk-p">,</span> <span class="tk-mi">4410</span><span class="tk-p">,</span> <span class="tk-mi">15592</span><span class="tk-p">]])</span>     <span class="tk-c1"># (batch=1, seq=3)</span>
 <span class="tk-n">x</span> <span class="tk-o">=</span> <span class="tk-n">emb</span><span class="tk-p">(</span><span class="tk-n">ids</span><span class="tk-p">)</span>                                <span class="tk-c1"># (1, 3, 512)</span>
+<span class="tk-n">x</span><span class="tk-o">.</span><span class="tk-n">shape</span>
 </code></pre></div>
+
+<div class="run" data-mode="static" data-group="t"><div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span><span class="run-note">đã chạy sẵn cần PyTorch</span><a class="run-colab" href="https://colab.research.google.com/github/truonghuu344/ai-engineer-roadmap/blob/main/notebooks/ly-thuyet/p3-1.ipynb" target="_blank" rel="noopener">Mở trên Colab ↗</a></div><pre class="run-out">torch.Size([1, 3, 512])</pre></div>
 
 <p>Bảng này là <strong>tham số</strong>, khởi tạo ngẫu nhiên và được học cùng model bằng backprop như mọi trọng số khác.</p>
 <div class="box example">
@@ -214,7 +220,7 @@
 <div class="box check">
 <div class="box-h">Tự kiểm tra nhanh</div>
 <p>Một RNN có mỗi bước nhân gradient với 0.9 (giả sử không đổi).</p>
-<div class="ans" id="p3-1-t-b131-a1">
+<div class="ans" id="p3-1-t-b139-a1">
 <div class="ans-fields"><label>Hệ số còn lại sau 10 bước<input inputmode="decimal" data-ans="0.3487" data-tol="0.001" autocomplete="off"></label><label>Sau 100 bước (làm tròn 6 chữ số thập phân)<input inputmode="decimal" data-ans="2.7e-05" data-tol="1e-06" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div>
 <div aria-live="polite" class="ans-fb"></div>
 </div>
@@ -362,7 +368,8 @@
 </details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 5</span><h3>So token tiếng Việt và tiếng Anh</h3><span class="ex-tag code">code</span></div><div class="prose"><p>Dùng <code>tiktoken</code> (hoặc tokenizer của một model mã nguồn mở trên Hugging Face) đếm số token của cùng một đoạn văn bằng tiếng Việt và tiếng Anh, tính tỉ lệ, và in ra các token của câu tiếng Việt để xem nó bị cắt thế nào.</p>
 <details class="fold code">
 <summary>Code tham khảo</summary>
-<div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">tiktoken</span>
+<div class="hl"><pre><span></span><code><span class="tk-c1"># Cần mạng: tiktoken tải bảng mã o200k_base lần đầu (chạy trên Colab hoặc máy bạn)</span>
+<span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">tiktoken</span>
 <span class="tk-n">enc</span> <span class="tk-o">=</span> <span class="tk-n">tiktoken</span><span class="tk-o">.</span><span class="tk-n">get_encoding</span><span class="tk-p">(</span><span class="tk-s2">"o200k_base"</span><span class="tk-p">)</span>
 <span class="tk-n">vi</span> <span class="tk-o">=</span> <span class="tk-s2">"Học máy giúp máy tính tự học từ dữ liệu mà không cần được lập trình cụ thể cho từng nhiệm vụ."</span>
 <span class="tk-n">en</span> <span class="tk-o">=</span> <span class="tk-s2">"Machine learning lets computers learn from data without being explicitly programmed for each task."</span>
@@ -371,6 +378,9 @@
 <span class="tk-nb">print</span><span class="tk-p">([</span><span class="tk-n">enc</span><span class="tk-o">.</span><span class="tk-n">decode</span><span class="tk-p">([</span><span class="tk-n">t</span><span class="tk-p">])</span> <span class="tk-k">for</span> <span class="tk-n">t</span> <span class="tk-ow">in</span> <span class="tk-n">enc</span><span class="tk-o">.</span><span class="tk-n">encode</span><span class="tk-p">(</span><span class="tk-n">vi</span><span class="tk-p">)])</span>
 </code></pre></div>
 
+<div class="run run-skip" data-group="e5" data-mode="static">
+<div class="run-bar"><span class="run-lbl">Không chạy trên trang</span><span class="run-note">Cần mạng: tiktoken tải bảng mã o200k_base lần đầu (chạy trên Colab hoặc máy bạn)</span><a class="run-colab" href="https://colab.research.google.com/github/truonghuu344/ai-engineer-roadmap/blob/main/notebooks/ly-thuyet/p3-1.ipynb" target="_blank" rel="noopener">Mở trên Colab ↗</a></div>
+</div>
 </details></div></article><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p3.1:b">Tôi đã xong phần bài tập</label><button class="btn" type="button" data-goto="thuc-hanh">Sang thực hành <span class="arr">→</span></button></div></section><section class="panel" id="thuc-hanh" role="tabpanel" hidden><div class="prose"><h2>Tự viết BPE tokenizer</h2>
 <p>Viết một BPE tokenizer cấp ký tự, train trên văn bản tiếng Việt, và so với tokenizer thật.</p>
 <p><strong>Các bước</strong></p>
@@ -444,7 +454,7 @@
     <aside class="aside">
       <div class="abox"><h4>Tiến độ bài này</h4><div class="ring"><svg viewBox="0 0 64 64" aria-hidden="true"><circle class="bg" cx="32" cy="32" r="28"/><circle class="fg" cx="32" cy="32" r="28" stroke-dasharray="176" stroke-dashoffset="176"/></svg><div><b id="ring-n">0/3</b><span id="ring-sub">phần đã xong</span></div></div></div>
       <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Token là gì</a></li><li><a href="#lt-2">Byte Pair Encoding (BPE)</a></li><li><a href="#lt-3">Vì sao tiếng Việt tốn token hơn</a></li><li><a href="#lt-4">Embedding</a></li><li><a href="#lt-5">Giới hạn của RNN và LSTM</a></li><li><a href="#lt-6">Tóm tắt bài và thuật ngữ</a></li></ol></div>
-      
+      <div class="abox"><h4>Notebook</h4><div style="display:grid;gap:8px"><a class="dl" href="https://colab.research.google.com/github/truonghuu344/ai-engineer-roadmap/blob/main/notebooks/ly-thuyet/p3-1.ipynb" target="_blank" rel="noopener"><span class="ext">COLAB</span><span>Chạy toàn bộ code của bài<span style="display:block;font:400 12px var(--f-mono);color:var(--muted)">notebook có sẵn kết quả</span></span></a></div></div>
       <div class="abox"><h4>Cùng giai đoạn</h4><ul><li><span class=cur>Tokenization và embedding</span></li><li><a href="p3-2.html">Bài 3 · Attention và Transformer</a></li><li><a href="p3-3.html">Language model và sinh văn bản</a></li><li><a href="p3-4.html">Hệ sinh thái Hugging Face</a></li></ul></div>
     </aside>
   </div>
@@ -548,6 +558,134 @@
       b.textContent = "Đã chép ✓"; b.classList.add("done"); setTimeout(() => { b.textContent = "Chép"; b.classList.remove("done"); }, 1600);
     }).catch(() => {}));
     h.appendChild(b);
+  });
+
+  /* runnable code: Pyodide (Python chạy ngay trong trình duyệt) */
+  const RUNS = [...document.querySelectorAll(".run")];
+  const HELPER = `
+import ast, sys, io, base64, traceback, os, warnings
+os.environ.setdefault("MPLBACKEND", "AGG")
+warnings.filterwarnings("ignore", message=".*non-interactive.*")
+import ast
+ACTION = {"manual_seed", "seed", "write_text", "write", "load_dotenv", "savefig", "set_title", "set_xlabel", "set_ylabel",
+          "legend", "plot", "scatter", "bar", "barh", "hist", "imshow", "append", "extend", "update", "add", "fit", "backward",
+          "step", "zero_grad", "mkdir", "makedirs", "sleep", "close", "flush", "print", "show", "axhline", "axvline", "text",
+          "tight_layout", "subplots_adjust", "set_xlim", "set_ylim", "grid", "insert", "remove", "clear", "sort", "shuffle",
+          "to_csv", "save", "load_state_dict", "train", "eval", "requires_grad_", "set_printoptions", "filterwarnings",
+          "use", "setdefault", "register_buffer", "rc", "add_node", "add_edge", "add_conditional_edges", "set_entry_point", "login", "mount", "seed_everything", "log", "finish", "init", "info", "debug", "warning", "put", "add_argument", "set_xticks", "set_yticks", "annotate", "fill_between", "suptitle", "figure", "subplot"}
+
+
+def legacy_numpy_repr():
+    import sys
+    if "numpy" in sys.modules:
+        sys.modules["numpy"].set_printoptions(legacy="1.25")     # in 0.87 thay vì np.float64(0.87)
+
+
+def transform(code):
+    lines = code.split("\\n")
+    tree = ast.parse(code)
+    n = len(tree.body)
+    for k, node in enumerate(tree.body):
+        if not isinstance(node, ast.Expr):
+            continue
+        v = node.value
+        if isinstance(v, ast.Constant) and isinstance(v.value, str):          # docstring / string literal alone
+            continue
+        if isinstance(v, ast.Await):
+            continue
+        name = None
+        if isinstance(v, ast.Call):
+            f = v.func
+            name = f.attr if isinstance(f, ast.Attribute) else (f.id if isinstance(f, ast.Name) else None)
+        tail = lines[node.end_lineno - 1][node.end_col_offset:]
+        commented = "#" in tail
+        last = k == n - 1
+        if name in ACTION:
+            continue
+        if last or commented:
+            node.value = ast.Call(func=ast.Name("__show__", ast.Load()), args=[v], keywords=[])
+    ast.fix_missing_locations(tree)
+    return tree
+
+def __aie_run(code, ns):
+    buf = io.StringIO(); so, se = sys.stdout, sys.stderr; sys.stdout = sys.stderr = buf; ok = True
+    def show(v):
+        if v is None: return
+        try:
+            import pandas as pd
+            if isinstance(v, (pd.DataFrame, pd.Series)):
+                print(v.to_string(max_rows=20)); return
+        except Exception:
+            pass
+        print(repr(v))
+    ns["__show__"] = show
+    try:
+        legacy_numpy_repr(); exec(compile(transform(code), "<cell>", "exec"), ns)
+    except BaseException:
+        ok = False
+        et, ev, tb = sys.exc_info(); lines = traceback.format_exception(et, ev, tb)
+        print("".join(l for l in lines if "<cell>" in l or l is lines[-1]), end="")
+    finally:
+        sys.stdout, sys.stderr = so, se
+    imgs = []
+    if "matplotlib.pyplot" in sys.modules:
+        plt = sys.modules["matplotlib.pyplot"]
+        for n in plt.get_fignums():
+            b = io.BytesIO(); plt.figure(n).savefig(b, format="png", dpi=100, bbox_inches="tight", facecolor="white")
+            imgs.append(base64.b64encode(b.getvalue()).decode())
+        plt.close("all")
+    return [buf.getvalue()[-20000:], imgs, ok]
+`;
+  let pyP = null; const NS = {}, done = new Set();
+  function loadPy() {
+    if (pyP) return pyP;
+    const base = window.AIE_PYODIDE || "https://cdn.jsdelivr.net/pyodide/v0.28.3/full/";
+    pyP = new Promise((res, rej) => {
+      if (window.loadPyodide) return res();
+      const s = document.createElement("script"); s.src = base + "pyodide.js"; s.onload = () => res(); s.onerror = () => rej(new Error("load"));
+      document.head.appendChild(s);
+    }).then(() => window.loadPyodide({ indexURL: base })).then((py) => { py.runPython(HELPER); return py; });
+    pyP.catch(() => { pyP = null; });
+    return pyP;
+  }
+  const codeOf = (r) => r.previousElementSibling.querySelector("pre").innerText.replace(/\n$/, "");
+  async function exec(py, r, code) {
+    const g = r.dataset.group;
+    if (!NS[g]) NS[g] = py.globals.get("dict")();
+    try { await py.loadPackagesFromImports(code); } catch (e) {}
+    const res = py.globals.get("__aie_run")(code, NS[g]); const [out, imgs, ok] = res.toJs(); res.destroy();
+    return { out, imgs, ok };
+  }
+  function paint(r, res) {
+    r.querySelectorAll(".run-out, img").forEach((x) => x.remove());
+    const pre = document.createElement("pre"); pre.className = "run-out" + (res.out ? "" : " run-empty");
+    pre.textContent = res.out || "(chạy xong, không in ra gì)"; r.appendChild(pre);
+    res.imgs.forEach((b) => { const im = document.createElement("img"); im.alt = "Hình do đoạn code vẽ"; im.src = "data:image/png;base64," + b; r.appendChild(im); });
+    r.classList.toggle("err", !res.ok);
+  }
+  RUNS.filter((r) => r.dataset.mode === "py" && r.previousElementSibling && r.previousElementSibling.classList.contains("hl")).forEach((r) => {
+    const hl = r.previousElementSibling, pre = hl.querySelector("pre"), orig = pre.innerHTML;
+    const bar = r.querySelector(".run-bar"), box = document.createElement("span"); box.className = "run-btns";
+    const st = document.createElement("span"); st.className = "run-status";
+    const mk = (t, cls) => { const b = document.createElement("button"); b.type = "button"; b.className = "run-btn " + cls; b.textContent = t; box.appendChild(b); return b; };
+    const ed = mk("Sửa code", ""), go = mk("▶ Chạy", "go");
+    bar.appendChild(st); bar.appendChild(box);
+    ed.addEventListener("click", () => {
+      if (pre.hasAttribute("contenteditable")) { pre.removeAttribute("contenteditable"); pre.innerHTML = orig; ed.textContent = "Sửa code"; return; }
+      try { pre.contentEditable = "plaintext-only"; } catch (e) { pre.contentEditable = "true"; }
+      if (pre.contentEditable !== "plaintext-only") pre.contentEditable = "true";
+      pre.spellcheck = false; pre.focus(); ed.textContent = "Khôi phục code gốc";
+    });
+    go.addEventListener("click", async () => {
+      go.disabled = true; st.textContent = pyP ? "Đang chạy…" : "Đang tải Python trong trình duyệt (lần đầu khoảng 10–30 giây)…";
+      try {
+        const py = await loadPy(); st.textContent = "Đang chạy…";
+        const same = RUNS.filter((x) => x.dataset.group === r.dataset.group && x.dataset.mode === "py");
+        for (const x of same.slice(0, same.indexOf(r))) if (!done.has(x)) { await exec(py, x, codeOf(x)); done.add(x); }
+        const res = await exec(py, r, codeOf(r)); done.add(r); paint(r, res); st.textContent = res.ok ? "" : "Có lỗi, xem bên dưới";
+      } catch (e) { console.error("aie-run", e); st.textContent = "Không tải được Python trong trình duyệt. Kiểm tra mạng rồi thử lại."; }
+      go.disabled = false;
+    });
   });
 
   /* highlight current theory section in the toc */

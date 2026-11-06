@@ -73,11 +73,18 @@
 <p>Khi dữ liệu ít (vài trăm đến vài nghìn mẫu), một tập validation 20% quá nhỏ và quá "may rủi". <strong>k-fold</strong> chia phần train thành k phần, lần lượt lấy mỗi phần làm validation, train trên k − 1 phần còn lại, rồi lấy trung bình k điểm.</p>
 <figure class="fig"><img src="../assets/fig/p1-2-kfold.svg" alt="5-fold: mỗi mẫu được làm validation đúng một lần. Tập test vẫn đứng ngoài, dùng một lần ở cuối." loading="lazy"><figcaption>5-fold: mỗi mẫu được làm validation đúng một lần. Tập test vẫn đứng ngoài, dùng một lần ở cuối.</figcaption></figure>
 
-<div class="hl"><pre><span></span><code><span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">sklearn.model_selection</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">cross_val_score</span><span class="tk-p">,</span> <span class="tk-n">StratifiedKFold</span>
+<div class="hl"><pre><span></span><code><span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">sklearn.datasets</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">make_classification</span>
+<span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">sklearn.linear_model</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">LogisticRegression</span>
+<span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">sklearn.model_selection</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">cross_val_score</span><span class="tk-p">,</span> <span class="tk-n">StratifiedKFold</span>
+<span class="tk-n">X_train</span><span class="tk-p">,</span> <span class="tk-n">y_train</span> <span class="tk-o">=</span> <span class="tk-n">make_classification</span><span class="tk-p">(</span><span class="tk-n">n_samples</span><span class="tk-o">=</span><span class="tk-mi">600</span><span class="tk-p">,</span> <span class="tk-n">n_features</span><span class="tk-o">=</span><span class="tk-mi">20</span><span class="tk-p">,</span> <span class="tk-n">n_informative</span><span class="tk-o">=</span><span class="tk-mi">5</span><span class="tk-p">,</span> <span class="tk-n">weights</span><span class="tk-o">=</span><span class="tk-p">[</span><span class="tk-mf">0.7</span><span class="tk-p">],</span> <span class="tk-n">random_state</span><span class="tk-o">=</span><span class="tk-mi">0</span><span class="tk-p">)</span>
+<span class="tk-n">model</span> <span class="tk-o">=</span> <span class="tk-n">LogisticRegression</span><span class="tk-p">(</span><span class="tk-n">max_iter</span><span class="tk-o">=</span><span class="tk-mi">1000</span><span class="tk-p">)</span>
+
 <span class="tk-n">cv</span> <span class="tk-o">=</span> <span class="tk-n">StratifiedKFold</span><span class="tk-p">(</span><span class="tk-n">n_splits</span><span class="tk-o">=</span><span class="tk-mi">5</span><span class="tk-p">,</span> <span class="tk-n">shuffle</span><span class="tk-o">=</span><span class="tk-kc">True</span><span class="tk-p">,</span> <span class="tk-n">random_state</span><span class="tk-o">=</span><span class="tk-mi">0</span><span class="tk-p">)</span>
 <span class="tk-n">scores</span> <span class="tk-o">=</span> <span class="tk-n">cross_val_score</span><span class="tk-p">(</span><span class="tk-n">model</span><span class="tk-p">,</span> <span class="tk-n">X_train</span><span class="tk-p">,</span> <span class="tk-n">y_train</span><span class="tk-p">,</span> <span class="tk-n">cv</span><span class="tk-o">=</span><span class="tk-n">cv</span><span class="tk-p">,</span> <span class="tk-n">scoring</span><span class="tk-o">=</span><span class="tk-s2">"f1"</span><span class="tk-p">)</span>
-<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-n">scores</span><span class="tk-o">.</span><span class="tk-n">mean</span><span class="tk-p">(),</span> <span class="tk-n">scores</span><span class="tk-o">.</span><span class="tk-n">std</span><span class="tk-p">())</span>   <span class="tk-c1"># báo cáo cả độ lệch: 0.81 ± 0.02 khác hẳn 0.81 ± 0.09</span>
+<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-sa">f</span><span class="tk-s2">"F1 = </span><span class="tk-si">{</span><span class="tk-n">scores</span><span class="tk-o">.</span><span class="tk-n">mean</span><span class="tk-p">()</span><span class="tk-si">:</span><span class="tk-s2">.3f</span><span class="tk-si">}</span><span class="tk-s2"> ± </span><span class="tk-si">{</span><span class="tk-n">scores</span><span class="tk-o">.</span><span class="tk-n">std</span><span class="tk-p">()</span><span class="tk-si">:</span><span class="tk-s2">.3f</span><span class="tk-si">}</span><span class="tk-s2">"</span><span class="tk-p">)</span>   <span class="tk-c1"># báo cáo cả độ lệch giữa các fold, không chỉ trung bình</span>
 </code></pre></div>
+
+<div class="run" data-mode="py" data-group="t"><div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span></div><pre class="run-out">F1 = 0.799 ± 0.037</pre></div>
 
 <p>Các kiểu chia cần biết:</p>
 <table>
@@ -109,7 +116,7 @@
 <div class="box check">
 <div class="box-h">Tự kiểm tra nhanh</div>
 <p>1.200 mẫu train, 4-fold.</p>
-<div class="ans" id="p1-2-t-b43-a1">
+<div class="ans" id="p1-2-t-b51-a1">
 <div class="ans-fields"><label>Số mẫu validation mỗi fold<input inputmode="decimal" data-ans="300.0" data-tol="0.0" autocomplete="off"></label><label>Mỗi mẫu được dùng để train bao nhiêu lần<input inputmode="decimal" data-ans="3.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div>
 <div aria-live="polite" class="ans-fb"></div>
 </div>
@@ -159,8 +166,12 @@
 <div class="box example">
 <div class="box-h">Ví dụ từng bước</div>
 <p><strong>Rò rỉ từ chọn đặc trưng, trên dữ liệu hoàn toàn ngẫu nhiên.</strong> 100 mẫu, 5.000 đặc trưng là nhiễu thuần, nhãn tung đồng xu. Không có gì để học, accuracy đúng phải khoảng 50%.</p>
-<div class="hl"><pre><span></span><code><span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">sklearn.feature_selection</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">SelectKBest</span><span class="tk-p">,</span> <span class="tk-n">f_classif</span>
+<div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">numpy</span><span class="tk-w"> </span><span class="tk-k">as</span><span class="tk-w"> </span><span class="tk-nn">np</span>
+<span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">sklearn.feature_selection</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">SelectKBest</span><span class="tk-p">,</span> <span class="tk-n">f_classif</span>
 <span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">sklearn.pipeline</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">make_pipeline</span>
+<span class="tk-n">rng</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">random</span><span class="tk-o">.</span><span class="tk-n">default_rng</span><span class="tk-p">(</span><span class="tk-mi">0</span><span class="tk-p">)</span>
+<span class="tk-n">X</span> <span class="tk-o">=</span> <span class="tk-n">rng</span><span class="tk-o">.</span><span class="tk-n">normal</span><span class="tk-p">(</span><span class="tk-n">size</span><span class="tk-o">=</span><span class="tk-p">(</span><span class="tk-mi">100</span><span class="tk-p">,</span> <span class="tk-mi">5000</span><span class="tk-p">))</span>           <span class="tk-c1"># 5.000 đặc trưng nhiễu thuần</span>
+<span class="tk-n">y</span> <span class="tk-o">=</span> <span class="tk-n">rng</span><span class="tk-o">.</span><span class="tk-n">integers</span><span class="tk-p">(</span><span class="tk-mi">0</span><span class="tk-p">,</span> <span class="tk-mi">2</span><span class="tk-p">,</span> <span class="tk-n">size</span><span class="tk-o">=</span><span class="tk-mi">100</span><span class="tk-p">)</span>           <span class="tk-c1"># nhãn tung đồng xu</span>
 
 <span class="tk-c1"># SAI: chọn 20 đặc trưng "tốt nhất" trên toàn bộ dữ liệu, rồi mới cross-validate</span>
 <span class="tk-n">Xs</span> <span class="tk-o">=</span> <span class="tk-n">SelectKBest</span><span class="tk-p">(</span><span class="tk-n">f_classif</span><span class="tk-p">,</span> <span class="tk-n">k</span><span class="tk-o">=</span><span class="tk-mi">20</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">fit_transform</span><span class="tk-p">(</span><span class="tk-n">X</span><span class="tk-p">,</span> <span class="tk-n">y</span><span class="tk-p">)</span>
@@ -171,6 +182,10 @@
 <span class="tk-n">cross_val_score</span><span class="tk-p">(</span><span class="tk-n">pipe</span><span class="tk-p">,</span> <span class="tk-n">X</span><span class="tk-p">,</span> <span class="tk-n">y</span><span class="tk-p">,</span> <span class="tk-n">cv</span><span class="tk-o">=</span><span class="tk-n">cv</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">mean</span><span class="tk-p">()</span>                          <span class="tk-c1"># 0.50</span>
 </code></pre></div>
 
+<div class="run" data-group="t" data-mode="py">
+<div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span></div>
+<pre class="run-out">0.8699999999999999&#10;0.5</pre>
+</div>
 <p>87% trên dữ liệu ngẫu nhiên: bước chọn đặc trưng đã "nhìn" nhãn của cả các mẫu validation, nên tìm được 20 cột nhiễu tình cờ khớp với nhãn.</p>
 </div>
 <div class="keep">
@@ -305,7 +320,7 @@ F1        = 2·P·R / (P + R)                  trung bình điều hòa, thấp 
 <div class="box check">
 <div class="box-h">Tự kiểm tra nhanh</div>
 <p>Model tầm soát bệnh: 80 ca bệnh thật, model bắt được 72, và báo nhầm 48 người khỏe.</p>
-<div class="ans" id="p1-2-t-b142-a1">
+<div class="ans" id="p1-2-t-b150-a1">
 <div class="ans-fields"><label>Recall<input inputmode="decimal" data-ans="0.9" data-tol="0.001" autocomplete="off"></label><label>Precision<input inputmode="decimal" data-ans="0.6" data-tol="0.001" autocomplete="off"></label><label>F1<input inputmode="decimal" data-ans="0.72" data-tol="0.001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div>
 <div aria-live="polite" class="ans-fb"></div>
 </div>
@@ -403,7 +418,7 @@ MAPE = mean(|ŷ − y| / |y|)       sai theo phần trăm, hỏng khi y gần 0
 <div class="box check">
 <div class="box-h">Tự kiểm tra nhanh</div>
 <p>Chi phí: bỏ sót một ca gian lận tốn 500 nghìn đồng, kiểm tra nhầm một giao dịch tốn 20 nghìn đồng. Ngưỡng A cho FN = 30, FP = 100; ngưỡng B cho FN = 20, FP = 300.</p>
-<div class="ans" id="p1-2-t-b176-a1">
+<div class="ans" id="p1-2-t-b184-a1">
 <div class="ans-fields"><label>Chi phí ngưỡng A (nghìn đồng)<input inputmode="decimal" data-ans="17000.0" data-tol="0.0" autocomplete="off"></label><label>Chi phí ngưỡng B (nghìn đồng)<input inputmode="decimal" data-ans="16000.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div>
 <div aria-live="polite" class="ans-fb"></div>
 </div>
@@ -550,7 +565,16 @@ MAPE = mean(|ŷ − y| / |y|)       sai theo phần trăm, hỏng khi y gần 0
 <details class="fold code">
 <summary>Code tham khảo</summary>
 <div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">numpy</span><span class="tk-w"> </span><span class="tk-k">as</span><span class="tk-w"> </span><span class="tk-nn">np</span>
+<span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">sklearn.datasets</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">make_classification</span>
+<span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">sklearn.linear_model</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">LogisticRegression</span>
+<span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">sklearn.model_selection</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">train_test_split</span>
 <span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">sklearn.metrics</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">f1_score</span>
+
+<span class="tk-c1"># dữ liệu mất cân bằng để thử: 10% lớp dương</span>
+<span class="tk-n">X</span><span class="tk-p">,</span> <span class="tk-n">y</span> <span class="tk-o">=</span> <span class="tk-n">make_classification</span><span class="tk-p">(</span><span class="tk-n">n_samples</span><span class="tk-o">=</span><span class="tk-mi">3000</span><span class="tk-p">,</span> <span class="tk-n">n_features</span><span class="tk-o">=</span><span class="tk-mi">20</span><span class="tk-p">,</span> <span class="tk-n">n_informative</span><span class="tk-o">=</span><span class="tk-mi">6</span><span class="tk-p">,</span> <span class="tk-n">weights</span><span class="tk-o">=</span><span class="tk-p">[</span><span class="tk-mf">0.9</span><span class="tk-p">],</span> <span class="tk-n">flip_y</span><span class="tk-o">=</span><span class="tk-mf">0.03</span><span class="tk-p">,</span> <span class="tk-n">random_state</span><span class="tk-o">=</span><span class="tk-mi">1</span><span class="tk-p">)</span>
+<span class="tk-n">X_tr</span><span class="tk-p">,</span> <span class="tk-n">X_tmp</span><span class="tk-p">,</span> <span class="tk-n">y_tr</span><span class="tk-p">,</span> <span class="tk-n">y_tmp</span> <span class="tk-o">=</span> <span class="tk-n">train_test_split</span><span class="tk-p">(</span><span class="tk-n">X</span><span class="tk-p">,</span> <span class="tk-n">y</span><span class="tk-p">,</span> <span class="tk-n">test_size</span><span class="tk-o">=</span><span class="tk-mf">0.4</span><span class="tk-p">,</span> <span class="tk-n">stratify</span><span class="tk-o">=</span><span class="tk-n">y</span><span class="tk-p">,</span> <span class="tk-n">random_state</span><span class="tk-o">=</span><span class="tk-mi">0</span><span class="tk-p">)</span>
+<span class="tk-n">X_val</span><span class="tk-p">,</span> <span class="tk-n">X_test</span><span class="tk-p">,</span> <span class="tk-n">y_val</span><span class="tk-p">,</span> <span class="tk-n">y_test</span> <span class="tk-o">=</span> <span class="tk-n">train_test_split</span><span class="tk-p">(</span><span class="tk-n">X_tmp</span><span class="tk-p">,</span> <span class="tk-n">y_tmp</span><span class="tk-p">,</span> <span class="tk-n">test_size</span><span class="tk-o">=</span><span class="tk-mf">0.5</span><span class="tk-p">,</span> <span class="tk-n">stratify</span><span class="tk-o">=</span><span class="tk-n">y_tmp</span><span class="tk-p">,</span> <span class="tk-n">random_state</span><span class="tk-o">=</span><span class="tk-mi">0</span><span class="tk-p">)</span>
+<span class="tk-n">model</span> <span class="tk-o">=</span> <span class="tk-n">LogisticRegression</span><span class="tk-p">(</span><span class="tk-n">max_iter</span><span class="tk-o">=</span><span class="tk-mi">1000</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">fit</span><span class="tk-p">(</span><span class="tk-n">X_tr</span><span class="tk-p">,</span> <span class="tk-n">y_tr</span><span class="tk-p">)</span>
 
 <span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">best_threshold</span><span class="tk-p">(</span><span class="tk-n">y_val</span><span class="tk-p">,</span> <span class="tk-n">proba_val</span><span class="tk-p">):</span>
     <span class="tk-n">ths</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">arange</span><span class="tk-p">(</span><span class="tk-mf">0.05</span><span class="tk-p">,</span> <span class="tk-mf">0.96</span><span class="tk-p">,</span> <span class="tk-mf">0.01</span><span class="tk-p">)</span>
@@ -563,6 +587,10 @@ MAPE = mean(|ŷ − y| / |y|)       sai theo phần trăm, hỏng khi y gần 0
 <span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-sa">f</span><span class="tk-s2">"ngưỡng </span><span class="tk-si">{</span><span class="tk-n">t</span><span class="tk-si">:</span><span class="tk-s2">.2f</span><span class="tk-si">}</span><span class="tk-s2">: F1 test </span><span class="tk-si">{</span><span class="tk-n">f1_score</span><span class="tk-p">(</span><span class="tk-n">y_test</span><span class="tk-p">,</span><span class="tk-w"> </span><span class="tk-n">p_test</span><span class="tk-w"> </span><span class="tk-o">&gt;=</span><span class="tk-w"> </span><span class="tk-n">t</span><span class="tk-p">)</span><span class="tk-si">:</span><span class="tk-s2">.3f</span><span class="tk-si">}</span><span class="tk-s2"> | ngưỡng 0.5: </span><span class="tk-si">{</span><span class="tk-n">f1_score</span><span class="tk-p">(</span><span class="tk-n">y_test</span><span class="tk-p">,</span><span class="tk-w"> </span><span class="tk-n">p_test</span><span class="tk-w"> </span><span class="tk-o">&gt;=</span><span class="tk-w"> </span><span class="tk-mf">0.5</span><span class="tk-p">)</span><span class="tk-si">:</span><span class="tk-s2">.3f</span><span class="tk-si">}</span><span class="tk-s2">"</span><span class="tk-p">)</span>
 </code></pre></div>
 
+<div class="run" data-group="e5" data-mode="py">
+<div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span></div>
+<pre class="run-out">ngưỡng 0.25: F1 test 0.681 | ngưỡng 0.5: 0.579</pre>
+</div>
 </details></div></article><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p1.2:b">Tôi đã xong phần bài tập</label><button class="btn" type="button" data-goto="thuc-hanh">Sang thực hành <span class="arr">→</span></button></div></section><section class="panel" id="thuc-hanh" role="tabpanel" hidden><div class="prose"><h2>Báo cáo đánh giá đầy đủ</h2>
 <p>Lấy model phân loại ở bài P1.1 (Breast Cancer) và viết một báo cáo đánh giá như ở công ty thật.</p>
 <p><strong>Các bước</strong></p>
@@ -628,7 +656,7 @@ MAPE = mean(|ŷ − y| / |y|)       sai theo phần trăm, hỏng khi y gần 0
     <aside class="aside">
       <div class="abox"><h4>Tiến độ bài này</h4><div class="ring"><svg viewBox="0 0 64 64" aria-hidden="true"><circle class="bg" cx="32" cy="32" r="28"/><circle class="fg" cx="32" cy="32" r="28" stroke-dasharray="176" stroke-dashoffset="176"/></svg><div><b id="ring-n">0/3</b><span id="ring-sub">phần đã xong</span></div></div></div>
       <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Train, validation, test</a></li><li><a href="#lt-2">Rò rỉ dữ liệu (data leakage)</a></li><li><a href="#lt-3">Overfitting, underfitting, bias và variance</a></li><li><a href="#lt-4">Metric phân loại</a></li><li><a href="#lt-5">Metric hồi quy</a></li><li><a href="#lt-6">Ngưỡng quyết định</a></li><li><a href="#lt-7">Tóm tắt bài và thuật ngữ</a></li></ol></div>
-      
+      <div class="abox"><h4>Notebook</h4><div style="display:grid;gap:8px"><a class="dl" href="https://colab.research.google.com/github/truonghuu344/ai-engineer-roadmap/blob/main/notebooks/ly-thuyet/p1-2.ipynb" target="_blank" rel="noopener"><span class="ext">COLAB</span><span>Chạy toàn bộ code của bài<span style="display:block;font:400 12px var(--f-mono);color:var(--muted)">notebook có sẵn kết quả</span></span></a></div></div>
       <div class="abox"><h4>Cùng giai đoạn</h4><ul><li><a href="p1-1.html">Hồi quy tuyến tính và logistic</a></li><li><span class=cur>Đánh giá model đúng cách</span></li><li><a href="p1-3.html">Cây quyết định và ensemble</a></li><li><a href="p1-4.html">Học không giám sát và feature engineering</a></li></ul></div>
     </aside>
   </div>
@@ -732,6 +760,134 @@ MAPE = mean(|ŷ − y| / |y|)       sai theo phần trăm, hỏng khi y gần 0
       b.textContent = "Đã chép ✓"; b.classList.add("done"); setTimeout(() => { b.textContent = "Chép"; b.classList.remove("done"); }, 1600);
     }).catch(() => {}));
     h.appendChild(b);
+  });
+
+  /* runnable code: Pyodide (Python chạy ngay trong trình duyệt) */
+  const RUNS = [...document.querySelectorAll(".run")];
+  const HELPER = `
+import ast, sys, io, base64, traceback, os, warnings
+os.environ.setdefault("MPLBACKEND", "AGG")
+warnings.filterwarnings("ignore", message=".*non-interactive.*")
+import ast
+ACTION = {"manual_seed", "seed", "write_text", "write", "load_dotenv", "savefig", "set_title", "set_xlabel", "set_ylabel",
+          "legend", "plot", "scatter", "bar", "barh", "hist", "imshow", "append", "extend", "update", "add", "fit", "backward",
+          "step", "zero_grad", "mkdir", "makedirs", "sleep", "close", "flush", "print", "show", "axhline", "axvline", "text",
+          "tight_layout", "subplots_adjust", "set_xlim", "set_ylim", "grid", "insert", "remove", "clear", "sort", "shuffle",
+          "to_csv", "save", "load_state_dict", "train", "eval", "requires_grad_", "set_printoptions", "filterwarnings",
+          "use", "setdefault", "register_buffer", "rc", "add_node", "add_edge", "add_conditional_edges", "set_entry_point", "login", "mount", "seed_everything", "log", "finish", "init", "info", "debug", "warning", "put", "add_argument", "set_xticks", "set_yticks", "annotate", "fill_between", "suptitle", "figure", "subplot"}
+
+
+def legacy_numpy_repr():
+    import sys
+    if "numpy" in sys.modules:
+        sys.modules["numpy"].set_printoptions(legacy="1.25")     # in 0.87 thay vì np.float64(0.87)
+
+
+def transform(code):
+    lines = code.split("\\n")
+    tree = ast.parse(code)
+    n = len(tree.body)
+    for k, node in enumerate(tree.body):
+        if not isinstance(node, ast.Expr):
+            continue
+        v = node.value
+        if isinstance(v, ast.Constant) and isinstance(v.value, str):          # docstring / string literal alone
+            continue
+        if isinstance(v, ast.Await):
+            continue
+        name = None
+        if isinstance(v, ast.Call):
+            f = v.func
+            name = f.attr if isinstance(f, ast.Attribute) else (f.id if isinstance(f, ast.Name) else None)
+        tail = lines[node.end_lineno - 1][node.end_col_offset:]
+        commented = "#" in tail
+        last = k == n - 1
+        if name in ACTION:
+            continue
+        if last or commented:
+            node.value = ast.Call(func=ast.Name("__show__", ast.Load()), args=[v], keywords=[])
+    ast.fix_missing_locations(tree)
+    return tree
+
+def __aie_run(code, ns):
+    buf = io.StringIO(); so, se = sys.stdout, sys.stderr; sys.stdout = sys.stderr = buf; ok = True
+    def show(v):
+        if v is None: return
+        try:
+            import pandas as pd
+            if isinstance(v, (pd.DataFrame, pd.Series)):
+                print(v.to_string(max_rows=20)); return
+        except Exception:
+            pass
+        print(repr(v))
+    ns["__show__"] = show
+    try:
+        legacy_numpy_repr(); exec(compile(transform(code), "<cell>", "exec"), ns)
+    except BaseException:
+        ok = False
+        et, ev, tb = sys.exc_info(); lines = traceback.format_exception(et, ev, tb)
+        print("".join(l for l in lines if "<cell>" in l or l is lines[-1]), end="")
+    finally:
+        sys.stdout, sys.stderr = so, se
+    imgs = []
+    if "matplotlib.pyplot" in sys.modules:
+        plt = sys.modules["matplotlib.pyplot"]
+        for n in plt.get_fignums():
+            b = io.BytesIO(); plt.figure(n).savefig(b, format="png", dpi=100, bbox_inches="tight", facecolor="white")
+            imgs.append(base64.b64encode(b.getvalue()).decode())
+        plt.close("all")
+    return [buf.getvalue()[-20000:], imgs, ok]
+`;
+  let pyP = null; const NS = {}, done = new Set();
+  function loadPy() {
+    if (pyP) return pyP;
+    const base = window.AIE_PYODIDE || "https://cdn.jsdelivr.net/pyodide/v0.28.3/full/";
+    pyP = new Promise((res, rej) => {
+      if (window.loadPyodide) return res();
+      const s = document.createElement("script"); s.src = base + "pyodide.js"; s.onload = () => res(); s.onerror = () => rej(new Error("load"));
+      document.head.appendChild(s);
+    }).then(() => window.loadPyodide({ indexURL: base })).then((py) => { py.runPython(HELPER); return py; });
+    pyP.catch(() => { pyP = null; });
+    return pyP;
+  }
+  const codeOf = (r) => r.previousElementSibling.querySelector("pre").innerText.replace(/\n$/, "");
+  async function exec(py, r, code) {
+    const g = r.dataset.group;
+    if (!NS[g]) NS[g] = py.globals.get("dict")();
+    try { await py.loadPackagesFromImports(code); } catch (e) {}
+    const res = py.globals.get("__aie_run")(code, NS[g]); const [out, imgs, ok] = res.toJs(); res.destroy();
+    return { out, imgs, ok };
+  }
+  function paint(r, res) {
+    r.querySelectorAll(".run-out, img").forEach((x) => x.remove());
+    const pre = document.createElement("pre"); pre.className = "run-out" + (res.out ? "" : " run-empty");
+    pre.textContent = res.out || "(chạy xong, không in ra gì)"; r.appendChild(pre);
+    res.imgs.forEach((b) => { const im = document.createElement("img"); im.alt = "Hình do đoạn code vẽ"; im.src = "data:image/png;base64," + b; r.appendChild(im); });
+    r.classList.toggle("err", !res.ok);
+  }
+  RUNS.filter((r) => r.dataset.mode === "py" && r.previousElementSibling && r.previousElementSibling.classList.contains("hl")).forEach((r) => {
+    const hl = r.previousElementSibling, pre = hl.querySelector("pre"), orig = pre.innerHTML;
+    const bar = r.querySelector(".run-bar"), box = document.createElement("span"); box.className = "run-btns";
+    const st = document.createElement("span"); st.className = "run-status";
+    const mk = (t, cls) => { const b = document.createElement("button"); b.type = "button"; b.className = "run-btn " + cls; b.textContent = t; box.appendChild(b); return b; };
+    const ed = mk("Sửa code", ""), go = mk("▶ Chạy", "go");
+    bar.appendChild(st); bar.appendChild(box);
+    ed.addEventListener("click", () => {
+      if (pre.hasAttribute("contenteditable")) { pre.removeAttribute("contenteditable"); pre.innerHTML = orig; ed.textContent = "Sửa code"; return; }
+      try { pre.contentEditable = "plaintext-only"; } catch (e) { pre.contentEditable = "true"; }
+      if (pre.contentEditable !== "plaintext-only") pre.contentEditable = "true";
+      pre.spellcheck = false; pre.focus(); ed.textContent = "Khôi phục code gốc";
+    });
+    go.addEventListener("click", async () => {
+      go.disabled = true; st.textContent = pyP ? "Đang chạy…" : "Đang tải Python trong trình duyệt (lần đầu khoảng 10–30 giây)…";
+      try {
+        const py = await loadPy(); st.textContent = "Đang chạy…";
+        const same = RUNS.filter((x) => x.dataset.group === r.dataset.group && x.dataset.mode === "py");
+        for (const x of same.slice(0, same.indexOf(r))) if (!done.has(x)) { await exec(py, x, codeOf(x)); done.add(x); }
+        const res = await exec(py, r, codeOf(r)); done.add(r); paint(r, res); st.textContent = res.ok ? "" : "Có lỗi, xem bên dưới";
+      } catch (e) { console.error("aie-run", e); st.textContent = "Không tải được Python trong trình duyệt. Kiểm tra mạng rồi thử lại."; }
+      go.disabled = false;
+    });
   });
 
   /* highlight current theory section in the toc */

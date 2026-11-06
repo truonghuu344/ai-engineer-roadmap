@@ -66,12 +66,22 @@ số step / epoch  = ⌈số mẫu / batch size⌉
 </table>
 <p>Quy tắc thực hành: chọn batch lớn nhất vừa bộ nhớ GPU trong khoảng 32–512, rồi chỉnh learning rate. Khi tăng batch k lần, thử tăng learning rate khoảng k lần (với SGD) hoặc √k lần (với Adam).</p>
 <h3>DataLoader trong PyTorch</h3>
-<div class="hl"><pre><span></span><code><span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">torch.utils.data</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">DataLoader</span>
-<span class="tk-n">train_loader</span> <span class="tk-o">=</span> <span class="tk-n">DataLoader</span><span class="tk-p">(</span><span class="tk-n">train_ds</span><span class="tk-p">,</span> <span class="tk-n">batch_size</span><span class="tk-o">=</span><span class="tk-mi">128</span><span class="tk-p">,</span> <span class="tk-n">shuffle</span><span class="tk-o">=</span><span class="tk-kc">True</span><span class="tk-p">,</span> <span class="tk-n">num_workers</span><span class="tk-o">=</span><span class="tk-mi">2</span><span class="tk-p">,</span> <span class="tk-n">pin_memory</span><span class="tk-o">=</span><span class="tk-kc">True</span><span class="tk-p">)</span>
+<div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">torch</span><span class="tk-o">,</span><span class="tk-w"> </span><span class="tk-nn">torchvision</span>
+<span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">torchvision.transforms</span><span class="tk-w"> </span><span class="tk-k">as</span><span class="tk-w"> </span><span class="tk-nn">T</span>
+<span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">torch.utils.data</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">DataLoader</span>
+<span class="tk-c1"># CIFAR-10 thật (Colab, cần mạng): torchvision.datasets.CIFAR10("data", train=True, download=True, transform=T.ToTensor())</span>
+<span class="tk-c1"># ở đây dùng FakeData: ảnh ngẫu nhiên cùng định dạng, không cần tải</span>
+<span class="tk-n">train_ds</span> <span class="tk-o">=</span> <span class="tk-n">torchvision</span><span class="tk-o">.</span><span class="tk-n">datasets</span><span class="tk-o">.</span><span class="tk-n">FakeData</span><span class="tk-p">(</span><span class="tk-n">size</span><span class="tk-o">=</span><span class="tk-mi">2000</span><span class="tk-p">,</span> <span class="tk-n">image_size</span><span class="tk-o">=</span><span class="tk-p">(</span><span class="tk-mi">3</span><span class="tk-p">,</span> <span class="tk-mi">32</span><span class="tk-p">,</span> <span class="tk-mi">32</span><span class="tk-p">),</span> <span class="tk-n">num_classes</span><span class="tk-o">=</span><span class="tk-mi">10</span><span class="tk-p">,</span> <span class="tk-n">transform</span><span class="tk-o">=</span><span class="tk-n">T</span><span class="tk-o">.</span><span class="tk-n">ToTensor</span><span class="tk-p">())</span>
+<span class="tk-n">val_ds</span> <span class="tk-o">=</span> <span class="tk-n">torchvision</span><span class="tk-o">.</span><span class="tk-n">datasets</span><span class="tk-o">.</span><span class="tk-n">FakeData</span><span class="tk-p">(</span><span class="tk-n">size</span><span class="tk-o">=</span><span class="tk-mi">500</span><span class="tk-p">,</span> <span class="tk-n">image_size</span><span class="tk-o">=</span><span class="tk-p">(</span><span class="tk-mi">3</span><span class="tk-p">,</span> <span class="tk-mi">32</span><span class="tk-p">,</span> <span class="tk-mi">32</span><span class="tk-p">),</span> <span class="tk-n">num_classes</span><span class="tk-o">=</span><span class="tk-mi">10</span><span class="tk-p">,</span> <span class="tk-n">transform</span><span class="tk-o">=</span><span class="tk-n">T</span><span class="tk-o">.</span><span class="tk-n">ToTensor</span><span class="tk-p">(),</span> <span class="tk-n">random_offset</span><span class="tk-o">=</span><span class="tk-mi">1</span><span class="tk-p">)</span>
+
+<span class="tk-n">train_loader</span> <span class="tk-o">=</span> <span class="tk-n">DataLoader</span><span class="tk-p">(</span><span class="tk-n">train_ds</span><span class="tk-p">,</span> <span class="tk-n">batch_size</span><span class="tk-o">=</span><span class="tk-mi">128</span><span class="tk-p">,</span> <span class="tk-n">shuffle</span><span class="tk-o">=</span><span class="tk-kc">True</span><span class="tk-p">,</span> <span class="tk-n">num_workers</span><span class="tk-o">=</span><span class="tk-mi">2</span><span class="tk-p">,</span> <span class="tk-n">pin_memory</span><span class="tk-o">=</span><span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">cuda</span><span class="tk-o">.</span><span class="tk-n">is_available</span><span class="tk-p">())</span>
 <span class="tk-n">val_loader</span> <span class="tk-o">=</span> <span class="tk-n">DataLoader</span><span class="tk-p">(</span><span class="tk-n">val_ds</span><span class="tk-p">,</span> <span class="tk-n">batch_size</span><span class="tk-o">=</span><span class="tk-mi">256</span><span class="tk-p">,</span> <span class="tk-n">shuffle</span><span class="tk-o">=</span><span class="tk-kc">False</span><span class="tk-p">)</span>
 <span class="tk-k">for</span> <span class="tk-n">x</span><span class="tk-p">,</span> <span class="tk-n">y</span> <span class="tk-ow">in</span> <span class="tk-n">train_loader</span><span class="tk-p">:</span>      <span class="tk-c1"># mỗi vòng lặp trả về một batch [128, 3, 32, 32] và [128]</span>
-    <span class="tk-o">...</span>
+    <span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-n">x</span><span class="tk-o">.</span><span class="tk-n">shape</span><span class="tk-p">,</span> <span class="tk-n">y</span><span class="tk-o">.</span><span class="tk-n">shape</span><span class="tk-p">,</span> <span class="tk-nb">len</span><span class="tk-p">(</span><span class="tk-n">train_loader</span><span class="tk-p">),</span> <span class="tk-s2">"batch mỗi epoch"</span><span class="tk-p">)</span>
+    <span class="tk-k">break</span>
 </code></pre></div>
+
+<div class="run" data-mode="static" data-group="t"><div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span><span class="run-note">đã chạy sẵn cần PyTorch</span><a class="run-colab" href="https://colab.research.google.com/github/truonghuu344/ai-engineer-roadmap/blob/main/notebooks/ly-thuyet/p2-2.ipynb" target="_blank" rel="noopener">Mở trên Colab ↗</a></div><pre class="run-out">torch.Size([128, 3, 32, 32]) torch.Size([128]) 16 batch mỗi epoch</pre></div>
 
 <p><code>shuffle=True</code> cho tập train là bắt buộc: nếu dữ liệu xếp theo lớp (5.000 ảnh máy bay rồi 5.000 ảnh ô tô...), model sẽ học lệch theo từng đoạn. <code>num_workers</code> cho phép CPU chuẩn bị batch sau trong lúc GPU đang tính batch trước.</p>
 <h2 id="lt-2">Optimizer: SGD, momentum, Adam, AdamW</h2>
@@ -170,11 +180,20 @@ w ← w − η·m̂ / (√v̂ + ε)
 </ul>
 <figure class="fig"><img src="../assets/fig/p2-2-schedule.svg" alt="Warmup 200 bước rồi cosine decay về 0: lịch phổ biến nhất khi train Transformer." loading="lazy"><figcaption>Warmup 200 bước rồi cosine decay về 0: lịch phổ biến nhất khi train Transformer.</figcaption></figure>
 
-<div class="hl"><pre><span></span><code><span class="tk-n">opt</span> <span class="tk-o">=</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">optim</span><span class="tk-o">.</span><span class="tk-n">AdamW</span><span class="tk-p">(</span><span class="tk-n">model</span><span class="tk-o">.</span><span class="tk-n">parameters</span><span class="tk-p">(),</span> <span class="tk-n">lr</span><span class="tk-o">=</span><span class="tk-mf">3e-4</span><span class="tk-p">,</span> <span class="tk-n">weight_decay</span><span class="tk-o">=</span><span class="tk-mf">0.05</span><span class="tk-p">)</span>
+<div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">torch.nn</span><span class="tk-w"> </span><span class="tk-k">as</span><span class="tk-w"> </span><span class="tk-nn">nn</span>
+<span class="tk-n">model</span><span class="tk-p">,</span> <span class="tk-n">epochs</span> <span class="tk-o">=</span> <span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">Linear</span><span class="tk-p">(</span><span class="tk-mi">10</span><span class="tk-p">,</span> <span class="tk-mi">2</span><span class="tk-p">),</span> <span class="tk-mi">30</span>          <span class="tk-c1"># model nhỏ chỉ để xem lịch learning rate</span>
+<span class="tk-n">opt</span> <span class="tk-o">=</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">optim</span><span class="tk-o">.</span><span class="tk-n">AdamW</span><span class="tk-p">(</span><span class="tk-n">model</span><span class="tk-o">.</span><span class="tk-n">parameters</span><span class="tk-p">(),</span> <span class="tk-n">lr</span><span class="tk-o">=</span><span class="tk-mf">3e-4</span><span class="tk-p">,</span> <span class="tk-n">weight_decay</span><span class="tk-o">=</span><span class="tk-mf">0.05</span><span class="tk-p">)</span>
 <span class="tk-n">sched</span> <span class="tk-o">=</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">optim</span><span class="tk-o">.</span><span class="tk-n">lr_scheduler</span><span class="tk-o">.</span><span class="tk-n">OneCycleLR</span><span class="tk-p">(</span><span class="tk-n">opt</span><span class="tk-p">,</span> <span class="tk-n">max_lr</span><span class="tk-o">=</span><span class="tk-mf">3e-4</span><span class="tk-p">,</span> <span class="tk-n">total_steps</span><span class="tk-o">=</span><span class="tk-nb">len</span><span class="tk-p">(</span><span class="tk-n">train_loader</span><span class="tk-p">)</span> <span class="tk-o">*</span> <span class="tk-n">epochs</span><span class="tk-p">,</span> <span class="tk-n">pct_start</span><span class="tk-o">=</span><span class="tk-mf">0.05</span><span class="tk-p">)</span>
-<span class="tk-c1"># trong vòng lặp, sau opt.step():</span>
-<span class="tk-n">sched</span><span class="tk-o">.</span><span class="tk-n">step</span><span class="tk-p">()</span>
+<span class="tk-n">lrs</span> <span class="tk-o">=</span> <span class="tk-p">[]</span>
+<span class="tk-k">for</span> <span class="tk-n">step</span> <span class="tk-ow">in</span> <span class="tk-nb">range</span><span class="tk-p">(</span><span class="tk-nb">len</span><span class="tk-p">(</span><span class="tk-n">train_loader</span><span class="tk-p">)</span> <span class="tk-o">*</span> <span class="tk-n">epochs</span><span class="tk-p">):</span>
+    <span class="tk-n">opt</span><span class="tk-o">.</span><span class="tk-n">step</span><span class="tk-p">()</span>                                <span class="tk-c1"># trong vòng lặp thật: backward() rồi opt.step()</span>
+    <span class="tk-n">sched</span><span class="tk-o">.</span><span class="tk-n">step</span><span class="tk-p">()</span>                              <span class="tk-c1"># ... và gọi sched.step() ngay sau opt.step()</span>
+    <span class="tk-n">lrs</span><span class="tk-o">.</span><span class="tk-n">append</span><span class="tk-p">(</span><span class="tk-n">sched</span><span class="tk-o">.</span><span class="tk-n">get_last_lr</span><span class="tk-p">()[</span><span class="tk-mi">0</span><span class="tk-p">])</span>
+<span class="tk-n">peak</span> <span class="tk-o">=</span> <span class="tk-nb">max</span><span class="tk-p">(</span><span class="tk-n">lrs</span><span class="tk-p">)</span>
+<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-sa">f</span><span class="tk-s2">"</span><span class="tk-si">{</span><span class="tk-nb">len</span><span class="tk-p">(</span><span class="tk-n">lrs</span><span class="tk-p">)</span><span class="tk-si">}</span><span class="tk-s2"> bước: lr bắt đầu </span><span class="tk-si">{</span><span class="tk-n">lrs</span><span class="tk-p">[</span><span class="tk-mi">0</span><span class="tk-p">]</span><span class="tk-si">:</span><span class="tk-s2">.1e</span><span class="tk-si">}</span><span class="tk-s2">, đạt đỉnh </span><span class="tk-si">{</span><span class="tk-n">peak</span><span class="tk-si">:</span><span class="tk-s2">.1e</span><span class="tk-si">}</span><span class="tk-s2"> ở bước </span><span class="tk-si">{</span><span class="tk-n">lrs</span><span class="tk-o">.</span><span class="tk-n">index</span><span class="tk-p">(</span><span class="tk-n">peak</span><span class="tk-p">)</span><span class="tk-si">}</span><span class="tk-s2">, kết thúc </span><span class="tk-si">{</span><span class="tk-n">lrs</span><span class="tk-p">[</span><span class="tk-o">-</span><span class="tk-mi">1</span><span class="tk-p">]</span><span class="tk-si">:</span><span class="tk-s2">.1e</span><span class="tk-si">}</span><span class="tk-s2">"</span><span class="tk-p">)</span>
 </code></pre></div>
+
+<div class="run" data-mode="static" data-group="t"><div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span><span class="run-note">đã chạy sẵn cần PyTorch</span><a class="run-colab" href="https://colab.research.google.com/github/truonghuu344/ai-engineer-roadmap/blob/main/notebooks/ly-thuyet/p2-2.ipynb" target="_blank" rel="noopener">Mở trên Colab ↗</a></div><pre class="run-out">480 bước: lr bắt đầu 1.3e-05, đạt đỉnh 3.0e-04 ở bước 22, kết thúc 4.8e-09</pre></div>
 
 <h3>Khởi tạo trọng số</h3>
 <p>Trọng số ban đầu quá lớn thì kích hoạt "nổ" qua các lớp; quá nhỏ thì tín hiệu tắt dần. Ý tưởng: giữ phương sai đầu ra mỗi lớp xấp xỉ phương sai đầu vào (nhớ P0.2: tổng n số độc lập có phương sai gấp n lần).</p>
@@ -241,13 +260,17 @@ Số tham số Conv2d(C_in, C_out, k) = C_in · C_out · k · k + C_out
 <li><strong>MaxPool2d(2)</strong> lấy max trong mỗi ô 2×2: giảm kích thước một nửa, giữ lại đặc trưng mạnh nhất, làm model ít nhạy với dịch chuyển nhỏ.</li>
 <li>Mẫu kiến trúc kinh điển: [Conv → BatchNorm → ReLU] × 2 → MaxPool, lặp lại vài khối, mỗi khối gấp đôi số kênh và giảm nửa kích thước, cuối cùng là lớp Linear phân loại.</li>
 </ul>
-<div class="hl"><pre><span></span><code><span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">block</span><span class="tk-p">(</span><span class="tk-n">cin</span><span class="tk-p">,</span> <span class="tk-n">cout</span><span class="tk-p">):</span>
+<div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">torch</span><span class="tk-o">,</span><span class="tk-w"> </span><span class="tk-nn">torch.nn</span><span class="tk-w"> </span><span class="tk-k">as</span><span class="tk-w"> </span><span class="tk-nn">nn</span>
+<span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">block</span><span class="tk-p">(</span><span class="tk-n">cin</span><span class="tk-p">,</span> <span class="tk-n">cout</span><span class="tk-p">):</span>
     <span class="tk-k">return</span> <span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">Sequential</span><span class="tk-p">(</span><span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">Conv2d</span><span class="tk-p">(</span><span class="tk-n">cin</span><span class="tk-p">,</span> <span class="tk-n">cout</span><span class="tk-p">,</span> <span class="tk-mi">3</span><span class="tk-p">,</span> <span class="tk-n">padding</span><span class="tk-o">=</span><span class="tk-mi">1</span><span class="tk-p">),</span> <span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">BatchNorm2d</span><span class="tk-p">(</span><span class="tk-n">cout</span><span class="tk-p">),</span> <span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">ReLU</span><span class="tk-p">(),</span>
                          <span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">Conv2d</span><span class="tk-p">(</span><span class="tk-n">cout</span><span class="tk-p">,</span> <span class="tk-n">cout</span><span class="tk-p">,</span> <span class="tk-mi">3</span><span class="tk-p">,</span> <span class="tk-n">padding</span><span class="tk-o">=</span><span class="tk-mi">1</span><span class="tk-p">),</span> <span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">BatchNorm2d</span><span class="tk-p">(</span><span class="tk-n">cout</span><span class="tk-p">),</span> <span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">ReLU</span><span class="tk-p">(),</span>
                          <span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">MaxPool2d</span><span class="tk-p">(</span><span class="tk-mi">2</span><span class="tk-p">))</span>
 <span class="tk-n">model</span> <span class="tk-o">=</span> <span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">Sequential</span><span class="tk-p">(</span><span class="tk-n">block</span><span class="tk-p">(</span><span class="tk-mi">3</span><span class="tk-p">,</span> <span class="tk-mi">32</span><span class="tk-p">),</span> <span class="tk-n">block</span><span class="tk-p">(</span><span class="tk-mi">32</span><span class="tk-p">,</span> <span class="tk-mi">64</span><span class="tk-p">),</span> <span class="tk-n">block</span><span class="tk-p">(</span><span class="tk-mi">64</span><span class="tk-p">,</span> <span class="tk-mi">128</span><span class="tk-p">),</span>     <span class="tk-c1"># 32→16→8→4</span>
                       <span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">Flatten</span><span class="tk-p">(),</span> <span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">Linear</span><span class="tk-p">(</span><span class="tk-mi">128</span> <span class="tk-o">*</span> <span class="tk-mi">4</span> <span class="tk-o">*</span> <span class="tk-mi">4</span><span class="tk-p">,</span> <span class="tk-mi">10</span><span class="tk-p">))</span>
+<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-n">model</span><span class="tk-p">(</span><span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">randn</span><span class="tk-p">(</span><span class="tk-mi">8</span><span class="tk-p">,</span> <span class="tk-mi">3</span><span class="tk-p">,</span> <span class="tk-mi">32</span><span class="tk-p">,</span> <span class="tk-mi">32</span><span class="tk-p">))</span><span class="tk-o">.</span><span class="tk-n">shape</span><span class="tk-p">,</span> <span class="tk-nb">sum</span><span class="tk-p">(</span><span class="tk-n">p</span><span class="tk-o">.</span><span class="tk-n">numel</span><span class="tk-p">()</span> <span class="tk-k">for</span> <span class="tk-n">p</span> <span class="tk-ow">in</span> <span class="tk-n">model</span><span class="tk-o">.</span><span class="tk-n">parameters</span><span class="tk-p">()),</span> <span class="tk-s2">"tham số"</span><span class="tk-p">)</span>
 </code></pre></div>
+
+<div class="run" data-mode="static" data-group="t"><div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span><span class="run-note">đã chạy sẵn cần PyTorch</span><a class="run-colab" href="https://colab.research.google.com/github/truonghuu344/ai-engineer-roadmap/blob/main/notebooks/ly-thuyet/p2-2.ipynb" target="_blank" rel="noopener">Mở trên Colab ↗</a></div><pre class="run-out">torch.Size([8, 10]) 308394 tham số</pre></div>
 
 <div class="box pitfall">
 <div class="box-h">Lỗi hay gặp</div>
@@ -256,7 +279,7 @@ Số tham số Conv2d(C_in, C_out, k) = C_in · C_out · k · k + C_out
 <div class="box check">
 <div class="box-h">Tự kiểm tra nhanh</div>
 <p>Ảnh 64×64 qua Conv2d kernel 3, padding 1, stride 1, rồi MaxPool2d(2), rồi Conv2d kernel 3, padding 0, stride 1.</p>
-<div class="ans" id="p2-2-t-b149-a1">
+<div class="ans" id="p2-2-t-b175-a1">
 <div class="ans-fields"><label>Kích thước sau conv đầu<input inputmode="decimal" data-ans="64.0" data-tol="0.0" autocomplete="off"></label><label>Sau MaxPool<input inputmode="decimal" data-ans="32.0" data-tol="0.0" autocomplete="off"></label><label>Sau conv thứ hai<input inputmode="decimal" data-ans="30.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div>
 <div aria-live="polite" class="ans-fb"></div>
 </div>
@@ -314,7 +337,12 @@ y = γ·x̂ + β                         γ, β học được: mạng có thể
     <span class="tk-n">T</span><span class="tk-o">.</span><span class="tk-n">Normalize</span><span class="tk-p">((</span><span class="tk-mf">0.4914</span><span class="tk-p">,</span> <span class="tk-mf">0.4822</span><span class="tk-p">,</span> <span class="tk-mf">0.4465</span><span class="tk-p">),</span> <span class="tk-p">(</span><span class="tk-mf">0.2470</span><span class="tk-p">,</span> <span class="tk-mf">0.2435</span><span class="tk-p">,</span> <span class="tk-mf">0.2616</span><span class="tk-p">)),</span>
 <span class="tk-p">])</span>
 <span class="tk-n">test_tf</span> <span class="tk-o">=</span> <span class="tk-n">T</span><span class="tk-o">.</span><span class="tk-n">Compose</span><span class="tk-p">([</span><span class="tk-n">T</span><span class="tk-o">.</span><span class="tk-n">ToTensor</span><span class="tk-p">(),</span> <span class="tk-n">T</span><span class="tk-o">.</span><span class="tk-n">Normalize</span><span class="tk-p">((</span><span class="tk-mf">0.4914</span><span class="tk-p">,</span> <span class="tk-mf">0.4822</span><span class="tk-p">,</span> <span class="tk-mf">0.4465</span><span class="tk-p">),</span> <span class="tk-p">(</span><span class="tk-mf">0.2470</span><span class="tk-p">,</span> <span class="tk-mf">0.2435</span><span class="tk-p">,</span> <span class="tk-mf">0.2616</span><span class="tk-p">))])</span>
+<span class="tk-n">img</span> <span class="tk-o">=</span> <span class="tk-n">T</span><span class="tk-o">.</span><span class="tk-n">ToPILImage</span><span class="tk-p">()(</span><span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">rand</span><span class="tk-p">(</span><span class="tk-mi">3</span><span class="tk-p">,</span> <span class="tk-mi">32</span><span class="tk-p">,</span> <span class="tk-mi">32</span><span class="tk-p">))</span>           <span class="tk-c1"># một ảnh thử</span>
+<span class="tk-n">a</span><span class="tk-p">,</span> <span class="tk-n">b</span> <span class="tk-o">=</span> <span class="tk-n">train_tf</span><span class="tk-p">(</span><span class="tk-n">img</span><span class="tk-p">),</span> <span class="tk-n">train_tf</span><span class="tk-p">(</span><span class="tk-n">img</span><span class="tk-p">)</span>                   <span class="tk-c1"># cùng ảnh, hai lần biến đổi ngẫu nhiên khác nhau</span>
+<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-n">a</span><span class="tk-o">.</span><span class="tk-n">shape</span><span class="tk-p">,</span> <span class="tk-s2">"giống nhau?"</span><span class="tk-p">,</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">equal</span><span class="tk-p">(</span><span class="tk-n">a</span><span class="tk-p">,</span> <span class="tk-n">b</span><span class="tk-p">))</span>
 </code></pre></div>
+
+<div class="run" data-mode="static" data-group="t"><div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span><span class="run-note">đã chạy sẵn cần PyTorch</span><a class="run-colab" href="https://colab.research.google.com/github/truonghuu344/ai-engineer-roadmap/blob/main/notebooks/ly-thuyet/p2-2.ipynb" target="_blank" rel="noopener">Mở trên Colab ↗</a></div><pre class="run-out">torch.Size([3, 32, 32]) giống nhau? False</pre></div>
 
 <p>Chỉ áp dụng augmentation cho train, <strong>không bao giờ</strong> cho val/test: bạn muốn đo model trên ảnh thật như lúc chạy thật.</p>
 <h3>Đọc learning curve</h3>
@@ -336,7 +364,7 @@ y = γ·x̂ + β                         γ, β học được: mạng có thể
 <div class="box check">
 <div class="box-h">Tự kiểm tra nhanh</div>
 <p>Dropout(0.25), neuron có giá trị 6 và không bị tắt. Một batch có 4 ảnh, BatchNorm2d(16).</p>
-<div class="ans" id="p2-2-t-b219-a1">
+<div class="ans" id="p2-2-t-b251-a1">
 <div class="ans-fields"><label>Giá trị sau dropout khi train<input inputmode="decimal" data-ans="8.0" data-tol="0.001" autocomplete="off"></label><label>Số tham số học được của BatchNorm2d(16)<input inputmode="decimal" data-ans="32.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div>
 <div aria-live="polite" class="ans-fb"></div>
 </div>
@@ -551,7 +579,7 @@ y = γ·x̂ + β                         γ, β học được: mạng có thể
     <aside class="aside">
       <div class="abox"><h4>Tiến độ bài này</h4><div class="ring"><svg viewBox="0 0 64 64" aria-hidden="true"><circle class="bg" cx="32" cy="32" r="28"/><circle class="fg" cx="32" cy="32" r="28" stroke-dasharray="176" stroke-dashoffset="176"/></svg><div><b id="ring-n">0/3</b><span id="ring-sub">phần đã xong</span></div></div></div>
       <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Mini-batch, epoch, iteration</a></li><li><a href="#lt-2">Optimizer: SGD, momentum, Adam, AdamW</a></li><li><a href="#lt-3">Lịch learning rate, warmup và khởi tạo</a></li><li><a href="#lt-4">Convolution: vì sao hợp với ảnh</a></li><li><a href="#lt-5">BatchNorm và Dropout</a></li><li><a href="#lt-6">Data augmentation và overfitting</a></li><li><a href="#lt-7">Tóm tắt bài và thuật ngữ</a></li></ol></div>
-      <div class="abox"><h4>Notebook</h4><div style="display:grid;gap:8px"><a class="dl" href="../notebooks/lab01_training_loop.ipynb" download><span class="ext">IPYNB</span><span>Bài tập<span style="display:block;font:400 12px var(--f-mono);color:var(--muted)">lab01_training_loop.ipynb</span></span></a><a class="dl" href="../notebooks/lab01_training_loop_LOI_GIAI.ipynb" download><span class="ext">IPYNB</span><span>Lời giải<span style="display:block;font:400 12px var(--f-mono);color:var(--muted)">lab01_training_loop_LOI_GIAI.ipynb</span></span></a></div></div>
+      <div class="abox"><h4>Notebook</h4><div style="display:grid;gap:8px"><a class="dl" href="../notebooks/lab01_training_loop.ipynb" download><span class="ext">IPYNB</span><span>Bài tập<span style="display:block;font:400 12px var(--f-mono);color:var(--muted)">lab01_training_loop.ipynb</span></span></a><a class="dl" href="../notebooks/lab01_training_loop_LOI_GIAI.ipynb" download><span class="ext">IPYNB</span><span>Lời giải<span style="display:block;font:400 12px var(--f-mono);color:var(--muted)">lab01_training_loop_LOI_GIAI.ipynb</span></span></a><a class="dl" href="https://colab.research.google.com/github/truonghuu344/ai-engineer-roadmap/blob/main/notebooks/ly-thuyet/p2-2.ipynb" target="_blank" rel="noopener"><span class="ext">COLAB</span><span>Chạy toàn bộ code của bài<span style="display:block;font:400 12px var(--f-mono);color:var(--muted)">notebook có sẵn kết quả</span></span></a></div></div>
       <div class="abox"><h4>Cùng giai đoạn</h4><ul><li><a href="p2-1.html">Bài 1 · Mạng nơ-ron học thế nào</a></li><li><span class=cur>Bài 2 · Train mạng thật</span></li><li><a href="p2-3.html">CNN hiện đại và transfer learning</a></li></ul></div>
     </aside>
   </div>
@@ -655,6 +683,134 @@ y = γ·x̂ + β                         γ, β học được: mạng có thể
       b.textContent = "Đã chép ✓"; b.classList.add("done"); setTimeout(() => { b.textContent = "Chép"; b.classList.remove("done"); }, 1600);
     }).catch(() => {}));
     h.appendChild(b);
+  });
+
+  /* runnable code: Pyodide (Python chạy ngay trong trình duyệt) */
+  const RUNS = [...document.querySelectorAll(".run")];
+  const HELPER = `
+import ast, sys, io, base64, traceback, os, warnings
+os.environ.setdefault("MPLBACKEND", "AGG")
+warnings.filterwarnings("ignore", message=".*non-interactive.*")
+import ast
+ACTION = {"manual_seed", "seed", "write_text", "write", "load_dotenv", "savefig", "set_title", "set_xlabel", "set_ylabel",
+          "legend", "plot", "scatter", "bar", "barh", "hist", "imshow", "append", "extend", "update", "add", "fit", "backward",
+          "step", "zero_grad", "mkdir", "makedirs", "sleep", "close", "flush", "print", "show", "axhline", "axvline", "text",
+          "tight_layout", "subplots_adjust", "set_xlim", "set_ylim", "grid", "insert", "remove", "clear", "sort", "shuffle",
+          "to_csv", "save", "load_state_dict", "train", "eval", "requires_grad_", "set_printoptions", "filterwarnings",
+          "use", "setdefault", "register_buffer", "rc", "add_node", "add_edge", "add_conditional_edges", "set_entry_point", "login", "mount", "seed_everything", "log", "finish", "init", "info", "debug", "warning", "put", "add_argument", "set_xticks", "set_yticks", "annotate", "fill_between", "suptitle", "figure", "subplot"}
+
+
+def legacy_numpy_repr():
+    import sys
+    if "numpy" in sys.modules:
+        sys.modules["numpy"].set_printoptions(legacy="1.25")     # in 0.87 thay vì np.float64(0.87)
+
+
+def transform(code):
+    lines = code.split("\\n")
+    tree = ast.parse(code)
+    n = len(tree.body)
+    for k, node in enumerate(tree.body):
+        if not isinstance(node, ast.Expr):
+            continue
+        v = node.value
+        if isinstance(v, ast.Constant) and isinstance(v.value, str):          # docstring / string literal alone
+            continue
+        if isinstance(v, ast.Await):
+            continue
+        name = None
+        if isinstance(v, ast.Call):
+            f = v.func
+            name = f.attr if isinstance(f, ast.Attribute) else (f.id if isinstance(f, ast.Name) else None)
+        tail = lines[node.end_lineno - 1][node.end_col_offset:]
+        commented = "#" in tail
+        last = k == n - 1
+        if name in ACTION:
+            continue
+        if last or commented:
+            node.value = ast.Call(func=ast.Name("__show__", ast.Load()), args=[v], keywords=[])
+    ast.fix_missing_locations(tree)
+    return tree
+
+def __aie_run(code, ns):
+    buf = io.StringIO(); so, se = sys.stdout, sys.stderr; sys.stdout = sys.stderr = buf; ok = True
+    def show(v):
+        if v is None: return
+        try:
+            import pandas as pd
+            if isinstance(v, (pd.DataFrame, pd.Series)):
+                print(v.to_string(max_rows=20)); return
+        except Exception:
+            pass
+        print(repr(v))
+    ns["__show__"] = show
+    try:
+        legacy_numpy_repr(); exec(compile(transform(code), "<cell>", "exec"), ns)
+    except BaseException:
+        ok = False
+        et, ev, tb = sys.exc_info(); lines = traceback.format_exception(et, ev, tb)
+        print("".join(l for l in lines if "<cell>" in l or l is lines[-1]), end="")
+    finally:
+        sys.stdout, sys.stderr = so, se
+    imgs = []
+    if "matplotlib.pyplot" in sys.modules:
+        plt = sys.modules["matplotlib.pyplot"]
+        for n in plt.get_fignums():
+            b = io.BytesIO(); plt.figure(n).savefig(b, format="png", dpi=100, bbox_inches="tight", facecolor="white")
+            imgs.append(base64.b64encode(b.getvalue()).decode())
+        plt.close("all")
+    return [buf.getvalue()[-20000:], imgs, ok]
+`;
+  let pyP = null; const NS = {}, done = new Set();
+  function loadPy() {
+    if (pyP) return pyP;
+    const base = window.AIE_PYODIDE || "https://cdn.jsdelivr.net/pyodide/v0.28.3/full/";
+    pyP = new Promise((res, rej) => {
+      if (window.loadPyodide) return res();
+      const s = document.createElement("script"); s.src = base + "pyodide.js"; s.onload = () => res(); s.onerror = () => rej(new Error("load"));
+      document.head.appendChild(s);
+    }).then(() => window.loadPyodide({ indexURL: base })).then((py) => { py.runPython(HELPER); return py; });
+    pyP.catch(() => { pyP = null; });
+    return pyP;
+  }
+  const codeOf = (r) => r.previousElementSibling.querySelector("pre").innerText.replace(/\n$/, "");
+  async function exec(py, r, code) {
+    const g = r.dataset.group;
+    if (!NS[g]) NS[g] = py.globals.get("dict")();
+    try { await py.loadPackagesFromImports(code); } catch (e) {}
+    const res = py.globals.get("__aie_run")(code, NS[g]); const [out, imgs, ok] = res.toJs(); res.destroy();
+    return { out, imgs, ok };
+  }
+  function paint(r, res) {
+    r.querySelectorAll(".run-out, img").forEach((x) => x.remove());
+    const pre = document.createElement("pre"); pre.className = "run-out" + (res.out ? "" : " run-empty");
+    pre.textContent = res.out || "(chạy xong, không in ra gì)"; r.appendChild(pre);
+    res.imgs.forEach((b) => { const im = document.createElement("img"); im.alt = "Hình do đoạn code vẽ"; im.src = "data:image/png;base64," + b; r.appendChild(im); });
+    r.classList.toggle("err", !res.ok);
+  }
+  RUNS.filter((r) => r.dataset.mode === "py" && r.previousElementSibling && r.previousElementSibling.classList.contains("hl")).forEach((r) => {
+    const hl = r.previousElementSibling, pre = hl.querySelector("pre"), orig = pre.innerHTML;
+    const bar = r.querySelector(".run-bar"), box = document.createElement("span"); box.className = "run-btns";
+    const st = document.createElement("span"); st.className = "run-status";
+    const mk = (t, cls) => { const b = document.createElement("button"); b.type = "button"; b.className = "run-btn " + cls; b.textContent = t; box.appendChild(b); return b; };
+    const ed = mk("Sửa code", ""), go = mk("▶ Chạy", "go");
+    bar.appendChild(st); bar.appendChild(box);
+    ed.addEventListener("click", () => {
+      if (pre.hasAttribute("contenteditable")) { pre.removeAttribute("contenteditable"); pre.innerHTML = orig; ed.textContent = "Sửa code"; return; }
+      try { pre.contentEditable = "plaintext-only"; } catch (e) { pre.contentEditable = "true"; }
+      if (pre.contentEditable !== "plaintext-only") pre.contentEditable = "true";
+      pre.spellcheck = false; pre.focus(); ed.textContent = "Khôi phục code gốc";
+    });
+    go.addEventListener("click", async () => {
+      go.disabled = true; st.textContent = pyP ? "Đang chạy…" : "Đang tải Python trong trình duyệt (lần đầu khoảng 10–30 giây)…";
+      try {
+        const py = await loadPy(); st.textContent = "Đang chạy…";
+        const same = RUNS.filter((x) => x.dataset.group === r.dataset.group && x.dataset.mode === "py");
+        for (const x of same.slice(0, same.indexOf(r))) if (!done.has(x)) { await exec(py, x, codeOf(x)); done.add(x); }
+        const res = await exec(py, r, codeOf(r)); done.add(r); paint(r, res); st.textContent = res.ok ? "" : "Có lỗi, xem bên dưới";
+      } catch (e) { console.error("aie-run", e); st.textContent = "Không tải được Python trong trình duyệt. Kiểm tra mạng rồi thử lại."; }
+      go.disabled = false;
+    });
   });
 
   /* highlight current theory section in the toc */

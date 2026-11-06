@@ -91,8 +91,14 @@
             <span class="tk-n">score</span><span class="tk-p">[</span><span class="tk-n">doc</span><span class="tk-p">]</span> <span class="tk-o">=</span> <span class="tk-n">score</span><span class="tk-o">.</span><span class="tk-n">get</span><span class="tk-p">(</span><span class="tk-n">doc</span><span class="tk-p">,</span> <span class="tk-mi">0</span><span class="tk-p">)</span> <span class="tk-o">+</span> <span class="tk-mi">1</span> <span class="tk-o">/</span> <span class="tk-p">(</span><span class="tk-n">k</span> <span class="tk-o">+</span> <span class="tk-n">rank</span><span class="tk-p">)</span>
     <span class="tk-k">return</span> <span class="tk-nb">sorted</span><span class="tk-p">(</span><span class="tk-n">score</span><span class="tk-p">,</span> <span class="tk-n">key</span><span class="tk-o">=</span><span class="tk-n">score</span><span class="tk-o">.</span><span class="tk-n">get</span><span class="tk-p">,</span> <span class="tk-n">reverse</span><span class="tk-o">=</span><span class="tk-kc">True</span><span class="tk-p">)</span>
 
+<span class="tk-c1"># ví dụ nhỏ: hai bảng xếp hạng của cùng một câu hỏi</span>
+<span class="tk-n">bm25_top50</span> <span class="tk-o">=</span> <span class="tk-p">[</span><span class="tk-s2">"đổi trả 7 ngày"</span><span class="tk-p">,</span> <span class="tk-s2">"phí ship"</span><span class="tk-p">,</span> <span class="tk-s2">"bảo hành 12 tháng"</span><span class="tk-p">,</span> <span class="tk-s2">"đổi size"</span><span class="tk-p">]</span>
+<span class="tk-n">vector_top50</span> <span class="tk-o">=</span> <span class="tk-p">[</span><span class="tk-s2">"đổi size"</span><span class="tk-p">,</span> <span class="tk-s2">"đổi trả 7 ngày"</span><span class="tk-p">,</span> <span class="tk-s2">"hoàn tiền"</span><span class="tk-p">,</span> <span class="tk-s2">"phí ship"</span><span class="tk-p">]</span>
 <span class="tk-n">candidates</span> <span class="tk-o">=</span> <span class="tk-n">rrf</span><span class="tk-p">([</span><span class="tk-n">bm25_top50</span><span class="tk-p">,</span> <span class="tk-n">vector_top50</span><span class="tk-p">])[:</span><span class="tk-mi">50</span><span class="tk-p">]</span>
+<span class="tk-n">candidates</span>          <span class="tk-c1"># tài liệu đứng cao ở cả hai danh sách được đẩy lên đầu</span>
 </code></pre></div>
+
+<div class="run" data-mode="py" data-group="t"><div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span></div><pre class="run-out">[&#x27;đổi trả 7 ngày&#x27;, &#x27;đổi size&#x27;, &#x27;phí ship&#x27;, &#x27;bảo hành 12 tháng&#x27;, &#x27;hoàn tiền&#x27;]</pre></div>
 
 <p>Hằng số k làm mượt: k lớn thì chênh lệch giữa hạng 1 và hạng 10 nhỏ đi, kết quả dựa nhiều vào việc "có mặt ở bao nhiêu danh sách". RRF không cần chuẩn hóa điểm, gần như không có tham số, và rất khó làm tệ hơn từng danh sách riêng, nên là lựa chọn mặc định.</p>
 <details class="fold deep">
@@ -141,12 +147,15 @@
 <p>Vì cross-encoder chậm, ta chỉ dùng nó trên một danh sách ngắn:</p>
 <figure class="fig"><img src="../assets/fig/p4-5-funnel.svg" alt="Tầng 1 lọc nhanh từ toàn bộ index xuống vài chục ứng viên; tầng 2 chấm kỹ để chọn vài đoạn tốt nhất đưa vào LLM." loading="lazy"><figcaption>Tầng 1 lọc nhanh từ toàn bộ index xuống vài chục ứng viên; tầng 2 chấm kỹ để chọn vài đoạn tốt nhất đưa vào LLM.</figcaption></figure>
 
-<div class="hl"><pre><span></span><code><span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">sentence_transformers</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">CrossEncoder</span>
+<div class="hl"><pre><span></span><code><span class="tk-c1"># Cần mạng: tải reranker từ Hugging Face, chạy trên Colab</span>
+<span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">sentence_transformers</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">CrossEncoder</span>
 <span class="tk-n">reranker</span> <span class="tk-o">=</span> <span class="tk-n">CrossEncoder</span><span class="tk-p">(</span><span class="tk-s2">"BAAI/bge-reranker-v2-m3"</span><span class="tk-p">)</span>
 <span class="tk-n">pairs</span> <span class="tk-o">=</span> <span class="tk-p">[(</span><span class="tk-n">question</span><span class="tk-p">,</span> <span class="tk-n">chunks</span><span class="tk-p">[</span><span class="tk-n">i</span><span class="tk-p">][</span><span class="tk-s2">"text"</span><span class="tk-p">])</span> <span class="tk-k">for</span> <span class="tk-n">i</span> <span class="tk-ow">in</span> <span class="tk-n">candidates</span><span class="tk-p">]</span>         <span class="tk-c1"># 50 cặp</span>
 <span class="tk-n">scores</span> <span class="tk-o">=</span> <span class="tk-n">reranker</span><span class="tk-o">.</span><span class="tk-n">predict</span><span class="tk-p">(</span><span class="tk-n">pairs</span><span class="tk-p">,</span> <span class="tk-n">batch_size</span><span class="tk-o">=</span><span class="tk-mi">16</span><span class="tk-p">)</span>
 <span class="tk-n">top5</span> <span class="tk-o">=</span> <span class="tk-p">[</span><span class="tk-n">candidates</span><span class="tk-p">[</span><span class="tk-n">i</span><span class="tk-p">]</span> <span class="tk-k">for</span> <span class="tk-n">i</span> <span class="tk-ow">in</span> <span class="tk-n">scores</span><span class="tk-o">.</span><span class="tk-n">argsort</span><span class="tk-p">()[::</span><span class="tk-o">-</span><span class="tk-mi">1</span><span class="tk-p">][:</span><span class="tk-mi">5</span><span class="tk-p">]]</span>
 </code></pre></div>
+
+<div class="run run-skip" data-mode="static" data-group="t"><div class="run-bar"><span class="run-lbl">Không chạy trên trang</span><span class="run-note">Cần mạng: tải reranker từ Hugging Face, chạy trên Colab</span><a class="run-colab" href="https://colab.research.google.com/github/truonghuu344/ai-engineer-roadmap/blob/main/notebooks/ly-thuyet/p4-5.ipynb" target="_blank" rel="noopener">Mở trên Colab ↗</a></div></div>
 
 <p>Số ứng viên đưa vào reranker là một đánh đổi: nhiều hơn thì recall cao hơn (đoạn đúng có cơ hội lọt vào), nhưng độ trễ tăng tuyến tính. Đo recall@50 của tầng 1: nếu đoạn đúng thường ở hạng 30–50, tăng lên 100 ứng viên; nếu hầu như luôn trong top 20, giảm xuống để nhanh hơn.</p>
 <div class="box pitfall">
@@ -324,7 +333,7 @@ Agent: search_orders("DH1024") → giao ngày 20/10, sản phẩm bàn MDF
 <div class="box check">
 <div class="box-h">Tự kiểm tra nhanh</div>
 <p>Hai danh sách, k = 60. Đoạn P đứng hạng 1 ở danh sách thứ nhất và không có ở danh sách thứ hai. Đoạn Q đứng hạng 5 ở cả hai.</p>
-<div class="ans" id="p4-5-t-b152-a1">
+<div class="ans" id="p4-5-t-b163-a1">
 <div class="ans-fields"><label>RRF(P)<input inputmode="decimal" data-ans="0.016393" data-tol="1e-05" autocomplete="off"></label><label>RRF(Q)<input inputmode="decimal" data-ans="0.030769" data-tol="1e-05" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div>
 <div aria-live="polite" class="ans-fb"></div>
 </div>
@@ -467,7 +476,8 @@ Agent: search_orders("DH1024") → giao ngày 20/10, sản phẩm bàn MDF
 </details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 5</span><h3>Pipeline hai tầng</h3><span class="ex-tag code">code</span></div><div class="prose"><p>Viết <code>retrieve(question, k_final=5, k_wide=50)</code>: tìm vector và BM25 mỗi bên 50 kết quả, gộp bằng RRF, rerank 50 ứng viên đầu bằng cross-encoder, trả về top 5. Dùng <code>index</code>, <code>bm25</code>, <code>emb</code>, <code>tokenize</code>, <code>chunks</code> từ Lab 5.</p>
 <details class="fold code">
 <summary>Code tham khảo</summary>
-<div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">numpy</span><span class="tk-w"> </span><span class="tk-k">as</span><span class="tk-w"> </span><span class="tk-nn">np</span>
+<div class="hl"><pre><span></span><code><span class="tk-c1"># Cần mạng và index ở bài P4.2: chạy trên Colab</span>
+<span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">numpy</span><span class="tk-w"> </span><span class="tk-k">as</span><span class="tk-w"> </span><span class="tk-nn">np</span>
 <span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">sentence_transformers</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">CrossEncoder</span>
 <span class="tk-n">reranker</span> <span class="tk-o">=</span> <span class="tk-n">CrossEncoder</span><span class="tk-p">(</span><span class="tk-s2">"BAAI/bge-reranker-v2-m3"</span><span class="tk-p">)</span>
 
@@ -487,6 +497,9 @@ Agent: search_orders("DH1024") → giao ngày 20/10, sản phẩm bàn MDF
     <span class="tk-k">return</span> <span class="tk-p">[</span><span class="tk-n">cand</span><span class="tk-p">[</span><span class="tk-n">i</span><span class="tk-p">]</span> <span class="tk-k">for</span> <span class="tk-n">i</span> <span class="tk-ow">in</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">argsort</span><span class="tk-p">(</span><span class="tk-o">-</span><span class="tk-n">scores</span><span class="tk-p">)[:</span><span class="tk-n">k_final</span><span class="tk-p">]]</span>
 </code></pre></div>
 
+<div class="run run-skip" data-group="e5" data-mode="static">
+<div class="run-bar"><span class="run-lbl">Không chạy trên trang</span><span class="run-note">Cần mạng và index ở bài P4.2: chạy trên Colab</span><a class="run-colab" href="https://colab.research.google.com/github/truonghuu344/ai-engineer-roadmap/blob/main/notebooks/ly-thuyet/p4-5.ipynb" target="_blank" rel="noopener">Mở trên Colab ↗</a></div>
+</div>
 </details></div></article><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p4.5:b">Tôi đã xong phần bài tập</label><button class="btn" type="button" data-goto="thuc-hanh">Sang thực hành <span class="arr">→</span></button></div></section><section class="panel" id="thuc-hanh" role="tabpanel" hidden><div class="prose"><h2>Nâng cấp hệ RAG của Lab 5</h2>
 <p><strong>Các bước</strong></p>
 <ol>
@@ -560,7 +573,7 @@ Agent: search_orders("DH1024") → giao ngày 20/10, sản phẩm bàn MDF
     <aside class="aside">
       <div class="abox"><h4>Tiến độ bài này</h4><div class="ring"><svg viewBox="0 0 64 64" aria-hidden="true"><circle class="bg" cx="32" cy="32" r="28"/><circle class="fg" cx="32" cy="32" r="28" stroke-dasharray="176" stroke-dashoffset="176"/></svg><div><b id="ring-n">0/3</b><span id="ring-sub">phần đã xong</span></div></div></div>
       <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Bản đồ các kỹ thuật</a></li><li><a href="#lt-2">Hybrid search với Reciprocal Rank Fusion</a></li><li><a href="#lt-3">Reranker cross-encoder</a></li><li><a href="#lt-4">Biến đổi câu hỏi</a></li><li><a href="#lt-5">Chunking nâng cao</a></li><li><a href="#lt-6">GraphRAG và agentic RAG</a></li><li><a href="#lt-7">Thử nghiệm có kiểm soát: bảng ablation</a></li><li><a href="#lt-8">Tóm tắt bài và thuật ngữ</a></li></ol></div>
-      
+      <div class="abox"><h4>Notebook</h4><div style="display:grid;gap:8px"><a class="dl" href="https://colab.research.google.com/github/truonghuu344/ai-engineer-roadmap/blob/main/notebooks/ly-thuyet/p4-5.ipynb" target="_blank" rel="noopener"><span class="ext">COLAB</span><span>Chạy toàn bộ code của bài<span style="display:block;font:400 12px var(--f-mono);color:var(--muted)">notebook có sẵn kết quả</span></span></a></div></div>
       <div class="abox"><h4>Cùng giai đoạn</h4><ul><li><a href="p4-1.html">Bài 4 · Làm việc với LLM</a></li><li><a href="p4-2.html">Bài 5 · Embedding và RAG</a></li><li><a href="p4-3.html">Bài 6 · Đánh giá hệ thống AI</a></li><li><a href="p4-4.html">Bài 7 · Agent</a></li><li><span class=cur>RAG nâng cao</span></li><li><a href="p4-6.html">Multi-agent</a></li><li><a href="p4-7.html">MCP và hệ sinh thái tool</a></li><li><a href="p4-8.html">Guardrails, an toàn và human-in-the-loop</a></li></ul></div>
     </aside>
   </div>
@@ -664,6 +677,134 @@ Agent: search_orders("DH1024") → giao ngày 20/10, sản phẩm bàn MDF
       b.textContent = "Đã chép ✓"; b.classList.add("done"); setTimeout(() => { b.textContent = "Chép"; b.classList.remove("done"); }, 1600);
     }).catch(() => {}));
     h.appendChild(b);
+  });
+
+  /* runnable code: Pyodide (Python chạy ngay trong trình duyệt) */
+  const RUNS = [...document.querySelectorAll(".run")];
+  const HELPER = `
+import ast, sys, io, base64, traceback, os, warnings
+os.environ.setdefault("MPLBACKEND", "AGG")
+warnings.filterwarnings("ignore", message=".*non-interactive.*")
+import ast
+ACTION = {"manual_seed", "seed", "write_text", "write", "load_dotenv", "savefig", "set_title", "set_xlabel", "set_ylabel",
+          "legend", "plot", "scatter", "bar", "barh", "hist", "imshow", "append", "extend", "update", "add", "fit", "backward",
+          "step", "zero_grad", "mkdir", "makedirs", "sleep", "close", "flush", "print", "show", "axhline", "axvline", "text",
+          "tight_layout", "subplots_adjust", "set_xlim", "set_ylim", "grid", "insert", "remove", "clear", "sort", "shuffle",
+          "to_csv", "save", "load_state_dict", "train", "eval", "requires_grad_", "set_printoptions", "filterwarnings",
+          "use", "setdefault", "register_buffer", "rc", "add_node", "add_edge", "add_conditional_edges", "set_entry_point", "login", "mount", "seed_everything", "log", "finish", "init", "info", "debug", "warning", "put", "add_argument", "set_xticks", "set_yticks", "annotate", "fill_between", "suptitle", "figure", "subplot"}
+
+
+def legacy_numpy_repr():
+    import sys
+    if "numpy" in sys.modules:
+        sys.modules["numpy"].set_printoptions(legacy="1.25")     # in 0.87 thay vì np.float64(0.87)
+
+
+def transform(code):
+    lines = code.split("\\n")
+    tree = ast.parse(code)
+    n = len(tree.body)
+    for k, node in enumerate(tree.body):
+        if not isinstance(node, ast.Expr):
+            continue
+        v = node.value
+        if isinstance(v, ast.Constant) and isinstance(v.value, str):          # docstring / string literal alone
+            continue
+        if isinstance(v, ast.Await):
+            continue
+        name = None
+        if isinstance(v, ast.Call):
+            f = v.func
+            name = f.attr if isinstance(f, ast.Attribute) else (f.id if isinstance(f, ast.Name) else None)
+        tail = lines[node.end_lineno - 1][node.end_col_offset:]
+        commented = "#" in tail
+        last = k == n - 1
+        if name in ACTION:
+            continue
+        if last or commented:
+            node.value = ast.Call(func=ast.Name("__show__", ast.Load()), args=[v], keywords=[])
+    ast.fix_missing_locations(tree)
+    return tree
+
+def __aie_run(code, ns):
+    buf = io.StringIO(); so, se = sys.stdout, sys.stderr; sys.stdout = sys.stderr = buf; ok = True
+    def show(v):
+        if v is None: return
+        try:
+            import pandas as pd
+            if isinstance(v, (pd.DataFrame, pd.Series)):
+                print(v.to_string(max_rows=20)); return
+        except Exception:
+            pass
+        print(repr(v))
+    ns["__show__"] = show
+    try:
+        legacy_numpy_repr(); exec(compile(transform(code), "<cell>", "exec"), ns)
+    except BaseException:
+        ok = False
+        et, ev, tb = sys.exc_info(); lines = traceback.format_exception(et, ev, tb)
+        print("".join(l for l in lines if "<cell>" in l or l is lines[-1]), end="")
+    finally:
+        sys.stdout, sys.stderr = so, se
+    imgs = []
+    if "matplotlib.pyplot" in sys.modules:
+        plt = sys.modules["matplotlib.pyplot"]
+        for n in plt.get_fignums():
+            b = io.BytesIO(); plt.figure(n).savefig(b, format="png", dpi=100, bbox_inches="tight", facecolor="white")
+            imgs.append(base64.b64encode(b.getvalue()).decode())
+        plt.close("all")
+    return [buf.getvalue()[-20000:], imgs, ok]
+`;
+  let pyP = null; const NS = {}, done = new Set();
+  function loadPy() {
+    if (pyP) return pyP;
+    const base = window.AIE_PYODIDE || "https://cdn.jsdelivr.net/pyodide/v0.28.3/full/";
+    pyP = new Promise((res, rej) => {
+      if (window.loadPyodide) return res();
+      const s = document.createElement("script"); s.src = base + "pyodide.js"; s.onload = () => res(); s.onerror = () => rej(new Error("load"));
+      document.head.appendChild(s);
+    }).then(() => window.loadPyodide({ indexURL: base })).then((py) => { py.runPython(HELPER); return py; });
+    pyP.catch(() => { pyP = null; });
+    return pyP;
+  }
+  const codeOf = (r) => r.previousElementSibling.querySelector("pre").innerText.replace(/\n$/, "");
+  async function exec(py, r, code) {
+    const g = r.dataset.group;
+    if (!NS[g]) NS[g] = py.globals.get("dict")();
+    try { await py.loadPackagesFromImports(code); } catch (e) {}
+    const res = py.globals.get("__aie_run")(code, NS[g]); const [out, imgs, ok] = res.toJs(); res.destroy();
+    return { out, imgs, ok };
+  }
+  function paint(r, res) {
+    r.querySelectorAll(".run-out, img").forEach((x) => x.remove());
+    const pre = document.createElement("pre"); pre.className = "run-out" + (res.out ? "" : " run-empty");
+    pre.textContent = res.out || "(chạy xong, không in ra gì)"; r.appendChild(pre);
+    res.imgs.forEach((b) => { const im = document.createElement("img"); im.alt = "Hình do đoạn code vẽ"; im.src = "data:image/png;base64," + b; r.appendChild(im); });
+    r.classList.toggle("err", !res.ok);
+  }
+  RUNS.filter((r) => r.dataset.mode === "py" && r.previousElementSibling && r.previousElementSibling.classList.contains("hl")).forEach((r) => {
+    const hl = r.previousElementSibling, pre = hl.querySelector("pre"), orig = pre.innerHTML;
+    const bar = r.querySelector(".run-bar"), box = document.createElement("span"); box.className = "run-btns";
+    const st = document.createElement("span"); st.className = "run-status";
+    const mk = (t, cls) => { const b = document.createElement("button"); b.type = "button"; b.className = "run-btn " + cls; b.textContent = t; box.appendChild(b); return b; };
+    const ed = mk("Sửa code", ""), go = mk("▶ Chạy", "go");
+    bar.appendChild(st); bar.appendChild(box);
+    ed.addEventListener("click", () => {
+      if (pre.hasAttribute("contenteditable")) { pre.removeAttribute("contenteditable"); pre.innerHTML = orig; ed.textContent = "Sửa code"; return; }
+      try { pre.contentEditable = "plaintext-only"; } catch (e) { pre.contentEditable = "true"; }
+      if (pre.contentEditable !== "plaintext-only") pre.contentEditable = "true";
+      pre.spellcheck = false; pre.focus(); ed.textContent = "Khôi phục code gốc";
+    });
+    go.addEventListener("click", async () => {
+      go.disabled = true; st.textContent = pyP ? "Đang chạy…" : "Đang tải Python trong trình duyệt (lần đầu khoảng 10–30 giây)…";
+      try {
+        const py = await loadPy(); st.textContent = "Đang chạy…";
+        const same = RUNS.filter((x) => x.dataset.group === r.dataset.group && x.dataset.mode === "py");
+        for (const x of same.slice(0, same.indexOf(r))) if (!done.has(x)) { await exec(py, x, codeOf(x)); done.add(x); }
+        const res = await exec(py, r, codeOf(r)); done.add(r); paint(r, res); st.textContent = res.ok ? "" : "Có lỗi, xem bên dưới";
+      } catch (e) { console.error("aie-run", e); st.textContent = "Không tải được Python trong trình duyệt. Kiểm tra mạng rồi thử lại."; }
+      go.disabled = false;
+    });
   });
 
   /* highlight current theory section in the toc */

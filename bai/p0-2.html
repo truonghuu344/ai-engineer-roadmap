@@ -65,6 +65,10 @@ cos(u, v) = (u · v) / (‖u‖ ‖v‖)              cosine similarity, từ �
 <span class="tk-n">cos</span><span class="tk-p">(</span><span class="tk-n">e</span><span class="tk-p">[</span><span class="tk-s2">"vua"</span><span class="tk-p">],</span> <span class="tk-n">e</span><span class="tk-p">[</span><span class="tk-s2">"quả táo"</span><span class="tk-p">])</span>     <span class="tk-c1"># 0.303  khác xa</span>
 </code></pre></div>
 
+<div class="run" data-group="t" data-mode="py">
+<div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span></div>
+<pre class="run-out">0.9957846018984898&#10;0.3034263294974635</pre>
+</div>
 <p>Đây chính là cách tìm kiếm ngữ nghĩa và RAG ở P4 hoạt động: biến câu hỏi và tài liệu thành vector, lấy các tài liệu có cosine cao nhất.</p>
 </div>
 <h3>Một neuron là một tích vô hướng</h3>
@@ -109,6 +113,10 @@ C[1,0] = 3·5 + 4·7 = 43        C[1,1] = 3·6 + 4·8 = 50
 <span class="tk-n">A</span> <span class="tk-o">*</span> <span class="tk-n">B</span>        <span class="tk-c1"># [[ 5 12] [21 32]]   ← * là nhân từng phần tử, không phải nhân ma trận</span>
 </code></pre></div>
 
+<div class="run" data-group="t" data-mode="py">
+<div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span></div>
+<pre class="run-out">array([[19, 22],&#10;       [43, 50]])&#10;array([[23, 34],&#10;       [31, 46]])&#10;array([[ 5, 12],&#10;       [21, 32]])</pre>
+</div>
 </div>
 <h3>Lớp Linear trong code thật</h3>
 <div class="hl"><pre><span></span><code><span class="tk-n">X</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">random</span><span class="tk-o">.</span><span class="tk-n">rand</span><span class="tk-p">(</span><span class="tk-mi">128</span><span class="tk-p">,</span> <span class="tk-mi">784</span><span class="tk-p">)</span>   <span class="tk-c1"># batch 128 ảnh, mỗi ảnh 784 số</span>
@@ -116,6 +124,8 @@ C[1,0] = 3·5 + 4·7 = 43        C[1,1] = 3·6 + 4·8 = 50
 <span class="tk-n">b</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">random</span><span class="tk-o">.</span><span class="tk-n">rand</span><span class="tk-p">(</span><span class="tk-mi">256</span><span class="tk-p">)</span>
 <span class="tk-n">H</span> <span class="tk-o">=</span> <span class="tk-n">X</span> <span class="tk-o">@</span> <span class="tk-n">W</span><span class="tk-o">.</span><span class="tk-n">T</span> <span class="tk-o">+</span> <span class="tk-n">b</span>                <span class="tk-c1"># (128, 784) @ (784, 256) → (128, 256), cộng b nhờ broadcasting</span>
 </code></pre></div>
+
+<div class="run" data-mode="py" data-group="t"><div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span></div><pre class="run-out run-empty">(chạy xong, không in ra gì)</pre></div>
 
 <p>Mỗi hàng của <code>H</code> là 256 neuron tính cho một ảnh; mỗi neuron là một tích vô hướng như ở mục trước. Một phép <code>@</code> làm 128 × 256 = 32.768 tích vô hướng cùng lúc.</p>
 <h3>Ma trận như một phép biến đổi</h3>
@@ -164,7 +174,7 @@ C[1,0] = 3·5 + 4·7 = 43        C[1,1] = 3·6 + 4·8 = 50
 <div class="box check">
 <div class="box-h">Tự kiểm tra nhanh</div>
 <p><code>X</code> shape <code>(32, 10)</code>, <code>W</code> shape <code>(10, 4)</code>, <code>V</code> shape <code>(4, 1)</code>.</p>
-<div class="ans" id="p0-2-t-b100-a1">
+<div class="ans" id="p0-2-t-b103-a1">
 <div class="ans-fields"><label>Số hàng của X @ W @ V<input inputmode="decimal" data-ans="32.0" data-tol="0.0" autocomplete="off"></label><label>Số cột của X @ W @ V<input inputmode="decimal" data-ans="1.0" data-tol="0.0" autocomplete="off"></label><label>Số phép nhân của X @ W<input inputmode="decimal" data-ans="1280.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div>
 <div aria-live="polite" class="ans-fb"></div>
 </div>
@@ -308,6 +318,8 @@ C[1,0] = 3·5 + 4·7 = 43        C[1,1] = 3·6 + 4·8 = 50
 <span class="tk-p">(</span><span class="tk-n">f</span><span class="tk-p">(</span><span class="tk-mi">3</span> <span class="tk-o">+</span> <span class="tk-mf">1e-5</span><span class="tk-p">)</span> <span class="tk-o">-</span> <span class="tk-n">f</span><span class="tk-p">(</span><span class="tk-mi">3</span> <span class="tk-o">-</span> <span class="tk-mf">1e-5</span><span class="tk-p">))</span> <span class="tk-o">/</span> <span class="tk-mf">2e-5</span>      <span class="tk-c1"># 6.00000000004  khớp đạo hàm thật 6</span>
 </code></pre></div>
 
+<div class="run" data-mode="py" data-group="t"><div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span></div><pre class="run-out">6.000000000039306</pre></div>
+
 <div class="box pitfall">
 <div class="box-h">Lỗi hay gặp</div>
 <p><strong>Chọn h sai.</strong> h quá lớn thì xấp xỉ kém; h quá nhỏ thì sai số làm tròn của số thực chiếm ưu thế. Với sin tại x = 1: h = 0.1 sai khoảng 9·10⁻⁴, h = 10⁻⁵ sai khoảng 10⁻¹¹ (tốt nhất), h = 10⁻¹² lại sai tới 10⁻⁵. Dùng h khoảng 10⁻⁵ với <code>float64</code>, và đừng kiểm tra gradient bằng <code>float32</code>.</p>
@@ -315,7 +327,7 @@ C[1,0] = 3·5 + 4·7 = 43        C[1,1] = 3·6 + 4·8 = 50
 <div class="box check">
 <div class="box-h">Tự kiểm tra nhanh</div>
 <p>L(w, b) = (w·x + b − y)² với x = 3, y = 10, tại w = 2, b = 1. Gợi ý: đặt e = w·x + b − y, rồi dùng quy tắc dây chuyền.</p>
-<div class="ans" id="p0-2-t-b175-a1">
+<div class="ans" id="p0-2-t-b181-a1">
 <div class="ans-fields"><label>e<input inputmode="decimal" data-ans="-3.0" data-tol="0.0" autocomplete="off"></label><label>∂L/∂b<input inputmode="decimal" data-ans="-6.0" data-tol="0.0" autocomplete="off"></label><label>∂L/∂w<input inputmode="decimal" data-ans="-18.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div>
 <div aria-live="polite" class="ans-fb"></div>
 </div>
@@ -361,7 +373,7 @@ Var(X + Y) = Var(X) + Var(Y)                 nếu X, Y độc lập
 <div class="box check">
 <div class="box-h">Tự kiểm tra nhanh</div>
 <p>Thời gian phản hồi của một API có trung bình 200 ms, độ lệch chuẩn 20 ms, phân phối gần chuẩn.</p>
-<div class="ans" id="p0-2-t-b215-a1">
+<div class="ans" id="p0-2-t-b221-a1">
 <div class="ans-fields"><label>Khoảng 95% request nằm dưới bao nhiêu ms<input inputmode="decimal" data-ans="240.0" data-tol="0.0" autocomplete="off"></label><label>Var của thời gian tính bằng giây (đổi đơn vị chia 1000)<input inputmode="decimal" data-ans="0.0004" data-tol="1e-06" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div>
 <div aria-live="polite" class="ans-fb"></div>
 </div>
@@ -399,7 +411,7 @@ P(B) = P(B | A)·P(A) + P(B | không A)·P(không A)
 <div class="box check">
 <div class="box-h">Tự kiểm tra nhanh</div>
 <p>20% email là spam. Từ "khuyến mãi" xuất hiện trong 60% email spam và 5% email thường. Một email có từ "khuyến mãi":</p>
-<div class="ans" id="p0-2-t-b248-a1">
+<div class="ans" id="p0-2-t-b254-a1">
 <div class="ans-fields"><label>P(spam khi có từ đó)<input inputmode="decimal" data-ans="0.75" data-tol="0.001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div>
 <div aria-live="polite" class="ans-fb"></div>
 </div>
@@ -466,7 +478,7 @@ P(B) = P(B | A)·P(A) + P(B | không A)·P(không A)
 <div class="box check">
 <div class="box-h">Tự kiểm tra nhanh</div>
 <p>Model phân loại 3 lớp gán xác suất cho đáp án đúng của 2 mẫu lần lượt là 0.9 và 0.5.</p>
-<div class="ans" id="p0-2-t-b294-a1">
+<div class="ans" id="p0-2-t-b300-a1">
 <div class="ans-fields"><label>Tổng NLL (log tự nhiên)<input inputmode="decimal" data-ans="0.7985" data-tol="0.001" autocomplete="off"></label><label>NLL trung bình<input inputmode="decimal" data-ans="0.3992" data-tol="0.001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div>
 <div aria-live="polite" class="ans-fb"></div>
 </div>
@@ -646,6 +658,10 @@ P(B) = P(B | A)·P(A) + P(B | không A)·P(không A)
 <span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">abs</span><span class="tk-p">(</span><span class="tk-n">numeric_grad</span><span class="tk-p">(</span><span class="tk-n">loss</span><span class="tk-p">,</span> <span class="tk-n">w</span><span class="tk-p">)</span> <span class="tk-o">-</span> <span class="tk-n">analytic</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">max</span><span class="tk-p">())</span>   <span class="tk-c1"># cỡ 1e-10</span>
 </code></pre></div>
 
+<div class="run" data-group="e6" data-mode="py">
+<div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span></div>
+<pre class="run-out">1.2864820320146464e-11</pre>
+</div>
 </details></div></article><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p0.2:b">Tôi đã xong phần bài tập</label><button class="btn" type="button" data-goto="thuc-hanh">Sang thực hành <span class="arr">→</span></button></div></section><section class="panel" id="thuc-hanh" role="tabpanel" hidden><div class="prose"><h2>Notebook "toán bằng code"</h2>
 <p>Mỗi khái niệm trong bài một ô code kiểm chứng. Đây là cách học toán hiệu quả nhất cho kỹ sư: không tin công thức cho tới khi code xác nhận.</p>
 <p><strong>Các bước</strong></p>
@@ -703,7 +719,7 @@ P(B) = P(B | A)·P(A) + P(B | không A)·P(không A)
     <aside class="aside">
       <div class="abox"><h4>Tiến độ bài này</h4><div class="ring"><svg viewBox="0 0 64 64" aria-hidden="true"><circle class="bg" cx="32" cy="32" r="28"/><circle class="fg" cx="32" cy="32" r="28" stroke-dasharray="176" stroke-dashoffset="176"/></svg><div><b id="ring-n">0/3</b><span id="ring-sub">phần đã xong</span></div></div></div>
       <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Vector và tích vô hướng</a></li><li><a href="#lt-2">Ma trận và phép nhân ma trận</a></li><li><a href="#lt-3">Đạo hàm, gradient và quy tắc dây chuyền</a></li><li><a href="#lt-4">Xác suất và thống kê cơ bản</a></li><li><a href="#lt-5">Bayes và xác suất có điều kiện</a></li><li><a href="#lt-6">Log, exp và maximum likelihood</a></li><li><a href="#lt-7">Tóm tắt bài và thuật ngữ</a></li></ol></div>
-      
+      <div class="abox"><h4>Notebook</h4><div style="display:grid;gap:8px"><a class="dl" href="https://colab.research.google.com/github/truonghuu344/ai-engineer-roadmap/blob/main/notebooks/ly-thuyet/p0-2.ipynb" target="_blank" rel="noopener"><span class="ext">COLAB</span><span>Chạy toàn bộ code của bài<span style="display:block;font:400 12px var(--f-mono);color:var(--muted)">notebook có sẵn kết quả</span></span></a></div></div>
       <div class="abox"><h4>Cùng giai đoạn</h4><ul><li><a href="p0-1.html">Python cho ML: numpy, pandas, matplotlib</a></li><li><span class=cur>Toán cho AI: đại số tuyến tính, giải tích, xác suất</span></li><li><a href="p0-3.html">Công cụ: Git, GitHub, terminal, Colab</a></li></ul></div>
     </aside>
   </div>
@@ -807,6 +823,134 @@ P(B) = P(B | A)·P(A) + P(B | không A)·P(không A)
       b.textContent = "Đã chép ✓"; b.classList.add("done"); setTimeout(() => { b.textContent = "Chép"; b.classList.remove("done"); }, 1600);
     }).catch(() => {}));
     h.appendChild(b);
+  });
+
+  /* runnable code: Pyodide (Python chạy ngay trong trình duyệt) */
+  const RUNS = [...document.querySelectorAll(".run")];
+  const HELPER = `
+import ast, sys, io, base64, traceback, os, warnings
+os.environ.setdefault("MPLBACKEND", "AGG")
+warnings.filterwarnings("ignore", message=".*non-interactive.*")
+import ast
+ACTION = {"manual_seed", "seed", "write_text", "write", "load_dotenv", "savefig", "set_title", "set_xlabel", "set_ylabel",
+          "legend", "plot", "scatter", "bar", "barh", "hist", "imshow", "append", "extend", "update", "add", "fit", "backward",
+          "step", "zero_grad", "mkdir", "makedirs", "sleep", "close", "flush", "print", "show", "axhline", "axvline", "text",
+          "tight_layout", "subplots_adjust", "set_xlim", "set_ylim", "grid", "insert", "remove", "clear", "sort", "shuffle",
+          "to_csv", "save", "load_state_dict", "train", "eval", "requires_grad_", "set_printoptions", "filterwarnings",
+          "use", "setdefault", "register_buffer", "rc", "add_node", "add_edge", "add_conditional_edges", "set_entry_point", "login", "mount", "seed_everything", "log", "finish", "init", "info", "debug", "warning", "put", "add_argument", "set_xticks", "set_yticks", "annotate", "fill_between", "suptitle", "figure", "subplot"}
+
+
+def legacy_numpy_repr():
+    import sys
+    if "numpy" in sys.modules:
+        sys.modules["numpy"].set_printoptions(legacy="1.25")     # in 0.87 thay vì np.float64(0.87)
+
+
+def transform(code):
+    lines = code.split("\\n")
+    tree = ast.parse(code)
+    n = len(tree.body)
+    for k, node in enumerate(tree.body):
+        if not isinstance(node, ast.Expr):
+            continue
+        v = node.value
+        if isinstance(v, ast.Constant) and isinstance(v.value, str):          # docstring / string literal alone
+            continue
+        if isinstance(v, ast.Await):
+            continue
+        name = None
+        if isinstance(v, ast.Call):
+            f = v.func
+            name = f.attr if isinstance(f, ast.Attribute) else (f.id if isinstance(f, ast.Name) else None)
+        tail = lines[node.end_lineno - 1][node.end_col_offset:]
+        commented = "#" in tail
+        last = k == n - 1
+        if name in ACTION:
+            continue
+        if last or commented:
+            node.value = ast.Call(func=ast.Name("__show__", ast.Load()), args=[v], keywords=[])
+    ast.fix_missing_locations(tree)
+    return tree
+
+def __aie_run(code, ns):
+    buf = io.StringIO(); so, se = sys.stdout, sys.stderr; sys.stdout = sys.stderr = buf; ok = True
+    def show(v):
+        if v is None: return
+        try:
+            import pandas as pd
+            if isinstance(v, (pd.DataFrame, pd.Series)):
+                print(v.to_string(max_rows=20)); return
+        except Exception:
+            pass
+        print(repr(v))
+    ns["__show__"] = show
+    try:
+        legacy_numpy_repr(); exec(compile(transform(code), "<cell>", "exec"), ns)
+    except BaseException:
+        ok = False
+        et, ev, tb = sys.exc_info(); lines = traceback.format_exception(et, ev, tb)
+        print("".join(l for l in lines if "<cell>" in l or l is lines[-1]), end="")
+    finally:
+        sys.stdout, sys.stderr = so, se
+    imgs = []
+    if "matplotlib.pyplot" in sys.modules:
+        plt = sys.modules["matplotlib.pyplot"]
+        for n in plt.get_fignums():
+            b = io.BytesIO(); plt.figure(n).savefig(b, format="png", dpi=100, bbox_inches="tight", facecolor="white")
+            imgs.append(base64.b64encode(b.getvalue()).decode())
+        plt.close("all")
+    return [buf.getvalue()[-20000:], imgs, ok]
+`;
+  let pyP = null; const NS = {}, done = new Set();
+  function loadPy() {
+    if (pyP) return pyP;
+    const base = window.AIE_PYODIDE || "https://cdn.jsdelivr.net/pyodide/v0.28.3/full/";
+    pyP = new Promise((res, rej) => {
+      if (window.loadPyodide) return res();
+      const s = document.createElement("script"); s.src = base + "pyodide.js"; s.onload = () => res(); s.onerror = () => rej(new Error("load"));
+      document.head.appendChild(s);
+    }).then(() => window.loadPyodide({ indexURL: base })).then((py) => { py.runPython(HELPER); return py; });
+    pyP.catch(() => { pyP = null; });
+    return pyP;
+  }
+  const codeOf = (r) => r.previousElementSibling.querySelector("pre").innerText.replace(/\n$/, "");
+  async function exec(py, r, code) {
+    const g = r.dataset.group;
+    if (!NS[g]) NS[g] = py.globals.get("dict")();
+    try { await py.loadPackagesFromImports(code); } catch (e) {}
+    const res = py.globals.get("__aie_run")(code, NS[g]); const [out, imgs, ok] = res.toJs(); res.destroy();
+    return { out, imgs, ok };
+  }
+  function paint(r, res) {
+    r.querySelectorAll(".run-out, img").forEach((x) => x.remove());
+    const pre = document.createElement("pre"); pre.className = "run-out" + (res.out ? "" : " run-empty");
+    pre.textContent = res.out || "(chạy xong, không in ra gì)"; r.appendChild(pre);
+    res.imgs.forEach((b) => { const im = document.createElement("img"); im.alt = "Hình do đoạn code vẽ"; im.src = "data:image/png;base64," + b; r.appendChild(im); });
+    r.classList.toggle("err", !res.ok);
+  }
+  RUNS.filter((r) => r.dataset.mode === "py" && r.previousElementSibling && r.previousElementSibling.classList.contains("hl")).forEach((r) => {
+    const hl = r.previousElementSibling, pre = hl.querySelector("pre"), orig = pre.innerHTML;
+    const bar = r.querySelector(".run-bar"), box = document.createElement("span"); box.className = "run-btns";
+    const st = document.createElement("span"); st.className = "run-status";
+    const mk = (t, cls) => { const b = document.createElement("button"); b.type = "button"; b.className = "run-btn " + cls; b.textContent = t; box.appendChild(b); return b; };
+    const ed = mk("Sửa code", ""), go = mk("▶ Chạy", "go");
+    bar.appendChild(st); bar.appendChild(box);
+    ed.addEventListener("click", () => {
+      if (pre.hasAttribute("contenteditable")) { pre.removeAttribute("contenteditable"); pre.innerHTML = orig; ed.textContent = "Sửa code"; return; }
+      try { pre.contentEditable = "plaintext-only"; } catch (e) { pre.contentEditable = "true"; }
+      if (pre.contentEditable !== "plaintext-only") pre.contentEditable = "true";
+      pre.spellcheck = false; pre.focus(); ed.textContent = "Khôi phục code gốc";
+    });
+    go.addEventListener("click", async () => {
+      go.disabled = true; st.textContent = pyP ? "Đang chạy…" : "Đang tải Python trong trình duyệt (lần đầu khoảng 10–30 giây)…";
+      try {
+        const py = await loadPy(); st.textContent = "Đang chạy…";
+        const same = RUNS.filter((x) => x.dataset.group === r.dataset.group && x.dataset.mode === "py");
+        for (const x of same.slice(0, same.indexOf(r))) if (!done.has(x)) { await exec(py, x, codeOf(x)); done.add(x); }
+        const res = await exec(py, r, codeOf(r)); done.add(r); paint(r, res); st.textContent = res.ok ? "" : "Có lỗi, xem bên dưới";
+      } catch (e) { console.error("aie-run", e); st.textContent = "Không tải được Python trong trình duyệt. Kiểm tra mạng rồi thử lại."; }
+      go.disabled = false;
+    });
   });
 
   /* highlight current theory section in the toc */

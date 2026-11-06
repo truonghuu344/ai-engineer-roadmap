@@ -138,9 +138,12 @@ p = softmax(logits)
 <div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">torch</span>
 <span class="tk-n">x</span> <span class="tk-o">=</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">randn</span><span class="tk-p">(</span><span class="tk-mi">128</span><span class="tk-p">,</span> <span class="tk-mi">3</span><span class="tk-p">,</span> <span class="tk-mi">32</span><span class="tk-p">,</span> <span class="tk-mi">32</span><span class="tk-p">)</span>          <span class="tk-c1"># batch ảnh giả</span>
 <span class="tk-n">x</span><span class="tk-o">.</span><span class="tk-n">shape</span><span class="tk-p">,</span> <span class="tk-n">x</span><span class="tk-o">.</span><span class="tk-n">dtype</span><span class="tk-p">,</span> <span class="tk-n">x</span><span class="tk-o">.</span><span class="tk-n">device</span>               <span class="tk-c1"># torch.Size([128, 3, 32, 32]) torch.float32 cpu</span>
-<span class="tk-n">x</span> <span class="tk-o">=</span> <span class="tk-n">x</span><span class="tk-o">.</span><span class="tk-n">to</span><span class="tk-p">(</span><span class="tk-s2">"cuda"</span><span class="tk-p">)</span>                         <span class="tk-c1"># chuyển lên GPU (model cũng phải ở cùng thiết bị)</span>
+<span class="tk-n">device</span> <span class="tk-o">=</span> <span class="tk-s2">"cuda"</span> <span class="tk-k">if</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">cuda</span><span class="tk-o">.</span><span class="tk-n">is_available</span><span class="tk-p">()</span> <span class="tk-k">else</span> <span class="tk-s2">"cpu"</span>
+<span class="tk-n">x</span> <span class="tk-o">=</span> <span class="tk-n">x</span><span class="tk-o">.</span><span class="tk-n">to</span><span class="tk-p">(</span><span class="tk-n">device</span><span class="tk-p">)</span>                         <span class="tk-c1"># chuyển lên GPU nếu có (model cũng phải ở cùng thiết bị)</span>
 <span class="tk-n">x</span><span class="tk-o">.</span><span class="tk-n">flatten</span><span class="tk-p">(</span><span class="tk-mi">1</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">shape</span>                       <span class="tk-c1"># [128, 3072]: duỗi mỗi ảnh thành vector cho MLP</span>
 </code></pre></div>
+
+<div class="run" data-mode="static" data-group="t"><div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span><span class="run-note">đã chạy sẵn cần PyTorch</span><a class="run-colab" href="https://colab.research.google.com/github/truonghuu344/ai-engineer-roadmap/blob/main/notebooks/ly-thuyet/p2-1.ipynb" target="_blank" rel="noopener">Mở trên Colab ↗</a></div><pre class="run-out">(torch.Size([128, 3, 32, 32]), torch.float32, device(type=&#x27;cpu&#x27;))&#10;torch.Size([128, 3072])</pre></div>
 
 <h3>Chuẩn hóa ảnh</h3>
 <p>Ảnh gốc có giá trị 0–255. Trước khi đưa vào model: chia 255 để về [0, 1], rồi chuẩn hóa <strong>theo từng kênh</strong>: (x − mean) / std, với mean và std tính trên tập train.</p>
@@ -172,10 +175,15 @@ p = softmax(logits)
 <li>Lớp 2: 256 × 10 + 10 = <strong>2.570</strong> tham số</li>
 <li>Tổng: <strong>789.258</strong> tham số, gần như tất cả nằm ở lớp đầu.</li>
 </ul>
-<div class="hl"><pre><span></span><code><span class="tk-n">model</span> <span class="tk-o">=</span> <span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">Sequential</span><span class="tk-p">(</span><span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">Flatten</span><span class="tk-p">(),</span> <span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">Linear</span><span class="tk-p">(</span><span class="tk-mi">3072</span><span class="tk-p">,</span> <span class="tk-mi">256</span><span class="tk-p">),</span> <span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">ReLU</span><span class="tk-p">(),</span> <span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">Linear</span><span class="tk-p">(</span><span class="tk-mi">256</span><span class="tk-p">,</span> <span class="tk-mi">10</span><span class="tk-p">))</span>
+<div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">torch.nn</span><span class="tk-w"> </span><span class="tk-k">as</span><span class="tk-w"> </span><span class="tk-nn">nn</span>
+<span class="tk-n">model</span> <span class="tk-o">=</span> <span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">Sequential</span><span class="tk-p">(</span><span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">Flatten</span><span class="tk-p">(),</span> <span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">Linear</span><span class="tk-p">(</span><span class="tk-mi">3072</span><span class="tk-p">,</span> <span class="tk-mi">256</span><span class="tk-p">),</span> <span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">ReLU</span><span class="tk-p">(),</span> <span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">Linear</span><span class="tk-p">(</span><span class="tk-mi">256</span><span class="tk-p">,</span> <span class="tk-mi">10</span><span class="tk-p">))</span>
 <span class="tk-nb">sum</span><span class="tk-p">(</span><span class="tk-n">p</span><span class="tk-o">.</span><span class="tk-n">numel</span><span class="tk-p">()</span> <span class="tk-k">for</span> <span class="tk-n">p</span> <span class="tk-ow">in</span> <span class="tk-n">model</span><span class="tk-o">.</span><span class="tk-n">parameters</span><span class="tk-p">())</span>     <span class="tk-c1"># 789258</span>
 </code></pre></div>
 
+<div class="run" data-group="t" data-mode="static">
+<div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span><span class="run-note">đã chạy sẵn cần PyTorch</span><a class="run-colab" href="https://colab.research.google.com/github/truonghuu344/ai-engineer-roadmap/blob/main/notebooks/ly-thuyet/p2-1.ipynb" target="_blank" rel="noopener">Mở trên Colab ↗</a></div>
+<pre class="run-out">789258</pre>
+</div>
 </div>
 <h3>Vì sao cần phi tuyến</h3>
 <p>Hai lớp Linear liền nhau: W₂(W₁x + b₁) + b₂ = (W₂W₁)x + (W₂b₁ + b₂). Đó vẫn là <strong>một</strong> lớp Linear. Chồng 100 lớp Linear cũng không mạnh hơn một lớp. Hàm kích hoạt phi tuyến ở giữa phá vỡ điều đó.</p>
@@ -259,7 +267,7 @@ p = softmax(logits)
 <div class="box check">
 <div class="box-h">Tự kiểm tra nhanh</div>
 <p>Logits (0, 0, 0, 0) cho 4 lớp.</p>
-<div class="ans" id="p2-1-t-b144-a1">
+<div class="ans" id="p2-1-t-b148-a1">
 <div class="ans-fields"><label>Xác suất mỗi lớp<input inputmode="decimal" data-ans="0.25" data-tol="0.001" autocomplete="off"></label><label>Cross-entropy (log tự nhiên)<input inputmode="decimal" data-ans="1.3863" data-tol="0.001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div>
 <div aria-live="polite" class="ans-fb"></div>
 </div>
@@ -363,6 +371,8 @@ p = softmax(logits)
 <span class="tk-n">w2</span><span class="tk-o">.</span><span class="tk-n">grad</span>      <span class="tk-c1"># tensor([-0.0000, -9.6250])</span>
 </code></pre></div>
 
+<div class="run" data-mode="static" data-group="t"><div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span><span class="run-note">đã chạy sẵn</span><a class="run-colab" href="https://colab.research.google.com/github/truonghuu344/ai-engineer-roadmap/blob/main/notebooks/ly-thuyet/p2-1.ipynb" target="_blank" rel="noopener">Mở trên Colab ↗</a></div><pre class="run-out">tensor([[ 0.0000,  0.0000],&#10;        [ 5.5000, 11.0000]])&#10;tensor([-0.0000, -9.6250])</pre></div>
+
 <h3>Vì sao phải <code>zero_grad()</code></h3>
 <p><code>.grad</code> <strong>cộng dồn</strong> qua mỗi lần gọi <code>backward()</code>. Không xóa thì gradient của bước này cộng với bước trước:</p>
 <div class="hl"><pre><span></span><code><span class="tk-n">w</span> <span class="tk-o">=</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">tensor</span><span class="tk-p">(</span><span class="tk-mf">2.</span><span class="tk-p">,</span> <span class="tk-n">requires_grad</span><span class="tk-o">=</span><span class="tk-kc">True</span><span class="tk-p">)</span>
@@ -371,6 +381,8 @@ p = softmax(logits)
     <span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-n">w</span><span class="tk-o">.</span><span class="tk-n">grad</span><span class="tk-p">)</span>          <span class="tk-c1"># 30.0 rồi 60.0, không phải 30.0 hai lần</span>
 </code></pre></div>
 
+<div class="run" data-mode="static" data-group="t"><div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span><span class="run-note">đã chạy sẵn</span><a class="run-colab" href="https://colab.research.google.com/github/truonghuu344/ai-engineer-roadmap/blob/main/notebooks/ly-thuyet/p2-1.ipynb" target="_blank" rel="noopener">Mở trên Colab ↗</a></div><pre class="run-out">tensor(30.)&#10;tensor(60.)</pre></div>
+
 <p>Cơ chế cộng dồn có ích khi bạn muốn <strong>gradient accumulation</strong> (cộng gradient của nhiều batch nhỏ để giả lập batch lớn khi thiếu bộ nhớ GPU), nhưng mặc định phải xóa mỗi bước.</p>
 <div class="keep">
 <p><strong>Ghi nhớ:</strong> năm dòng của mọi bước train: <code>zero_grad → forward → loss → backward → step</code>.</p>
@@ -378,7 +390,7 @@ p = softmax(logits)
 <div class="box check">
 <div class="box-h">Tự kiểm tra nhanh</div>
 <p>Neuron a = ReLU(w·x + b), loss L = a. Với x = 3, w = 2, b = −1:</p>
-<div class="ans" id="p2-1-t-b213-a1">
+<div class="ans" id="p2-1-t-b223-a1">
 <div class="ans-fields"><label>a<input inputmode="decimal" data-ans="5.0" data-tol="0.0" autocomplete="off"></label><label>∂L/∂w<input inputmode="decimal" data-ans="3.0" data-tol="0.0" autocomplete="off"></label><label>∂L/∂b<input inputmode="decimal" data-ans="1.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div>
 <div aria-live="polite" class="ans-fb"></div>
 </div>
@@ -389,11 +401,24 @@ p = softmax(logits)
 <p>Đây là đoạn code bạn sẽ viết lại hàng trăm lần. Mỗi dòng đều có lý do, và mỗi dòng bị quên là một lỗi kinh điển.</p>
 </div>
 <div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">torch</span><span class="tk-o">,</span><span class="tk-w"> </span><span class="tk-nn">torch.nn</span><span class="tk-w"> </span><span class="tk-k">as</span><span class="tk-w"> </span><span class="tk-nn">nn</span><span class="tk-o">,</span><span class="tk-w"> </span><span class="tk-nn">torch.nn.functional</span><span class="tk-w"> </span><span class="tk-k">as</span><span class="tk-w"> </span><span class="tk-nn">F</span>
+<span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">torch.utils.data</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">TensorDataset</span><span class="tk-p">,</span> <span class="tk-n">DataLoader</span>
+<span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">manual_seed</span><span class="tk-p">(</span><span class="tk-mi">0</span><span class="tk-p">)</span>
 <span class="tk-n">device</span> <span class="tk-o">=</span> <span class="tk-s2">"cuda"</span> <span class="tk-k">if</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">cuda</span><span class="tk-o">.</span><span class="tk-n">is_available</span><span class="tk-p">()</span> <span class="tk-k">else</span> <span class="tk-s2">"cpu"</span>
+
+<span class="tk-c1"># dữ liệu giả cùng hình dạng CIFAR-10 để chạy thử ngay (CIFAR-10 thật: xem phần thực hành)</span>
+<span class="tk-c1"># mỗi lớp có một "tông màu" riêng lẫn trong nhiễu mạnh, nên có quy luật để học</span>
+<span class="tk-n">palette</span> <span class="tk-o">=</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">randn</span><span class="tk-p">(</span><span class="tk-mi">10</span><span class="tk-p">,</span> <span class="tk-mi">3</span><span class="tk-p">)</span>
+<span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">fake_cifar</span><span class="tk-p">(</span><span class="tk-n">n</span><span class="tk-p">):</span>
+    <span class="tk-n">y</span> <span class="tk-o">=</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">randint</span><span class="tk-p">(</span><span class="tk-mi">0</span><span class="tk-p">,</span> <span class="tk-mi">10</span><span class="tk-p">,</span> <span class="tk-p">(</span><span class="tk-n">n</span><span class="tk-p">,))</span>
+    <span class="tk-n">x</span> <span class="tk-o">=</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">randn</span><span class="tk-p">(</span><span class="tk-n">n</span><span class="tk-p">,</span> <span class="tk-mi">3</span><span class="tk-p">,</span> <span class="tk-mi">32</span><span class="tk-p">,</span> <span class="tk-mi">32</span><span class="tk-p">)</span> <span class="tk-o">+</span> <span class="tk-mf">0.08</span> <span class="tk-o">*</span> <span class="tk-n">palette</span><span class="tk-p">[</span><span class="tk-n">y</span><span class="tk-p">][:,</span> <span class="tk-p">:,</span> <span class="tk-kc">None</span><span class="tk-p">,</span> <span class="tk-kc">None</span><span class="tk-p">]</span>
+    <span class="tk-k">return</span> <span class="tk-n">TensorDataset</span><span class="tk-p">(</span><span class="tk-n">x</span><span class="tk-p">,</span> <span class="tk-n">y</span><span class="tk-p">)</span>
+<span class="tk-n">train_loader</span> <span class="tk-o">=</span> <span class="tk-n">DataLoader</span><span class="tk-p">(</span><span class="tk-n">fake_cifar</span><span class="tk-p">(</span><span class="tk-mi">4000</span><span class="tk-p">),</span> <span class="tk-n">batch_size</span><span class="tk-o">=</span><span class="tk-mi">128</span><span class="tk-p">,</span> <span class="tk-n">shuffle</span><span class="tk-o">=</span><span class="tk-kc">True</span><span class="tk-p">)</span>
+<span class="tk-n">val_loader</span> <span class="tk-o">=</span> <span class="tk-n">DataLoader</span><span class="tk-p">(</span><span class="tk-n">fake_cifar</span><span class="tk-p">(</span><span class="tk-mi">1000</span><span class="tk-p">),</span> <span class="tk-n">batch_size</span><span class="tk-o">=</span><span class="tk-mi">256</span><span class="tk-p">)</span>
+
 <span class="tk-n">model</span> <span class="tk-o">=</span> <span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">Sequential</span><span class="tk-p">(</span><span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">Flatten</span><span class="tk-p">(),</span> <span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">Linear</span><span class="tk-p">(</span><span class="tk-mi">3072</span><span class="tk-p">,</span> <span class="tk-mi">256</span><span class="tk-p">),</span> <span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">ReLU</span><span class="tk-p">(),</span> <span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">Linear</span><span class="tk-p">(</span><span class="tk-mi">256</span><span class="tk-p">,</span> <span class="tk-mi">10</span><span class="tk-p">))</span><span class="tk-o">.</span><span class="tk-n">to</span><span class="tk-p">(</span><span class="tk-n">device</span><span class="tk-p">)</span>
 <span class="tk-n">opt</span> <span class="tk-o">=</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">optim</span><span class="tk-o">.</span><span class="tk-n">AdamW</span><span class="tk-p">(</span><span class="tk-n">model</span><span class="tk-o">.</span><span class="tk-n">parameters</span><span class="tk-p">(),</span> <span class="tk-n">lr</span><span class="tk-o">=</span><span class="tk-mf">1e-3</span><span class="tk-p">)</span>
 
-<span class="tk-k">for</span> <span class="tk-n">epoch</span> <span class="tk-ow">in</span> <span class="tk-nb">range</span><span class="tk-p">(</span><span class="tk-mi">20</span><span class="tk-p">):</span>
+<span class="tk-k">for</span> <span class="tk-n">epoch</span> <span class="tk-ow">in</span> <span class="tk-nb">range</span><span class="tk-p">(</span><span class="tk-mi">5</span><span class="tk-p">):</span>
     <span class="tk-n">model</span><span class="tk-o">.</span><span class="tk-n">train</span><span class="tk-p">()</span>                                  <span class="tk-c1"># bật chế độ train (dropout, batchnorm)</span>
     <span class="tk-k">for</span> <span class="tk-n">x</span><span class="tk-p">,</span> <span class="tk-n">y</span> <span class="tk-ow">in</span> <span class="tk-n">train_loader</span><span class="tk-p">:</span>
         <span class="tk-n">x</span><span class="tk-p">,</span> <span class="tk-n">y</span> <span class="tk-o">=</span> <span class="tk-n">x</span><span class="tk-o">.</span><span class="tk-n">to</span><span class="tk-p">(</span><span class="tk-n">device</span><span class="tk-p">),</span> <span class="tk-n">y</span><span class="tk-o">.</span><span class="tk-n">to</span><span class="tk-p">(</span><span class="tk-n">device</span><span class="tk-p">)</span>
@@ -408,8 +433,10 @@ p = softmax(logits)
         <span class="tk-k">for</span> <span class="tk-n">x</span><span class="tk-p">,</span> <span class="tk-n">y</span> <span class="tk-ow">in</span> <span class="tk-n">val_loader</span><span class="tk-p">:</span>
             <span class="tk-n">x</span><span class="tk-p">,</span> <span class="tk-n">y</span> <span class="tk-o">=</span> <span class="tk-n">x</span><span class="tk-o">.</span><span class="tk-n">to</span><span class="tk-p">(</span><span class="tk-n">device</span><span class="tk-p">),</span> <span class="tk-n">y</span><span class="tk-o">.</span><span class="tk-n">to</span><span class="tk-p">(</span><span class="tk-n">device</span><span class="tk-p">)</span>
             <span class="tk-n">correct</span> <span class="tk-o">+=</span> <span class="tk-p">(</span><span class="tk-n">model</span><span class="tk-p">(</span><span class="tk-n">x</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">argmax</span><span class="tk-p">(</span><span class="tk-mi">1</span><span class="tk-p">)</span> <span class="tk-o">==</span> <span class="tk-n">y</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">sum</span><span class="tk-p">()</span><span class="tk-o">.</span><span class="tk-n">item</span><span class="tk-p">();</span> <span class="tk-n">total</span> <span class="tk-o">+=</span> <span class="tk-n">y</span><span class="tk-o">.</span><span class="tk-n">numel</span><span class="tk-p">()</span>
-    <span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-n">epoch</span><span class="tk-p">,</span> <span class="tk-n">loss</span><span class="tk-o">.</span><span class="tk-n">item</span><span class="tk-p">(),</span> <span class="tk-n">correct</span> <span class="tk-o">/</span> <span class="tk-n">total</span><span class="tk-p">)</span>
+    <span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-sa">f</span><span class="tk-s2">"epoch </span><span class="tk-si">{</span><span class="tk-n">epoch</span><span class="tk-si">}</span><span class="tk-s2">: loss </span><span class="tk-si">{</span><span class="tk-n">loss</span><span class="tk-o">.</span><span class="tk-n">item</span><span class="tk-p">()</span><span class="tk-si">:</span><span class="tk-s2">.3f</span><span class="tk-si">}</span><span class="tk-s2">, acc val </span><span class="tk-si">{</span><span class="tk-n">correct</span><span class="tk-w"> </span><span class="tk-o">/</span><span class="tk-w"> </span><span class="tk-n">total</span><span class="tk-si">:</span><span class="tk-s2">.3f</span><span class="tk-si">}</span><span class="tk-s2">"</span><span class="tk-p">)</span>
 </code></pre></div>
+
+<div class="run" data-mode="static" data-group="t"><div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span><span class="run-note">đã chạy sẵn cần PyTorch</span><a class="run-colab" href="https://colab.research.google.com/github/truonghuu344/ai-engineer-roadmap/blob/main/notebooks/ly-thuyet/p2-1.ipynb" target="_blank" rel="noopener">Mở trên Colab ↗</a></div><pre class="run-out">epoch 0: loss 1.221, acc val 0.577&#10;epoch 1: loss 0.232, acc val 0.599&#10;epoch 2: loss 0.047, acc val 0.600&#10;epoch 3: loss 0.017, acc val 0.596&#10;epoch 4: loss 0.010, acc val 0.595</pre></div>
 
 <table>
 <thead>
@@ -621,7 +648,7 @@ p = softmax(logits)
     <aside class="aside">
       <div class="abox"><h4>Tiến độ bài này</h4><div class="ring"><svg viewBox="0 0 64 64" aria-hidden="true"><circle class="bg" cx="32" cy="32" r="28"/><circle class="fg" cx="32" cy="32" r="28" stroke-dasharray="176" stroke-dashoffset="176"/></svg><div><b id="ring-n">0/3</b><span id="ring-sub">phần đã xong</span></div></div></div>
       <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Từ hồi quy logistic tới mạng nơ-ron</a></li><li><a href="#lt-2">Vòng lặp học</a></li><li><a href="#lt-3">Dữ liệu là tensor</a></li><li><a href="#lt-4">Linear và hàm kích hoạt</a></li><li><a href="#lt-5">Softmax và cross-entropy</a></li><li><a href="#lt-6">Gradient descent và learning rate</a></li><li><a href="#lt-7">Backpropagation</a></li><li><a href="#lt-8">Vòng lặp train hoàn chỉnh trong PyTorch</a></li><li><a href="#lt-9">Tóm tắt bài và thuật ngữ</a></li></ol></div>
-      <div class="abox"><h4>Notebook</h4><div style="display:grid;gap:8px"><a class="dl" href="../notebooks/bai01_thuc_hanh.ipynb" download><span class="ext">IPYNB</span><span>Bài tập<span style="display:block;font:400 12px var(--f-mono);color:var(--muted)">bai01_thuc_hanh.ipynb</span></span></a><a class="dl" href="../notebooks/bai01_thuc_hanh_LOI_GIAI.ipynb" download><span class="ext">IPYNB</span><span>Lời giải<span style="display:block;font:400 12px var(--f-mono);color:var(--muted)">bai01_thuc_hanh_LOI_GIAI.ipynb</span></span></a></div></div>
+      <div class="abox"><h4>Notebook</h4><div style="display:grid;gap:8px"><a class="dl" href="../notebooks/bai01_thuc_hanh.ipynb" download><span class="ext">IPYNB</span><span>Bài tập<span style="display:block;font:400 12px var(--f-mono);color:var(--muted)">bai01_thuc_hanh.ipynb</span></span></a><a class="dl" href="../notebooks/bai01_thuc_hanh_LOI_GIAI.ipynb" download><span class="ext">IPYNB</span><span>Lời giải<span style="display:block;font:400 12px var(--f-mono);color:var(--muted)">bai01_thuc_hanh_LOI_GIAI.ipynb</span></span></a><a class="dl" href="https://colab.research.google.com/github/truonghuu344/ai-engineer-roadmap/blob/main/notebooks/ly-thuyet/p2-1.ipynb" target="_blank" rel="noopener"><span class="ext">COLAB</span><span>Chạy toàn bộ code của bài<span style="display:block;font:400 12px var(--f-mono);color:var(--muted)">notebook có sẵn kết quả</span></span></a></div></div>
       <div class="abox"><h4>Cùng giai đoạn</h4><ul><li><span class=cur>Bài 1 · Mạng nơ-ron học thế nào</span></li><li><a href="p2-2.html">Bài 2 · Train mạng thật</a></li><li><a href="p2-3.html">CNN hiện đại và transfer learning</a></li></ul></div>
     </aside>
   </div>
@@ -725,6 +752,134 @@ p = softmax(logits)
       b.textContent = "Đã chép ✓"; b.classList.add("done"); setTimeout(() => { b.textContent = "Chép"; b.classList.remove("done"); }, 1600);
     }).catch(() => {}));
     h.appendChild(b);
+  });
+
+  /* runnable code: Pyodide (Python chạy ngay trong trình duyệt) */
+  const RUNS = [...document.querySelectorAll(".run")];
+  const HELPER = `
+import ast, sys, io, base64, traceback, os, warnings
+os.environ.setdefault("MPLBACKEND", "AGG")
+warnings.filterwarnings("ignore", message=".*non-interactive.*")
+import ast
+ACTION = {"manual_seed", "seed", "write_text", "write", "load_dotenv", "savefig", "set_title", "set_xlabel", "set_ylabel",
+          "legend", "plot", "scatter", "bar", "barh", "hist", "imshow", "append", "extend", "update", "add", "fit", "backward",
+          "step", "zero_grad", "mkdir", "makedirs", "sleep", "close", "flush", "print", "show", "axhline", "axvline", "text",
+          "tight_layout", "subplots_adjust", "set_xlim", "set_ylim", "grid", "insert", "remove", "clear", "sort", "shuffle",
+          "to_csv", "save", "load_state_dict", "train", "eval", "requires_grad_", "set_printoptions", "filterwarnings",
+          "use", "setdefault", "register_buffer", "rc", "add_node", "add_edge", "add_conditional_edges", "set_entry_point", "login", "mount", "seed_everything", "log", "finish", "init", "info", "debug", "warning", "put", "add_argument", "set_xticks", "set_yticks", "annotate", "fill_between", "suptitle", "figure", "subplot"}
+
+
+def legacy_numpy_repr():
+    import sys
+    if "numpy" in sys.modules:
+        sys.modules["numpy"].set_printoptions(legacy="1.25")     # in 0.87 thay vì np.float64(0.87)
+
+
+def transform(code):
+    lines = code.split("\\n")
+    tree = ast.parse(code)
+    n = len(tree.body)
+    for k, node in enumerate(tree.body):
+        if not isinstance(node, ast.Expr):
+            continue
+        v = node.value
+        if isinstance(v, ast.Constant) and isinstance(v.value, str):          # docstring / string literal alone
+            continue
+        if isinstance(v, ast.Await):
+            continue
+        name = None
+        if isinstance(v, ast.Call):
+            f = v.func
+            name = f.attr if isinstance(f, ast.Attribute) else (f.id if isinstance(f, ast.Name) else None)
+        tail = lines[node.end_lineno - 1][node.end_col_offset:]
+        commented = "#" in tail
+        last = k == n - 1
+        if name in ACTION:
+            continue
+        if last or commented:
+            node.value = ast.Call(func=ast.Name("__show__", ast.Load()), args=[v], keywords=[])
+    ast.fix_missing_locations(tree)
+    return tree
+
+def __aie_run(code, ns):
+    buf = io.StringIO(); so, se = sys.stdout, sys.stderr; sys.stdout = sys.stderr = buf; ok = True
+    def show(v):
+        if v is None: return
+        try:
+            import pandas as pd
+            if isinstance(v, (pd.DataFrame, pd.Series)):
+                print(v.to_string(max_rows=20)); return
+        except Exception:
+            pass
+        print(repr(v))
+    ns["__show__"] = show
+    try:
+        legacy_numpy_repr(); exec(compile(transform(code), "<cell>", "exec"), ns)
+    except BaseException:
+        ok = False
+        et, ev, tb = sys.exc_info(); lines = traceback.format_exception(et, ev, tb)
+        print("".join(l for l in lines if "<cell>" in l or l is lines[-1]), end="")
+    finally:
+        sys.stdout, sys.stderr = so, se
+    imgs = []
+    if "matplotlib.pyplot" in sys.modules:
+        plt = sys.modules["matplotlib.pyplot"]
+        for n in plt.get_fignums():
+            b = io.BytesIO(); plt.figure(n).savefig(b, format="png", dpi=100, bbox_inches="tight", facecolor="white")
+            imgs.append(base64.b64encode(b.getvalue()).decode())
+        plt.close("all")
+    return [buf.getvalue()[-20000:], imgs, ok]
+`;
+  let pyP = null; const NS = {}, done = new Set();
+  function loadPy() {
+    if (pyP) return pyP;
+    const base = window.AIE_PYODIDE || "https://cdn.jsdelivr.net/pyodide/v0.28.3/full/";
+    pyP = new Promise((res, rej) => {
+      if (window.loadPyodide) return res();
+      const s = document.createElement("script"); s.src = base + "pyodide.js"; s.onload = () => res(); s.onerror = () => rej(new Error("load"));
+      document.head.appendChild(s);
+    }).then(() => window.loadPyodide({ indexURL: base })).then((py) => { py.runPython(HELPER); return py; });
+    pyP.catch(() => { pyP = null; });
+    return pyP;
+  }
+  const codeOf = (r) => r.previousElementSibling.querySelector("pre").innerText.replace(/\n$/, "");
+  async function exec(py, r, code) {
+    const g = r.dataset.group;
+    if (!NS[g]) NS[g] = py.globals.get("dict")();
+    try { await py.loadPackagesFromImports(code); } catch (e) {}
+    const res = py.globals.get("__aie_run")(code, NS[g]); const [out, imgs, ok] = res.toJs(); res.destroy();
+    return { out, imgs, ok };
+  }
+  function paint(r, res) {
+    r.querySelectorAll(".run-out, img").forEach((x) => x.remove());
+    const pre = document.createElement("pre"); pre.className = "run-out" + (res.out ? "" : " run-empty");
+    pre.textContent = res.out || "(chạy xong, không in ra gì)"; r.appendChild(pre);
+    res.imgs.forEach((b) => { const im = document.createElement("img"); im.alt = "Hình do đoạn code vẽ"; im.src = "data:image/png;base64," + b; r.appendChild(im); });
+    r.classList.toggle("err", !res.ok);
+  }
+  RUNS.filter((r) => r.dataset.mode === "py" && r.previousElementSibling && r.previousElementSibling.classList.contains("hl")).forEach((r) => {
+    const hl = r.previousElementSibling, pre = hl.querySelector("pre"), orig = pre.innerHTML;
+    const bar = r.querySelector(".run-bar"), box = document.createElement("span"); box.className = "run-btns";
+    const st = document.createElement("span"); st.className = "run-status";
+    const mk = (t, cls) => { const b = document.createElement("button"); b.type = "button"; b.className = "run-btn " + cls; b.textContent = t; box.appendChild(b); return b; };
+    const ed = mk("Sửa code", ""), go = mk("▶ Chạy", "go");
+    bar.appendChild(st); bar.appendChild(box);
+    ed.addEventListener("click", () => {
+      if (pre.hasAttribute("contenteditable")) { pre.removeAttribute("contenteditable"); pre.innerHTML = orig; ed.textContent = "Sửa code"; return; }
+      try { pre.contentEditable = "plaintext-only"; } catch (e) { pre.contentEditable = "true"; }
+      if (pre.contentEditable !== "plaintext-only") pre.contentEditable = "true";
+      pre.spellcheck = false; pre.focus(); ed.textContent = "Khôi phục code gốc";
+    });
+    go.addEventListener("click", async () => {
+      go.disabled = true; st.textContent = pyP ? "Đang chạy…" : "Đang tải Python trong trình duyệt (lần đầu khoảng 10–30 giây)…";
+      try {
+        const py = await loadPy(); st.textContent = "Đang chạy…";
+        const same = RUNS.filter((x) => x.dataset.group === r.dataset.group && x.dataset.mode === "py");
+        for (const x of same.slice(0, same.indexOf(r))) if (!done.has(x)) { await exec(py, x, codeOf(x)); done.add(x); }
+        const res = await exec(py, r, codeOf(r)); done.add(r); paint(r, res); st.textContent = res.ok ? "" : "Có lỗi, xem bên dưới";
+      } catch (e) { console.error("aie-run", e); st.textContent = "Không tải được Python trong trình duyệt. Kiểm tra mạng rồi thử lại."; }
+      go.disabled = false;
+    });
   });
 
   /* highlight current theory section in the toc */

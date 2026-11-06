@@ -50,7 +50,9 @@
 <li>Patch embedding chiếu 588 → 1024 chiều: 588 · 1024 + 1024 (bias) = <strong>603.136</strong> tham số.</li>
 </ol>
 </div>
-<div class="hl"><pre><span></span><code><span class="tk-k">class</span><span class="tk-w"> </span><span class="tk-nc">ViT</span><span class="tk-p">(</span><span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">Module</span><span class="tk-p">):</span>
+<div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">torch</span><span class="tk-o">,</span><span class="tk-w"> </span><span class="tk-nn">torch.nn</span><span class="tk-w"> </span><span class="tk-k">as</span><span class="tk-w"> </span><span class="tk-nn">nn</span>
+
+<span class="tk-k">class</span><span class="tk-w"> </span><span class="tk-nc">ViT</span><span class="tk-p">(</span><span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">Module</span><span class="tk-p">):</span>
     <span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-fm">__init__</span><span class="tk-p">(</span><span class="tk-bp">self</span><span class="tk-p">,</span> <span class="tk-n">p</span><span class="tk-o">=</span><span class="tk-mi">2</span><span class="tk-p">,</span> <span class="tk-n">d</span><span class="tk-o">=</span><span class="tk-mi">64</span><span class="tk-p">,</span> <span class="tk-n">depth</span><span class="tk-o">=</span><span class="tk-mi">4</span><span class="tk-p">,</span> <span class="tk-n">heads</span><span class="tk-o">=</span><span class="tk-mi">4</span><span class="tk-p">,</span> <span class="tk-n">img</span><span class="tk-o">=</span><span class="tk-mi">8</span><span class="tk-p">,</span> <span class="tk-n">n_cls</span><span class="tk-o">=</span><span class="tk-mi">10</span><span class="tk-p">):</span>
         <span class="tk-nb">super</span><span class="tk-p">()</span><span class="tk-o">.</span><span class="tk-fm">__init__</span><span class="tk-p">()</span>
         <span class="tk-bp">self</span><span class="tk-o">.</span><span class="tk-n">patch</span> <span class="tk-o">=</span> <span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">Conv2d</span><span class="tk-p">(</span><span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-n">d</span><span class="tk-p">,</span> <span class="tk-n">p</span><span class="tk-p">,</span> <span class="tk-n">stride</span><span class="tk-o">=</span><span class="tk-n">p</span><span class="tk-p">)</span>                       <span class="tk-c1"># patch embedding</span>
@@ -64,7 +66,14 @@
         <span class="tk-n">t</span> <span class="tk-o">=</span> <span class="tk-bp">self</span><span class="tk-o">.</span><span class="tk-n">patch</span><span class="tk-p">(</span><span class="tk-n">x</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">flatten</span><span class="tk-p">(</span><span class="tk-mi">2</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">transpose</span><span class="tk-p">(</span><span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-mi">2</span><span class="tk-p">)</span>                     <span class="tk-c1"># (B, n, d)</span>
         <span class="tk-n">t</span> <span class="tk-o">=</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">cat</span><span class="tk-p">([</span><span class="tk-bp">self</span><span class="tk-o">.</span><span class="tk-n">cls</span><span class="tk-o">.</span><span class="tk-n">expand</span><span class="tk-p">(</span><span class="tk-nb">len</span><span class="tk-p">(</span><span class="tk-n">t</span><span class="tk-p">),</span> <span class="tk-o">-</span><span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-o">-</span><span class="tk-mi">1</span><span class="tk-p">),</span> <span class="tk-n">t</span><span class="tk-p">],</span> <span class="tk-mi">1</span><span class="tk-p">)</span> <span class="tk-o">+</span> <span class="tk-bp">self</span><span class="tk-o">.</span><span class="tk-n">pos</span>
         <span class="tk-k">return</span> <span class="tk-bp">self</span><span class="tk-o">.</span><span class="tk-n">head</span><span class="tk-p">(</span><span class="tk-bp">self</span><span class="tk-o">.</span><span class="tk-n">enc</span><span class="tk-p">(</span><span class="tk-n">t</span><span class="tk-p">)[:,</span> <span class="tk-mi">0</span><span class="tk-p">])</span>                              <span class="tk-c1"># lấy đầu ra của CLS</span>
+
+<span class="tk-n">vit</span> <span class="tk-o">=</span> <span class="tk-n">ViT</span><span class="tk-p">()</span>
+<span class="tk-n">x</span> <span class="tk-o">=</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">randn</span><span class="tk-p">(</span><span class="tk-mi">5</span><span class="tk-p">,</span> <span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-mi">8</span><span class="tk-p">,</span> <span class="tk-mi">8</span><span class="tk-p">)</span>                                   <span class="tk-c1"># 5 ảnh xám 8×8</span>
+<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-n">vit</span><span class="tk-o">.</span><span class="tk-n">patch</span><span class="tk-p">(</span><span class="tk-n">x</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">flatten</span><span class="tk-p">(</span><span class="tk-mi">2</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">transpose</span><span class="tk-p">(</span><span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-mi">2</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">shape</span><span class="tk-p">)</span>          <span class="tk-c1"># 16 mảnh 2×2, mỗi mảnh 64 chiều</span>
+<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-n">vit</span><span class="tk-p">(</span><span class="tk-n">x</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">shape</span><span class="tk-p">,</span> <span class="tk-nb">sum</span><span class="tk-p">(</span><span class="tk-n">p</span><span class="tk-o">.</span><span class="tk-n">numel</span><span class="tk-p">()</span> <span class="tk-k">for</span> <span class="tk-n">p</span> <span class="tk-ow">in</span> <span class="tk-n">vit</span><span class="tk-o">.</span><span class="tk-n">parameters</span><span class="tk-p">()),</span> <span class="tk-s2">"tham số"</span><span class="tk-p">)</span>
 </code></pre></div>
+
+<div class="run" data-mode="static" data-group="t"><div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span><span class="run-note">đã chạy sẵn cần PyTorch</span><a class="run-colab" href="https://colab.research.google.com/github/truonghuu344/ai-engineer-roadmap/blob/main/notebooks/ly-thuyet/p7-1.ipynb" target="_blank" rel="noopener">Mở trên Colab ↗</a></div><pre class="run-out">torch.Size([5, 16, 64])&#10;torch.Size([5, 10]) 136138 tham số</pre></div>
 
 <p>(Đây là ViT nhỏ dùng trong thí nghiệm ở phần sau, ảnh xám 8×8, mảnh 2×2.)</p>
 <h3>Tầm nhìn toàn cục</h3>
@@ -178,11 +187,24 @@
 </tr>
 </tbody>
 </table>
-<div class="hl"><pre><span></span><code><span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">sklearn.linear_model</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">LogisticRegression</span>
-<span class="tk-c1"># emb_train, emb_test: embedding ảnh từ encoder CLIP đã đóng băng, chuẩn hóa độ dài 1</span>
+<div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">numpy</span><span class="tk-w"> </span><span class="tk-k">as</span><span class="tk-w"> </span><span class="tk-nn">np</span>
+<span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">sklearn.linear_model</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">LogisticRegression</span>
+<span class="tk-c1"># emb_train, emb_test: embedding ảnh từ encoder CLIP đã đóng băng, chuẩn hóa độ dài 1.</span>
+<span class="tk-c1"># Chạy thử ở đây: thay CLIP bằng một "encoder đóng băng" đơn giản (PCA) trên chữ số viết tay</span>
+<span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">sklearn.datasets</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">load_digits</span>
+<span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">sklearn.decomposition</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">PCA</span>
+<span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">sklearn.model_selection</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">train_test_split</span>
+<span class="tk-n">X</span><span class="tk-p">,</span> <span class="tk-n">y</span> <span class="tk-o">=</span> <span class="tk-n">load_digits</span><span class="tk-p">(</span><span class="tk-n">return_X_y</span><span class="tk-o">=</span><span class="tk-kc">True</span><span class="tk-p">)</span>
+<span class="tk-n">X_tr</span><span class="tk-p">,</span> <span class="tk-n">X_te</span><span class="tk-p">,</span> <span class="tk-n">y_train</span><span class="tk-p">,</span> <span class="tk-n">y_test</span> <span class="tk-o">=</span> <span class="tk-n">train_test_split</span><span class="tk-p">(</span><span class="tk-n">X</span><span class="tk-p">,</span> <span class="tk-n">y</span><span class="tk-p">,</span> <span class="tk-n">test_size</span><span class="tk-o">=</span><span class="tk-mf">0.3</span><span class="tk-p">,</span> <span class="tk-n">random_state</span><span class="tk-o">=</span><span class="tk-mi">0</span><span class="tk-p">)</span>
+<span class="tk-n">enc</span> <span class="tk-o">=</span> <span class="tk-n">PCA</span><span class="tk-p">(</span><span class="tk-mi">32</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">fit</span><span class="tk-p">(</span><span class="tk-n">X_tr</span><span class="tk-p">)</span>
+<span class="tk-n">norm</span> <span class="tk-o">=</span> <span class="tk-k">lambda</span> <span class="tk-n">E</span><span class="tk-p">:</span> <span class="tk-n">E</span> <span class="tk-o">/</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">linalg</span><span class="tk-o">.</span><span class="tk-n">norm</span><span class="tk-p">(</span><span class="tk-n">E</span><span class="tk-p">,</span> <span class="tk-n">axis</span><span class="tk-o">=</span><span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-n">keepdims</span><span class="tk-o">=</span><span class="tk-kc">True</span><span class="tk-p">)</span>
+<span class="tk-n">emb_train</span><span class="tk-p">,</span> <span class="tk-n">emb_test</span> <span class="tk-o">=</span> <span class="tk-n">norm</span><span class="tk-p">(</span><span class="tk-n">enc</span><span class="tk-o">.</span><span class="tk-n">transform</span><span class="tk-p">(</span><span class="tk-n">X_tr</span><span class="tk-p">)),</span> <span class="tk-n">norm</span><span class="tk-p">(</span><span class="tk-n">enc</span><span class="tk-o">.</span><span class="tk-n">transform</span><span class="tk-p">(</span><span class="tk-n">X_te</span><span class="tk-p">))</span>
+
 <span class="tk-n">clf</span> <span class="tk-o">=</span> <span class="tk-n">LogisticRegression</span><span class="tk-p">(</span><span class="tk-n">C</span><span class="tk-o">=</span><span class="tk-mf">1.0</span><span class="tk-p">,</span> <span class="tk-n">max_iter</span><span class="tk-o">=</span><span class="tk-mi">2000</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">fit</span><span class="tk-p">(</span><span class="tk-n">emb_train</span><span class="tk-p">,</span> <span class="tk-n">y_train</span><span class="tk-p">)</span>
 <span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-s2">"accuracy:"</span><span class="tk-p">,</span> <span class="tk-n">clf</span><span class="tk-o">.</span><span class="tk-n">score</span><span class="tk-p">(</span><span class="tk-n">emb_test</span><span class="tk-p">,</span> <span class="tk-n">y_test</span><span class="tk-p">))</span>
 </code></pre></div>
+
+<div class="run" data-mode="static" data-group="t"><div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span><span class="run-note">đã chạy sẵn</span><a class="run-colab" href="https://colab.research.google.com/github/truonghuu344/ai-engineer-roadmap/blob/main/notebooks/ly-thuyet/p7-1.ipynb" target="_blank" rel="noopener">Mở trên Colab ↗</a></div><pre class="run-out">accuracy: 0.9407407407407408</pre></div>
 
 <p>Linear probe rẻ tới mức chạy trên CPU trong vài giây: trích embedding một lần (bước tốn nhất), sau đó thử bao nhiêu cấu hình cũng được.</p>
 <div class="box pitfall">
@@ -195,7 +217,7 @@
 <div class="box check">
 <div class="box-h">Tự kiểm tra nhanh</div>
 <p>CLIP ViT-L/14 ở 224×224.</p>
-<div class="ans" id="p7-1-t-b117-a1">
+<div class="ans" id="p7-1-t-b141-a1">
 <div class="ans-fields"><label>Số mảnh<input inputmode="decimal" data-ans="256.0" data-tol="0.0" autocomplete="off"></label><label>Tham số patch embedding (d = 1024, có bias)<input inputmode="decimal" data-ans="603136.0" data-tol="0.0" autocomplete="off"></label><label>Cosine sofa 0.26, lamp 0.21, shelf 0.19, nhiệt độ 100: p(sofa) (3 chữ số)<input inputmode="decimal" data-ans="0.992" data-tol="0.001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div>
 <div aria-live="polite" class="ans-fb"></div>
 </div>
@@ -308,7 +330,8 @@
 </details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 5</span><h3>Zero-shot với transformers</h3><span class="ex-tag code">code</span></div><div class="prose"><p>Viết hàm phân loại zero-shot một ảnh với danh sách lớp, dùng prompt ensembling 3 mẫu câu.</p>
 <details class="fold code">
 <summary>Code tham khảo</summary>
-<div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">torch</span>
+<div class="hl"><pre><span></span><code><span class="tk-c1"># Cần mạng: tải CLIP từ Hugging Face và ảnh của bạn, chạy trên Colab</span>
+<span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">torch</span>
 <span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">PIL</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">Image</span>
 <span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">transformers</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">CLIPModel</span><span class="tk-p">,</span> <span class="tk-n">CLIPProcessor</span>
 
@@ -334,6 +357,9 @@
     <span class="tk-k">return</span> <span class="tk-nb">dict</span><span class="tk-p">(</span><span class="tk-nb">zip</span><span class="tk-p">(</span><span class="tk-n">classes</span><span class="tk-p">,</span> <span class="tk-n">probs</span><span class="tk-o">.</span><span class="tk-n">tolist</span><span class="tk-p">()))</span>
 </code></pre></div>
 
+<div class="run run-skip" data-group="e5" data-mode="static">
+<div class="run-bar"><span class="run-lbl">Không chạy trên trang</span><span class="run-note">Cần mạng: tải CLIP từ Hugging Face và ảnh của bạn, chạy trên Colab</span><a class="run-colab" href="https://colab.research.google.com/github/truonghuu344/ai-engineer-roadmap/blob/main/notebooks/ly-thuyet/p7-1.ipynb" target="_blank" rel="noopener">Mở trên Colab ↗</a></div>
+</div>
 </details></div></article><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p7.1:b">Tôi đã xong phần bài tập</label><button class="btn" type="button" data-goto="thuc-hanh">Sang thực hành <span class="arr">→</span></button></div></section><section class="panel" id="thuc-hanh" role="tabpanel" hidden><div class="prose"><h2>Lab 10: ba cách phân loại ảnh sản phẩm</h2>
 <p>Dùng bộ ảnh sản phẩm ở P2.3 (hoặc một bộ ảnh tương tự 5–10 lớp).</p>
 <p><strong>Các bước</strong></p>
@@ -355,7 +381,7 @@
     <aside class="aside">
       <div class="abox"><h4>Tiến độ bài này</h4><div class="ring"><svg viewBox="0 0 64 64" aria-hidden="true"><circle class="bg" cx="32" cy="32" r="28"/><circle class="fg" cx="32" cy="32" r="28" stroke-dasharray="176" stroke-dashoffset="176"/></svg><div><b id="ring-n">0/3</b><span id="ring-sub">phần đã xong</span></div></div></div>
       <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Vì sao học ViT và CLIP</a></li><li><a href="#lt-2">Patch embedding</a></li><li><a href="#lt-3">ViT so với CNN</a></li><li><a href="#lt-4">CLIP và học tương phản</a></li><li><a href="#lt-5">Zero-shot classification</a></li><li><a href="#lt-6">Linear probe và fine-tune</a></li><li><a href="#lt-7">Tóm tắt bài và thuật ngữ</a></li></ol></div>
-      
+      <div class="abox"><h4>Notebook</h4><div style="display:grid;gap:8px"><a class="dl" href="https://colab.research.google.com/github/truonghuu344/ai-engineer-roadmap/blob/main/notebooks/ly-thuyet/p7-1.ipynb" target="_blank" rel="noopener"><span class="ext">COLAB</span><span>Chạy toàn bộ code của bài<span style="display:block;font:400 12px var(--f-mono);color:var(--muted)">notebook có sẵn kết quả</span></span></a></div></div>
       <div class="abox"><h4>Cùng giai đoạn</h4><ul><li><span class=cur>Bài 9 · ViT và CLIP</span></li><li><a href="p7-2.html">Vision-language model</a></li><li><a href="p7-3.html">Video và embodied AI (nâng cao)</a></li></ul></div>
     </aside>
   </div>
@@ -459,6 +485,134 @@
       b.textContent = "Đã chép ✓"; b.classList.add("done"); setTimeout(() => { b.textContent = "Chép"; b.classList.remove("done"); }, 1600);
     }).catch(() => {}));
     h.appendChild(b);
+  });
+
+  /* runnable code: Pyodide (Python chạy ngay trong trình duyệt) */
+  const RUNS = [...document.querySelectorAll(".run")];
+  const HELPER = `
+import ast, sys, io, base64, traceback, os, warnings
+os.environ.setdefault("MPLBACKEND", "AGG")
+warnings.filterwarnings("ignore", message=".*non-interactive.*")
+import ast
+ACTION = {"manual_seed", "seed", "write_text", "write", "load_dotenv", "savefig", "set_title", "set_xlabel", "set_ylabel",
+          "legend", "plot", "scatter", "bar", "barh", "hist", "imshow", "append", "extend", "update", "add", "fit", "backward",
+          "step", "zero_grad", "mkdir", "makedirs", "sleep", "close", "flush", "print", "show", "axhline", "axvline", "text",
+          "tight_layout", "subplots_adjust", "set_xlim", "set_ylim", "grid", "insert", "remove", "clear", "sort", "shuffle",
+          "to_csv", "save", "load_state_dict", "train", "eval", "requires_grad_", "set_printoptions", "filterwarnings",
+          "use", "setdefault", "register_buffer", "rc", "add_node", "add_edge", "add_conditional_edges", "set_entry_point", "login", "mount", "seed_everything", "log", "finish", "init", "info", "debug", "warning", "put", "add_argument", "set_xticks", "set_yticks", "annotate", "fill_between", "suptitle", "figure", "subplot"}
+
+
+def legacy_numpy_repr():
+    import sys
+    if "numpy" in sys.modules:
+        sys.modules["numpy"].set_printoptions(legacy="1.25")     # in 0.87 thay vì np.float64(0.87)
+
+
+def transform(code):
+    lines = code.split("\\n")
+    tree = ast.parse(code)
+    n = len(tree.body)
+    for k, node in enumerate(tree.body):
+        if not isinstance(node, ast.Expr):
+            continue
+        v = node.value
+        if isinstance(v, ast.Constant) and isinstance(v.value, str):          # docstring / string literal alone
+            continue
+        if isinstance(v, ast.Await):
+            continue
+        name = None
+        if isinstance(v, ast.Call):
+            f = v.func
+            name = f.attr if isinstance(f, ast.Attribute) else (f.id if isinstance(f, ast.Name) else None)
+        tail = lines[node.end_lineno - 1][node.end_col_offset:]
+        commented = "#" in tail
+        last = k == n - 1
+        if name in ACTION:
+            continue
+        if last or commented:
+            node.value = ast.Call(func=ast.Name("__show__", ast.Load()), args=[v], keywords=[])
+    ast.fix_missing_locations(tree)
+    return tree
+
+def __aie_run(code, ns):
+    buf = io.StringIO(); so, se = sys.stdout, sys.stderr; sys.stdout = sys.stderr = buf; ok = True
+    def show(v):
+        if v is None: return
+        try:
+            import pandas as pd
+            if isinstance(v, (pd.DataFrame, pd.Series)):
+                print(v.to_string(max_rows=20)); return
+        except Exception:
+            pass
+        print(repr(v))
+    ns["__show__"] = show
+    try:
+        legacy_numpy_repr(); exec(compile(transform(code), "<cell>", "exec"), ns)
+    except BaseException:
+        ok = False
+        et, ev, tb = sys.exc_info(); lines = traceback.format_exception(et, ev, tb)
+        print("".join(l for l in lines if "<cell>" in l or l is lines[-1]), end="")
+    finally:
+        sys.stdout, sys.stderr = so, se
+    imgs = []
+    if "matplotlib.pyplot" in sys.modules:
+        plt = sys.modules["matplotlib.pyplot"]
+        for n in plt.get_fignums():
+            b = io.BytesIO(); plt.figure(n).savefig(b, format="png", dpi=100, bbox_inches="tight", facecolor="white")
+            imgs.append(base64.b64encode(b.getvalue()).decode())
+        plt.close("all")
+    return [buf.getvalue()[-20000:], imgs, ok]
+`;
+  let pyP = null; const NS = {}, done = new Set();
+  function loadPy() {
+    if (pyP) return pyP;
+    const base = window.AIE_PYODIDE || "https://cdn.jsdelivr.net/pyodide/v0.28.3/full/";
+    pyP = new Promise((res, rej) => {
+      if (window.loadPyodide) return res();
+      const s = document.createElement("script"); s.src = base + "pyodide.js"; s.onload = () => res(); s.onerror = () => rej(new Error("load"));
+      document.head.appendChild(s);
+    }).then(() => window.loadPyodide({ indexURL: base })).then((py) => { py.runPython(HELPER); return py; });
+    pyP.catch(() => { pyP = null; });
+    return pyP;
+  }
+  const codeOf = (r) => r.previousElementSibling.querySelector("pre").innerText.replace(/\n$/, "");
+  async function exec(py, r, code) {
+    const g = r.dataset.group;
+    if (!NS[g]) NS[g] = py.globals.get("dict")();
+    try { await py.loadPackagesFromImports(code); } catch (e) {}
+    const res = py.globals.get("__aie_run")(code, NS[g]); const [out, imgs, ok] = res.toJs(); res.destroy();
+    return { out, imgs, ok };
+  }
+  function paint(r, res) {
+    r.querySelectorAll(".run-out, img").forEach((x) => x.remove());
+    const pre = document.createElement("pre"); pre.className = "run-out" + (res.out ? "" : " run-empty");
+    pre.textContent = res.out || "(chạy xong, không in ra gì)"; r.appendChild(pre);
+    res.imgs.forEach((b) => { const im = document.createElement("img"); im.alt = "Hình do đoạn code vẽ"; im.src = "data:image/png;base64," + b; r.appendChild(im); });
+    r.classList.toggle("err", !res.ok);
+  }
+  RUNS.filter((r) => r.dataset.mode === "py" && r.previousElementSibling && r.previousElementSibling.classList.contains("hl")).forEach((r) => {
+    const hl = r.previousElementSibling, pre = hl.querySelector("pre"), orig = pre.innerHTML;
+    const bar = r.querySelector(".run-bar"), box = document.createElement("span"); box.className = "run-btns";
+    const st = document.createElement("span"); st.className = "run-status";
+    const mk = (t, cls) => { const b = document.createElement("button"); b.type = "button"; b.className = "run-btn " + cls; b.textContent = t; box.appendChild(b); return b; };
+    const ed = mk("Sửa code", ""), go = mk("▶ Chạy", "go");
+    bar.appendChild(st); bar.appendChild(box);
+    ed.addEventListener("click", () => {
+      if (pre.hasAttribute("contenteditable")) { pre.removeAttribute("contenteditable"); pre.innerHTML = orig; ed.textContent = "Sửa code"; return; }
+      try { pre.contentEditable = "plaintext-only"; } catch (e) { pre.contentEditable = "true"; }
+      if (pre.contentEditable !== "plaintext-only") pre.contentEditable = "true";
+      pre.spellcheck = false; pre.focus(); ed.textContent = "Khôi phục code gốc";
+    });
+    go.addEventListener("click", async () => {
+      go.disabled = true; st.textContent = pyP ? "Đang chạy…" : "Đang tải Python trong trình duyệt (lần đầu khoảng 10–30 giây)…";
+      try {
+        const py = await loadPy(); st.textContent = "Đang chạy…";
+        const same = RUNS.filter((x) => x.dataset.group === r.dataset.group && x.dataset.mode === "py");
+        for (const x of same.slice(0, same.indexOf(r))) if (!done.has(x)) { await exec(py, x, codeOf(x)); done.add(x); }
+        const res = await exec(py, r, codeOf(r)); done.add(r); paint(r, res); st.textContent = res.ok ? "" : "Có lỗi, xem bên dưới";
+      } catch (e) { console.error("aie-run", e); st.textContent = "Không tải được Python trong trình duyệt. Kiểm tra mạng rồi thử lại."; }
+      go.disabled = false;
+    });
   });
 
   /* highlight current theory section in the toc */

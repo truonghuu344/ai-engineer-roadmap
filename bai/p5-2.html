@@ -95,13 +95,18 @@
 </ol>
 <p>Nhờ vậy mọi lớp đều biết mức nhiễu hiện tại: ở t lớn, các lớp tập trung vào dáng tổng thể; ở t nhỏ, tập trung vào chi tiết.</p>
 <p>Thư viện <code>diffusers</code> có sẵn <code>UNet2DModel</code>:</p>
-<div class="hl"><pre><span></span><code><span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">diffusers</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">UNet2DModel</span>
+<div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">torch</span>
+<span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">diffusers</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">UNet2DModel</span>
 <span class="tk-n">model</span> <span class="tk-o">=</span> <span class="tk-n">UNet2DModel</span><span class="tk-p">(</span><span class="tk-n">sample_size</span><span class="tk-o">=</span><span class="tk-mi">32</span><span class="tk-p">,</span> <span class="tk-n">in_channels</span><span class="tk-o">=</span><span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-n">out_channels</span><span class="tk-o">=</span><span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-n">layers_per_block</span><span class="tk-o">=</span><span class="tk-mi">2</span><span class="tk-p">,</span>
                     <span class="tk-n">block_out_channels</span><span class="tk-o">=</span><span class="tk-p">(</span><span class="tk-mi">32</span><span class="tk-p">,</span> <span class="tk-mi">64</span><span class="tk-p">,</span> <span class="tk-mi">128</span><span class="tk-p">),</span>
                     <span class="tk-n">down_block_types</span><span class="tk-o">=</span><span class="tk-p">(</span><span class="tk-s2">"DownBlock2D"</span><span class="tk-p">,</span> <span class="tk-s2">"AttnDownBlock2D"</span><span class="tk-p">,</span> <span class="tk-s2">"AttnDownBlock2D"</span><span class="tk-p">),</span>
                     <span class="tk-n">up_block_types</span><span class="tk-o">=</span><span class="tk-p">(</span><span class="tk-s2">"AttnUpBlock2D"</span><span class="tk-p">,</span> <span class="tk-s2">"AttnUpBlock2D"</span><span class="tk-p">,</span> <span class="tk-s2">"UpBlock2D"</span><span class="tk-p">))</span>
+<span class="tk-n">x_t</span><span class="tk-p">,</span> <span class="tk-n">t</span> <span class="tk-o">=</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">randn</span><span class="tk-p">(</span><span class="tk-mi">4</span><span class="tk-p">,</span> <span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-mi">32</span><span class="tk-p">,</span> <span class="tk-mi">32</span><span class="tk-p">),</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">randint</span><span class="tk-p">(</span><span class="tk-mi">0</span><span class="tk-p">,</span> <span class="tk-mi">1000</span><span class="tk-p">,</span> <span class="tk-p">(</span><span class="tk-mi">4</span><span class="tk-p">,))</span>   <span class="tk-c1"># batch 4 ảnh nhiễu và bước t</span>
 <span class="tk-n">eps_hat</span> <span class="tk-o">=</span> <span class="tk-n">model</span><span class="tk-p">(</span><span class="tk-n">x_t</span><span class="tk-p">,</span> <span class="tk-n">t</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">sample</span>          <span class="tk-c1"># x_t: (B,1,32,32), t: (B,) số nguyên -&gt; (B,1,32,32)</span>
+<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-n">eps_hat</span><span class="tk-o">.</span><span class="tk-n">shape</span><span class="tk-p">,</span> <span class="tk-sa">f</span><span class="tk-s2">"</span><span class="tk-si">{</span><span class="tk-nb">sum</span><span class="tk-p">(</span><span class="tk-n">p</span><span class="tk-o">.</span><span class="tk-n">numel</span><span class="tk-p">()</span><span class="tk-w"> </span><span class="tk-k">for</span><span class="tk-w"> </span><span class="tk-n">p</span><span class="tk-w"> </span><span class="tk-ow">in</span><span class="tk-w"> </span><span class="tk-n">model</span><span class="tk-o">.</span><span class="tk-n">parameters</span><span class="tk-p">())</span><span class="tk-w"> </span><span class="tk-o">/</span><span class="tk-w"> </span><span class="tk-mf">1e6</span><span class="tk-si">:</span><span class="tk-s2">.2f</span><span class="tk-si">}</span><span class="tk-s2"> triệu tham số"</span><span class="tk-p">)</span>
 </code></pre></div>
+
+<div class="run" data-mode="static" data-group="t"><div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span><span class="run-note">đã chạy sẵn cần PyTorch, diffusers</span><a class="run-colab" href="https://colab.research.google.com/github/truonghuu344/ai-engineer-roadmap/blob/main/notebooks/ly-thuyet/p5-2.ipynb" target="_blank" rel="noopener">Mở trên Colab ↗</a></div><pre class="run-out">torch.Size([4, 1, 32, 32]) 4.02 triệu tham số</pre></div>
 
 <p>Trong thực hành, bạn dùng nó cho mạng; lịch nhiễu, vòng train và vòng sinh thì tự viết, y hệt GĐ1.</p>
 <h2 id="lt-3">DDIM: sinh nhanh gấp 20 lần</h2>
@@ -128,7 +133,11 @@ x_s = √ᾱ_s · x̂₀ + √(1−ᾱ_s) · ε̂               2. "thêm lại"
 </div>
 <h3>Chọn các bước nhảy</h3>
 <p>Với 50 bước DDIM, chọn 50 giá trị t cách đều trong 999 … 0 (ví dụ 999, 979, 958, …, 0) và nhảy lần lượt. Ở bước cuối, trả về luôn x̂₀.</p>
-<div class="hl"><pre><span></span><code><span class="tk-nd">@torch</span><span class="tk-o">.</span><span class="tk-n">no_grad</span><span class="tk-p">()</span>
+<div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">torch</span>
+<span class="tk-n">T</span> <span class="tk-o">=</span> <span class="tk-mi">1000</span>
+<span class="tk-n">alpha_bars</span> <span class="tk-o">=</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">cumprod</span><span class="tk-p">(</span><span class="tk-mi">1</span> <span class="tk-o">-</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">linspace</span><span class="tk-p">(</span><span class="tk-mf">1e-4</span><span class="tk-p">,</span> <span class="tk-mf">0.02</span><span class="tk-p">,</span> <span class="tk-n">T</span><span class="tk-p">),</span> <span class="tk-n">dim</span><span class="tk-o">=</span><span class="tk-mi">0</span><span class="tk-p">)</span>   <span class="tk-c1"># lịch nhiễu như GĐ1</span>
+
+<span class="tk-nd">@torch</span><span class="tk-o">.</span><span class="tk-n">no_grad</span><span class="tk-p">()</span>
 <span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">sample_ddim</span><span class="tk-p">(</span><span class="tk-n">model</span><span class="tk-p">,</span> <span class="tk-n">n</span><span class="tk-p">,</span> <span class="tk-n">steps</span><span class="tk-o">=</span><span class="tk-mi">50</span><span class="tk-p">):</span>
     <span class="tk-n">x</span> <span class="tk-o">=</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">randn</span><span class="tk-p">(</span><span class="tk-n">n</span><span class="tk-p">,</span> <span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-mi">32</span><span class="tk-p">,</span> <span class="tk-mi">32</span><span class="tk-p">)</span>
     <span class="tk-n">ts</span> <span class="tk-o">=</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">linspace</span><span class="tk-p">(</span><span class="tk-n">T</span> <span class="tk-o">-</span> <span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-mi">0</span><span class="tk-p">,</span> <span class="tk-n">steps</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">round</span><span class="tk-p">()</span><span class="tk-o">.</span><span class="tk-n">long</span><span class="tk-p">()</span><span class="tk-o">.</span><span class="tk-n">tolist</span><span class="tk-p">()</span>
@@ -140,7 +149,12 @@ x_s = √ᾱ_s · x̂₀ + √(1−ᾱ_s) · ε̂               2. "thêm lại"
             <span class="tk-k">return</span> <span class="tk-n">x0</span><span class="tk-o">.</span><span class="tk-n">clamp</span><span class="tk-p">(</span><span class="tk-o">-</span><span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-mi">1</span><span class="tk-p">)</span>
         <span class="tk-n">ab_s</span> <span class="tk-o">=</span> <span class="tk-n">alpha_bars</span><span class="tk-p">[</span><span class="tk-n">ts</span><span class="tk-p">[</span><span class="tk-n">i</span> <span class="tk-o">+</span> <span class="tk-mi">1</span><span class="tk-p">]]</span>
         <span class="tk-n">x</span> <span class="tk-o">=</span> <span class="tk-n">ab_s</span><span class="tk-o">.</span><span class="tk-n">sqrt</span><span class="tk-p">()</span> <span class="tk-o">*</span> <span class="tk-n">x0</span> <span class="tk-o">+</span> <span class="tk-p">(</span><span class="tk-mi">1</span> <span class="tk-o">-</span> <span class="tk-n">ab_s</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">sqrt</span><span class="tk-p">()</span> <span class="tk-o">*</span> <span class="tk-n">eps</span>
+
+<span class="tk-n">imgs</span> <span class="tk-o">=</span> <span class="tk-n">sample_ddim</span><span class="tk-p">(</span><span class="tk-n">model</span><span class="tk-o">.</span><span class="tk-n">eval</span><span class="tk-p">(),</span> <span class="tk-n">n</span><span class="tk-o">=</span><span class="tk-mi">2</span><span class="tk-p">,</span> <span class="tk-n">steps</span><span class="tk-o">=</span><span class="tk-mi">10</span><span class="tk-p">)</span>    <span class="tk-c1"># model ở ô trên chưa train nên ảnh chỉ là nhiễu; ở đây chỉ kiểm tra chạy đúng</span>
+<span class="tk-n">imgs</span><span class="tk-o">.</span><span class="tk-n">shape</span><span class="tk-p">,</span> <span class="tk-n">imgs</span><span class="tk-o">.</span><span class="tk-n">min</span><span class="tk-p">()</span><span class="tk-o">.</span><span class="tk-n">item</span><span class="tk-p">(),</span> <span class="tk-n">imgs</span><span class="tk-o">.</span><span class="tk-n">max</span><span class="tk-p">()</span><span class="tk-o">.</span><span class="tk-n">item</span><span class="tk-p">()</span>
 </code></pre></div>
+
+<div class="run" data-mode="static" data-group="t"><div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span><span class="run-note">đã chạy sẵn cần PyTorch</span><a class="run-colab" href="https://colab.research.google.com/github/truonghuu344/ai-engineer-roadmap/blob/main/notebooks/ly-thuyet/p5-2.ipynb" target="_blank" rel="noopener">Mở trên Colab ↗</a></div><pre class="run-out">(torch.Size([2, 1, 32, 32]), -1.0, 1.0)</pre></div>
 
 <h3>Bao nhiêu bước là đủ</h3>
 <p>Thí nghiệm trên xoắn ốc 2D (model MLP từ GĐ1 train kỹ hơn), đo khoảng cách trung bình từ 2000 điểm sinh ra tới xoắn ốc gần nhất:</p>
@@ -204,7 +218,7 @@ x_s = √ᾱ_s · x̂₀ + √(1−ᾱ_s) · ε̂               2. "thêm lại"
 <p>w_ema mới = 0.99 · 0.5 + 0.01 · 1.5 = 0.495 + 0.015 = <strong>0.51</strong>.</p>
 <p>Mỗi bước, khoảng cách từ w_ema tới w chỉ còn 99%. Sau ln 0.5 / ln 0.99 ≈ 69 bước khoảng cách còn một nửa: EMA với decay 0.99 "nhớ" khoảng 100 bước gần nhất; decay 0.999 nhớ khoảng 1000 bước.</p>
 </div>
-<div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">copy</span>
+<div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">copy</span><span class="tk-o">,</span><span class="tk-w"> </span><span class="tk-nn">torch</span>
 <span class="tk-n">ema</span> <span class="tk-o">=</span> <span class="tk-n">copy</span><span class="tk-o">.</span><span class="tk-n">deepcopy</span><span class="tk-p">(</span><span class="tk-n">model</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">eval</span><span class="tk-p">()</span><span class="tk-o">.</span><span class="tk-n">requires_grad_</span><span class="tk-p">(</span><span class="tk-kc">False</span><span class="tk-p">)</span>
 
 <span class="tk-nd">@torch</span><span class="tk-o">.</span><span class="tk-n">no_grad</span><span class="tk-p">()</span>
@@ -212,7 +226,17 @@ x_s = √ᾱ_s · x̂₀ + √(1−ᾱ_s) · ε̂               2. "thêm lại"
     <span class="tk-k">for</span> <span class="tk-n">pe</span><span class="tk-p">,</span> <span class="tk-n">p</span> <span class="tk-ow">in</span> <span class="tk-nb">zip</span><span class="tk-p">(</span><span class="tk-n">ema</span><span class="tk-o">.</span><span class="tk-n">parameters</span><span class="tk-p">(),</span> <span class="tk-n">model</span><span class="tk-o">.</span><span class="tk-n">parameters</span><span class="tk-p">()):</span>
         <span class="tk-n">pe</span><span class="tk-o">.</span><span class="tk-n">mul_</span><span class="tk-p">(</span><span class="tk-n">decay</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">add_</span><span class="tk-p">(</span><span class="tk-n">p</span><span class="tk-p">,</span> <span class="tk-n">alpha</span><span class="tk-o">=</span><span class="tk-mi">1</span> <span class="tk-o">-</span> <span class="tk-n">decay</span><span class="tk-p">)</span>
 <span class="tk-c1"># gọi update_ema(ema, model) sau mỗi opt.step(); sinh ảnh bằng ema, không phải model</span>
+
+<span class="tk-c1"># thử: đổi trọng số model rồi cập nhật EMA 1 lần và 1000 lần</span>
+<span class="tk-n">w</span> <span class="tk-o">=</span> <span class="tk-nb">next</span><span class="tk-p">(</span><span class="tk-n">model</span><span class="tk-o">.</span><span class="tk-n">parameters</span><span class="tk-p">());</span> <span class="tk-n">w_ema</span> <span class="tk-o">=</span> <span class="tk-nb">next</span><span class="tk-p">(</span><span class="tk-n">ema</span><span class="tk-o">.</span><span class="tk-n">parameters</span><span class="tk-p">())</span>
+<span class="tk-k">with</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">no_grad</span><span class="tk-p">():</span> <span class="tk-n">w</span><span class="tk-o">.</span><span class="tk-n">add_</span><span class="tk-p">(</span><span class="tk-mf">1.0</span><span class="tk-p">)</span>                     <span class="tk-c1"># giả sử một bước train làm trọng số tăng 1</span>
+<span class="tk-n">update_ema</span><span class="tk-p">(</span><span class="tk-n">ema</span><span class="tk-p">,</span> <span class="tk-n">model</span><span class="tk-p">)</span>
+<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-s2">"sau 1 lần:"</span><span class="tk-p">,</span> <span class="tk-nb">round</span><span class="tk-p">((</span><span class="tk-n">w</span> <span class="tk-o">-</span> <span class="tk-n">w_ema</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">abs</span><span class="tk-p">()</span><span class="tk-o">.</span><span class="tk-n">mean</span><span class="tk-p">()</span><span class="tk-o">.</span><span class="tk-n">item</span><span class="tk-p">(),</span> <span class="tk-mi">4</span><span class="tk-p">))</span>      <span class="tk-c1"># EMA mới đi được 0,1% quãng đường</span>
+<span class="tk-k">for</span> <span class="tk-n">_</span> <span class="tk-ow">in</span> <span class="tk-nb">range</span><span class="tk-p">(</span><span class="tk-mi">999</span><span class="tk-p">):</span> <span class="tk-n">update_ema</span><span class="tk-p">(</span><span class="tk-n">ema</span><span class="tk-p">,</span> <span class="tk-n">model</span><span class="tk-p">)</span>
+<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-s2">"sau 1000 lần:"</span><span class="tk-p">,</span> <span class="tk-nb">round</span><span class="tk-p">((</span><span class="tk-n">w</span> <span class="tk-o">-</span> <span class="tk-n">w_ema</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">abs</span><span class="tk-p">()</span><span class="tk-o">.</span><span class="tk-n">mean</span><span class="tk-p">()</span><span class="tk-o">.</span><span class="tk-n">item</span><span class="tk-p">(),</span> <span class="tk-mi">4</span><span class="tk-p">))</span>   <span class="tk-c1"># còn khoảng e^-1 ≈ 37%</span>
 </code></pre></div>
+
+<div class="run" data-mode="static" data-group="t"><div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span><span class="run-note">đã chạy sẵn</span><a class="run-colab" href="https://colab.research.google.com/github/truonghuu344/ai-engineer-roadmap/blob/main/notebooks/ly-thuyet/p5-2.ipynb" target="_blank" rel="noopener">Mở trên Colab ↗</a></div><pre class="run-out">sau 1 lần: 0.999&#10;sau 1000 lần: 0.3677</pre></div>
 
 <div class="box pitfall">
 <div class="box-h">Lỗi hay gặp</div>
@@ -224,7 +248,7 @@ x_s = √ᾱ_s · x̂₀ + √(1−ᾱ_s) · ε̂               2. "thêm lại"
 <div class="box check">
 <div class="box-h">Tự kiểm tra nhanh</div>
 <p>Mỗi lần gọi U-Net mất 35 ms cho một batch.</p>
-<div class="ans" id="p5-2-t-b144-a1">
+<div class="ans" id="p5-2-t-b171-a1">
 <div class="ans-fields"><label>Sinh một batch bằng DDPM 1000 bước (giây)<input inputmode="decimal" data-ans="35.0" data-tol="0.001" autocomplete="off"></label><label>Bằng DDIM 50 bước (giây)<input inputmode="decimal" data-ans="1.75" data-tol="0.001" autocomplete="off"></label><label>DDIM từ xₜ = 1, ᾱₜ = 0.36, ε̂ = 0.25. Đoán x̂₀ (2 chữ số thập phân)<input inputmode="decimal" data-ans="1.33" data-tol="0.01" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div>
 <div aria-live="polite" class="ans-fb"></div>
 </div>
@@ -424,7 +448,7 @@ x_s = √ᾱ_s · x̂₀ + √(1−ᾱ_s) · ε̂               2. "thêm lại"
     <aside class="aside">
       <div class="abox"><h4>Tiến độ bài này</h4><div class="ring"><svg viewBox="0 0 64 64" aria-hidden="true"><circle class="bg" cx="32" cy="32" r="28"/><circle class="fg" cx="32" cy="32" r="28" stroke-dasharray="176" stroke-dashoffset="176"/></svg><div><b id="ring-n">0/3</b><span id="ring-sub">phần đã xong</span></div></div></div>
       <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Vì sao cần U-Net</a></li><li><a href="#lt-2">Đưa bước t vào U-Net</a></li><li><a href="#lt-3">DDIM: sinh nhanh gấp 20 lần</a></li><li><a href="#lt-4">Lịch nhiễu cosine</a></li><li><a href="#lt-5">EMA trọng số</a></li><li><a href="#lt-6">Tóm tắt bài và thuật ngữ</a></li></ol></div>
-      
+      <div class="abox"><h4>Notebook</h4><div style="display:grid;gap:8px"><a class="dl" href="https://colab.research.google.com/github/truonghuu344/ai-engineer-roadmap/blob/main/notebooks/ly-thuyet/p5-2.ipynb" target="_blank" rel="noopener"><span class="ext">COLAB</span><span>Chạy toàn bộ code của bài<span style="display:block;font:400 12px var(--f-mono);color:var(--muted)">notebook có sẵn kết quả</span></span></a></div></div>
       <div class="abox"><h4>Cùng giai đoạn</h4><ul><li><a href="p5-1.html">GĐ 1 · Diffusion tạo ảnh thế nào</a></li><li><span class=cur>GĐ 2 · Diffusion cho ảnh</span></li><li><a href="p5-3.html">GĐ 3 · Điều khiển bằng chữ</a></li><li><a href="p5-4.html">GĐ 4 · Latent diffusion và Stable Diffusion</a></li><li><a href="p5-5.html">GĐ 5 · Fine-tune LoRA</a></li><li><a href="p5-6.html">GĐ 6 · Đánh giá và rectified flow</a></li><li><a href="p5-7.html">GĐ 7 · Đóng gói sản phẩm</a></li></ul></div>
     </aside>
   </div>
@@ -528,6 +552,134 @@ x_s = √ᾱ_s · x̂₀ + √(1−ᾱ_s) · ε̂               2. "thêm lại"
       b.textContent = "Đã chép ✓"; b.classList.add("done"); setTimeout(() => { b.textContent = "Chép"; b.classList.remove("done"); }, 1600);
     }).catch(() => {}));
     h.appendChild(b);
+  });
+
+  /* runnable code: Pyodide (Python chạy ngay trong trình duyệt) */
+  const RUNS = [...document.querySelectorAll(".run")];
+  const HELPER = `
+import ast, sys, io, base64, traceback, os, warnings
+os.environ.setdefault("MPLBACKEND", "AGG")
+warnings.filterwarnings("ignore", message=".*non-interactive.*")
+import ast
+ACTION = {"manual_seed", "seed", "write_text", "write", "load_dotenv", "savefig", "set_title", "set_xlabel", "set_ylabel",
+          "legend", "plot", "scatter", "bar", "barh", "hist", "imshow", "append", "extend", "update", "add", "fit", "backward",
+          "step", "zero_grad", "mkdir", "makedirs", "sleep", "close", "flush", "print", "show", "axhline", "axvline", "text",
+          "tight_layout", "subplots_adjust", "set_xlim", "set_ylim", "grid", "insert", "remove", "clear", "sort", "shuffle",
+          "to_csv", "save", "load_state_dict", "train", "eval", "requires_grad_", "set_printoptions", "filterwarnings",
+          "use", "setdefault", "register_buffer", "rc", "add_node", "add_edge", "add_conditional_edges", "set_entry_point", "login", "mount", "seed_everything", "log", "finish", "init", "info", "debug", "warning", "put", "add_argument", "set_xticks", "set_yticks", "annotate", "fill_between", "suptitle", "figure", "subplot"}
+
+
+def legacy_numpy_repr():
+    import sys
+    if "numpy" in sys.modules:
+        sys.modules["numpy"].set_printoptions(legacy="1.25")     # in 0.87 thay vì np.float64(0.87)
+
+
+def transform(code):
+    lines = code.split("\\n")
+    tree = ast.parse(code)
+    n = len(tree.body)
+    for k, node in enumerate(tree.body):
+        if not isinstance(node, ast.Expr):
+            continue
+        v = node.value
+        if isinstance(v, ast.Constant) and isinstance(v.value, str):          # docstring / string literal alone
+            continue
+        if isinstance(v, ast.Await):
+            continue
+        name = None
+        if isinstance(v, ast.Call):
+            f = v.func
+            name = f.attr if isinstance(f, ast.Attribute) else (f.id if isinstance(f, ast.Name) else None)
+        tail = lines[node.end_lineno - 1][node.end_col_offset:]
+        commented = "#" in tail
+        last = k == n - 1
+        if name in ACTION:
+            continue
+        if last or commented:
+            node.value = ast.Call(func=ast.Name("__show__", ast.Load()), args=[v], keywords=[])
+    ast.fix_missing_locations(tree)
+    return tree
+
+def __aie_run(code, ns):
+    buf = io.StringIO(); so, se = sys.stdout, sys.stderr; sys.stdout = sys.stderr = buf; ok = True
+    def show(v):
+        if v is None: return
+        try:
+            import pandas as pd
+            if isinstance(v, (pd.DataFrame, pd.Series)):
+                print(v.to_string(max_rows=20)); return
+        except Exception:
+            pass
+        print(repr(v))
+    ns["__show__"] = show
+    try:
+        legacy_numpy_repr(); exec(compile(transform(code), "<cell>", "exec"), ns)
+    except BaseException:
+        ok = False
+        et, ev, tb = sys.exc_info(); lines = traceback.format_exception(et, ev, tb)
+        print("".join(l for l in lines if "<cell>" in l or l is lines[-1]), end="")
+    finally:
+        sys.stdout, sys.stderr = so, se
+    imgs = []
+    if "matplotlib.pyplot" in sys.modules:
+        plt = sys.modules["matplotlib.pyplot"]
+        for n in plt.get_fignums():
+            b = io.BytesIO(); plt.figure(n).savefig(b, format="png", dpi=100, bbox_inches="tight", facecolor="white")
+            imgs.append(base64.b64encode(b.getvalue()).decode())
+        plt.close("all")
+    return [buf.getvalue()[-20000:], imgs, ok]
+`;
+  let pyP = null; const NS = {}, done = new Set();
+  function loadPy() {
+    if (pyP) return pyP;
+    const base = window.AIE_PYODIDE || "https://cdn.jsdelivr.net/pyodide/v0.28.3/full/";
+    pyP = new Promise((res, rej) => {
+      if (window.loadPyodide) return res();
+      const s = document.createElement("script"); s.src = base + "pyodide.js"; s.onload = () => res(); s.onerror = () => rej(new Error("load"));
+      document.head.appendChild(s);
+    }).then(() => window.loadPyodide({ indexURL: base })).then((py) => { py.runPython(HELPER); return py; });
+    pyP.catch(() => { pyP = null; });
+    return pyP;
+  }
+  const codeOf = (r) => r.previousElementSibling.querySelector("pre").innerText.replace(/\n$/, "");
+  async function exec(py, r, code) {
+    const g = r.dataset.group;
+    if (!NS[g]) NS[g] = py.globals.get("dict")();
+    try { await py.loadPackagesFromImports(code); } catch (e) {}
+    const res = py.globals.get("__aie_run")(code, NS[g]); const [out, imgs, ok] = res.toJs(); res.destroy();
+    return { out, imgs, ok };
+  }
+  function paint(r, res) {
+    r.querySelectorAll(".run-out, img").forEach((x) => x.remove());
+    const pre = document.createElement("pre"); pre.className = "run-out" + (res.out ? "" : " run-empty");
+    pre.textContent = res.out || "(chạy xong, không in ra gì)"; r.appendChild(pre);
+    res.imgs.forEach((b) => { const im = document.createElement("img"); im.alt = "Hình do đoạn code vẽ"; im.src = "data:image/png;base64," + b; r.appendChild(im); });
+    r.classList.toggle("err", !res.ok);
+  }
+  RUNS.filter((r) => r.dataset.mode === "py" && r.previousElementSibling && r.previousElementSibling.classList.contains("hl")).forEach((r) => {
+    const hl = r.previousElementSibling, pre = hl.querySelector("pre"), orig = pre.innerHTML;
+    const bar = r.querySelector(".run-bar"), box = document.createElement("span"); box.className = "run-btns";
+    const st = document.createElement("span"); st.className = "run-status";
+    const mk = (t, cls) => { const b = document.createElement("button"); b.type = "button"; b.className = "run-btn " + cls; b.textContent = t; box.appendChild(b); return b; };
+    const ed = mk("Sửa code", ""), go = mk("▶ Chạy", "go");
+    bar.appendChild(st); bar.appendChild(box);
+    ed.addEventListener("click", () => {
+      if (pre.hasAttribute("contenteditable")) { pre.removeAttribute("contenteditable"); pre.innerHTML = orig; ed.textContent = "Sửa code"; return; }
+      try { pre.contentEditable = "plaintext-only"; } catch (e) { pre.contentEditable = "true"; }
+      if (pre.contentEditable !== "plaintext-only") pre.contentEditable = "true";
+      pre.spellcheck = false; pre.focus(); ed.textContent = "Khôi phục code gốc";
+    });
+    go.addEventListener("click", async () => {
+      go.disabled = true; st.textContent = pyP ? "Đang chạy…" : "Đang tải Python trong trình duyệt (lần đầu khoảng 10–30 giây)…";
+      try {
+        const py = await loadPy(); st.textContent = "Đang chạy…";
+        const same = RUNS.filter((x) => x.dataset.group === r.dataset.group && x.dataset.mode === "py");
+        for (const x of same.slice(0, same.indexOf(r))) if (!done.has(x)) { await exec(py, x, codeOf(x)); done.add(x); }
+        const res = await exec(py, r, codeOf(r)); done.add(r); paint(r, res); st.textContent = res.ok ? "" : "Có lỗi, xem bên dưới";
+      } catch (e) { console.error("aie-run", e); st.textContent = "Không tải được Python trong trình duyệt. Kiểm tra mạng rồi thử lại."; }
+      go.disabled = false;
+    });
   });
 
   /* highlight current theory section in the toc */

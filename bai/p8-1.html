@@ -56,11 +56,25 @@
 <span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">health</span><span class="tk-p">():</span>
     <span class="tk-k">return</span> <span class="tk-p">{</span><span class="tk-s2">"status"</span><span class="tk-p">:</span> <span class="tk-s2">"ok"</span><span class="tk-p">}</span>
 
+<span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">model_predict</span><span class="tk-p">(</span><span class="tk-n">text</span><span class="tk-p">):</span>                         <span class="tk-c1"># thay cho model thật: luật đơn giản để chạy thử</span>
+    <span class="tk-n">pos</span> <span class="tk-o">=</span> <span class="tk-nb">any</span><span class="tk-p">(</span><span class="tk-n">w</span> <span class="tk-ow">in</span> <span class="tk-n">text</span><span class="tk-o">.</span><span class="tk-n">lower</span><span class="tk-p">()</span> <span class="tk-k">for</span> <span class="tk-n">w</span> <span class="tk-ow">in</span> <span class="tk-p">(</span><span class="tk-s2">"tốt"</span><span class="tk-p">,</span> <span class="tk-s2">"đẹp"</span><span class="tk-p">,</span> <span class="tk-s2">"thích"</span><span class="tk-p">,</span> <span class="tk-s2">"nhanh"</span><span class="tk-p">))</span>
+    <span class="tk-k">return</span> <span class="tk-p">(</span><span class="tk-s2">"tích cực"</span><span class="tk-p">,</span> <span class="tk-mf">0.9</span><span class="tk-p">)</span> <span class="tk-k">if</span> <span class="tk-n">pos</span> <span class="tk-k">else</span> <span class="tk-p">(</span><span class="tk-s2">"tiêu cực"</span><span class="tk-p">,</span> <span class="tk-mf">0.6</span><span class="tk-p">)</span>
+
 <span class="tk-nd">@app</span><span class="tk-o">.</span><span class="tk-n">post</span><span class="tk-p">(</span><span class="tk-s2">"/predict"</span><span class="tk-p">,</span> <span class="tk-n">response_model</span><span class="tk-o">=</span><span class="tk-n">Resp</span><span class="tk-p">)</span>
 <span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">predict</span><span class="tk-p">(</span><span class="tk-n">req</span><span class="tk-p">:</span> <span class="tk-n">Req</span><span class="tk-p">):</span>
     <span class="tk-n">label</span><span class="tk-p">,</span> <span class="tk-n">score</span> <span class="tk-o">=</span> <span class="tk-n">model_predict</span><span class="tk-p">(</span><span class="tk-n">req</span><span class="tk-o">.</span><span class="tk-n">text</span><span class="tk-p">)</span>       <span class="tk-c1"># model nạp một lần khi khởi động</span>
     <span class="tk-k">return</span> <span class="tk-n">Resp</span><span class="tk-p">(</span><span class="tk-n">label</span><span class="tk-o">=</span><span class="tk-n">label</span><span class="tk-p">,</span> <span class="tk-n">score</span><span class="tk-o">=</span><span class="tk-n">score</span><span class="tk-p">)</span>
+
+<span class="tk-c1"># gọi thử API ngay trong notebook, không cần chạy uvicorn</span>
+<span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">fastapi.testclient</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">TestClient</span>
+<span class="tk-n">api</span> <span class="tk-o">=</span> <span class="tk-n">TestClient</span><span class="tk-p">(</span><span class="tk-n">app</span><span class="tk-p">)</span>
+<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-n">api</span><span class="tk-o">.</span><span class="tk-n">get</span><span class="tk-p">(</span><span class="tk-s2">"/health"</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">json</span><span class="tk-p">())</span>
+<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-n">api</span><span class="tk-o">.</span><span class="tk-n">post</span><span class="tk-p">(</span><span class="tk-s2">"/predict"</span><span class="tk-p">,</span> <span class="tk-n">json</span><span class="tk-o">=</span><span class="tk-p">{</span><span class="tk-s2">"text"</span><span class="tk-p">:</span> <span class="tk-s2">"Ghế đẹp, giao nhanh"</span><span class="tk-p">})</span><span class="tk-o">.</span><span class="tk-n">json</span><span class="tk-p">())</span>
+<span class="tk-n">r</span> <span class="tk-o">=</span> <span class="tk-n">api</span><span class="tk-o">.</span><span class="tk-n">post</span><span class="tk-p">(</span><span class="tk-s2">"/predict"</span><span class="tk-p">,</span> <span class="tk-n">json</span><span class="tk-o">=</span><span class="tk-p">{</span><span class="tk-s2">"text"</span><span class="tk-p">:</span> <span class="tk-s2">""</span><span class="tk-p">})</span>
+<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-n">r</span><span class="tk-o">.</span><span class="tk-n">status_code</span><span class="tk-p">,</span> <span class="tk-n">r</span><span class="tk-o">.</span><span class="tk-n">json</span><span class="tk-p">()[</span><span class="tk-s2">"detail"</span><span class="tk-p">][</span><span class="tk-mi">0</span><span class="tk-p">][</span><span class="tk-s2">"msg"</span><span class="tk-p">])</span>             <span class="tk-c1"># Pydantic từ chối: 422</span>
 </code></pre></div>
+
+<div class="run" data-mode="static" data-group="t"><div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span><span class="run-note">đã chạy sẵn cần FastAPI</span><a class="run-colab" href="https://colab.research.google.com/github/truonghuu344/ai-engineer-roadmap/blob/main/notebooks/ly-thuyet/p8-1.ipynb" target="_blank" rel="noopener">Mở trên Colab ↗</a></div><pre class="run-out">{&#x27;status&#x27;: &#x27;ok&#x27;}&#10;{&#x27;label&#x27;: &#x27;tích cực&#x27;, &#x27;score&#x27;: 0.9}&#10;422 String should have at least 1 character</pre></div>
 
 <p>Chạy: <code>uvicorn app:app --host 0.0.0.0 --port 8000</code>, mở <code>http://localhost:8000/docs</code> để thử trực tiếp trên trình duyệt.</p>
 <h3>Nguyên tắc của một endpoint tốt</h3>
@@ -131,7 +145,25 @@
             <span class="tk-k">yield</span> <span class="tk-sa">f</span><span class="tk-s2">"data: </span><span class="tk-si">{</span><span class="tk-n">piece</span><span class="tk-si">}</span><span class="tk-se">\n\n</span><span class="tk-s2">"</span>
         <span class="tk-k">yield</span> <span class="tk-s2">"data: [DONE]</span><span class="tk-se">\n\n</span><span class="tk-s2">"</span>
     <span class="tk-k">return</span> <span class="tk-n">StreamingResponse</span><span class="tk-p">(</span><span class="tk-n">gen</span><span class="tk-p">(),</span> <span class="tk-n">media_type</span><span class="tk-o">=</span><span class="tk-s2">"text/event-stream"</span><span class="tk-p">)</span>
+
+<span class="tk-c1"># chạy server thật (uvicorn) ở luồng nền rồi đo thời gian tới mảnh đầu tiên và tổng thời gian</span>
+<span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">threading</span><span class="tk-o">,</span><span class="tk-w"> </span><span class="tk-nn">time</span><span class="tk-o">,</span><span class="tk-w"> </span><span class="tk-nn">httpx</span><span class="tk-o">,</span><span class="tk-w"> </span><span class="tk-nn">uvicorn</span>
+<span class="tk-n">server</span> <span class="tk-o">=</span> <span class="tk-n">uvicorn</span><span class="tk-o">.</span><span class="tk-n">Server</span><span class="tk-p">(</span><span class="tk-n">uvicorn</span><span class="tk-o">.</span><span class="tk-n">Config</span><span class="tk-p">(</span><span class="tk-n">app</span><span class="tk-p">,</span> <span class="tk-n">port</span><span class="tk-o">=</span><span class="tk-mi">8899</span><span class="tk-p">,</span> <span class="tk-n">log_level</span><span class="tk-o">=</span><span class="tk-s2">"warning"</span><span class="tk-p">))</span>
+<span class="tk-n">threading</span><span class="tk-o">.</span><span class="tk-n">Thread</span><span class="tk-p">(</span><span class="tk-n">target</span><span class="tk-o">=</span><span class="tk-n">server</span><span class="tk-o">.</span><span class="tk-n">run</span><span class="tk-p">,</span> <span class="tk-n">daemon</span><span class="tk-o">=</span><span class="tk-kc">True</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">start</span><span class="tk-p">()</span>
+<span class="tk-k">while</span> <span class="tk-ow">not</span> <span class="tk-n">server</span><span class="tk-o">.</span><span class="tk-n">started</span><span class="tk-p">:</span>
+    <span class="tk-n">time</span><span class="tk-o">.</span><span class="tk-n">sleep</span><span class="tk-p">(</span><span class="tk-mf">0.05</span><span class="tk-p">)</span>
+
+<span class="tk-n">t0</span><span class="tk-p">,</span> <span class="tk-n">first</span><span class="tk-p">,</span> <span class="tk-n">n</span> <span class="tk-o">=</span> <span class="tk-n">time</span><span class="tk-o">.</span><span class="tk-n">perf_counter</span><span class="tk-p">(),</span> <span class="tk-kc">None</span><span class="tk-p">,</span> <span class="tk-mi">0</span>
+<span class="tk-k">with</span> <span class="tk-n">httpx</span><span class="tk-o">.</span><span class="tk-n">stream</span><span class="tk-p">(</span><span class="tk-s2">"POST"</span><span class="tk-p">,</span> <span class="tk-s2">"http://127.0.0.1:8899/chat/stream"</span><span class="tk-p">,</span> <span class="tk-n">json</span><span class="tk-o">=</span><span class="tk-p">{</span><span class="tk-s2">"text"</span><span class="tk-p">:</span> <span class="tk-s2">"xin chào"</span><span class="tk-p">})</span> <span class="tk-k">as</span> <span class="tk-n">resp</span><span class="tk-p">:</span>
+    <span class="tk-k">for</span> <span class="tk-n">line</span> <span class="tk-ow">in</span> <span class="tk-n">resp</span><span class="tk-o">.</span><span class="tk-n">iter_lines</span><span class="tk-p">():</span>
+        <span class="tk-k">if</span> <span class="tk-n">line</span><span class="tk-o">.</span><span class="tk-n">startswith</span><span class="tk-p">(</span><span class="tk-s2">"data:"</span><span class="tk-p">):</span>
+            <span class="tk-n">n</span> <span class="tk-o">+=</span> <span class="tk-mi">1</span>
+            <span class="tk-n">first</span> <span class="tk-o">=</span> <span class="tk-n">first</span> <span class="tk-ow">or</span> <span class="tk-n">time</span><span class="tk-o">.</span><span class="tk-n">perf_counter</span><span class="tk-p">()</span> <span class="tk-o">-</span> <span class="tk-n">t0</span>
+<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-sa">f</span><span class="tk-s2">"</span><span class="tk-si">{</span><span class="tk-n">n</span><span class="tk-si">}</span><span class="tk-s2"> mảnh | mảnh đầu sau </span><span class="tk-si">{</span><span class="tk-n">first</span><span class="tk-w"> </span><span class="tk-o">*</span><span class="tk-w"> </span><span class="tk-mi">1000</span><span class="tk-si">:</span><span class="tk-s2">.0f</span><span class="tk-si">}</span><span class="tk-s2"> ms | xong sau </span><span class="tk-si">{</span><span class="tk-n">time</span><span class="tk-o">.</span><span class="tk-n">perf_counter</span><span class="tk-p">()</span><span class="tk-w"> </span><span class="tk-o">-</span><span class="tk-w"> </span><span class="tk-n">t0</span><span class="tk-si">:</span><span class="tk-s2">.2f</span><span class="tk-si">}</span><span class="tk-s2"> s"</span><span class="tk-p">)</span>
+<span class="tk-n">server</span><span class="tk-o">.</span><span class="tk-n">should_exit</span> <span class="tk-o">=</span> <span class="tk-kc">True</span>
 </code></pre></div>
+
+<div class="run" data-mode="static" data-group="t"><div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span><span class="run-note">đã chạy sẵn cần FastAPI</span><a class="run-colab" href="https://colab.research.google.com/github/truonghuu344/ai-engineer-roadmap/blob/main/notebooks/ly-thuyet/p8-1.ipynb" target="_blank" rel="noopener">Mở trên Colab ↗</a></div><pre class="run-out">151 mảnh | mảnh đầu sau 46 ms | xong sau 3.08 s</pre></div>
 
 <figure class="fig"><img src="../assets/fig/p8-1-stream.svg" alt="Đo thật trên service ở trên: tổng thời gian như nhau (khoảng 3,05 giây), nhưng với streaming, mảnh đầu tiên tới sau 23 mili giây." loading="lazy"><figcaption>Đo thật trên service ở trên: tổng thời gian như nhau (khoảng 3,05 giây), nhưng với streaming, mảnh đầu tiên tới sau 23 mili giây.</figcaption></figure>
 
@@ -220,7 +252,7 @@
 </div>
 <div class="box check">
 <div class="box-h">Tự kiểm tra nhanh</div>
-<div class="ans" id="p8-1-t-b161-a1">
+<div class="ans" id="p8-1-t-b195-a1">
 <div class="ans-fields"><label>Lưu lượng 6 yêu cầu/giây, mỗi yêu cầu 3,5 giây: số yêu cầu đồng thời<input inputmode="decimal" data-ans="21.0" data-tol="0.001" autocomplete="off"></label><label>GPU chịu 5 yêu cầu/giây, đỉnh 12, dư 40%: số GPU<input inputmode="decimal" data-ans="4.0" data-tol="0.0" autocomplete="off"></label><label>Pydantic từ chối dữ liệu vào: FastAPI trả mã HTTP<input inputmode="decimal" data-ans="422.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div>
 <div aria-live="polite" class="ans-fb"></div>
 </div>
@@ -346,7 +378,8 @@
 </details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 5</span><h3>API có streaming và kiểm tra đầu vào</h3><span class="ex-tag code">code</span></div><div class="prose"><p>Viết FastAPI service gọi một LLM (qua client OpenAI-compatible tới vLLM): <code>/health</code>, <code>/chat</code> nhận <code>message</code> (tối đa 2.000 ký tự), trả SSE từng mảnh, timeout và trả 503 khi model lỗi.</p>
 <details class="fold code">
 <summary>Code tham khảo</summary>
-<div class="hl"><pre><span></span><code><span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">fastapi</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">FastAPI</span><span class="tk-p">,</span> <span class="tk-n">HTTPException</span>
+<div class="hl"><pre><span></span><code><span class="tk-c1"># Cần vLLM server đang chạy ở cổng 8000 (bước 2 của phần thực hành)</span>
+<span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">fastapi</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">FastAPI</span><span class="tk-p">,</span> <span class="tk-n">HTTPException</span>
 <span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">fastapi.responses</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">StreamingResponse</span>
 <span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">pydantic</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">BaseModel</span><span class="tk-p">,</span> <span class="tk-n">Field</span>
 <span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">openai</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">OpenAI</span><span class="tk-p">,</span> <span class="tk-n">APIError</span>
@@ -383,6 +416,9 @@
     <span class="tk-k">return</span> <span class="tk-n">StreamingResponse</span><span class="tk-p">(</span><span class="tk-n">gen</span><span class="tk-p">(),</span> <span class="tk-n">media_type</span><span class="tk-o">=</span><span class="tk-s2">"text/event-stream"</span><span class="tk-p">)</span>
 </code></pre></div>
 
+<div class="run run-skip" data-group="e5" data-mode="static">
+<div class="run-bar"><span class="run-lbl">Không chạy trên trang</span><span class="run-note">Cần vLLM server đang chạy ở cổng 8000 (bước 2 của phần thực hành)</span><a class="run-colab" href="https://colab.research.google.com/github/truonghuu344/ai-engineer-roadmap/blob/main/notebooks/ly-thuyet/p8-1.ipynb" target="_blank" rel="noopener">Mở trên Colab ↗</a></div>
+</div>
 </details></div></article><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p8.1:b">Tôi đã xong phần bài tập</label><button class="btn" type="button" data-goto="thuc-hanh">Sang thực hành <span class="arr">→</span></button></div></section><section class="panel" id="thuc-hanh" role="tabpanel" hidden><div class="prose"><h2>Lab 11: đóng gói model thành API</h2>
 <p>Dùng model của Lab 8 (hoặc Qwen2.5-1.5B-Instruct).</p>
 <p><strong>Các bước</strong></p>
@@ -406,7 +442,7 @@
     <aside class="aside">
       <div class="abox"><h4>Tiến độ bài này</h4><div class="ring"><svg viewBox="0 0 64 64" aria-hidden="true"><circle class="bg" cx="32" cy="32" r="28"/><circle class="fg" cx="32" cy="32" r="28" stroke-dasharray="176" stroke-dashoffset="176"/></svg><div><b id="ring-n">0/3</b><span id="ring-sub">phần đã xong</span></div></div></div>
       <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Từ notebook tới service</a></li><li><a href="#lt-2">API với FastAPI</a></li><li><a href="#lt-3">Streaming</a></li><li><a href="#lt-4">Docker</a></li><li><a href="#lt-5">Phục vụ LLM với vLLM</a></li><li><a href="#lt-6">Ước tính năng lực</a></li><li><a href="#lt-7">Tóm tắt bài và thuật ngữ</a></li></ol></div>
-      
+      <div class="abox"><h4>Notebook</h4><div style="display:grid;gap:8px"><a class="dl" href="https://colab.research.google.com/github/truonghuu344/ai-engineer-roadmap/blob/main/notebooks/ly-thuyet/p8-1.ipynb" target="_blank" rel="noopener"><span class="ext">COLAB</span><span>Chạy toàn bộ code của bài<span style="display:block;font:400 12px var(--f-mono);color:var(--muted)">notebook có sẵn kết quả</span></span></a></div></div>
       <div class="abox"><h4>Cùng giai đoạn</h4><ul><li><span class=cur>Bài 10a · Serving</span></li><li><a href="p8-2.html">MLOps</a></li><li><a href="p8-3.html">Bài 10b · Giám sát và chi phí</a></li><li><a href="p8-4.html">Backend và dữ liệu cho AI</a></li></ul></div>
     </aside>
   </div>
@@ -510,6 +546,134 @@
       b.textContent = "Đã chép ✓"; b.classList.add("done"); setTimeout(() => { b.textContent = "Chép"; b.classList.remove("done"); }, 1600);
     }).catch(() => {}));
     h.appendChild(b);
+  });
+
+  /* runnable code: Pyodide (Python chạy ngay trong trình duyệt) */
+  const RUNS = [...document.querySelectorAll(".run")];
+  const HELPER = `
+import ast, sys, io, base64, traceback, os, warnings
+os.environ.setdefault("MPLBACKEND", "AGG")
+warnings.filterwarnings("ignore", message=".*non-interactive.*")
+import ast
+ACTION = {"manual_seed", "seed", "write_text", "write", "load_dotenv", "savefig", "set_title", "set_xlabel", "set_ylabel",
+          "legend", "plot", "scatter", "bar", "barh", "hist", "imshow", "append", "extend", "update", "add", "fit", "backward",
+          "step", "zero_grad", "mkdir", "makedirs", "sleep", "close", "flush", "print", "show", "axhline", "axvline", "text",
+          "tight_layout", "subplots_adjust", "set_xlim", "set_ylim", "grid", "insert", "remove", "clear", "sort", "shuffle",
+          "to_csv", "save", "load_state_dict", "train", "eval", "requires_grad_", "set_printoptions", "filterwarnings",
+          "use", "setdefault", "register_buffer", "rc", "add_node", "add_edge", "add_conditional_edges", "set_entry_point", "login", "mount", "seed_everything", "log", "finish", "init", "info", "debug", "warning", "put", "add_argument", "set_xticks", "set_yticks", "annotate", "fill_between", "suptitle", "figure", "subplot"}
+
+
+def legacy_numpy_repr():
+    import sys
+    if "numpy" in sys.modules:
+        sys.modules["numpy"].set_printoptions(legacy="1.25")     # in 0.87 thay vì np.float64(0.87)
+
+
+def transform(code):
+    lines = code.split("\\n")
+    tree = ast.parse(code)
+    n = len(tree.body)
+    for k, node in enumerate(tree.body):
+        if not isinstance(node, ast.Expr):
+            continue
+        v = node.value
+        if isinstance(v, ast.Constant) and isinstance(v.value, str):          # docstring / string literal alone
+            continue
+        if isinstance(v, ast.Await):
+            continue
+        name = None
+        if isinstance(v, ast.Call):
+            f = v.func
+            name = f.attr if isinstance(f, ast.Attribute) else (f.id if isinstance(f, ast.Name) else None)
+        tail = lines[node.end_lineno - 1][node.end_col_offset:]
+        commented = "#" in tail
+        last = k == n - 1
+        if name in ACTION:
+            continue
+        if last or commented:
+            node.value = ast.Call(func=ast.Name("__show__", ast.Load()), args=[v], keywords=[])
+    ast.fix_missing_locations(tree)
+    return tree
+
+def __aie_run(code, ns):
+    buf = io.StringIO(); so, se = sys.stdout, sys.stderr; sys.stdout = sys.stderr = buf; ok = True
+    def show(v):
+        if v is None: return
+        try:
+            import pandas as pd
+            if isinstance(v, (pd.DataFrame, pd.Series)):
+                print(v.to_string(max_rows=20)); return
+        except Exception:
+            pass
+        print(repr(v))
+    ns["__show__"] = show
+    try:
+        legacy_numpy_repr(); exec(compile(transform(code), "<cell>", "exec"), ns)
+    except BaseException:
+        ok = False
+        et, ev, tb = sys.exc_info(); lines = traceback.format_exception(et, ev, tb)
+        print("".join(l for l in lines if "<cell>" in l or l is lines[-1]), end="")
+    finally:
+        sys.stdout, sys.stderr = so, se
+    imgs = []
+    if "matplotlib.pyplot" in sys.modules:
+        plt = sys.modules["matplotlib.pyplot"]
+        for n in plt.get_fignums():
+            b = io.BytesIO(); plt.figure(n).savefig(b, format="png", dpi=100, bbox_inches="tight", facecolor="white")
+            imgs.append(base64.b64encode(b.getvalue()).decode())
+        plt.close("all")
+    return [buf.getvalue()[-20000:], imgs, ok]
+`;
+  let pyP = null; const NS = {}, done = new Set();
+  function loadPy() {
+    if (pyP) return pyP;
+    const base = window.AIE_PYODIDE || "https://cdn.jsdelivr.net/pyodide/v0.28.3/full/";
+    pyP = new Promise((res, rej) => {
+      if (window.loadPyodide) return res();
+      const s = document.createElement("script"); s.src = base + "pyodide.js"; s.onload = () => res(); s.onerror = () => rej(new Error("load"));
+      document.head.appendChild(s);
+    }).then(() => window.loadPyodide({ indexURL: base })).then((py) => { py.runPython(HELPER); return py; });
+    pyP.catch(() => { pyP = null; });
+    return pyP;
+  }
+  const codeOf = (r) => r.previousElementSibling.querySelector("pre").innerText.replace(/\n$/, "");
+  async function exec(py, r, code) {
+    const g = r.dataset.group;
+    if (!NS[g]) NS[g] = py.globals.get("dict")();
+    try { await py.loadPackagesFromImports(code); } catch (e) {}
+    const res = py.globals.get("__aie_run")(code, NS[g]); const [out, imgs, ok] = res.toJs(); res.destroy();
+    return { out, imgs, ok };
+  }
+  function paint(r, res) {
+    r.querySelectorAll(".run-out, img").forEach((x) => x.remove());
+    const pre = document.createElement("pre"); pre.className = "run-out" + (res.out ? "" : " run-empty");
+    pre.textContent = res.out || "(chạy xong, không in ra gì)"; r.appendChild(pre);
+    res.imgs.forEach((b) => { const im = document.createElement("img"); im.alt = "Hình do đoạn code vẽ"; im.src = "data:image/png;base64," + b; r.appendChild(im); });
+    r.classList.toggle("err", !res.ok);
+  }
+  RUNS.filter((r) => r.dataset.mode === "py" && r.previousElementSibling && r.previousElementSibling.classList.contains("hl")).forEach((r) => {
+    const hl = r.previousElementSibling, pre = hl.querySelector("pre"), orig = pre.innerHTML;
+    const bar = r.querySelector(".run-bar"), box = document.createElement("span"); box.className = "run-btns";
+    const st = document.createElement("span"); st.className = "run-status";
+    const mk = (t, cls) => { const b = document.createElement("button"); b.type = "button"; b.className = "run-btn " + cls; b.textContent = t; box.appendChild(b); return b; };
+    const ed = mk("Sửa code", ""), go = mk("▶ Chạy", "go");
+    bar.appendChild(st); bar.appendChild(box);
+    ed.addEventListener("click", () => {
+      if (pre.hasAttribute("contenteditable")) { pre.removeAttribute("contenteditable"); pre.innerHTML = orig; ed.textContent = "Sửa code"; return; }
+      try { pre.contentEditable = "plaintext-only"; } catch (e) { pre.contentEditable = "true"; }
+      if (pre.contentEditable !== "plaintext-only") pre.contentEditable = "true";
+      pre.spellcheck = false; pre.focus(); ed.textContent = "Khôi phục code gốc";
+    });
+    go.addEventListener("click", async () => {
+      go.disabled = true; st.textContent = pyP ? "Đang chạy…" : "Đang tải Python trong trình duyệt (lần đầu khoảng 10–30 giây)…";
+      try {
+        const py = await loadPy(); st.textContent = "Đang chạy…";
+        const same = RUNS.filter((x) => x.dataset.group === r.dataset.group && x.dataset.mode === "py");
+        for (const x of same.slice(0, same.indexOf(r))) if (!done.has(x)) { await exec(py, x, codeOf(x)); done.add(x); }
+        const res = await exec(py, r, codeOf(r)); done.add(r); paint(r, res); st.textContent = res.ok ? "" : "Có lỗi, xem bên dưới";
+      } catch (e) { console.error("aie-run", e); st.textContent = "Không tải được Python trong trình duyệt. Kiểm tra mạng rồi thử lại."; }
+      go.disabled = false;
+    });
   });
 
   /* highlight current theory section in the toc */

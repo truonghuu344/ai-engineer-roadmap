@@ -282,14 +282,19 @@ runs/
 
 <p>Một dòng <code>data/</code> bỏ qua cả thư mục; <code>*.pt</code> bỏ qua mọi file đuôi <code>.pt</code>; dòng bắt đầu bằng <code>#</code> là chú thích; thêm <code>!data/README.md</code> để vẫn giữ lại một file cụ thể.</p>
 <h3>Giữ khóa API ngoài code</h3>
-<div class="hl"><pre><span></span><code><span class="tk-c1"># .env (không commit)</span>
-<span class="tk-c1"># ANTHROPIC_API_KEY=sk-ant-...</span>
-
-<span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">os</span>
+<div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">os</span>
+<span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">pathlib</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">Path</span>
 <span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">dotenv</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">load_dotenv</span>     <span class="tk-c1"># pip install python-dotenv</span>
-<span class="tk-n">load_dotenv</span><span class="tk-p">()</span>                      <span class="tk-c1"># đọc .env vào biến môi trường</span>
+
+<span class="tk-c1"># trên máy bạn, file .env được tạo bằng tay và nằm trong .gitignore; ở đây tạo tạm một khóa giả để chạy thử</span>
+<span class="tk-n">Path</span><span class="tk-p">(</span><span class="tk-s2">".env"</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">write_text</span><span class="tk-p">(</span><span class="tk-s2">"ANTHROPIC_API_KEY=sk-ant-khoa-gia-de-minh-hoa</span><span class="tk-se">\n</span><span class="tk-s2">"</span><span class="tk-p">)</span>
+
+<span class="tk-n">load_dotenv</span><span class="tk-p">(</span><span class="tk-s2">".env"</span><span class="tk-p">)</span>                <span class="tk-c1"># đọc .env vào biến môi trường</span>
 <span class="tk-n">key</span> <span class="tk-o">=</span> <span class="tk-n">os</span><span class="tk-o">.</span><span class="tk-n">environ</span><span class="tk-p">[</span><span class="tk-s2">"ANTHROPIC_API_KEY"</span><span class="tk-p">]</span>
+<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-s2">"đã đọc khóa, bắt đầu bằng:"</span><span class="tk-p">,</span> <span class="tk-n">key</span><span class="tk-p">[:</span><span class="tk-mi">7</span><span class="tk-p">]</span> <span class="tk-o">+</span> <span class="tk-s2">"…"</span><span class="tk-p">)</span>   <span class="tk-c1"># không bao giờ in cả khóa ra log</span>
 </code></pre></div>
+
+<div class="run" data-mode="static" data-group="t"><div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span><span class="run-note">đã chạy sẵn</span><a class="run-colab" href="https://colab.research.google.com/github/truonghuu344/ai-engineer-roadmap/blob/main/notebooks/ly-thuyet/p0-3.ipynb" target="_blank" rel="noopener">Mở trên Colab ↗</a></div><pre class="run-out">đã đọc khóa, bắt đầu bằng: sk-ant-…</pre></div>
 
 <p>Trong repo, thêm file <code>.env.example</code> có tên biến nhưng không có giá trị thật, để người khác biết cần đặt biến gì.</p>
 <h3>Dữ liệu và model lớn để ở đâu</h3>
@@ -362,28 +367,54 @@ python train.py --epochs 30
 <h3>Colab</h3>
 <p>Colab là Jupyter notebook chạy trên máy của Google, có GPU miễn phí (thường là T4 16 GB VRAM). Đổi sang GPU: <strong>Runtime → Change runtime type → T4 GPU</strong>. Hạn chế: phiên bị ngắt sau vài giờ hoặc khi bạn bỏ máy lâu, và mọi file trong <code>/content</code> mất khi phiên kết thúc.</p>
 <p>Ba thói quen bắt buộc ở ô đầu tiên của mọi notebook:</p>
-<div class="hl"><pre><span></span><code><span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">google.colab</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">drive</span>
+<div class="hl"><pre><span></span><code><span class="tk-c1"># Chạy trên Colab: ô này chỉ có ý nghĩa trong Colab (Google Drive, GPU của Colab)</span>
+<span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">google.colab</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">drive</span>
 <span class="tk-n">drive</span><span class="tk-o">.</span><span class="tk-n">mount</span><span class="tk-p">(</span><span class="tk-s2">"/content/drive"</span><span class="tk-p">)</span>                  <span class="tk-c1"># 1. lưu checkpoint, kết quả vào Drive</span>
 <span class="tk-err">!</span><span class="tk-n">nvidia</span><span class="tk-o">-</span><span class="tk-n">smi</span>                                    <span class="tk-c1"># 2. kiểm tra đã có GPU chưa</span>
 <span class="tk-err">!</span><span class="tk-n">pip</span> <span class="tk-n">install</span> <span class="tk-o">-</span><span class="tk-n">q</span> <span class="tk-n">transformers</span> <span class="tk-n">datasets</span>          <span class="tk-c1"># 3. cài thư viện thiếu ngay từ đầu</span>
 </code></pre></div>
 
+<div class="run run-skip" data-mode="static" data-group="t"><div class="run-bar"><span class="run-lbl">Không chạy trên trang</span><span class="run-note">Chạy trên Colab: ô này chỉ có ý nghĩa trong Colab (Google Drive, GPU của Colab)</span><a class="run-colab" href="https://colab.research.google.com/github/truonghuu344/ai-engineer-roadmap/blob/main/notebooks/ly-thuyet/p0-3.ipynb" target="_blank" rel="noopener">Mở trên Colab ↗</a></div></div>
+
 <p>Dấu <code>!</code> chạy lệnh terminal ngay trong ô notebook, nên mọi lệnh ở mục Terminal đều dùng được trong Colab.</p>
 <div class="box example">
 <div class="box-h">Ví dụ từng bước</div>
 <p><strong>Train sống sót qua việc bị ngắt.</strong> Lưu checkpoint mỗi epoch vào Drive, và khi khởi động lại thì nạp checkpoint mới nhất nếu có:</p>
-<div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">os</span><span class="tk-o">,</span><span class="tk-w"> </span><span class="tk-nn">torch</span>
-<span class="tk-n">CKPT</span> <span class="tk-o">=</span> <span class="tk-s2">"/content/drive/MyDrive/runs/exp1/last.pt"</span>
-<span class="tk-n">start_epoch</span> <span class="tk-o">=</span> <span class="tk-mi">0</span>
-<span class="tk-k">if</span> <span class="tk-n">os</span><span class="tk-o">.</span><span class="tk-n">path</span><span class="tk-o">.</span><span class="tk-n">exists</span><span class="tk-p">(</span><span class="tk-n">CKPT</span><span class="tk-p">):</span>
-    <span class="tk-n">state</span> <span class="tk-o">=</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">load</span><span class="tk-p">(</span><span class="tk-n">CKPT</span><span class="tk-p">)</span>
-    <span class="tk-n">model</span><span class="tk-o">.</span><span class="tk-n">load_state_dict</span><span class="tk-p">(</span><span class="tk-n">state</span><span class="tk-p">[</span><span class="tk-s2">"model"</span><span class="tk-p">]);</span> <span class="tk-n">opt</span><span class="tk-o">.</span><span class="tk-n">load_state_dict</span><span class="tk-p">(</span><span class="tk-n">state</span><span class="tk-p">[</span><span class="tk-s2">"opt"</span><span class="tk-p">])</span>
-    <span class="tk-n">start_epoch</span> <span class="tk-o">=</span> <span class="tk-n">state</span><span class="tk-p">[</span><span class="tk-s2">"epoch"</span><span class="tk-p">]</span> <span class="tk-o">+</span> <span class="tk-mi">1</span>
-<span class="tk-k">for</span> <span class="tk-n">epoch</span> <span class="tk-ow">in</span> <span class="tk-nb">range</span><span class="tk-p">(</span><span class="tk-n">start_epoch</span><span class="tk-p">,</span> <span class="tk-mi">30</span><span class="tk-p">):</span>
-    <span class="tk-n">train_one_epoch</span><span class="tk-p">(</span><span class="tk-n">model</span><span class="tk-p">,</span> <span class="tk-n">opt</span><span class="tk-p">)</span>
-    <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">save</span><span class="tk-p">({</span><span class="tk-s2">"model"</span><span class="tk-p">:</span> <span class="tk-n">model</span><span class="tk-o">.</span><span class="tk-n">state_dict</span><span class="tk-p">(),</span> <span class="tk-s2">"opt"</span><span class="tk-p">:</span> <span class="tk-n">opt</span><span class="tk-o">.</span><span class="tk-n">state_dict</span><span class="tk-p">(),</span> <span class="tk-s2">"epoch"</span><span class="tk-p">:</span> <span class="tk-n">epoch</span><span class="tk-p">},</span> <span class="tk-n">CKPT</span><span class="tk-p">)</span>
+<div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">os</span><span class="tk-o">,</span><span class="tk-w"> </span><span class="tk-nn">torch</span><span class="tk-o">,</span><span class="tk-w"> </span><span class="tk-nn">torch.nn</span><span class="tk-w"> </span><span class="tk-k">as</span><span class="tk-w"> </span><span class="tk-nn">nn</span>
+<span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">manual_seed</span><span class="tk-p">(</span><span class="tk-mi">0</span><span class="tk-p">)</span>
+<span class="tk-n">X</span><span class="tk-p">,</span> <span class="tk-n">y</span> <span class="tk-o">=</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">randn</span><span class="tk-p">(</span><span class="tk-mi">256</span><span class="tk-p">,</span> <span class="tk-mi">4</span><span class="tk-p">),</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">randn</span><span class="tk-p">(</span><span class="tk-mi">256</span><span class="tk-p">,</span> <span class="tk-mi">1</span><span class="tk-p">)</span>                 <span class="tk-c1"># dữ liệu nhỏ để chạy thử</span>
+<span class="tk-n">model</span> <span class="tk-o">=</span> <span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">Linear</span><span class="tk-p">(</span><span class="tk-mi">4</span><span class="tk-p">,</span> <span class="tk-mi">1</span><span class="tk-p">);</span> <span class="tk-n">opt</span> <span class="tk-o">=</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">optim</span><span class="tk-o">.</span><span class="tk-n">Adam</span><span class="tk-p">(</span><span class="tk-n">model</span><span class="tk-o">.</span><span class="tk-n">parameters</span><span class="tk-p">(),</span> <span class="tk-n">lr</span><span class="tk-o">=</span><span class="tk-mf">0.05</span><span class="tk-p">)</span>
+
+<span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">train_one_epoch</span><span class="tk-p">(</span><span class="tk-n">model</span><span class="tk-p">,</span> <span class="tk-n">opt</span><span class="tk-p">):</span>
+    <span class="tk-n">loss</span> <span class="tk-o">=</span> <span class="tk-p">((</span><span class="tk-n">model</span><span class="tk-p">(</span><span class="tk-n">X</span><span class="tk-p">)</span> <span class="tk-o">-</span> <span class="tk-n">y</span><span class="tk-p">)</span> <span class="tk-o">**</span> <span class="tk-mi">2</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">mean</span><span class="tk-p">()</span>
+    <span class="tk-n">opt</span><span class="tk-o">.</span><span class="tk-n">zero_grad</span><span class="tk-p">();</span> <span class="tk-n">loss</span><span class="tk-o">.</span><span class="tk-n">backward</span><span class="tk-p">();</span> <span class="tk-n">opt</span><span class="tk-o">.</span><span class="tk-n">step</span><span class="tk-p">()</span>
+    <span class="tk-k">return</span> <span class="tk-n">loss</span><span class="tk-o">.</span><span class="tk-n">item</span><span class="tk-p">()</span>
+
+<span class="tk-n">CKPT</span> <span class="tk-o">=</span> <span class="tk-s2">"runs/exp1/last.pt"</span>           <span class="tk-c1"># trên Colab: "/content/drive/MyDrive/runs/exp1/last.pt"</span>
+<span class="tk-n">os</span><span class="tk-o">.</span><span class="tk-n">makedirs</span><span class="tk-p">(</span><span class="tk-n">os</span><span class="tk-o">.</span><span class="tk-n">path</span><span class="tk-o">.</span><span class="tk-n">dirname</span><span class="tk-p">(</span><span class="tk-n">CKPT</span><span class="tk-p">),</span> <span class="tk-n">exist_ok</span><span class="tk-o">=</span><span class="tk-kc">True</span><span class="tk-p">)</span>
+
+<span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">train</span><span class="tk-p">(</span><span class="tk-n">n_epochs</span><span class="tk-p">,</span> <span class="tk-n">stop_after</span><span class="tk-o">=</span><span class="tk-kc">None</span><span class="tk-p">):</span>
+    <span class="tk-n">start_epoch</span> <span class="tk-o">=</span> <span class="tk-mi">0</span>
+    <span class="tk-k">if</span> <span class="tk-n">os</span><span class="tk-o">.</span><span class="tk-n">path</span><span class="tk-o">.</span><span class="tk-n">exists</span><span class="tk-p">(</span><span class="tk-n">CKPT</span><span class="tk-p">):</span>                                      <span class="tk-c1"># có checkpoint: nạp và train tiếp</span>
+        <span class="tk-n">state</span> <span class="tk-o">=</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">load</span><span class="tk-p">(</span><span class="tk-n">CKPT</span><span class="tk-p">)</span>
+        <span class="tk-n">model</span><span class="tk-o">.</span><span class="tk-n">load_state_dict</span><span class="tk-p">(</span><span class="tk-n">state</span><span class="tk-p">[</span><span class="tk-s2">"model"</span><span class="tk-p">]);</span> <span class="tk-n">opt</span><span class="tk-o">.</span><span class="tk-n">load_state_dict</span><span class="tk-p">(</span><span class="tk-n">state</span><span class="tk-p">[</span><span class="tk-s2">"opt"</span><span class="tk-p">])</span>
+        <span class="tk-n">start_epoch</span> <span class="tk-o">=</span> <span class="tk-n">state</span><span class="tk-p">[</span><span class="tk-s2">"epoch"</span><span class="tk-p">]</span> <span class="tk-o">+</span> <span class="tk-mi">1</span>
+        <span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-sa">f</span><span class="tk-s2">"nạp checkpoint, train tiếp từ epoch </span><span class="tk-si">{</span><span class="tk-n">start_epoch</span><span class="tk-si">}</span><span class="tk-s2">"</span><span class="tk-p">)</span>
+    <span class="tk-k">for</span> <span class="tk-n">epoch</span> <span class="tk-ow">in</span> <span class="tk-nb">range</span><span class="tk-p">(</span><span class="tk-n">start_epoch</span><span class="tk-p">,</span> <span class="tk-n">n_epochs</span><span class="tk-p">):</span>
+        <span class="tk-n">loss</span> <span class="tk-o">=</span> <span class="tk-n">train_one_epoch</span><span class="tk-p">(</span><span class="tk-n">model</span><span class="tk-p">,</span> <span class="tk-n">opt</span><span class="tk-p">)</span>
+        <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">save</span><span class="tk-p">({</span><span class="tk-s2">"model"</span><span class="tk-p">:</span> <span class="tk-n">model</span><span class="tk-o">.</span><span class="tk-n">state_dict</span><span class="tk-p">(),</span> <span class="tk-s2">"opt"</span><span class="tk-p">:</span> <span class="tk-n">opt</span><span class="tk-o">.</span><span class="tk-n">state_dict</span><span class="tk-p">(),</span> <span class="tk-s2">"epoch"</span><span class="tk-p">:</span> <span class="tk-n">epoch</span><span class="tk-p">},</span> <span class="tk-n">CKPT</span><span class="tk-p">)</span>
+        <span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-sa">f</span><span class="tk-s2">"epoch </span><span class="tk-si">{</span><span class="tk-n">epoch</span><span class="tk-si">}</span><span class="tk-s2">: loss </span><span class="tk-si">{</span><span class="tk-n">loss</span><span class="tk-si">:</span><span class="tk-s2">.3f</span><span class="tk-si">}</span><span class="tk-s2">"</span><span class="tk-p">)</span>
+        <span class="tk-k">if</span> <span class="tk-n">stop_after</span> <span class="tk-ow">is</span> <span class="tk-ow">not</span> <span class="tk-kc">None</span> <span class="tk-ow">and</span> <span class="tk-n">epoch</span> <span class="tk-o">==</span> <span class="tk-n">stop_after</span><span class="tk-p">:</span>
+            <span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-s2">"... phiên Colab bị ngắt ..."</span><span class="tk-p">);</span> <span class="tk-k">return</span>
+
+<span class="tk-n">train</span><span class="tk-p">(</span><span class="tk-mi">6</span><span class="tk-p">,</span> <span class="tk-n">stop_after</span><span class="tk-o">=</span><span class="tk-mi">2</span><span class="tk-p">)</span>        <span class="tk-c1"># lần 1: bị ngắt sau epoch 2</span>
+<span class="tk-n">train</span><span class="tk-p">(</span><span class="tk-mi">6</span><span class="tk-p">)</span>                      <span class="tk-c1"># lần 2: chạy lại ô, tự train tiếp từ epoch 3</span>
 </code></pre></div>
 
+<div class="run" data-group="t" data-mode="static">
+<div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span><span class="run-note">đã chạy sẵn</span><a class="run-colab" href="https://colab.research.google.com/github/truonghuu344/ai-engineer-roadmap/blob/main/notebooks/ly-thuyet/p0-3.ipynb" target="_blank" rel="noopener">Mở trên Colab ↗</a></div>
+<pre class="run-out">epoch 0: loss 1.271&#10;epoch 1: loss 1.204&#10;epoch 2: loss 1.160&#10;... phiên Colab bị ngắt ...&#10;nạp checkpoint, train tiếp từ epoch 3&#10;epoch 3: loss 1.127&#10;epoch 4: loss 1.099&#10;epoch 5: loss 1.080</pre>
+</div>
 <p>Lưu cả trạng thái optimizer, không chỉ model: Adam có "bộ nhớ" riêng, thiếu nó thì train tiếp sẽ khác với train liền một mạch.</p>
 </div>
 <h3>VS Code và khi nào rời notebook</h3>
@@ -416,7 +447,7 @@ python train.py --epochs 30
 <div class="box check">
 <div class="box-h">Tự kiểm tra nhanh</div>
 <p>Phiên Colab của bạn bị ngắt ở giữa epoch 18 của 30 epoch. Bạn lưu checkpoint vào Drive sau mỗi epoch theo đoạn code trên.</p>
-<div class="ans" id="p0-3-t-b293-a1">
+<div class="ans" id="p0-3-t-b303-a1">
 <div class="ans-fields"><label>start_epoch khi chạy lại<input inputmode="decimal" data-ans="17.0" data-tol="0.0" autocomplete="off"></label><label>Số epoch còn phải train<input inputmode="decimal" data-ans="13.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div>
 <div aria-live="polite" class="ans-fb"></div>
 </div>
@@ -641,7 +672,7 @@ pip install -r requirements.txt
     <aside class="aside">
       <div class="abox"><h4>Tiến độ bài này</h4><div class="ring"><svg viewBox="0 0 64 64" aria-hidden="true"><circle class="bg" cx="32" cy="32" r="28"/><circle class="fg" cx="32" cy="32" r="28" stroke-dasharray="176" stroke-dashoffset="176"/></svg><div><b id="ring-n">0/3</b><span id="ring-sub">phần đã xong</span></div></div></div>
       <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Terminal Linux đủ dùng</a></li><li><a href="#lt-2">Git hoạt động thế nào</a></li><li><a href="#lt-3">Branch, merge và pull request</a></li><li><a href="#lt-4">.gitignore và bí mật cho dự án ML</a></li><li><a href="#lt-5">GitHub như một hồ sơ</a></li><li><a href="#lt-6">Colab và VS Code</a></li><li><a href="#lt-7">Tóm tắt bài và thuật ngữ</a></li></ol></div>
-      
+      <div class="abox"><h4>Notebook</h4><div style="display:grid;gap:8px"><a class="dl" href="https://colab.research.google.com/github/truonghuu344/ai-engineer-roadmap/blob/main/notebooks/ly-thuyet/p0-3.ipynb" target="_blank" rel="noopener"><span class="ext">COLAB</span><span>Chạy toàn bộ code của bài<span style="display:block;font:400 12px var(--f-mono);color:var(--muted)">notebook có sẵn kết quả</span></span></a></div></div>
       <div class="abox"><h4>Cùng giai đoạn</h4><ul><li><a href="p0-1.html">Python cho ML: numpy, pandas, matplotlib</a></li><li><a href="p0-2.html">Toán cho AI: đại số tuyến tính, giải tích, xác suất</a></li><li><span class=cur>Công cụ: Git, GitHub, terminal, Colab</span></li></ul></div>
     </aside>
   </div>
@@ -745,6 +776,134 @@ pip install -r requirements.txt
       b.textContent = "Đã chép ✓"; b.classList.add("done"); setTimeout(() => { b.textContent = "Chép"; b.classList.remove("done"); }, 1600);
     }).catch(() => {}));
     h.appendChild(b);
+  });
+
+  /* runnable code: Pyodide (Python chạy ngay trong trình duyệt) */
+  const RUNS = [...document.querySelectorAll(".run")];
+  const HELPER = `
+import ast, sys, io, base64, traceback, os, warnings
+os.environ.setdefault("MPLBACKEND", "AGG")
+warnings.filterwarnings("ignore", message=".*non-interactive.*")
+import ast
+ACTION = {"manual_seed", "seed", "write_text", "write", "load_dotenv", "savefig", "set_title", "set_xlabel", "set_ylabel",
+          "legend", "plot", "scatter", "bar", "barh", "hist", "imshow", "append", "extend", "update", "add", "fit", "backward",
+          "step", "zero_grad", "mkdir", "makedirs", "sleep", "close", "flush", "print", "show", "axhline", "axvline", "text",
+          "tight_layout", "subplots_adjust", "set_xlim", "set_ylim", "grid", "insert", "remove", "clear", "sort", "shuffle",
+          "to_csv", "save", "load_state_dict", "train", "eval", "requires_grad_", "set_printoptions", "filterwarnings",
+          "use", "setdefault", "register_buffer", "rc", "add_node", "add_edge", "add_conditional_edges", "set_entry_point", "login", "mount", "seed_everything", "log", "finish", "init", "info", "debug", "warning", "put", "add_argument", "set_xticks", "set_yticks", "annotate", "fill_between", "suptitle", "figure", "subplot"}
+
+
+def legacy_numpy_repr():
+    import sys
+    if "numpy" in sys.modules:
+        sys.modules["numpy"].set_printoptions(legacy="1.25")     # in 0.87 thay vì np.float64(0.87)
+
+
+def transform(code):
+    lines = code.split("\\n")
+    tree = ast.parse(code)
+    n = len(tree.body)
+    for k, node in enumerate(tree.body):
+        if not isinstance(node, ast.Expr):
+            continue
+        v = node.value
+        if isinstance(v, ast.Constant) and isinstance(v.value, str):          # docstring / string literal alone
+            continue
+        if isinstance(v, ast.Await):
+            continue
+        name = None
+        if isinstance(v, ast.Call):
+            f = v.func
+            name = f.attr if isinstance(f, ast.Attribute) else (f.id if isinstance(f, ast.Name) else None)
+        tail = lines[node.end_lineno - 1][node.end_col_offset:]
+        commented = "#" in tail
+        last = k == n - 1
+        if name in ACTION:
+            continue
+        if last or commented:
+            node.value = ast.Call(func=ast.Name("__show__", ast.Load()), args=[v], keywords=[])
+    ast.fix_missing_locations(tree)
+    return tree
+
+def __aie_run(code, ns):
+    buf = io.StringIO(); so, se = sys.stdout, sys.stderr; sys.stdout = sys.stderr = buf; ok = True
+    def show(v):
+        if v is None: return
+        try:
+            import pandas as pd
+            if isinstance(v, (pd.DataFrame, pd.Series)):
+                print(v.to_string(max_rows=20)); return
+        except Exception:
+            pass
+        print(repr(v))
+    ns["__show__"] = show
+    try:
+        legacy_numpy_repr(); exec(compile(transform(code), "<cell>", "exec"), ns)
+    except BaseException:
+        ok = False
+        et, ev, tb = sys.exc_info(); lines = traceback.format_exception(et, ev, tb)
+        print("".join(l for l in lines if "<cell>" in l or l is lines[-1]), end="")
+    finally:
+        sys.stdout, sys.stderr = so, se
+    imgs = []
+    if "matplotlib.pyplot" in sys.modules:
+        plt = sys.modules["matplotlib.pyplot"]
+        for n in plt.get_fignums():
+            b = io.BytesIO(); plt.figure(n).savefig(b, format="png", dpi=100, bbox_inches="tight", facecolor="white")
+            imgs.append(base64.b64encode(b.getvalue()).decode())
+        plt.close("all")
+    return [buf.getvalue()[-20000:], imgs, ok]
+`;
+  let pyP = null; const NS = {}, done = new Set();
+  function loadPy() {
+    if (pyP) return pyP;
+    const base = window.AIE_PYODIDE || "https://cdn.jsdelivr.net/pyodide/v0.28.3/full/";
+    pyP = new Promise((res, rej) => {
+      if (window.loadPyodide) return res();
+      const s = document.createElement("script"); s.src = base + "pyodide.js"; s.onload = () => res(); s.onerror = () => rej(new Error("load"));
+      document.head.appendChild(s);
+    }).then(() => window.loadPyodide({ indexURL: base })).then((py) => { py.runPython(HELPER); return py; });
+    pyP.catch(() => { pyP = null; });
+    return pyP;
+  }
+  const codeOf = (r) => r.previousElementSibling.querySelector("pre").innerText.replace(/\n$/, "");
+  async function exec(py, r, code) {
+    const g = r.dataset.group;
+    if (!NS[g]) NS[g] = py.globals.get("dict")();
+    try { await py.loadPackagesFromImports(code); } catch (e) {}
+    const res = py.globals.get("__aie_run")(code, NS[g]); const [out, imgs, ok] = res.toJs(); res.destroy();
+    return { out, imgs, ok };
+  }
+  function paint(r, res) {
+    r.querySelectorAll(".run-out, img").forEach((x) => x.remove());
+    const pre = document.createElement("pre"); pre.className = "run-out" + (res.out ? "" : " run-empty");
+    pre.textContent = res.out || "(chạy xong, không in ra gì)"; r.appendChild(pre);
+    res.imgs.forEach((b) => { const im = document.createElement("img"); im.alt = "Hình do đoạn code vẽ"; im.src = "data:image/png;base64," + b; r.appendChild(im); });
+    r.classList.toggle("err", !res.ok);
+  }
+  RUNS.filter((r) => r.dataset.mode === "py" && r.previousElementSibling && r.previousElementSibling.classList.contains("hl")).forEach((r) => {
+    const hl = r.previousElementSibling, pre = hl.querySelector("pre"), orig = pre.innerHTML;
+    const bar = r.querySelector(".run-bar"), box = document.createElement("span"); box.className = "run-btns";
+    const st = document.createElement("span"); st.className = "run-status";
+    const mk = (t, cls) => { const b = document.createElement("button"); b.type = "button"; b.className = "run-btn " + cls; b.textContent = t; box.appendChild(b); return b; };
+    const ed = mk("Sửa code", ""), go = mk("▶ Chạy", "go");
+    bar.appendChild(st); bar.appendChild(box);
+    ed.addEventListener("click", () => {
+      if (pre.hasAttribute("contenteditable")) { pre.removeAttribute("contenteditable"); pre.innerHTML = orig; ed.textContent = "Sửa code"; return; }
+      try { pre.contentEditable = "plaintext-only"; } catch (e) { pre.contentEditable = "true"; }
+      if (pre.contentEditable !== "plaintext-only") pre.contentEditable = "true";
+      pre.spellcheck = false; pre.focus(); ed.textContent = "Khôi phục code gốc";
+    });
+    go.addEventListener("click", async () => {
+      go.disabled = true; st.textContent = pyP ? "Đang chạy…" : "Đang tải Python trong trình duyệt (lần đầu khoảng 10–30 giây)…";
+      try {
+        const py = await loadPy(); st.textContent = "Đang chạy…";
+        const same = RUNS.filter((x) => x.dataset.group === r.dataset.group && x.dataset.mode === "py");
+        for (const x of same.slice(0, same.indexOf(r))) if (!done.has(x)) { await exec(py, x, codeOf(x)); done.add(x); }
+        const res = await exec(py, r, codeOf(r)); done.add(r); paint(r, res); st.textContent = res.ok ? "" : "Có lỗi, xem bên dưới";
+      } catch (e) { console.error("aie-run", e); st.textContent = "Không tải được Python trong trình duyệt. Kiểm tra mạng rồi thử lại."; }
+      go.disabled = false;
+    });
   });
 
   /* highlight current theory section in the toc */
