@@ -24,7 +24,7 @@
   <section class="lhero"><div class="code">P4.1</div><h1>Bài 4 · Làm việc với LLM</h1><div class="lmeta"><span class="m">Giai đoạn P4 · LLM Engineering</span><span class="m">Tuần 18–25</span><span class="chip ready"><span class="dot"></span>Có nội dung đầy đủ</span></div>
     <div class="intro"><p>Phần lớn công việc AI Engineer hiện nay là xây ứng dụng trên LLM có sẵn qua API. Gọi API thì dễ; làm cho nó <strong>đúng, ổn định, rẻ và đo được</strong> mới là nghề. Bài này dạy cấu trúc một cuộc gọi, cách viết prompt, ép LLM trả JSON đúng schema, cho LLM gọi hàm (tool calling), streaming, xử lý lỗi và kiểm soát chi phí. Ví dụ dùng Anthropic Python SDK; các nhà cung cấp khác có API rất giống.</p></div></section>
   
-  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">7 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
+  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">7 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">8 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
   <div class="lgrid" style="margin-top:22px">
     <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">Cấu trúc một cuộc gọi</h2>
 <div class="box why">
@@ -394,7 +394,7 @@ Chỉ trả về đúng một nhãn.
 <span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-n">call_with_retry</span><span class="tk-p">(</span><span class="tk-n">flaky</span><span class="tk-p">),</span> <span class="tk-s2">"sau"</span><span class="tk-p">,</span> <span class="tk-n">calls</span><span class="tk-p">[</span><span class="tk-s2">"n"</span><span class="tk-p">],</span> <span class="tk-s2">"lần gọi,"</span><span class="tk-p">,</span> <span class="tk-nb">round</span><span class="tk-p">(</span><span class="tk-n">time</span><span class="tk-o">.</span><span class="tk-n">time</span><span class="tk-p">()</span> <span class="tk-o">-</span> <span class="tk-n">t0</span><span class="tk-p">,</span> <span class="tk-mi">1</span><span class="tk-p">),</span> <span class="tk-s2">"giây chờ"</span><span class="tk-p">)</span>
 </code></pre></div>
 
-<div class="run" data-mode="static" data-group="t"><div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span><span class="run-note">đã chạy sẵn cần Anthropic SDK</span><a class="run-colab" href="https://colab.research.google.com/github/truonghuu344/ai-engineer-roadmap/blob/main/notebooks/ly-thuyet/p4-1.ipynb" target="_blank" rel="noopener">Mở trên Colab ↗</a></div><pre class="run-out">ok sau 3 lần gọi, 2.3 giây chờ</pre></div>
+<div class="run" data-mode="static" data-group="t"><div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span><span class="run-note">đã chạy sẵn cần Anthropic SDK</span><a class="run-colab" href="https://colab.research.google.com/github/truonghuu344/ai-engineer-roadmap/blob/main/notebooks/ly-thuyet/p4-1.ipynb" target="_blank" rel="noopener">Mở trên Colab ↗</a></div><pre class="run-out">ok sau 3 lần gọi, 2.2 giây chờ</pre></div>
 
 <p>SDK chính thức thường đã tự retry vài lần (<code>anthropic.Anthropic(max_retries=...)</code>); đoạn trên để hiểu cơ chế.</p>
 <h3>Các thói quen bắt buộc</h3>
@@ -538,25 +538,19 @@ Chỉ trả về đúng một nhãn.
 <td>dữ liệu đầu vào chứa chỉ dẫn độc hại</td>
 </tr>
 </tbody>
-</table></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p4.1:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 3</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Ước tính chi phí</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Giả sử giá ví dụ: 1 USD cho 1 triệu token vào, 5 USD cho 1 triệu token ra. Mỗi yêu cầu có 2.000 token vào và 500 token ra.</p>
+</table></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p4.1:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 6</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Ước tính chi phí</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Giả sử giá ví dụ: 1 USD cho 1 triệu token vào, 5 USD cho 1 triệu token ra. Mỗi yêu cầu có 2.000 token vào và 500 token ra.</p>
 <div class="ans" id="p4-1-e1-a1"><div class="ans-fields"><label>Chi phí một yêu cầu (USD)<input inputmode="decimal" data-ans="0.0045" data-tol="1e-05" autocomplete="off"></label><label>Chi phí 10.000 yêu cầu mỗi ngày (USD)<input inputmode="decimal" data-ans="45.0" data-tol="0.01" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
 
 <details class="fold solution">
 <summary>Lời giải</summary>
 <p>2000 × 1/10⁶ = 0.002 USD, cộng 500 × 5/10⁶ = 0.0025 USD, tổng 0.0045 USD. 10.000 yêu cầu: 45 USD/ngày, khoảng 1.350 USD/tháng. Cắt bớt 1.000 token context mỗi yêu cầu tiết kiệm 10 USD/ngày.</p>
-</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 2</span><h3>Lịch sử hội thoại phình to</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>System prompt 6.000 token. Mỗi lượt hỏi-đáp thêm 400 token vào lịch sử.</p>
-<div class="ans" id="p4-1-e2-a1"><div class="ans-fields"><label>Token vào ở lượt thứ 20<input inputmode="decimal" data-ans="14000.0" data-tol="0.0" autocomplete="off"></label><label>Tổng token vào sau 20 lượt<input inputmode="decimal" data-ans="204000.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
-
-<details class="fold solution">
-<summary>Lời giải</summary>
-<p>Lượt i gửi 6000 + 400·i token. Lượt 20: 14.000. Tổng 20 lượt: 20·6000 + 400·(1 + … + 20) = 120.000 + 84.000 = 204.000. Chi phí tăng theo bình phương số lượt, nên hội thoại dài cần tóm tắt lịch sử hoặc dùng prompt caching.</p>
-</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 3</span><h3>Exponential backoff</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Thử lại tối đa 5 lần, lần đầu chờ 1 giây, mỗi lần sau gấp đôi (bỏ qua phần ngẫu nhiên).</p>
-<div class="ans" id="p4-1-e3-a1"><div class="ans-fields"><label>Thời gian chờ lần thứ 5 (giây)<input inputmode="decimal" data-ans="16.0" data-tol="0.0" autocomplete="off"></label><label>Tổng thời gian chờ (giây)<input inputmode="decimal" data-ans="31.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 2</span><h3>Exponential backoff</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Thử lại tối đa 5 lần, lần đầu chờ 1 giây, mỗi lần sau gấp đôi (bỏ qua phần ngẫu nhiên).</p>
+<div class="ans" id="p4-1-e2-a1"><div class="ans-fields"><label>Thời gian chờ lần thứ 5 (giây)<input inputmode="decimal" data-ans="16.0" data-tol="0.0" autocomplete="off"></label><label>Tổng thời gian chờ (giây)<input inputmode="decimal" data-ans="31.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
 
 <details class="fold solution">
 <summary>Lời giải</summary>
 <p>1, 2, 4, 8, 16: tổng 31 giây. Nếu người dùng đang chờ, 31 giây là quá lâu: kết hợp với timeout tổng và fallback sang model khác.</p>
-</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 4</span><h3>Sửa một prompt</h3><span class="ex-tag concept">khái niệm</span></div><div class="prose"><p>Prompt sau cho kết quả thất thường. Chỉ ra ít nhất 4 vấn đề và viết lại.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 3</span><h3>Sửa một prompt</h3><span class="ex-tag concept">khái niệm</span></div><div class="prose"><p>Prompt sau cho kết quả thất thường. Chỉ ra ít nhất 4 vấn đề và viết lại.</p>
 <div class="hl"><pre><span></span><code>Đọc review này và cho biết nó thế nào: {review}
 </code></pre></div>
 
@@ -574,7 +568,7 @@ Ví dụ:
 &lt;review&gt;{review}&lt;/review&gt;
 </code></pre></div>
 
-</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 5</span><h3>Tỉ lệ thành công của trích xuất</h3><span class="ex-tag code">code</span></div><div class="prose"><p>Viết vòng đánh giá: chạy hàm <code>extract</code> ở phần lý thuyết trên một danh sách 20 văn bản hóa đơn kèm đáp án, đo tỉ lệ JSON hợp lệ, tỉ lệ đúng từng trường, số lần phải thử lại trung bình.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 4</span><h3>Tỉ lệ thành công của trích xuất</h3><span class="ex-tag code">code</span></div><div class="prose"><p>Viết vòng đánh giá: chạy hàm <code>extract</code> ở phần lý thuyết trên một danh sách 20 văn bản hóa đơn kèm đáp án, đo tỉ lệ JSON hợp lệ, tỉ lệ đúng từng trường, số lần phải thử lại trung bình.</p>
 <details class="fold code">
 <summary>Code tham khảo</summary>
 <div class="hl"><pre><span></span><code><span class="tk-c1"># Cần ANTHROPIC_API_KEY và file invoices_eval.json của bạn</span>
@@ -598,9 +592,229 @@ Ví dụ:
 <span class="tk-n">evaluate</span><span class="tk-p">(</span><span class="tk-n">samples</span><span class="tk-p">)</span>
 </code></pre></div>
 
-<div class="run run-skip" data-group="e5" data-mode="static">
+<div class="run run-skip" data-group="e4" data-mode="static">
 <div class="run-bar"><span class="run-lbl">Không chạy trên trang</span><span class="run-note">Cần ANTHROPIC_API_KEY và file invoices_eval.json của bạn</span><a class="run-colab" href="https://colab.research.google.com/github/truonghuu344/ai-engineer-roadmap/blob/main/notebooks/ly-thuyet/p4-1.ipynb" target="_blank" rel="noopener">Mở trên Colab ↗</a></div>
 </div>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 5</span><h3>Giữ hội thoại trong ngân sách token</h3><span class="ex-tag code">ứng dụng</span></div><div class="prose"><p><em>Dùng: cấu trúc một cuộc gọi (system, messages xen kẽ user/assistant), lịch sử hội thoại phình to, ước lượng token.</em></p>
+<p>Chatbot chăm sóc khách hàng gửi lại toàn bộ lịch sử mỗi lượt, nên chi phí tăng dần. Viết <code>cat_lich_su(messages, ngan_sach)</code> giữ nguyên system prompt, giữ các lượt <strong>gần nhất</strong> sao cho tổng token ước lượng không vượt ngân sách, và đảm bảo danh sách giữ lại bắt đầu bằng một tin nhắn <code>user</code> (API yêu cầu). Ước lượng token thô: 1 token ≈ 3 ký tự tiếng Việt.</p>
+<div class="hl"><pre><span></span><code><span class="tk-n">system</span> <span class="tk-o">=</span> <span class="tk-s2">"Bạn là trợ lý chăm sóc khách hàng của shop nội thất. Trả lời ngắn gọn, lịch sự."</span>
+<span class="tk-n">messages</span> <span class="tk-o">=</span> <span class="tk-p">[]</span>
+<span class="tk-k">for</span> <span class="tk-n">i</span> <span class="tk-ow">in</span> <span class="tk-nb">range</span><span class="tk-p">(</span><span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-mi">21</span><span class="tk-p">):</span>
+    <span class="tk-n">messages</span><span class="tk-o">.</span><span class="tk-n">append</span><span class="tk-p">({</span><span class="tk-s2">"role"</span><span class="tk-p">:</span> <span class="tk-s2">"user"</span><span class="tk-p">,</span> <span class="tk-s2">"content"</span><span class="tk-p">:</span> <span class="tk-sa">f</span><span class="tk-s2">"Câu hỏi số </span><span class="tk-si">{</span><span class="tk-n">i</span><span class="tk-si">}</span><span class="tk-s2">: đơn hàng của tôi giao tới đâu rồi, mã đơn DH</span><span class="tk-si">{</span><span class="tk-n">i</span><span class="tk-si">:</span><span class="tk-s2">03d</span><span class="tk-si">}</span><span class="tk-s2">?"</span><span class="tk-p">})</span>
+    <span class="tk-n">messages</span><span class="tk-o">.</span><span class="tk-n">append</span><span class="tk-p">({</span><span class="tk-s2">"role"</span><span class="tk-p">:</span> <span class="tk-s2">"assistant"</span><span class="tk-p">,</span> <span class="tk-s2">"content"</span><span class="tk-p">:</span> <span class="tk-sa">f</span><span class="tk-s2">"Đơn DH</span><span class="tk-si">{</span><span class="tk-n">i</span><span class="tk-si">:</span><span class="tk-s2">03d</span><span class="tk-si">}</span><span class="tk-s2"> đang ở kho Hà Nội, dự kiến giao trong 2 ngày tới ạ."</span><span class="tk-p">})</span>
+
+<span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">uoc_token</span><span class="tk-p">(</span><span class="tk-n">text</span><span class="tk-p">):</span>
+    <span class="tk-k">return</span> <span class="tk-nb">len</span><span class="tk-p">(</span><span class="tk-n">text</span><span class="tk-p">)</span> <span class="tk-o">//</span> <span class="tk-mi">3</span> <span class="tk-o">+</span> <span class="tk-mi">1</span>
+
+<span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">cat_lich_su</span><span class="tk-p">(</span><span class="tk-n">messages</span><span class="tk-p">,</span> <span class="tk-n">ngan_sach</span><span class="tk-p">):</span>
+    <span class="tk-c1"># TODO: trả về list các message gần nhất, tổng uoc_token (cộng cả system) &lt;= ngan_sach, bắt đầu bằng user</span>
+    <span class="tk-k">return</span> <span class="tk-n">messages</span>
+</code></pre></div>
+
+<div class="run" data-mode="py" data-group="e5"><div class="run-bar"><span class="run-lbl">Code của bạn</span></div><pre class="run-out run-empty">Viết code vào chỗ trống rồi bấm Chạy.</pre></div>
+
+<div class="ans" id="p4-1-e5-a1"><div class="ans-fields"><label>Số message được giữ với ngân sách 300 token<input inputmode="decimal" data-ans="12.0" data-tol="0.0" autocomplete="off"></label><label>Tổng token ước lượng của toàn bộ lịch sử (chưa cắt, chưa tính system)<input inputmode="decimal" data-ans="851.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+
+<details class="fold hint">
+<summary>Gợi ý</summary>
+<p>Duyệt ngược từ message cuối, cộng dồn token, dừng khi vượt ngân sách. Nếu message đầu tiên trong phần giữ lại là <code>assistant</code>, bỏ nó đi.</p>
+</details>
+<details class="fold code">
+<summary>Code tham khảo</summary>
+<div class="hl"><pre><span></span><code><span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">cat_lich_su</span><span class="tk-p">(</span><span class="tk-n">messages</span><span class="tk-p">,</span> <span class="tk-n">ngan_sach</span><span class="tk-p">):</span>
+    <span class="tk-n">con_lai</span> <span class="tk-o">=</span> <span class="tk-n">ngan_sach</span> <span class="tk-o">-</span> <span class="tk-n">uoc_token</span><span class="tk-p">(</span><span class="tk-n">system</span><span class="tk-p">)</span>
+    <span class="tk-n">giu</span> <span class="tk-o">=</span> <span class="tk-p">[]</span>
+    <span class="tk-k">for</span> <span class="tk-n">m</span> <span class="tk-ow">in</span> <span class="tk-nb">reversed</span><span class="tk-p">(</span><span class="tk-n">messages</span><span class="tk-p">):</span>
+        <span class="tk-n">t</span> <span class="tk-o">=</span> <span class="tk-n">uoc_token</span><span class="tk-p">(</span><span class="tk-n">m</span><span class="tk-p">[</span><span class="tk-s2">"content"</span><span class="tk-p">])</span>
+        <span class="tk-k">if</span> <span class="tk-n">t</span> <span class="tk-o">&gt;</span> <span class="tk-n">con_lai</span><span class="tk-p">:</span>
+            <span class="tk-k">break</span>
+        <span class="tk-n">giu</span><span class="tk-o">.</span><span class="tk-n">append</span><span class="tk-p">(</span><span class="tk-n">m</span><span class="tk-p">);</span> <span class="tk-n">con_lai</span> <span class="tk-o">-=</span> <span class="tk-n">t</span>
+    <span class="tk-n">giu</span><span class="tk-o">.</span><span class="tk-n">reverse</span><span class="tk-p">()</span>
+    <span class="tk-k">while</span> <span class="tk-n">giu</span> <span class="tk-ow">and</span> <span class="tk-n">giu</span><span class="tk-p">[</span><span class="tk-mi">0</span><span class="tk-p">][</span><span class="tk-s2">"role"</span><span class="tk-p">]</span> <span class="tk-o">!=</span> <span class="tk-s2">"user"</span><span class="tk-p">:</span>
+        <span class="tk-n">giu</span><span class="tk-o">.</span><span class="tk-n">pop</span><span class="tk-p">(</span><span class="tk-mi">0</span><span class="tk-p">)</span>
+    <span class="tk-k">return</span> <span class="tk-n">giu</span>
+
+<span class="tk-n">kept</span> <span class="tk-o">=</span> <span class="tk-n">cat_lich_su</span><span class="tk-p">(</span><span class="tk-n">messages</span><span class="tk-p">,</span> <span class="tk-mi">300</span><span class="tk-p">)</span>
+<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-sa">f</span><span class="tk-s2">"giữ </span><span class="tk-si">{</span><span class="tk-nb">len</span><span class="tk-p">(</span><span class="tk-n">kept</span><span class="tk-p">)</span><span class="tk-si">}</span><span class="tk-s2">/</span><span class="tk-si">{</span><span class="tk-nb">len</span><span class="tk-p">(</span><span class="tk-n">messages</span><span class="tk-p">)</span><span class="tk-si">}</span><span class="tk-s2"> message, bắt đầu bằng: </span><span class="tk-si">{</span><span class="tk-n">kept</span><span class="tk-p">[</span><span class="tk-mi">0</span><span class="tk-p">][</span><span class="tk-s1">'content'</span><span class="tk-p">][:</span><span class="tk-mi">30</span><span class="tk-p">]</span><span class="tk-si">}</span><span class="tk-s2">..."</span><span class="tk-p">)</span>
+</code></pre></div>
+
+<div class="run" data-group="e5" data-mode="py">
+<div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span></div>
+<pre class="run-out">giữ 12/40 message, bắt đầu bằng: Câu hỏi số 15: đơn hàng của tô...</pre>
+</div>
+<p>Cắt cứng thì bot quên những gì khách nói đầu cuộc trò chuyện. Hai cách hay dùng thêm: tóm tắt phần cũ thành một đoạn ngắn đặt vào system prompt, và lưu các thông tin quan trọng (mã đơn, tên khách) vào trạng thái riêng thay vì dựa vào lịch sử (P4.4).</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 6</span><h3>Chọn ví dụ few-shot phù hợp</h3><span class="ex-tag code">ứng dụng</span></div><div class="prose"><p><em>Dùng: viết prompt tốt: vai trò, hướng dẫn rõ, ví dụ, thẻ XML phân tách dữ liệu, định dạng đầu ra.</em></p>
+<p>Bạn phân loại ticket hỗ trợ vào 4 nhóm: <code>giao_hang</code>, <code>doi_tra</code>, <code>thanh_toan</code>, <code>san_pham</code>. Có một kho ví dụ đã gắn nhãn. Viết <code>build_prompt(ticket, k=3)</code>: chọn <code>k</code> ví dụ <strong>giống ticket nhất</strong> (theo số từ chung), dựng prompt gồm vai trò, danh sách nhãn, các ví dụ trong thẻ <code>&lt;example&gt;</code>, ticket trong thẻ <code>&lt;ticket&gt;</code>, và yêu cầu chỉ trả về đúng một nhãn.</p>
+<div class="hl"><pre><span></span><code><span class="tk-n">kho</span> <span class="tk-o">=</span> <span class="tk-p">[(</span><span class="tk-s2">"Đơn của tôi 5 ngày chưa giao"</span><span class="tk-p">,</span> <span class="tk-s2">"giao_hang"</span><span class="tk-p">),</span> <span class="tk-p">(</span><span class="tk-s2">"Shipper không gọi trước khi giao"</span><span class="tk-p">,</span> <span class="tk-s2">"giao_hang"</span><span class="tk-p">),</span>
+       <span class="tk-p">(</span><span class="tk-s2">"Bàn bị trầy, tôi muốn đổi cái khác"</span><span class="tk-p">,</span> <span class="tk-s2">"doi_tra"</span><span class="tk-p">),</span> <span class="tk-p">(</span><span class="tk-s2">"Muốn trả hàng vì không vừa phòng"</span><span class="tk-p">,</span> <span class="tk-s2">"doi_tra"</span><span class="tk-p">),</span>
+       <span class="tk-p">(</span><span class="tk-s2">"Chuyển khoản rồi mà đơn vẫn chưa thanh toán"</span><span class="tk-p">,</span> <span class="tk-s2">"thanh_toan"</span><span class="tk-p">),</span> <span class="tk-p">(</span><span class="tk-s2">"Bị trừ tiền hai lần"</span><span class="tk-p">,</span> <span class="tk-s2">"thanh_toan"</span><span class="tk-p">),</span>
+       <span class="tk-p">(</span><span class="tk-s2">"Gương có chống mờ hơi nước không"</span><span class="tk-p">,</span> <span class="tk-s2">"san_pham"</span><span class="tk-p">),</span> <span class="tk-p">(</span><span class="tk-s2">"Bàn này chịu được bao nhiêu kg"</span><span class="tk-p">,</span> <span class="tk-s2">"san_pham"</span><span class="tk-p">)]</span>
+
+<span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">tu</span><span class="tk-p">(</span><span class="tk-n">s</span><span class="tk-p">):</span>
+    <span class="tk-k">return</span> <span class="tk-nb">set</span><span class="tk-p">(</span><span class="tk-n">s</span><span class="tk-o">.</span><span class="tk-n">lower</span><span class="tk-p">()</span><span class="tk-o">.</span><span class="tk-n">split</span><span class="tk-p">())</span>
+
+<span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">build_prompt</span><span class="tk-p">(</span><span class="tk-n">ticket</span><span class="tk-p">,</span> <span class="tk-n">k</span><span class="tk-o">=</span><span class="tk-mi">3</span><span class="tk-p">):</span>
+    <span class="tk-c1"># TODO: chọn k ví dụ có nhiều từ chung với ticket nhất, dựng prompt</span>
+    <span class="tk-k">return</span> <span class="tk-s2">""</span>
+
+<span class="tk-n">ticket</span> <span class="tk-o">=</span> <span class="tk-s2">"Tôi chuyển khoản hai lần cho cùng một đơn, đơn vẫn báo chưa thanh toán"</span>
+</code></pre></div>
+
+<div class="run" data-mode="py" data-group="e6"><div class="run-bar"><span class="run-lbl">Code của bạn</span></div><pre class="run-out run-empty">Viết code vào chỗ trống rồi bấm Chạy.</pre></div>
+
+<div class="ans" id="p4-1-e6-a1"><div class="ans-fields"><label>Số ví dụ nhãn thanh_toan trong 3 ví dụ được chọn<input inputmode="decimal" data-ans="2.0" data-tol="0.0" autocomplete="off"></label><label>Prompt có chứa ticket nằm trong thẻ ticket (1 = có)<input inputmode="decimal" data-ans="1.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+
+<details class="fold hint">
+<summary>Gợi ý</summary>
+<p><code>sorted(kho, key=lambda ex: len(tu(ex[0]) &amp; tu(ticket)), reverse=True)[:k]</code>. Ghép ví dụ dạng <code>&lt;example&gt;&lt;text&gt;...&lt;/text&gt;&lt;label&gt;...&lt;/label&gt;&lt;/example&gt;</code>.</p>
+</details>
+<details class="fold code">
+<summary>Code tham khảo</summary>
+<div class="hl"><pre><span></span><code><span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">build_prompt</span><span class="tk-p">(</span><span class="tk-n">ticket</span><span class="tk-p">,</span> <span class="tk-n">k</span><span class="tk-o">=</span><span class="tk-mi">3</span><span class="tk-p">):</span>
+    <span class="tk-n">chon</span> <span class="tk-o">=</span> <span class="tk-nb">sorted</span><span class="tk-p">(</span><span class="tk-n">kho</span><span class="tk-p">,</span> <span class="tk-n">key</span><span class="tk-o">=</span><span class="tk-k">lambda</span> <span class="tk-n">ex</span><span class="tk-p">:</span> <span class="tk-nb">len</span><span class="tk-p">(</span><span class="tk-n">tu</span><span class="tk-p">(</span><span class="tk-n">ex</span><span class="tk-p">[</span><span class="tk-mi">0</span><span class="tk-p">])</span> <span class="tk-o">&amp;</span> <span class="tk-n">tu</span><span class="tk-p">(</span><span class="tk-n">ticket</span><span class="tk-p">)),</span> <span class="tk-n">reverse</span><span class="tk-o">=</span><span class="tk-kc">True</span><span class="tk-p">)[:</span><span class="tk-n">k</span><span class="tk-p">]</span>
+    <span class="tk-n">vi_du</span> <span class="tk-o">=</span> <span class="tk-s2">"</span><span class="tk-se">\n</span><span class="tk-s2">"</span><span class="tk-o">.</span><span class="tk-n">join</span><span class="tk-p">(</span><span class="tk-sa">f</span><span class="tk-s2">"&lt;example&gt;&lt;text&gt;</span><span class="tk-si">{</span><span class="tk-n">t</span><span class="tk-si">}</span><span class="tk-s2">&lt;/text&gt;&lt;label&gt;</span><span class="tk-si">{</span><span class="tk-n">l</span><span class="tk-si">}</span><span class="tk-s2">&lt;/label&gt;&lt;/example&gt;"</span> <span class="tk-k">for</span> <span class="tk-n">t</span><span class="tk-p">,</span> <span class="tk-n">l</span> <span class="tk-ow">in</span> <span class="tk-n">chon</span><span class="tk-p">)</span>
+    <span class="tk-k">return</span> <span class="tk-p">(</span>
+        <span class="tk-s2">"Bạn là nhân viên phân loại ticket hỗ trợ của một shop nội thất.</span><span class="tk-se">\n</span><span class="tk-s2">"</span>
+        <span class="tk-s2">"Nhãn hợp lệ: giao_hang, doi_tra, thanh_toan, san_pham.</span><span class="tk-se">\n</span><span class="tk-s2">"</span>
+        <span class="tk-sa">f</span><span class="tk-s2">"Ví dụ:</span><span class="tk-se">\n</span><span class="tk-si">{</span><span class="tk-n">vi_du</span><span class="tk-si">}</span><span class="tk-se">\n</span><span class="tk-s2">"</span>
+        <span class="tk-sa">f</span><span class="tk-s2">"&lt;ticket&gt;</span><span class="tk-si">{</span><span class="tk-n">ticket</span><span class="tk-si">}</span><span class="tk-s2">&lt;/ticket&gt;</span><span class="tk-se">\n</span><span class="tk-s2">"</span>
+        <span class="tk-s2">"Chỉ trả về đúng một nhãn, không giải thích."</span>
+    <span class="tk-p">)</span>
+
+<span class="tk-n">prompt</span> <span class="tk-o">=</span> <span class="tk-n">build_prompt</span><span class="tk-p">(</span><span class="tk-n">ticket</span><span class="tk-p">)</span>
+<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-n">prompt</span><span class="tk-p">)</span>
+</code></pre></div>
+
+<div class="run" data-group="e6" data-mode="py">
+<div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span></div>
+<pre class="run-out">Bạn là nhân viên phân loại ticket hỗ trợ của một shop nội thất.&#10;Nhãn hợp lệ: giao_hang, doi_tra, thanh_toan, san_pham.&#10;Ví dụ:&#10;&lt;example&gt;&lt;text&gt;Chuyển khoản rồi mà đơn vẫn chưa thanh toán&lt;/text&gt;&lt;label&gt;thanh_toan&lt;/label&gt;&lt;/example&gt;&#10;&lt;example&gt;&lt;text&gt;Đơn của tôi 5 ngày chưa giao&lt;/text&gt;&lt;label&gt;giao_hang&lt;/label&gt;&lt;/example&gt;&#10;&lt;example&gt;&lt;text&gt;Bị trừ tiền hai lần&lt;/text&gt;&lt;label&gt;thanh_toan&lt;/label&gt;&lt;/example&gt;&#10;&lt;ticket&gt;Tôi chuyển khoản hai lần cho cùng một đơn, đơn vẫn báo chưa thanh toán&lt;/ticket&gt;&#10;Chỉ trả về đúng một nhãn, không giải thích.</pre>
+</div>
+<p>Ví dụ gần với đầu vào giúp model nhiều hơn ví dụ ngẫu nhiên; trong thực tế "giống nhất" được đo bằng embedding (P4.2) thay vì đếm từ chung. Thẻ XML cho model biết đâu là dữ liệu, đâu là hướng dẫn: một ticket chứa câu "bỏ qua hướng dẫn trên" vẫn chỉ là dữ liệu nằm trong <code>&lt;ticket&gt;</code>.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 7</span><h3>Vòng lặp tool calling</h3><span class="ex-tag code">ứng dụng</span></div><div class="prose"><p><em>Dùng: tool calling: định nghĩa tool, model yêu cầu gọi tool, chương trình chạy tool và gửi <code>tool_result</code>, lặp tới khi model trả lời.</em></p>
+<p>Để chạy được không cần khóa API, hàm <code>fake_llm</code> dưới đây đóng vai model: nhận <code>messages</code>, trả về hoặc một yêu cầu gọi tool, hoặc câu trả lời cuối, đúng <strong>cấu trúc</strong> của Anthropic API. Viết <code>chay_agent(cau_hoi)</code>: gửi câu hỏi, mỗi khi model yêu cầu tool thì chạy hàm Python tương ứng, thêm kết quả vào <code>messages</code> dưới dạng <code>tool_result</code>, gọi lại model cho tới khi <code>stop_reason == "end_turn"</code>.</p>
+<div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">json</span>
+<span class="tk-n">DON</span> <span class="tk-o">=</span> <span class="tk-p">{</span><span class="tk-s2">"DH001"</span><span class="tk-p">:</span> <span class="tk-p">{</span><span class="tk-s2">"trang_thai"</span><span class="tk-p">:</span> <span class="tk-s2">"đang giao"</span><span class="tk-p">,</span> <span class="tk-s2">"tinh"</span><span class="tk-p">:</span> <span class="tk-s2">"Đà Nẵng"</span><span class="tk-p">,</span> <span class="tk-s2">"can_nang"</span><span class="tk-p">:</span> <span class="tk-mi">18</span><span class="tk-p">}}</span>
+
+<span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">tra_don</span><span class="tk-p">(</span><span class="tk-n">ma_don</span><span class="tk-p">):</span>
+    <span class="tk-k">return</span> <span class="tk-n">DON</span><span class="tk-o">.</span><span class="tk-n">get</span><span class="tk-p">(</span><span class="tk-n">ma_don</span><span class="tk-p">,</span> <span class="tk-p">{</span><span class="tk-s2">"loi"</span><span class="tk-p">:</span> <span class="tk-sa">f</span><span class="tk-s2">"không có đơn </span><span class="tk-si">{</span><span class="tk-n">ma_don</span><span class="tk-si">}</span><span class="tk-s2">"</span><span class="tk-p">})</span>
+
+<span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">phi_ship</span><span class="tk-p">(</span><span class="tk-n">tinh</span><span class="tk-p">,</span> <span class="tk-n">can_nang</span><span class="tk-p">):</span>
+    <span class="tk-k">return</span> <span class="tk-p">{</span><span class="tk-s2">"phi"</span><span class="tk-p">:</span> <span class="tk-mi">30000</span> <span class="tk-o">+</span> <span class="tk-p">(</span><span class="tk-mi">2000</span> <span class="tk-o">*</span> <span class="tk-n">can_nang</span> <span class="tk-k">if</span> <span class="tk-n">tinh</span> <span class="tk-o">!=</span> <span class="tk-s2">"Hà Nội"</span> <span class="tk-k">else</span> <span class="tk-mi">1000</span> <span class="tk-o">*</span> <span class="tk-n">can_nang</span><span class="tk-p">)}</span>
+
+<span class="tk-n">TOOLS</span> <span class="tk-o">=</span> <span class="tk-p">{</span><span class="tk-s2">"tra_don"</span><span class="tk-p">:</span> <span class="tk-n">tra_don</span><span class="tk-p">,</span> <span class="tk-s2">"phi_ship"</span><span class="tk-p">:</span> <span class="tk-n">phi_ship</span><span class="tk-p">}</span>
+
+<span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">fake_llm</span><span class="tk-p">(</span><span class="tk-n">messages</span><span class="tk-p">):</span>
+<span class="tk-w">    </span><span class="tk-sd">"""Đóng vai model: lần lượt gọi tra_don, rồi phi_ship, rồi trả lời."""</span>
+    <span class="tk-n">ket_qua</span> <span class="tk-o">=</span> <span class="tk-p">[</span><span class="tk-n">b</span> <span class="tk-k">for</span> <span class="tk-n">m</span> <span class="tk-ow">in</span> <span class="tk-n">messages</span> <span class="tk-k">if</span> <span class="tk-n">m</span><span class="tk-p">[</span><span class="tk-s2">"role"</span><span class="tk-p">]</span> <span class="tk-o">==</span> <span class="tk-s2">"user"</span> <span class="tk-ow">and</span> <span class="tk-nb">isinstance</span><span class="tk-p">(</span><span class="tk-n">m</span><span class="tk-p">[</span><span class="tk-s2">"content"</span><span class="tk-p">],</span> <span class="tk-nb">list</span><span class="tk-p">)</span> <span class="tk-k">for</span> <span class="tk-n">b</span> <span class="tk-ow">in</span> <span class="tk-n">m</span><span class="tk-p">[</span><span class="tk-s2">"content"</span><span class="tk-p">]]</span>
+    <span class="tk-k">if</span> <span class="tk-nb">len</span><span class="tk-p">(</span><span class="tk-n">ket_qua</span><span class="tk-p">)</span> <span class="tk-o">==</span> <span class="tk-mi">0</span><span class="tk-p">:</span>
+        <span class="tk-k">return</span> <span class="tk-p">{</span><span class="tk-s2">"stop_reason"</span><span class="tk-p">:</span> <span class="tk-s2">"tool_use"</span><span class="tk-p">,</span> <span class="tk-s2">"content"</span><span class="tk-p">:</span> <span class="tk-p">[{</span><span class="tk-s2">"type"</span><span class="tk-p">:</span> <span class="tk-s2">"tool_use"</span><span class="tk-p">,</span> <span class="tk-s2">"id"</span><span class="tk-p">:</span> <span class="tk-s2">"t1"</span><span class="tk-p">,</span> <span class="tk-s2">"name"</span><span class="tk-p">:</span> <span class="tk-s2">"tra_don"</span><span class="tk-p">,</span> <span class="tk-s2">"input"</span><span class="tk-p">:</span> <span class="tk-p">{</span><span class="tk-s2">"ma_don"</span><span class="tk-p">:</span> <span class="tk-s2">"DH001"</span><span class="tk-p">}}]}</span>
+    <span class="tk-k">if</span> <span class="tk-nb">len</span><span class="tk-p">(</span><span class="tk-n">ket_qua</span><span class="tk-p">)</span> <span class="tk-o">==</span> <span class="tk-mi">1</span><span class="tk-p">:</span>
+        <span class="tk-n">don</span> <span class="tk-o">=</span> <span class="tk-n">json</span><span class="tk-o">.</span><span class="tk-n">loads</span><span class="tk-p">(</span><span class="tk-n">ket_qua</span><span class="tk-p">[</span><span class="tk-mi">0</span><span class="tk-p">][</span><span class="tk-s2">"content"</span><span class="tk-p">])</span>
+        <span class="tk-k">return</span> <span class="tk-p">{</span><span class="tk-s2">"stop_reason"</span><span class="tk-p">:</span> <span class="tk-s2">"tool_use"</span><span class="tk-p">,</span> <span class="tk-s2">"content"</span><span class="tk-p">:</span> <span class="tk-p">[{</span><span class="tk-s2">"type"</span><span class="tk-p">:</span> <span class="tk-s2">"tool_use"</span><span class="tk-p">,</span> <span class="tk-s2">"id"</span><span class="tk-p">:</span> <span class="tk-s2">"t2"</span><span class="tk-p">,</span> <span class="tk-s2">"name"</span><span class="tk-p">:</span> <span class="tk-s2">"phi_ship"</span><span class="tk-p">,</span>
+                                                        <span class="tk-s2">"input"</span><span class="tk-p">:</span> <span class="tk-p">{</span><span class="tk-s2">"tinh"</span><span class="tk-p">:</span> <span class="tk-n">don</span><span class="tk-p">[</span><span class="tk-s2">"tinh"</span><span class="tk-p">],</span> <span class="tk-s2">"can_nang"</span><span class="tk-p">:</span> <span class="tk-n">don</span><span class="tk-p">[</span><span class="tk-s2">"can_nang"</span><span class="tk-p">]}}]}</span>
+    <span class="tk-n">phi</span> <span class="tk-o">=</span> <span class="tk-n">json</span><span class="tk-o">.</span><span class="tk-n">loads</span><span class="tk-p">(</span><span class="tk-n">ket_qua</span><span class="tk-p">[</span><span class="tk-mi">1</span><span class="tk-p">][</span><span class="tk-s2">"content"</span><span class="tk-p">])[</span><span class="tk-s2">"phi"</span><span class="tk-p">]</span>
+    <span class="tk-k">return</span> <span class="tk-p">{</span><span class="tk-s2">"stop_reason"</span><span class="tk-p">:</span> <span class="tk-s2">"end_turn"</span><span class="tk-p">,</span> <span class="tk-s2">"content"</span><span class="tk-p">:</span> <span class="tk-p">[{</span><span class="tk-s2">"type"</span><span class="tk-p">:</span> <span class="tk-s2">"text"</span><span class="tk-p">,</span> <span class="tk-s2">"text"</span><span class="tk-p">:</span> <span class="tk-sa">f</span><span class="tk-s2">"Đơn DH001 đang giao tới Đà Nẵng, phí ship </span><span class="tk-si">{</span><span class="tk-n">phi</span><span class="tk-si">:</span><span class="tk-s2">,</span><span class="tk-si">}</span><span class="tk-s2">đ."</span><span class="tk-p">}]}</span>
+
+<span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">chay_agent</span><span class="tk-p">(</span><span class="tk-n">cau_hoi</span><span class="tk-p">,</span> <span class="tk-n">max_buoc</span><span class="tk-o">=</span><span class="tk-mi">5</span><span class="tk-p">):</span>
+    <span class="tk-n">messages</span> <span class="tk-o">=</span> <span class="tk-p">[{</span><span class="tk-s2">"role"</span><span class="tk-p">:</span> <span class="tk-s2">"user"</span><span class="tk-p">,</span> <span class="tk-s2">"content"</span><span class="tk-p">:</span> <span class="tk-n">cau_hoi</span><span class="tk-p">}]</span>
+    <span class="tk-c1"># TODO: lặp gọi fake_llm, xử lý tool_use, trả về (câu trả lời, số lần gọi model)</span>
+    <span class="tk-k">return</span> <span class="tk-s2">""</span><span class="tk-p">,</span> <span class="tk-mi">0</span>
+</code></pre></div>
+
+<div class="run" data-mode="py" data-group="e7"><div class="run-bar"><span class="run-lbl">Code của bạn</span></div><pre class="run-out run-empty">Viết code vào chỗ trống rồi bấm Chạy.</pre></div>
+
+<div class="ans" id="p4-1-e7-a1"><div class="ans-fields"><label>Số lần gọi model<input inputmode="decimal" data-ans="3.0" data-tol="0.0" autocomplete="off"></label><label>Phí ship trong câu trả lời (đồng)<input inputmode="decimal" data-ans="66000.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+
+<details class="fold hint">
+<summary>Gợi ý</summary>
+<p>Sau mỗi phản hồi, thêm <code>{"role": "assistant", "content": resp["content"]}</code> vào messages. Với mỗi khối <code>tool_use</code>, chạy <code>TOOLS[b["name"]](**b["input"])</code> và gửi lại <code>{"role": "user", "content": [{"type": "tool_result", "tool_use_id": b["id"], "content": json.dumps(kq, ensure_ascii=False)}]}</code>.</p>
+</details>
+<details class="fold code">
+<summary>Code tham khảo</summary>
+<div class="hl"><pre><span></span><code><span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">chay_agent</span><span class="tk-p">(</span><span class="tk-n">cau_hoi</span><span class="tk-p">,</span> <span class="tk-n">max_buoc</span><span class="tk-o">=</span><span class="tk-mi">5</span><span class="tk-p">):</span>
+    <span class="tk-n">messages</span> <span class="tk-o">=</span> <span class="tk-p">[{</span><span class="tk-s2">"role"</span><span class="tk-p">:</span> <span class="tk-s2">"user"</span><span class="tk-p">,</span> <span class="tk-s2">"content"</span><span class="tk-p">:</span> <span class="tk-n">cau_hoi</span><span class="tk-p">}]</span>
+    <span class="tk-k">for</span> <span class="tk-n">so_lan</span> <span class="tk-ow">in</span> <span class="tk-nb">range</span><span class="tk-p">(</span><span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-n">max_buoc</span> <span class="tk-o">+</span> <span class="tk-mi">1</span><span class="tk-p">):</span>
+        <span class="tk-n">resp</span> <span class="tk-o">=</span> <span class="tk-n">fake_llm</span><span class="tk-p">(</span><span class="tk-n">messages</span><span class="tk-p">)</span>
+        <span class="tk-n">messages</span><span class="tk-o">.</span><span class="tk-n">append</span><span class="tk-p">({</span><span class="tk-s2">"role"</span><span class="tk-p">:</span> <span class="tk-s2">"assistant"</span><span class="tk-p">,</span> <span class="tk-s2">"content"</span><span class="tk-p">:</span> <span class="tk-n">resp</span><span class="tk-p">[</span><span class="tk-s2">"content"</span><span class="tk-p">]})</span>
+        <span class="tk-k">if</span> <span class="tk-n">resp</span><span class="tk-p">[</span><span class="tk-s2">"stop_reason"</span><span class="tk-p">]</span> <span class="tk-o">==</span> <span class="tk-s2">"end_turn"</span><span class="tk-p">:</span>
+            <span class="tk-k">return</span> <span class="tk-n">resp</span><span class="tk-p">[</span><span class="tk-s2">"content"</span><span class="tk-p">][</span><span class="tk-mi">0</span><span class="tk-p">][</span><span class="tk-s2">"text"</span><span class="tk-p">],</span> <span class="tk-n">so_lan</span>
+        <span class="tk-n">ket_qua</span> <span class="tk-o">=</span> <span class="tk-p">[]</span>
+        <span class="tk-k">for</span> <span class="tk-n">b</span> <span class="tk-ow">in</span> <span class="tk-n">resp</span><span class="tk-p">[</span><span class="tk-s2">"content"</span><span class="tk-p">]:</span>
+            <span class="tk-k">if</span> <span class="tk-n">b</span><span class="tk-p">[</span><span class="tk-s2">"type"</span><span class="tk-p">]</span> <span class="tk-o">==</span> <span class="tk-s2">"tool_use"</span><span class="tk-p">:</span>
+                <span class="tk-n">kq</span> <span class="tk-o">=</span> <span class="tk-n">TOOLS</span><span class="tk-p">[</span><span class="tk-n">b</span><span class="tk-p">[</span><span class="tk-s2">"name"</span><span class="tk-p">]](</span><span class="tk-o">**</span><span class="tk-n">b</span><span class="tk-p">[</span><span class="tk-s2">"input"</span><span class="tk-p">])</span>
+                <span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-sa">f</span><span class="tk-s2">"  gọi </span><span class="tk-si">{</span><span class="tk-n">b</span><span class="tk-p">[</span><span class="tk-s1">'name'</span><span class="tk-p">]</span><span class="tk-si">}</span><span class="tk-s2">(</span><span class="tk-si">{</span><span class="tk-n">b</span><span class="tk-p">[</span><span class="tk-s1">'input'</span><span class="tk-p">]</span><span class="tk-si">}</span><span class="tk-s2">) → </span><span class="tk-si">{</span><span class="tk-n">kq</span><span class="tk-si">}</span><span class="tk-s2">"</span><span class="tk-p">)</span>
+                <span class="tk-n">ket_qua</span><span class="tk-o">.</span><span class="tk-n">append</span><span class="tk-p">({</span><span class="tk-s2">"type"</span><span class="tk-p">:</span> <span class="tk-s2">"tool_result"</span><span class="tk-p">,</span> <span class="tk-s2">"tool_use_id"</span><span class="tk-p">:</span> <span class="tk-n">b</span><span class="tk-p">[</span><span class="tk-s2">"id"</span><span class="tk-p">],</span> <span class="tk-s2">"content"</span><span class="tk-p">:</span> <span class="tk-n">json</span><span class="tk-o">.</span><span class="tk-n">dumps</span><span class="tk-p">(</span><span class="tk-n">kq</span><span class="tk-p">,</span> <span class="tk-n">ensure_ascii</span><span class="tk-o">=</span><span class="tk-kc">False</span><span class="tk-p">)})</span>
+        <span class="tk-n">messages</span><span class="tk-o">.</span><span class="tk-n">append</span><span class="tk-p">({</span><span class="tk-s2">"role"</span><span class="tk-p">:</span> <span class="tk-s2">"user"</span><span class="tk-p">,</span> <span class="tk-s2">"content"</span><span class="tk-p">:</span> <span class="tk-n">ket_qua</span><span class="tk-p">})</span>
+    <span class="tk-k">return</span> <span class="tk-s2">"Dừng: quá số bước cho phép"</span><span class="tk-p">,</span> <span class="tk-n">max_buoc</span>
+
+<span class="tk-n">tra_loi</span><span class="tk-p">,</span> <span class="tk-n">so_lan</span> <span class="tk-o">=</span> <span class="tk-n">chay_agent</span><span class="tk-p">(</span><span class="tk-s2">"Đơn DH001 của tôi đến đâu rồi, phí ship bao nhiêu?"</span><span class="tk-p">)</span>
+<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-n">tra_loi</span><span class="tk-p">,</span> <span class="tk-sa">f</span><span class="tk-s2">"(</span><span class="tk-si">{</span><span class="tk-n">so_lan</span><span class="tk-si">}</span><span class="tk-s2"> lần gọi model)"</span><span class="tk-p">)</span>
+</code></pre></div>
+
+<div class="run" data-group="e7" data-mode="py">
+<div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span></div>
+<pre class="run-out">  gọi tra_don({&#x27;ma_don&#x27;: &#x27;DH001&#x27;}) → {&#x27;trang_thai&#x27;: &#x27;đang giao&#x27;, &#x27;tinh&#x27;: &#x27;Đà Nẵng&#x27;, &#x27;can_nang&#x27;: 18}&#10;  gọi phi_ship({&#x27;tinh&#x27;: &#x27;Đà Nẵng&#x27;, &#x27;can_nang&#x27;: 18}) → {&#x27;phi&#x27;: 66000}&#10;Đơn DH001 đang giao tới Đà Nẵng, phí ship 66,000đ. (3 lần gọi model)</pre>
+</div>
+<p>Đổi <code>fake_llm(messages)</code> thành <code>client.messages.create(model=..., tools=..., messages=messages)</code> là thành chương trình thật: vòng lặp giữ nguyên. Luôn có <code>max_buoc</code> để model không gọi tool mãi.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 8</span><h3>Gọi API chịu lỗi: retry có backoff và stream</h3><span class="ex-tag code">ứng dụng</span></div><div class="prose"><p><em>Dùng: streaming, lỗi tạm thời (429, 529), exponential backoff có jitter, đo thời gian tới token đầu.</em></p>
+<p>Hàm <code>fake_stream</code> mô phỏng một API: hai lần gọi đầu báo lỗi quá tải, lần thứ ba stream câu trả lời từng mảnh. Viết <code>goi_co_retry(max_lan=5)</code> thử lại với thời gian chờ <code>0.1 · 2^lần · (0.5 + random)</code> giây, in ra từng mảnh ngay khi nhận được, và ghi lại số lần thử, thời gian tới mảnh đầu tiên.</p>
+<div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">random</span><span class="tk-o">,</span><span class="tk-w"> </span><span class="tk-nn">time</span>
+<span class="tk-n">random</span><span class="tk-o">.</span><span class="tk-n">seed</span><span class="tk-p">(</span><span class="tk-mi">0</span><span class="tk-p">)</span>
+<span class="tk-n">so_lan_goi</span> <span class="tk-o">=</span> <span class="tk-mi">0</span>
+
+<span class="tk-k">class</span><span class="tk-w"> </span><span class="tk-nc">QuaTai</span><span class="tk-p">(</span><span class="tk-ne">Exception</span><span class="tk-p">):</span>
+    <span class="tk-k">pass</span>
+
+<span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">fake_stream</span><span class="tk-p">():</span>
+    <span class="tk-k">global</span> <span class="tk-n">so_lan_goi</span>
+    <span class="tk-n">so_lan_goi</span> <span class="tk-o">+=</span> <span class="tk-mi">1</span>
+    <span class="tk-k">if</span> <span class="tk-n">so_lan_goi</span> <span class="tk-o">&lt;=</span> <span class="tk-mi">2</span><span class="tk-p">:</span>
+        <span class="tk-k">raise</span> <span class="tk-n">QuaTai</span><span class="tk-p">(</span><span class="tk-s2">"529 overloaded"</span><span class="tk-p">)</span>
+    <span class="tk-k">for</span> <span class="tk-n">manh</span> <span class="tk-ow">in</span> <span class="tk-p">[</span><span class="tk-s2">"Dạ, "</span><span class="tk-p">,</span> <span class="tk-s2">"đơn của "</span><span class="tk-p">,</span> <span class="tk-s2">"anh/chị "</span><span class="tk-p">,</span> <span class="tk-s2">"sẽ giao "</span><span class="tk-p">,</span> <span class="tk-s2">"trong 2 ngày."</span><span class="tk-p">]:</span>
+        <span class="tk-n">time</span><span class="tk-o">.</span><span class="tk-n">sleep</span><span class="tk-p">(</span><span class="tk-mf">0.05</span><span class="tk-p">)</span>
+        <span class="tk-k">yield</span> <span class="tk-n">manh</span>
+
+<span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">goi_co_retry</span><span class="tk-p">(</span><span class="tk-n">max_lan</span><span class="tk-o">=</span><span class="tk-mi">5</span><span class="tk-p">):</span>
+    <span class="tk-c1"># TODO: thử lại khi QuaTai, chờ theo backoff; stream và đo thời gian tới mảnh đầu</span>
+    <span class="tk-k">return</span> <span class="tk-s2">""</span><span class="tk-p">,</span> <span class="tk-mi">0</span><span class="tk-p">,</span> <span class="tk-mf">0.0</span>
+</code></pre></div>
+
+<div class="run" data-mode="py" data-group="e8"><div class="run-bar"><span class="run-lbl">Code của bạn</span></div><pre class="run-out run-empty">Viết code vào chỗ trống rồi bấm Chạy.</pre></div>
+
+<div class="ans" id="p4-1-e8-a1"><div class="ans-fields"><label>Số lần thử cho tới khi thành công<input inputmode="decimal" data-ans="3.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+
+<details class="fold hint">
+<summary>Gợi ý</summary>
+<p>Generator chỉ chạy khi bắt đầu lặp, nên lỗi <code>QuaTai</code> xuất hiện ở lần <code>next()</code> đầu tiên: đặt cả vòng <code>for manh in fake_stream()</code> trong <code>try</code>. Đo thời gian bằng <code>time.perf_counter()</code> từ lúc bắt đầu lần thử thành công.</p>
+</details>
+<details class="fold code">
+<summary>Code tham khảo</summary>
+<div class="hl"><pre><span></span><code><span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">goi_co_retry</span><span class="tk-p">(</span><span class="tk-n">max_lan</span><span class="tk-o">=</span><span class="tk-mi">5</span><span class="tk-p">):</span>
+    <span class="tk-k">for</span> <span class="tk-n">lan</span> <span class="tk-ow">in</span> <span class="tk-nb">range</span><span class="tk-p">(</span><span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-n">max_lan</span> <span class="tk-o">+</span> <span class="tk-mi">1</span><span class="tk-p">):</span>
+        <span class="tk-n">t0</span> <span class="tk-o">=</span> <span class="tk-n">time</span><span class="tk-o">.</span><span class="tk-n">perf_counter</span><span class="tk-p">();</span> <span class="tk-n">ttft</span> <span class="tk-o">=</span> <span class="tk-kc">None</span><span class="tk-p">;</span> <span class="tk-n">ket_qua</span> <span class="tk-o">=</span> <span class="tk-s2">""</span>
+        <span class="tk-k">try</span><span class="tk-p">:</span>
+            <span class="tk-k">for</span> <span class="tk-n">manh</span> <span class="tk-ow">in</span> <span class="tk-n">fake_stream</span><span class="tk-p">():</span>
+                <span class="tk-k">if</span> <span class="tk-n">ttft</span> <span class="tk-ow">is</span> <span class="tk-kc">None</span><span class="tk-p">:</span>
+                    <span class="tk-n">ttft</span> <span class="tk-o">=</span> <span class="tk-n">time</span><span class="tk-o">.</span><span class="tk-n">perf_counter</span><span class="tk-p">()</span> <span class="tk-o">-</span> <span class="tk-n">t0</span>
+                <span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-n">manh</span><span class="tk-p">,</span> <span class="tk-n">end</span><span class="tk-o">=</span><span class="tk-s2">""</span><span class="tk-p">,</span> <span class="tk-n">flush</span><span class="tk-o">=</span><span class="tk-kc">True</span><span class="tk-p">)</span>
+                <span class="tk-n">ket_qua</span> <span class="tk-o">+=</span> <span class="tk-n">manh</span>
+            <span class="tk-nb">print</span><span class="tk-p">()</span>
+            <span class="tk-k">return</span> <span class="tk-n">ket_qua</span><span class="tk-p">,</span> <span class="tk-n">lan</span><span class="tk-p">,</span> <span class="tk-n">ttft</span>
+        <span class="tk-k">except</span> <span class="tk-n">QuaTai</span> <span class="tk-k">as</span> <span class="tk-n">e</span><span class="tk-p">:</span>
+            <span class="tk-n">cho</span> <span class="tk-o">=</span> <span class="tk-mf">0.1</span> <span class="tk-o">*</span> <span class="tk-mi">2</span> <span class="tk-o">**</span> <span class="tk-n">lan</span> <span class="tk-o">*</span> <span class="tk-p">(</span><span class="tk-mf">0.5</span> <span class="tk-o">+</span> <span class="tk-n">random</span><span class="tk-o">.</span><span class="tk-n">random</span><span class="tk-p">())</span>
+            <span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-sa">f</span><span class="tk-s2">"lần </span><span class="tk-si">{</span><span class="tk-n">lan</span><span class="tk-si">}</span><span class="tk-s2">: </span><span class="tk-si">{</span><span class="tk-n">e</span><span class="tk-si">}</span><span class="tk-s2">, chờ </span><span class="tk-si">{</span><span class="tk-n">cho</span><span class="tk-si">:</span><span class="tk-s2">.2f</span><span class="tk-si">}</span><span class="tk-s2"> giây"</span><span class="tk-p">)</span>
+            <span class="tk-n">time</span><span class="tk-o">.</span><span class="tk-n">sleep</span><span class="tk-p">(</span><span class="tk-n">cho</span><span class="tk-p">)</span>
+    <span class="tk-k">raise</span> <span class="tk-ne">RuntimeError</span><span class="tk-p">(</span><span class="tk-s2">"Hết số lần thử"</span><span class="tk-p">)</span>
+
+<span class="tk-n">tra_loi</span><span class="tk-p">,</span> <span class="tk-n">so_lan_thu</span><span class="tk-p">,</span> <span class="tk-n">ttft</span> <span class="tk-o">=</span> <span class="tk-n">goi_co_retry</span><span class="tk-p">()</span>
+<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-sa">f</span><span class="tk-s2">"thành công ở lần </span><span class="tk-si">{</span><span class="tk-n">so_lan_thu</span><span class="tk-si">}</span><span class="tk-s2">, tới mảnh đầu sau </span><span class="tk-si">{</span><span class="tk-n">ttft</span><span class="tk-w"> </span><span class="tk-o">*</span><span class="tk-w"> </span><span class="tk-mi">1000</span><span class="tk-si">:</span><span class="tk-s2">.0f</span><span class="tk-si">}</span><span class="tk-s2"> ms"</span><span class="tk-p">)</span>
+</code></pre></div>
+
+<div class="run" data-group="e8" data-mode="py">
+<div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span></div>
+<pre class="run-out">lần 1: 529 overloaded, chờ 0.27 giây&#10;lần 2: 529 overloaded, chờ 0.50 giây&#10;Dạ, đơn của anh/chị sẽ giao trong 2 ngày.&#10;thành công ở lần 3, tới mảnh đầu sau 50 ms</pre>
+</div>
+<p>Jitter (phần ngẫu nhiên) tránh cảnh hàng nghìn client cùng thử lại đúng một lúc. SDK chính thức đã có sẵn retry; bạn vẫn cần hiểu cơ chế này để đặt <code>max_retries</code>, timeout, và báo lỗi tử tế cho người dùng thay vì treo.</p>
 </details></div></article><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p4.1:b">Tôi đã xong phần bài tập</label><button class="btn" type="button" data-goto="thuc-hanh">Sang thực hành <span class="arr">→</span></button></div></section><section class="panel" id="thuc-hanh" role="tabpanel" hidden><div class="prose"><h2>Lab 4: trích xuất có cấu trúc và tool calling</h2>
 <p>Xây một trợ lý cho shop online: đọc email khách hàng, trích xuất yêu cầu, và trả lời bằng cách gọi tool.</p>
 <p><strong>Các bước</strong></p>
