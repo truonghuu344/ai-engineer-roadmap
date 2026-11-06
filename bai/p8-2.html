@@ -24,7 +24,7 @@
   <section class="lhero"><div class="code">P8.2</div><h1>MLOps</h1><div class="lmeta"><span class="m">Giai đoạn P8 · Production và MLOps</span><span class="m">Tuần 35–39</span><span class="chip ready"><span class="dot"></span>Có nội dung đầy đủ</span></div>
     <div class="intro"><p>Sau vài tuần thí nghiệm, câu hỏi "model đang chạy được train từ dữ liệu nào, code nào, siêu tham số nào?" thường không ai trả lời được. <strong>MLOps</strong> là bộ thói quen và công cụ giúp mọi kết quả <strong>tái lập được</strong>, mọi thay đổi <strong>được kiểm tra tự động</strong>, và việc đưa model mới lên production an toàn. Bài này dạy theo dõi thí nghiệm, quản lý phiên bản dữ liệu và model, tái lập kết quả (kèm thí nghiệm về dao động giữa các seed), và CI/CD có cổng chặn theo eval được thiết kế đúng thống kê.</p></div></section>
   
-  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">6 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
+  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">6 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">7 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
   <div class="lgrid" style="margin-top:22px">
     <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">Vì sao cần MLOps</h2>
 <div class="box why">
@@ -86,7 +86,7 @@
 <span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-s2">"đã ghi log vào"</span><span class="tk-p">,</span> <span class="tk-n">os</span><span class="tk-o">.</span><span class="tk-n">path</span><span class="tk-o">.</span><span class="tk-n">relpath</span><span class="tk-p">(</span><span class="tk-n">run</span><span class="tk-o">.</span><span class="tk-n">dir</span><span class="tk-p">))</span>
 </code></pre></div>
 
-<div class="run" data-mode="static" data-group="t"><div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span><span class="run-note">đã chạy sẵn cần wandb</span><a class="run-colab" href="https://colab.research.google.com/github/truonghuu344/ai-engineer-roadmap/blob/main/notebooks/ly-thuyet/p8-2.ipynb" target="_blank" rel="noopener">Mở trên Colab ↗</a></div><pre class="run-out">đã ghi log vào wandb/offline-run-20261106_092346-4w7u3znx/files</pre></div>
+<div class="run" data-mode="static" data-group="t"><div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span><span class="run-note">đã chạy sẵn cần wandb</span><a class="run-colab" href="https://colab.research.google.com/github/truonghuu344/ai-engineer-roadmap/blob/main/notebooks/ly-thuyet/p8-2.ipynb" target="_blank" rel="noopener">Mở trên Colab ↗</a></div><pre class="run-out">đã ghi log vào wandb/offline-run-20261106_183028-5vb4i7fw/files</pre></div>
 
 <p><strong>Weights &amp; Biases</strong> (dịch vụ, miễn phí cho cá nhân) và <strong>MLflow</strong> (mã nguồn mở, tự host được) là hai lựa chọn phổ biến. <code>transformers</code> và TRL có sẵn tham số <code>report_to="wandb"</code> hoặc <code>"mlflow"</code>. Lợi ích lớn nhất: so sánh hàng chục lần chạy trên cùng biểu đồ và biết chính xác cấu hình của lần tốt nhất.</p>
 <h2 id="lt-3">Phiên bản dữ liệu và model</h2>
@@ -276,31 +276,25 @@
 <td>quay về phiên bản trước</td>
 </tr>
 </tbody>
-</table></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p8.2:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 3</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Cổng chặn eval</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Model đang chạy có F1 0.82. Pull request mới đạt 0.80. Quy tắc: chặn nếu tụt quá 0.01.</p>
+</table></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p8.2:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 5</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Cổng chặn eval</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Model đang chạy có F1 0.82. Pull request mới đạt 0.80. Quy tắc: chặn nếu tụt quá 0.01.</p>
 <div class="ans" id="p8-2-e1-a1"><div class="ans-fields"><label>Mức tụt<input inputmode="decimal" data-ans="0.02" data-tol="0.0001" autocomplete="off"></label><label>CI cho qua? (1 = qua, 0 = chặn)<input inputmode="decimal" data-ans="0.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
 
 <details class="fold solution">
 <summary>Lời giải</summary>
 <p>Tụt 0.02 &gt; 0.01 nên chặn. Nhưng nhớ bài P4.3: với 100 mẫu, sai số khoảng ±0.08, nên ngưỡng 0.01 trên bộ nhỏ có thể chặn nhầm. Cách tốt hơn: bộ eval lớn hơn, so theo cặp trên cùng mẫu, hoặc ngưỡng dựa trên khoảng tin cậy.</p>
-</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 2</span><h3>Dung lượng checkpoint</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>10 lần chạy, mỗi lần lưu 5 checkpoint, mỗi checkpoint 300 MB (1 GB = 1000 MB).</p>
-<div class="ans" id="p8-2-e2-a1"><div class="ans-fields"><label>Tổng dung lượng (GB)<input inputmode="decimal" data-ans="15.0" data-tol="0.001" autocomplete="off"></label><label>Nếu chỉ giữ checkpoint tốt nhất và cuối cùng (GB)<input inputmode="decimal" data-ans="6.0" data-tol="0.001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
-
-<details class="fold solution">
-<summary>Lời giải</summary>
-<p>15 GB so với 6 GB. Quy tắc giữ checkpoint (best + last) và xóa lần chạy hỏng giúp kho lưu trữ không phình.</p>
-</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 3</span><h3>Trung bình nhiều seed</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Ba seed cho F1: 0.80, 0.84, 0.82. Dùng độ lệch chuẩn chia cho n.</p>
-<div class="ans" id="p8-2-e3-a1"><div class="ans-fields"><label>Trung bình<input inputmode="decimal" data-ans="0.82" data-tol="0.0001" autocomplete="off"></label><label>Độ lệch chuẩn<input inputmode="decimal" data-ans="0.0163" data-tol="0.0002" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 2</span><h3>Trung bình nhiều seed</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Ba seed cho F1: 0.80, 0.84, 0.82. Dùng độ lệch chuẩn chia cho n.</p>
+<div class="ans" id="p8-2-e2-a1"><div class="ans-fields"><label>Trung bình<input inputmode="decimal" data-ans="0.82" data-tol="0.0001" autocomplete="off"></label><label>Độ lệch chuẩn<input inputmode="decimal" data-ans="0.0163" data-tol="0.0002" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
 
 <details class="fold solution">
 <summary>Lời giải</summary>
 <p>Trung bình 0.82, độ lệch chuẩn khoảng 0.016. Một cải tiến 0.01 nhỏ hơn độ dao động giữa các seed: chưa đủ bằng chứng.</p>
-</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 4</span><h3>Tình huống không tái lập được</h3><span class="ex-tag concept">khái niệm</span></div><div class="prose"><p>Đồng nghiệp báo: "Tuần trước model đạt 0.86, giờ chạy lại cùng notebook chỉ được 0.81." Liệt kê 5 nguyên nhân có thể và cách phòng mỗi cái.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 3</span><h3>Tình huống không tái lập được</h3><span class="ex-tag concept">khái niệm</span></div><div class="prose"><p>Đồng nghiệp báo: "Tuần trước model đạt 0.86, giờ chạy lại cùng notebook chỉ được 0.81." Liệt kê 5 nguyên nhân có thể và cách phòng mỗi cái.</p>
 <details class="fold solution">
 <summary>Lời giải</summary>
 <ol>
 <li>Dữ liệu đã đổi (ai đó cập nhật file): DVC/Hub có phiên bản. 2. Thư viện cập nhật: khóa phiên bản, Docker. 3. Seed khác hoặc không cố định: ghi seed, chạy nhiều seed. 4. Chia train/test lại ngẫu nhiên: lưu danh sách id cố định. 5. Code notebook chạy không theo thứ tự hoặc biến cũ còn trong bộ nhớ: chuyển sang script, chạy lại từ đầu, theo dõi thí nghiệm ghi commit và config.</li>
 </ol>
-</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 5</span><h3>Workflow CI có cổng eval</h3><span class="ex-tag code">code</span></div><div class="prose"><p>Viết workflow GitHub Actions chạy test và script eval cho mỗi pull request, và script <code>eval_gate.py</code> so kết quả với baseline.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 4</span><h3>Workflow CI có cổng eval</h3><span class="ex-tag code">code</span></div><div class="prose"><p>Viết workflow GitHub Actions chạy test và script eval cho mỗi pull request, và script <code>eval_gate.py</code> so kết quả với baseline.</p>
 <details class="fold code">
 <summary>Code tham khảo</summary>
 <div class="hl"><pre><span></span><code><span class="tk-o">%%</span><span class="tk-n">writefile</span> <span class="tk-n">eval_gate</span><span class="tk-o">.</span><span class="tk-n">py</span>
@@ -323,7 +317,7 @@
     <span class="tk-n">main</span><span class="tk-p">()</span>
 </code></pre></div>
 
-<div class="run" data-group="e5" data-mode="static">
+<div class="run" data-group="e4" data-mode="static">
 <div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span><span class="run-note">đã chạy sẵn</span><a class="run-colab" href="https://colab.research.google.com/github/truonghuu344/ai-engineer-roadmap/blob/main/notebooks/ly-thuyet/p8-2.ipynb" target="_blank" rel="noopener">Mở trên Colab ↗</a></div>
 <pre class="run-out">Writing eval_gate.py</pre>
 </div>
@@ -333,14 +327,14 @@
 <span class="tk-n">json</span><span class="tk-o">.</span><span class="tk-n">dump</span><span class="tk-p">({</span><span class="tk-s2">"f1"</span><span class="tk-p">:</span> <span class="tk-mf">0.81</span><span class="tk-p">,</span> <span class="tk-s2">"json_valid"</span><span class="tk-p">:</span> <span class="tk-mf">0.99</span><span class="tk-p">},</span> <span class="tk-nb">open</span><span class="tk-p">(</span><span class="tk-s2">"eval_results.json"</span><span class="tk-p">,</span> <span class="tk-s2">"w"</span><span class="tk-p">))</span>
 </code></pre></div>
 
-<div class="run" data-group="e5" data-mode="py">
+<div class="run" data-group="e4" data-mode="py">
 <div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span></div>
 <pre class="run-out run-empty">(chạy xong, không in ra gì)</pre>
 </div>
 <div class="hl"><pre><span></span><code><span class="tk-err">!</span><span class="tk-n">python</span> <span class="tk-n">eval_gate</span><span class="tk-o">.</span><span class="tk-n">py</span><span class="tk-p">;</span> <span class="tk-n">echo</span> <span class="tk-s2">"mã thoát: $?"</span>
 </code></pre></div>
 
-<div class="run" data-group="e5" data-mode="static">
+<div class="run" data-group="e4" data-mode="static">
 <div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span><span class="run-note">đã chạy sẵn</span><a class="run-colab" href="https://colab.research.google.com/github/truonghuu344/ai-engineer-roadmap/blob/main/notebooks/ly-thuyet/p8-2.ipynb" target="_blank" rel="noopener">Mở trên Colab ↗</a></div>
 <pre class="run-out">f1           baseline 0.840 | mới 0.810 | TỤT&#10;json_valid   baseline 0.990 | mới 0.990 | OK&#10;mã thoát: 1</pre>
 </div>
@@ -362,6 +356,148 @@
 <span class="tk-w">      </span><span class="tk-p tk-p-Indicator">-</span><span class="tk-w"> </span><span class="tk-nt">run</span><span class="tk-p">:</span><span class="tk-w"> </span><span class="tk-l tk-l-Scalar tk-l-Scalar-Plain">python eval_gate.py</span>
 </code></pre></div>
 
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 5</span><h3>Nhật ký thí nghiệm tối giản</h3><span class="ex-tag code">ứng dụng</span></div><div class="prose"><p><em>Dùng: theo dõi thí nghiệm: mỗi lần chạy ghi lại cấu hình, metric, commit; truy vấn lại để so sánh.</em></p>
+<p>Không cần công cụ ngoài, viết <code>log_run(cfg, metrics)</code> ghi mỗi lần chạy thành một dòng JSON trong <code>runs.jsonl</code> (kèm id và thời điểm), rồi chạy 6 thí nghiệm logistic regression trên dữ liệu ung thư vú với các giá trị <code>C</code> và có/không chuẩn hóa. Đọc lại file bằng pandas, tìm lần chạy có F1 validation cao nhất, và so trung bình F1 theo có/không chuẩn hóa.</p>
+<div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">json</span><span class="tk-o">,</span><span class="tk-w"> </span><span class="tk-nn">time</span><span class="tk-o">,</span><span class="tk-w"> </span><span class="tk-nn">uuid</span>
+<span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">pandas</span><span class="tk-w"> </span><span class="tk-k">as</span><span class="tk-w"> </span><span class="tk-nn">pd</span>
+<span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">sklearn.datasets</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">load_breast_cancer</span>
+<span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">sklearn.model_selection</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">train_test_split</span>
+<span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">sklearn.linear_model</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">LogisticRegression</span>
+<span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">sklearn.preprocessing</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">StandardScaler</span>
+<span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">sklearn.pipeline</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">make_pipeline</span>
+<span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">sklearn.metrics</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">f1_score</span>
+<span class="tk-n">X</span><span class="tk-p">,</span> <span class="tk-n">y</span> <span class="tk-o">=</span> <span class="tk-n">load_breast_cancer</span><span class="tk-p">(</span><span class="tk-n">return_X_y</span><span class="tk-o">=</span><span class="tk-kc">True</span><span class="tk-p">)</span>
+<span class="tk-n">X_tr</span><span class="tk-p">,</span> <span class="tk-n">X_va</span><span class="tk-p">,</span> <span class="tk-n">y_tr</span><span class="tk-p">,</span> <span class="tk-n">y_va</span> <span class="tk-o">=</span> <span class="tk-n">train_test_split</span><span class="tk-p">(</span><span class="tk-n">X</span><span class="tk-p">,</span> <span class="tk-n">y</span><span class="tk-p">,</span> <span class="tk-n">test_size</span><span class="tk-o">=</span><span class="tk-mf">0.3</span><span class="tk-p">,</span> <span class="tk-n">random_state</span><span class="tk-o">=</span><span class="tk-mi">0</span><span class="tk-p">,</span> <span class="tk-n">stratify</span><span class="tk-o">=</span><span class="tk-n">y</span><span class="tk-p">)</span>
+<span class="tk-nb">open</span><span class="tk-p">(</span><span class="tk-s2">"runs.jsonl"</span><span class="tk-p">,</span> <span class="tk-s2">"w"</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">close</span><span class="tk-p">()</span>
+
+<span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">log_run</span><span class="tk-p">(</span><span class="tk-n">cfg</span><span class="tk-p">,</span> <span class="tk-n">metrics</span><span class="tk-p">):</span>
+    <span class="tk-c1"># TODO: ghi {"id", "time", "cfg", "metrics"} thành một dòng JSON</span>
+    <span class="tk-k">pass</span>
+</code></pre></div>
+
+<div class="run" data-mode="py" data-group="e5"><div class="run-bar"><span class="run-lbl">Code của bạn</span></div><pre class="run-out run-empty">Viết code vào chỗ trống rồi bấm Chạy.</pre></div>
+
+<div class="ans" id="p8-2-e5-a1"><div class="ans-fields"><label>Số dòng trong runs.jsonl<input inputmode="decimal" data-ans="6.0" data-tol="0.0" autocomplete="off"></label><label>F1 validation cao nhất (3 chữ số)<input inputmode="decimal" data-ans="0.967" data-tol="0.002" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+
+<details class="fold hint">
+<summary>Gợi ý</summary>
+<p><code>with open("runs.jsonl", "a") as f: f.write(json.dumps(rec) + "\n")</code>. Đọc lại: <code>pd.json_normalize([json.loads(l) for l in open("runs.jsonl")])</code> để có các cột <code>cfg.C</code>, <code>metrics.f1</code>.</p>
+</details>
+<details class="fold code">
+<summary>Code tham khảo</summary>
+<div class="hl"><pre><span></span><code><span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">log_run</span><span class="tk-p">(</span><span class="tk-n">cfg</span><span class="tk-p">,</span> <span class="tk-n">metrics</span><span class="tk-p">):</span>
+    <span class="tk-n">rec</span> <span class="tk-o">=</span> <span class="tk-p">{</span><span class="tk-s2">"id"</span><span class="tk-p">:</span> <span class="tk-n">uuid</span><span class="tk-o">.</span><span class="tk-n">uuid4</span><span class="tk-p">()</span><span class="tk-o">.</span><span class="tk-n">hex</span><span class="tk-p">[:</span><span class="tk-mi">8</span><span class="tk-p">],</span> <span class="tk-s2">"time"</span><span class="tk-p">:</span> <span class="tk-n">time</span><span class="tk-o">.</span><span class="tk-n">strftime</span><span class="tk-p">(</span><span class="tk-s2">"%Y-%m-</span><span class="tk-si">%d</span><span class="tk-s2"> %H:%M:%S"</span><span class="tk-p">),</span> <span class="tk-s2">"cfg"</span><span class="tk-p">:</span> <span class="tk-n">cfg</span><span class="tk-p">,</span> <span class="tk-s2">"metrics"</span><span class="tk-p">:</span> <span class="tk-n">metrics</span><span class="tk-p">}</span>
+    <span class="tk-k">with</span> <span class="tk-nb">open</span><span class="tk-p">(</span><span class="tk-s2">"runs.jsonl"</span><span class="tk-p">,</span> <span class="tk-s2">"a"</span><span class="tk-p">)</span> <span class="tk-k">as</span> <span class="tk-n">f</span><span class="tk-p">:</span>
+        <span class="tk-n">f</span><span class="tk-o">.</span><span class="tk-n">write</span><span class="tk-p">(</span><span class="tk-n">json</span><span class="tk-o">.</span><span class="tk-n">dumps</span><span class="tk-p">(</span><span class="tk-n">rec</span><span class="tk-p">)</span> <span class="tk-o">+</span> <span class="tk-s2">"</span><span class="tk-se">\n</span><span class="tk-s2">"</span><span class="tk-p">)</span>
+
+<span class="tk-k">for</span> <span class="tk-n">scale</span> <span class="tk-ow">in</span> <span class="tk-p">(</span><span class="tk-kc">False</span><span class="tk-p">,</span> <span class="tk-kc">True</span><span class="tk-p">):</span>
+    <span class="tk-k">for</span> <span class="tk-n">C</span> <span class="tk-ow">in</span> <span class="tk-p">(</span><span class="tk-mf">0.01</span><span class="tk-p">,</span> <span class="tk-mf">1.0</span><span class="tk-p">,</span> <span class="tk-mf">100.0</span><span class="tk-p">):</span>
+        <span class="tk-n">m</span> <span class="tk-o">=</span> <span class="tk-n">LogisticRegression</span><span class="tk-p">(</span><span class="tk-n">C</span><span class="tk-o">=</span><span class="tk-n">C</span><span class="tk-p">,</span> <span class="tk-n">max_iter</span><span class="tk-o">=</span><span class="tk-mi">5000</span><span class="tk-p">)</span>
+        <span class="tk-n">model</span> <span class="tk-o">=</span> <span class="tk-n">make_pipeline</span><span class="tk-p">(</span><span class="tk-n">StandardScaler</span><span class="tk-p">(),</span> <span class="tk-n">m</span><span class="tk-p">)</span> <span class="tk-k">if</span> <span class="tk-n">scale</span> <span class="tk-k">else</span> <span class="tk-n">m</span>
+        <span class="tk-n">model</span><span class="tk-o">.</span><span class="tk-n">fit</span><span class="tk-p">(</span><span class="tk-n">X_tr</span><span class="tk-p">,</span> <span class="tk-n">y_tr</span><span class="tk-p">)</span>
+        <span class="tk-n">log_run</span><span class="tk-p">({</span><span class="tk-s2">"C"</span><span class="tk-p">:</span> <span class="tk-n">C</span><span class="tk-p">,</span> <span class="tk-s2">"scale"</span><span class="tk-p">:</span> <span class="tk-n">scale</span><span class="tk-p">},</span> <span class="tk-p">{</span><span class="tk-s2">"f1"</span><span class="tk-p">:</span> <span class="tk-n">f1_score</span><span class="tk-p">(</span><span class="tk-n">y_va</span><span class="tk-p">,</span> <span class="tk-n">model</span><span class="tk-o">.</span><span class="tk-n">predict</span><span class="tk-p">(</span><span class="tk-n">X_va</span><span class="tk-p">))})</span>
+
+<span class="tk-n">df</span> <span class="tk-o">=</span> <span class="tk-n">pd</span><span class="tk-o">.</span><span class="tk-n">json_normalize</span><span class="tk-p">([</span><span class="tk-n">json</span><span class="tk-o">.</span><span class="tk-n">loads</span><span class="tk-p">(</span><span class="tk-n">l</span><span class="tk-p">)</span> <span class="tk-k">for</span> <span class="tk-n">l</span> <span class="tk-ow">in</span> <span class="tk-nb">open</span><span class="tk-p">(</span><span class="tk-s2">"runs.jsonl"</span><span class="tk-p">)])</span><span class="tk-o">.</span><span class="tk-n">rename</span><span class="tk-p">(</span><span class="tk-n">columns</span><span class="tk-o">=</span><span class="tk-k">lambda</span> <span class="tk-n">c</span><span class="tk-p">:</span> <span class="tk-n">c</span><span class="tk-o">.</span><span class="tk-n">split</span><span class="tk-p">(</span><span class="tk-s2">"."</span><span class="tk-p">)[</span><span class="tk-o">-</span><span class="tk-mi">1</span><span class="tk-p">])</span>
+<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-n">df</span><span class="tk-p">[[</span><span class="tk-s2">"id"</span><span class="tk-p">,</span> <span class="tk-s2">"C"</span><span class="tk-p">,</span> <span class="tk-s2">"scale"</span><span class="tk-p">,</span> <span class="tk-s2">"f1"</span><span class="tk-p">]]</span><span class="tk-o">.</span><span class="tk-n">sort_values</span><span class="tk-p">(</span><span class="tk-s2">"f1"</span><span class="tk-p">,</span> <span class="tk-n">ascending</span><span class="tk-o">=</span><span class="tk-kc">False</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">to_string</span><span class="tk-p">(</span><span class="tk-n">index</span><span class="tk-o">=</span><span class="tk-kc">False</span><span class="tk-p">))</span>
+<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-n">df</span><span class="tk-o">.</span><span class="tk-n">groupby</span><span class="tk-p">(</span><span class="tk-s2">"scale"</span><span class="tk-p">)[</span><span class="tk-s2">"f1"</span><span class="tk-p">]</span><span class="tk-o">.</span><span class="tk-n">mean</span><span class="tk-p">()</span><span class="tk-o">.</span><span class="tk-n">round</span><span class="tk-p">(</span><span class="tk-mi">3</span><span class="tk-p">))</span>
+</code></pre></div>
+
+<div class="run" data-group="e5" data-mode="py">
+<div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span></div>
+<pre class="run-out">      id      C  scale       f1&#10;b453ec7e   1.00   True 0.967136&#10;a4d00f77 100.00   True 0.966825&#10;426e9934   0.01   True 0.954545&#10;9a3d4d66   0.01  False 0.953271&#10;ec90c229 100.00  False 0.952830&#10;650cc219   1.00  False 0.943925&#10;scale&#10;False    0.950&#10;True     0.963&#10;Name: f1, dtype: float64</pre>
+</div>
+<p>Đây là phần cốt lõi của MLflow hay Weights &amp; Biases: ghi lại mọi lần chạy kèm cấu hình, để sau này trả lời được "model đang chạy thật được train với cấu hình nào". Công cụ thật thêm giao diện, biểu đồ và lưu artifact, nhưng ý tưởng không đổi.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 6</span><h3>Chạy lại ra đúng kết quả</h3><span class="ex-tag code">ứng dụng</span></div><div class="prose"><p><em>Dùng: tái lập kết quả: cố định seed cho mọi nguồn ngẫu nhiên (random, numpy, torch), chế độ deterministic.</em></p>
+<p>Viết <code>train_mot_lan(seed)</code>: khởi tạo một MLP nhỏ, train 50 bước trên dữ liệu ngẫu nhiên có xáo trộn, trả về loss cuối. Chạy hai lần với cùng seed (sau khi gọi <code>dat_seed</code>), và hai lần <strong>không</strong> đặt seed. Kết quả có giống hệt nhau không?</p>
+<div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">random</span>
+<span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">numpy</span><span class="tk-w"> </span><span class="tk-k">as</span><span class="tk-w"> </span><span class="tk-nn">np</span><span class="tk-o">,</span><span class="tk-w"> </span><span class="tk-nn">torch</span><span class="tk-o">,</span><span class="tk-w"> </span><span class="tk-nn">torch.nn</span><span class="tk-w"> </span><span class="tk-k">as</span><span class="tk-w"> </span><span class="tk-nn">nn</span>
+
+<span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">dat_seed</span><span class="tk-p">(</span><span class="tk-n">seed</span><span class="tk-p">):</span>
+    <span class="tk-c1"># TODO: cố định random, numpy, torch</span>
+    <span class="tk-k">pass</span>
+
+<span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">train_mot_lan</span><span class="tk-p">():</span>
+    <span class="tk-n">X</span> <span class="tk-o">=</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">tensor</span><span class="tk-p">(</span><span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">random</span><span class="tk-o">.</span><span class="tk-n">normal</span><span class="tk-p">(</span><span class="tk-n">size</span><span class="tk-o">=</span><span class="tk-p">(</span><span class="tk-mi">256</span><span class="tk-p">,</span> <span class="tk-mi">8</span><span class="tk-p">)),</span> <span class="tk-n">dtype</span><span class="tk-o">=</span><span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">float32</span><span class="tk-p">)</span>
+    <span class="tk-n">y</span> <span class="tk-o">=</span> <span class="tk-p">(</span><span class="tk-n">X</span><span class="tk-p">[:,</span> <span class="tk-mi">0</span><span class="tk-p">]</span> <span class="tk-o">&gt;</span> <span class="tk-mi">0</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">long</span><span class="tk-p">()</span>
+    <span class="tk-n">model</span> <span class="tk-o">=</span> <span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">Sequential</span><span class="tk-p">(</span><span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">Linear</span><span class="tk-p">(</span><span class="tk-mi">8</span><span class="tk-p">,</span> <span class="tk-mi">16</span><span class="tk-p">),</span> <span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">ReLU</span><span class="tk-p">(),</span> <span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">Linear</span><span class="tk-p">(</span><span class="tk-mi">16</span><span class="tk-p">,</span> <span class="tk-mi">2</span><span class="tk-p">))</span>
+    <span class="tk-n">opt</span> <span class="tk-o">=</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">optim</span><span class="tk-o">.</span><span class="tk-n">SGD</span><span class="tk-p">(</span><span class="tk-n">model</span><span class="tk-o">.</span><span class="tk-n">parameters</span><span class="tk-p">(),</span> <span class="tk-n">lr</span><span class="tk-o">=</span><span class="tk-mf">0.1</span><span class="tk-p">)</span>
+    <span class="tk-n">idx</span> <span class="tk-o">=</span> <span class="tk-nb">list</span><span class="tk-p">(</span><span class="tk-nb">range</span><span class="tk-p">(</span><span class="tk-mi">256</span><span class="tk-p">))</span>
+    <span class="tk-k">for</span> <span class="tk-n">_</span> <span class="tk-ow">in</span> <span class="tk-nb">range</span><span class="tk-p">(</span><span class="tk-mi">50</span><span class="tk-p">):</span>
+        <span class="tk-n">random</span><span class="tk-o">.</span><span class="tk-n">shuffle</span><span class="tk-p">(</span><span class="tk-n">idx</span><span class="tk-p">)</span>
+        <span class="tk-n">b</span> <span class="tk-o">=</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">tensor</span><span class="tk-p">(</span><span class="tk-n">idx</span><span class="tk-p">[:</span><span class="tk-mi">32</span><span class="tk-p">])</span>
+        <span class="tk-n">opt</span><span class="tk-o">.</span><span class="tk-n">zero_grad</span><span class="tk-p">();</span> <span class="tk-n">loss</span> <span class="tk-o">=</span> <span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">functional</span><span class="tk-o">.</span><span class="tk-n">cross_entropy</span><span class="tk-p">(</span><span class="tk-n">model</span><span class="tk-p">(</span><span class="tk-n">X</span><span class="tk-p">[</span><span class="tk-n">b</span><span class="tk-p">]),</span> <span class="tk-n">y</span><span class="tk-p">[</span><span class="tk-n">b</span><span class="tk-p">]);</span> <span class="tk-n">loss</span><span class="tk-o">.</span><span class="tk-n">backward</span><span class="tk-p">();</span> <span class="tk-n">opt</span><span class="tk-o">.</span><span class="tk-n">step</span><span class="tk-p">()</span>
+    <span class="tk-k">return</span> <span class="tk-n">loss</span><span class="tk-o">.</span><span class="tk-n">item</span><span class="tk-p">()</span>
+</code></pre></div>
+
+<div class="run" data-mode="py" data-group="e6"><div class="run-bar"><span class="run-lbl">Code của bạn</span></div><pre class="run-out run-empty">Viết code vào chỗ trống rồi bấm Chạy.</pre></div>
+
+<div class="ans" id="p8-2-e6-a1"><div class="ans-fields"><label>Hai lần cùng seed cho loss giống hệt (1 = đúng)<input inputmode="decimal" data-ans="1.0" data-tol="0.0" autocomplete="off"></label><label>Hai lần không đặt seed cho loss giống hệt (1 = đúng)<input inputmode="decimal" data-ans="0.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+
+<details class="fold hint">
+<summary>Gợi ý</summary>
+<p>Ba nguồn ngẫu nhiên khác nhau: <code>random.seed(s)</code>, <code>np.random.seed(s)</code>, <code>torch.manual_seed(s)</code>. Thiếu một trong ba là kết quả đổi (ở đây dữ liệu dùng numpy, xáo trộn dùng random, khởi tạo dùng torch).</p>
+</details>
+<details class="fold code">
+<summary>Code tham khảo</summary>
+<div class="hl"><pre><span></span><code><span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">dat_seed</span><span class="tk-p">(</span><span class="tk-n">seed</span><span class="tk-p">):</span>
+    <span class="tk-n">random</span><span class="tk-o">.</span><span class="tk-n">seed</span><span class="tk-p">(</span><span class="tk-n">seed</span><span class="tk-p">);</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">random</span><span class="tk-o">.</span><span class="tk-n">seed</span><span class="tk-p">(</span><span class="tk-n">seed</span><span class="tk-p">);</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">manual_seed</span><span class="tk-p">(</span><span class="tk-n">seed</span><span class="tk-p">)</span>
+    <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">use_deterministic_algorithms</span><span class="tk-p">(</span><span class="tk-kc">True</span><span class="tk-p">,</span> <span class="tk-n">warn_only</span><span class="tk-o">=</span><span class="tk-kc">True</span><span class="tk-p">)</span>
+
+<span class="tk-n">co_seed</span> <span class="tk-o">=</span> <span class="tk-p">[]</span>
+<span class="tk-k">for</span> <span class="tk-n">_</span> <span class="tk-ow">in</span> <span class="tk-nb">range</span><span class="tk-p">(</span><span class="tk-mi">2</span><span class="tk-p">):</span>
+    <span class="tk-n">dat_seed</span><span class="tk-p">(</span><span class="tk-mi">42</span><span class="tk-p">);</span> <span class="tk-n">co_seed</span><span class="tk-o">.</span><span class="tk-n">append</span><span class="tk-p">(</span><span class="tk-n">train_mot_lan</span><span class="tk-p">())</span>
+<span class="tk-n">khong_seed</span> <span class="tk-o">=</span> <span class="tk-p">[</span><span class="tk-n">train_mot_lan</span><span class="tk-p">(),</span> <span class="tk-n">train_mot_lan</span><span class="tk-p">()]</span>
+<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-s2">"cùng seed  :"</span><span class="tk-p">,</span> <span class="tk-n">co_seed</span><span class="tk-p">)</span>
+<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-s2">"không seed :"</span><span class="tk-p">,</span> <span class="tk-n">khong_seed</span><span class="tk-p">)</span>
+</code></pre></div>
+
+<div class="run" data-group="e6" data-mode="py">
+<div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span></div>
+<pre class="run-out">cùng seed  : [0.3663865029811859, 0.3663865029811859]&#10;không seed : [0.379963755607605, 0.2893966734409332]</pre>
+</div>
+<p>Trên GPU, một số phép tính (như cộng song song bằng atomic) cho kết quả lệch ở chữ số cuối giữa các lần chạy dù cùng seed; <code>use_deterministic_algorithms</code> buộc dùng bản deterministic (chậm hơn chút). Ghi seed vào nhật ký thí nghiệm, và báo cáo trung bình nhiều seed thay vì một lần chạy may mắn.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 7</span><h3>Phát hiện dữ liệu bị thay đổi bằng mã băm</h3><span class="ex-tag code">ứng dụng</span></div><div class="prose"><p><em>Dùng: phiên bản dữ liệu: lưu mã băm của từng file trong manifest, so manifest để biết dữ liệu nào đã đổi.</em></p>
+<p>Viết <code>manifest(thu_muc)</code> trả về dict tên file → SHA-256 nội dung. Tạo một thư mục dữ liệu 3 file CSV, lưu manifest phiên bản 1. Rồi sửa một dòng trong một file, thêm một file mới, và so manifest mới với cũ để báo file nào <strong>thay đổi</strong>, <strong>thêm</strong>, <strong>xóa</strong>.</p>
+<div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">hashlib</span><span class="tk-o">,</span><span class="tk-w"> </span><span class="tk-nn">json</span><span class="tk-o">,</span><span class="tk-w"> </span><span class="tk-nn">os</span>
+<span class="tk-n">os</span><span class="tk-o">.</span><span class="tk-n">makedirs</span><span class="tk-p">(</span><span class="tk-s2">"data_v"</span><span class="tk-p">,</span> <span class="tk-n">exist_ok</span><span class="tk-o">=</span><span class="tk-kc">True</span><span class="tk-p">)</span>
+<span class="tk-k">for</span> <span class="tk-n">ten</span><span class="tk-p">,</span> <span class="tk-n">noi_dung</span> <span class="tk-ow">in</span> <span class="tk-p">[(</span><span class="tk-s2">"train.csv"</span><span class="tk-p">,</span> <span class="tk-s2">"id,label</span><span class="tk-se">\n</span><span class="tk-s2">1,0</span><span class="tk-se">\n</span><span class="tk-s2">2,1</span><span class="tk-se">\n</span><span class="tk-s2">"</span><span class="tk-p">),</span> <span class="tk-p">(</span><span class="tk-s2">"val.csv"</span><span class="tk-p">,</span> <span class="tk-s2">"id,label</span><span class="tk-se">\n</span><span class="tk-s2">3,1</span><span class="tk-se">\n</span><span class="tk-s2">"</span><span class="tk-p">),</span> <span class="tk-p">(</span><span class="tk-s2">"test.csv"</span><span class="tk-p">,</span> <span class="tk-s2">"id,label</span><span class="tk-se">\n</span><span class="tk-s2">4,0</span><span class="tk-se">\n</span><span class="tk-s2">"</span><span class="tk-p">)]:</span>
+    <span class="tk-nb">open</span><span class="tk-p">(</span><span class="tk-sa">f</span><span class="tk-s2">"data_v/</span><span class="tk-si">{</span><span class="tk-n">ten</span><span class="tk-si">}</span><span class="tk-s2">"</span><span class="tk-p">,</span> <span class="tk-s2">"w"</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">write</span><span class="tk-p">(</span><span class="tk-n">noi_dung</span><span class="tk-p">)</span>
+
+<span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">manifest</span><span class="tk-p">(</span><span class="tk-n">thu_muc</span><span class="tk-p">):</span>
+    <span class="tk-c1"># TODO</span>
+    <span class="tk-k">return</span> <span class="tk-p">{}</span>
+</code></pre></div>
+
+<div class="run" data-mode="py" data-group="e7"><div class="run-bar"><span class="run-lbl">Code của bạn</span></div><pre class="run-out run-empty">Viết code vào chỗ trống rồi bấm Chạy.</pre></div>
+
+<div class="ans" id="p8-2-e7-a1"><div class="ans-fields"><label>Số file thay đổi<input inputmode="decimal" data-ans="1.0" data-tol="0.0" autocomplete="off"></label><label>Số file thêm mới<input inputmode="decimal" data-ans="1.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+
+<details class="fold hint">
+<summary>Gợi ý</summary>
+<p><code>hashlib.sha256(open(p, "rb").read()).hexdigest()</code>. So hai dict: thay đổi là tên có ở cả hai nhưng mã băm khác; thêm là tên chỉ có ở bản mới.</p>
+</details>
+<details class="fold code">
+<summary>Code tham khảo</summary>
+<div class="hl"><pre><span></span><code><span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">manifest</span><span class="tk-p">(</span><span class="tk-n">thu_muc</span><span class="tk-p">):</span>
+    <span class="tk-k">return</span> <span class="tk-p">{</span><span class="tk-n">f</span><span class="tk-p">:</span> <span class="tk-n">hashlib</span><span class="tk-o">.</span><span class="tk-n">sha256</span><span class="tk-p">(</span><span class="tk-nb">open</span><span class="tk-p">(</span><span class="tk-n">os</span><span class="tk-o">.</span><span class="tk-n">path</span><span class="tk-o">.</span><span class="tk-n">join</span><span class="tk-p">(</span><span class="tk-n">thu_muc</span><span class="tk-p">,</span> <span class="tk-n">f</span><span class="tk-p">),</span> <span class="tk-s2">"rb"</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">read</span><span class="tk-p">())</span><span class="tk-o">.</span><span class="tk-n">hexdigest</span><span class="tk-p">()</span>
+            <span class="tk-k">for</span> <span class="tk-n">f</span> <span class="tk-ow">in</span> <span class="tk-nb">sorted</span><span class="tk-p">(</span><span class="tk-n">os</span><span class="tk-o">.</span><span class="tk-n">listdir</span><span class="tk-p">(</span><span class="tk-n">thu_muc</span><span class="tk-p">))}</span>
+
+<span class="tk-n">v1</span> <span class="tk-o">=</span> <span class="tk-n">manifest</span><span class="tk-p">(</span><span class="tk-s2">"data_v"</span><span class="tk-p">)</span>
+<span class="tk-n">json</span><span class="tk-o">.</span><span class="tk-n">dump</span><span class="tk-p">(</span><span class="tk-n">v1</span><span class="tk-p">,</span> <span class="tk-nb">open</span><span class="tk-p">(</span><span class="tk-s2">"manifest_v1.json"</span><span class="tk-p">,</span> <span class="tk-s2">"w"</span><span class="tk-p">),</span> <span class="tk-n">indent</span><span class="tk-o">=</span><span class="tk-mi">1</span><span class="tk-p">)</span>
+<span class="tk-nb">open</span><span class="tk-p">(</span><span class="tk-s2">"data_v/train.csv"</span><span class="tk-p">,</span> <span class="tk-s2">"w"</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">write</span><span class="tk-p">(</span><span class="tk-s2">"id,label</span><span class="tk-se">\n</span><span class="tk-s2">1,0</span><span class="tk-se">\n</span><span class="tk-s2">2,0</span><span class="tk-se">\n</span><span class="tk-s2">"</span><span class="tk-p">)</span>          <span class="tk-c1"># sửa nhãn một dòng</span>
+<span class="tk-nb">open</span><span class="tk-p">(</span><span class="tk-s2">"data_v/extra.csv"</span><span class="tk-p">,</span> <span class="tk-s2">"w"</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">write</span><span class="tk-p">(</span><span class="tk-s2">"id,label</span><span class="tk-se">\n</span><span class="tk-s2">5,1</span><span class="tk-se">\n</span><span class="tk-s2">"</span><span class="tk-p">)</span>
+<span class="tk-n">v2</span> <span class="tk-o">=</span> <span class="tk-n">manifest</span><span class="tk-p">(</span><span class="tk-s2">"data_v"</span><span class="tk-p">)</span>
+<span class="tk-n">thay_doi</span> <span class="tk-o">=</span> <span class="tk-p">[</span><span class="tk-n">f</span> <span class="tk-k">for</span> <span class="tk-n">f</span> <span class="tk-ow">in</span> <span class="tk-n">v1</span> <span class="tk-k">if</span> <span class="tk-n">f</span> <span class="tk-ow">in</span> <span class="tk-n">v2</span> <span class="tk-ow">and</span> <span class="tk-n">v1</span><span class="tk-p">[</span><span class="tk-n">f</span><span class="tk-p">]</span> <span class="tk-o">!=</span> <span class="tk-n">v2</span><span class="tk-p">[</span><span class="tk-n">f</span><span class="tk-p">]]</span>
+<span class="tk-n">them</span> <span class="tk-o">=</span> <span class="tk-p">[</span><span class="tk-n">f</span> <span class="tk-k">for</span> <span class="tk-n">f</span> <span class="tk-ow">in</span> <span class="tk-n">v2</span> <span class="tk-k">if</span> <span class="tk-n">f</span> <span class="tk-ow">not</span> <span class="tk-ow">in</span> <span class="tk-n">v1</span><span class="tk-p">]</span>
+<span class="tk-n">xoa</span> <span class="tk-o">=</span> <span class="tk-p">[</span><span class="tk-n">f</span> <span class="tk-k">for</span> <span class="tk-n">f</span> <span class="tk-ow">in</span> <span class="tk-n">v1</span> <span class="tk-k">if</span> <span class="tk-n">f</span> <span class="tk-ow">not</span> <span class="tk-ow">in</span> <span class="tk-n">v2</span><span class="tk-p">]</span>
+<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-s2">"thay đổi:"</span><span class="tk-p">,</span> <span class="tk-n">thay_doi</span><span class="tk-p">,</span> <span class="tk-s2">"| thêm:"</span><span class="tk-p">,</span> <span class="tk-n">them</span><span class="tk-p">,</span> <span class="tk-s2">"| xóa:"</span><span class="tk-p">,</span> <span class="tk-n">xoa</span><span class="tk-p">)</span>
+</code></pre></div>
+
+<div class="run" data-group="e7" data-mode="py">
+<div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span></div>
+<pre class="run-out">thay đổi: [&#x27;train.csv&#x27;] | thêm: [&#x27;extra.csv&#x27;] | xóa: []</pre>
+</div>
+<p>Một nhãn bị sửa trong tập train làm kết quả đổi mà không ai biết vì sao. Lưu manifest này cùng commit code (DVC làm đúng việc này, kèm lưu file thật lên kho từ xa) là bạn luôn trả lời được "model này train trên phiên bản dữ liệu nào".</p>
 </details></div></article><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p8.2:b">Tôi đã xong phần bài tập</label><button class="btn" type="button" data-goto="thuc-hanh">Sang thực hành <span class="arr">→</span></button></div></section><section class="panel" id="thuc-hanh" role="tabpanel" hidden><div class="prose"><h2>Pipeline train → eval → deploy tự động</h2>
 <p>Dùng một model nhỏ của bạn (ví dụ PhoBERT ở P3.4 hoặc hệ RAG ở Lab 5).</p>
 <p><strong>Các bước</strong></p>

@@ -24,7 +24,7 @@
   <section class="lhero"><div class="code">P8.4</div><h1>Backend và dữ liệu cho AI</h1><div class="lmeta"><span class="m">Giai đoạn P8 · Production và MLOps</span><span class="m">Tuần 35–39</span><span class="chip ready"><span class="dot"></span>Có nội dung đầy đủ</span></div>
     <div class="intro"><p>Hệ thống AI thật hiếm khi chỉ có model: có cơ sở dữ liệu lưu người dùng và lịch sử, vector store cho RAG, cache, hàng đợi cho việc chạy lâu, và xác thực để biết ai được làm gì. Theo các phân tích tin tuyển dụng, SQL, data pipeline và kỹ năng backend là nhóm kỹ năng giúp ứng viên AI Engineer nổi bật. Bài này dạy những phần đủ dùng, với truy vấn SQL đã chạy thật và một mô phỏng cho thấy vì sao phân quyền phải nằm trong truy vấn tìm kiếm.</p></div></section>
   
-  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">8 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
+  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">8 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">8 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
   <div class="lgrid" style="margin-top:22px">
     <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">Bức tranh backend của một hệ AI</h2>
 <div class="box why">
@@ -347,7 +347,7 @@
 <td>server gọi lại địa chỉ của client khi có sự kiện</td>
 </tr>
 </tbody>
-</table></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p8.4:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 3</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>SQL bằng tay</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Bảng <code>orders</code>:</p>
+</table></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p8.4:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 6</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>SQL bằng tay</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Bảng <code>orders</code>:</p>
 <table>
 <thead>
 <tr>
@@ -398,23 +398,17 @@
 <details class="fold solution">
 <summary>Lời giải</summary>
 <p>Chỉ An có ít nhất 2 đơn (3 đơn). s = 300 + 200 + 100 = 600.</p>
-</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 2</span><h3>Hàng đợi</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>100 việc, mỗi việc 30 giây, 4 worker chạy song song.</p>
-<div class="ans" id="p8-4-e2-a1"><div class="ans-fields"><label>Thời gian xử lý hết (s)<input inputmode="decimal" data-ans="750.0" data-tol="0.0" autocomplete="off"></label><label>Cần bao nhiêu worker để xong trong 5 phút<input inputmode="decimal" data-ans="10.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
-
-<details class="fold solution">
-<summary>Lời giải</summary>
-<p>100/4 = 25 lượt × 30 s = 750 s. Xong trong 300 s cần 3000/300 = 10 worker.</p>
-</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 3</span><h3>Dung lượng bảng vector</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>1 triệu đoạn, vector 1024 chiều, pgvector lưu float4 (4 byte), bỏ qua phần phụ.</p>
-<div class="ans" id="p8-4-e3-a1"><div class="ans-fields"><label>Dung lượng vector (GB)<input inputmode="decimal" data-ans="4.096" data-tol="0.001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 2</span><h3>Dung lượng bảng vector</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>1 triệu đoạn, vector 1024 chiều, pgvector lưu float4 (4 byte), bỏ qua phần phụ.</p>
+<div class="ans" id="p8-4-e2-a1"><div class="ans-fields"><label>Dung lượng vector (GB)<input inputmode="decimal" data-ans="4.096" data-tol="0.001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
 
 <details class="fold solution">
 <summary>Lời giải</summary>
 <p>Khoảng 4,1 GB cho vector, chưa tính index HNSW (thường thêm cỡ tương đương) và nội dung văn bản. Lên kế hoạch RAM và ổ đĩa cho cơ sở dữ liệu từ đầu.</p>
-</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 4</span><h3>Phân quyền trong RAG</h3><span class="ex-tag concept">khái niệm</span></div><div class="prose"><p>Hệ RAG cho nhiều công ty dùng chung một bảng <code>chunks</code>. Một kỹ sư đề xuất: "Lấy top-20 đoạn gần nhất, rồi bảo LLM chỉ dùng đoạn thuộc công ty của người hỏi." Vì sao cách này sai, và cách đúng là gì?</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 3</span><h3>Phân quyền trong RAG</h3><span class="ex-tag concept">khái niệm</span></div><div class="prose"><p>Hệ RAG cho nhiều công ty dùng chung một bảng <code>chunks</code>. Một kỹ sư đề xuất: "Lấy top-20 đoạn gần nhất, rồi bảo LLM chỉ dùng đoạn thuộc công ty của người hỏi." Vì sao cách này sai, và cách đúng là gì?</p>
 <details class="fold solution">
 <summary>Lời giải</summary>
 <p>Đoạn của công ty khác đã nằm trong context: LLM có thể làm lộ nội dung (do nhầm hoặc bị prompt injection), và top-20 có thể toàn đoạn của công ty khác nên công ty đúng không có đoạn nào. Cách đúng: lọc trong truy vấn <code>WHERE org_id = :org</code> (kết hợp với tìm vector), lấy <code>org_id</code> từ phiên đăng nhập trên server chứ không từ tham số do client hay model gửi lên.</p>
-</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 5</span><h3>Truy vấn cho bộ eval</h3><span class="ex-tag code">code</span></div><div class="prose"><p>Viết truy vấn SQL lấy 200 câu hỏi khách hàng tháng trước để làm bộ eval: chỉ các hội thoại bị đánh giá "không thích" hoặc bị chuyển nhân viên, mỗi khách tối đa 2 câu, ưu tiên câu dài. Rồi viết hàm Python chạy truy vấn bằng <code>psycopg</code> và lưu ra JSONL.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 4</span><h3>Truy vấn cho bộ eval</h3><span class="ex-tag code">code</span></div><div class="prose"><p>Viết truy vấn SQL lấy 200 câu hỏi khách hàng tháng trước để làm bộ eval: chỉ các hội thoại bị đánh giá "không thích" hoặc bị chuyển nhân viên, mỗi khách tối đa 2 câu, ưu tiên câu dài. Rồi viết hàm Python chạy truy vấn bằng <code>psycopg</code> và lưu ra JSONL.</p>
 <details class="fold code">
 <summary>Code tham khảo</summary>
 <div class="hl"><pre><span></span><code><span class="tk-c1"># Cần Postgres có bảng conversations, messages của hệ thống bạn</span>
@@ -439,9 +433,186 @@
             <span class="tk-n">f</span><span class="tk-o">.</span><span class="tk-n">write</span><span class="tk-p">(</span><span class="tk-n">json</span><span class="tk-o">.</span><span class="tk-n">dumps</span><span class="tk-p">({</span><span class="tk-s2">"customer_id"</span><span class="tk-p">:</span> <span class="tk-n">customer_id</span><span class="tk-p">,</span> <span class="tk-s2">"question"</span><span class="tk-p">:</span> <span class="tk-n">question</span><span class="tk-p">},</span> <span class="tk-n">ensure_ascii</span><span class="tk-o">=</span><span class="tk-kc">False</span><span class="tk-p">)</span> <span class="tk-o">+</span> <span class="tk-s2">"</span><span class="tk-se">\n</span><span class="tk-s2">"</span><span class="tk-p">)</span>
 </code></pre></div>
 
-<div class="run run-skip" data-group="e5" data-mode="static">
+<div class="run run-skip" data-group="e4" data-mode="static">
 <div class="run-bar"><span class="run-lbl">Không chạy trên trang</span><span class="run-note">Cần Postgres có bảng conversations, messages của hệ thống bạn</span><a class="run-colab" href="https://colab.research.google.com/github/truonghuu344/ai-engineer-roadmap/blob/main/notebooks/ly-thuyet/p8-4.ipynb" target="_blank" rel="noopener">Mở trên Colab ↗</a></div>
 </div>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 5</span><h3>SQL cho nhật ký chatbot</h3><span class="ex-tag code">ứng dụng</span></div><div class="prose"><p><em>Dùng: SQL: tạo bảng, JOIN, GROUP BY, lọc theo thời gian; dùng <code>sqlite3</code> có sẵn trong Python (cú pháp gần như giống Postgres).</em></p>
+<p>Hệ thống lưu hội thoại trong bảng <code>conversations(id, user_id, model_version, created_at)</code> và đánh giá trong <code>feedback(conv_id, rating)</code> (1 = hữu ích, 0 = không). Viết SQL trả lời: (1) mỗi phiên bản model có bao nhiêu hội thoại và tỉ lệ hữu ích bao nhiêu (chỉ tính hội thoại có đánh giá); (2) có bao nhiêu hội thoại <strong>chưa</strong> được đánh giá.</p>
+<div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">sqlite3</span>
+<span class="tk-n">con</span> <span class="tk-o">=</span> <span class="tk-n">sqlite3</span><span class="tk-o">.</span><span class="tk-n">connect</span><span class="tk-p">(</span><span class="tk-s2">":memory:"</span><span class="tk-p">)</span>
+<span class="tk-n">con</span><span class="tk-o">.</span><span class="tk-n">executescript</span><span class="tk-p">(</span><span class="tk-s2">"""</span>
+<span class="tk-s2">CREATE TABLE conversations (id INTEGER PRIMARY KEY, user_id TEXT, model_version TEXT, created_at TEXT);</span>
+<span class="tk-s2">CREATE TABLE feedback (conv_id INTEGER, rating INTEGER);</span>
+<span class="tk-s2">INSERT INTO conversations VALUES (1,'u1','v1','2026-11-01'),(2,'u2','v1','2026-11-01'),(3,'u1','v2','2026-11-02'),</span>
+<span class="tk-s2">  (4,'u3','v2','2026-11-02'),(5,'u4','v2','2026-11-03'),(6,'u2','v1','2026-11-03'),(7,'u5','v2','2026-11-03');</span>
+<span class="tk-s2">INSERT INTO feedback VALUES (1,1),(2,0),(3,1),(4,1),(5,0),(7,1);</span>
+<span class="tk-s2">"""</span><span class="tk-p">)</span>
+<span class="tk-c1"># TODO: sql_theo_ban (version, số hội thoại có đánh giá, tỉ lệ hữu ích), sql_chua_danh_gia</span>
+</code></pre></div>
+
+<div class="ans" id="p8-4-e5-a1"><div class="ans-fields"><label>Tỉ lệ hữu ích của v2 (3 chữ số)<input inputmode="decimal" data-ans="0.75" data-tol="0.002" autocomplete="off"></label><label>Số hội thoại chưa được đánh giá<input inputmode="decimal" data-ans="1.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+
+<details class="fold hint">
+<summary>Gợi ý</summary>
+<p>(1) <code>JOIN feedback f ON f.conv_id = c.id</code>, <code>GROUP BY c.model_version</code>, <code>AVG(f.rating)</code>. (2) <code>LEFT JOIN</code> rồi lọc <code>WHERE f.conv_id IS NULL</code>.</p>
+</details>
+<details class="fold code">
+<summary>Code tham khảo</summary>
+<div class="hl"><pre><span></span><code><span class="tk-n">sql_theo_ban</span> <span class="tk-o">=</span> <span class="tk-s2">"""</span>
+<span class="tk-s2">SELECT c.model_version, COUNT(*) AS so_hoi_thoai, AVG(f.rating) AS ti_le_huu_ich</span>
+<span class="tk-s2">FROM conversations c JOIN feedback f ON f.conv_id = c.id</span>
+<span class="tk-s2">GROUP BY c.model_version ORDER BY c.model_version"""</span>
+<span class="tk-n">sql_chua_danh_gia</span> <span class="tk-o">=</span> <span class="tk-s2">"""</span>
+<span class="tk-s2">SELECT COUNT(*) FROM conversations c LEFT JOIN feedback f ON f.conv_id = c.id WHERE f.conv_id IS NULL"""</span>
+<span class="tk-k">for</span> <span class="tk-n">row</span> <span class="tk-ow">in</span> <span class="tk-n">con</span><span class="tk-o">.</span><span class="tk-n">execute</span><span class="tk-p">(</span><span class="tk-n">sql_theo_ban</span><span class="tk-p">):</span>
+    <span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-n">row</span><span class="tk-p">)</span>
+<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-s2">"chưa đánh giá:"</span><span class="tk-p">,</span> <span class="tk-n">con</span><span class="tk-o">.</span><span class="tk-n">execute</span><span class="tk-p">(</span><span class="tk-n">sql_chua_danh_gia</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">fetchone</span><span class="tk-p">()[</span><span class="tk-mi">0</span><span class="tk-p">])</span>
+</code></pre></div>
+
+<div class="run" data-group="e5" data-mode="py">
+<div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span></div>
+<pre class="run-out">(&#x27;v1&#x27;, 2, 0.5)&#10;(&#x27;v2&#x27;, 4, 0.75)&#10;chưa đánh giá: 1</pre>
+</div>
+<p><code>JOIN</code> thường bỏ mất các hội thoại không có đánh giá; <code>LEFT JOIN ... IS NULL</code> là mẫu câu để tìm "những gì còn thiếu". Kỹ sư AI dùng SQL hằng ngày để lấy dữ liệu cho bộ eval và để đo chất lượng model trên dữ liệu thật.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 6</span><h3>Tìm kiếm có phân quyền</h3><span class="ex-tag code">ứng dụng</span></div><div class="prose"><p><em>Dùng: phân quyền trong RAG: lọc theo quyền </em><em>trong</em><em> truy vấn tìm kiếm, không lọc sau khi đã lấy kết quả.</em></p>
+<p>Bảng <code>docs(id, phong_ban, noi_dung)</code>. Người dùng thuộc một số phòng ban. Viết <code>tim(tu_khoa, nhom_cua_user, k)</code> trả về tối đa k tài liệu chứa từ khóa <strong>mà người dùng được phép xem</strong> (phòng ban của tài liệu nằm trong nhóm của họ, hoặc là <code>chung</code>), dùng tham số <code>?</code> để chống SQL injection. So với cách sai: lấy top-k trước rồi mới lọc quyền.</p>
+<div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">sqlite3</span>
+<span class="tk-n">con</span> <span class="tk-o">=</span> <span class="tk-n">sqlite3</span><span class="tk-o">.</span><span class="tk-n">connect</span><span class="tk-p">(</span><span class="tk-s2">":memory:"</span><span class="tk-p">)</span>
+<span class="tk-n">con</span><span class="tk-o">.</span><span class="tk-n">execute</span><span class="tk-p">(</span><span class="tk-s2">"CREATE TABLE docs (id INTEGER, phong_ban TEXT, noi_dung TEXT)"</span><span class="tk-p">)</span>
+<span class="tk-n">con</span><span class="tk-o">.</span><span class="tk-n">executemany</span><span class="tk-p">(</span><span class="tk-s2">"INSERT INTO docs VALUES (?,?,?)"</span><span class="tk-p">,</span> <span class="tk-p">[</span>
+    <span class="tk-p">(</span><span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-s2">"nhan_su"</span><span class="tk-p">,</span> <span class="tk-s2">"Bảng lương và thưởng năm 2026"</span><span class="tk-p">),</span> <span class="tk-p">(</span><span class="tk-mi">2</span><span class="tk-p">,</span> <span class="tk-s2">"nhan_su"</span><span class="tk-p">,</span> <span class="tk-s2">"Quy trình xét thưởng cuối năm"</span><span class="tk-p">),</span>
+    <span class="tk-p">(</span><span class="tk-mi">3</span><span class="tk-p">,</span> <span class="tk-s2">"chung"</span><span class="tk-p">,</span> <span class="tk-s2">"Lịch nghỉ lễ và thưởng Tết"</span><span class="tk-p">),</span> <span class="tk-p">(</span><span class="tk-mi">4</span><span class="tk-p">,</span> <span class="tk-s2">"kinh_doanh"</span><span class="tk-p">,</span> <span class="tk-s2">"Chỉ tiêu doanh số và thưởng quý"</span><span class="tk-p">),</span>
+    <span class="tk-p">(</span><span class="tk-mi">5</span><span class="tk-p">,</span> <span class="tk-s2">"chung"</span><span class="tk-p">,</span> <span class="tk-s2">"Hướng dẫn xin nghỉ phép"</span><span class="tk-p">),</span> <span class="tk-p">(</span><span class="tk-mi">6</span><span class="tk-p">,</span> <span class="tk-s2">"kinh_doanh"</span><span class="tk-p">,</span> <span class="tk-s2">"Chính sách thưởng cho đại lý"</span><span class="tk-p">)])</span>
+
+<span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">tim</span><span class="tk-p">(</span><span class="tk-n">tu_khoa</span><span class="tk-p">,</span> <span class="tk-n">nhom</span><span class="tk-p">,</span> <span class="tk-n">k</span><span class="tk-o">=</span><span class="tk-mi">2</span><span class="tk-p">):</span>
+    <span class="tk-c1"># TODO: một câu SQL có điều kiện quyền + LIKE + LIMIT</span>
+    <span class="tk-k">return</span> <span class="tk-p">[]</span>
+
+<span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">tim_sai</span><span class="tk-p">(</span><span class="tk-n">tu_khoa</span><span class="tk-p">,</span> <span class="tk-n">nhom</span><span class="tk-p">,</span> <span class="tk-n">k</span><span class="tk-o">=</span><span class="tk-mi">2</span><span class="tk-p">):</span>
+    <span class="tk-n">rows</span> <span class="tk-o">=</span> <span class="tk-n">con</span><span class="tk-o">.</span><span class="tk-n">execute</span><span class="tk-p">(</span><span class="tk-s2">"SELECT id, phong_ban FROM docs WHERE noi_dung LIKE ? LIMIT ?"</span><span class="tk-p">,</span> <span class="tk-p">(</span><span class="tk-sa">f</span><span class="tk-s2">"%</span><span class="tk-si">{</span><span class="tk-n">tu_khoa</span><span class="tk-si">}</span><span class="tk-s2">%"</span><span class="tk-p">,</span> <span class="tk-n">k</span><span class="tk-p">))</span><span class="tk-o">.</span><span class="tk-n">fetchall</span><span class="tk-p">()</span>
+    <span class="tk-k">return</span> <span class="tk-p">[</span><span class="tk-n">r</span> <span class="tk-k">for</span> <span class="tk-n">r</span> <span class="tk-ow">in</span> <span class="tk-n">rows</span> <span class="tk-k">if</span> <span class="tk-n">r</span><span class="tk-p">[</span><span class="tk-mi">1</span><span class="tk-p">]</span> <span class="tk-ow">in</span> <span class="tk-n">nhom</span> <span class="tk-ow">or</span> <span class="tk-n">r</span><span class="tk-p">[</span><span class="tk-mi">1</span><span class="tk-p">]</span> <span class="tk-o">==</span> <span class="tk-s2">"chung"</span><span class="tk-p">]</span>
+</code></pre></div>
+
+<div class="ans" id="p8-4-e6-a1"><div class="ans-fields"><label>Số kết quả đúng cho nhân viên kinh doanh tìm &quot;thưởng&quot; (k = 2)<input inputmode="decimal" data-ans="2.0" data-tol="0.0" autocomplete="off"></label><label>Số kết quả của cách sai (lọc sau)<input inputmode="decimal" data-ans="0.0" data-tol="0.0" autocomplete="off"></label><label>Kết quả đúng có lộ tài liệu nhân sự không (1 = có, phải là 0)<input inputmode="decimal" data-ans="0.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+
+<details class="fold hint">
+<summary>Gợi ý</summary>
+<p>Tạo đủ dấu <code>?</code> cho danh sách nhóm: <code>",".join("?" * len(nhom))</code>, rồi <code>WHERE (phong_ban IN (...) OR phong_ban = 'chung') AND noi_dung LIKE ? LIMIT ?</code>.</p>
+</details>
+<details class="fold code">
+<summary>Code tham khảo</summary>
+<div class="hl"><pre><span></span><code><span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">tim</span><span class="tk-p">(</span><span class="tk-n">tu_khoa</span><span class="tk-p">,</span> <span class="tk-n">nhom</span><span class="tk-p">,</span> <span class="tk-n">k</span><span class="tk-o">=</span><span class="tk-mi">2</span><span class="tk-p">):</span>
+    <span class="tk-n">dau</span> <span class="tk-o">=</span> <span class="tk-s2">","</span><span class="tk-o">.</span><span class="tk-n">join</span><span class="tk-p">(</span><span class="tk-s2">"?"</span> <span class="tk-o">*</span> <span class="tk-nb">len</span><span class="tk-p">(</span><span class="tk-n">nhom</span><span class="tk-p">))</span>
+    <span class="tk-n">sql</span> <span class="tk-o">=</span> <span class="tk-sa">f</span><span class="tk-s2">"SELECT id, phong_ban FROM docs WHERE (phong_ban IN (</span><span class="tk-si">{</span><span class="tk-n">dau</span><span class="tk-si">}</span><span class="tk-s2">) OR phong_ban = 'chung') AND noi_dung LIKE ? LIMIT ?"</span>
+    <span class="tk-k">return</span> <span class="tk-n">con</span><span class="tk-o">.</span><span class="tk-n">execute</span><span class="tk-p">(</span><span class="tk-n">sql</span><span class="tk-p">,</span> <span class="tk-p">(</span><span class="tk-o">*</span><span class="tk-n">nhom</span><span class="tk-p">,</span> <span class="tk-sa">f</span><span class="tk-s2">"%</span><span class="tk-si">{</span><span class="tk-n">tu_khoa</span><span class="tk-si">}</span><span class="tk-s2">%"</span><span class="tk-p">,</span> <span class="tk-n">k</span><span class="tk-p">))</span><span class="tk-o">.</span><span class="tk-n">fetchall</span><span class="tk-p">()</span>
+
+<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-s2">"đúng:"</span><span class="tk-p">,</span> <span class="tk-n">tim</span><span class="tk-p">(</span><span class="tk-s2">"thưởng"</span><span class="tk-p">,</span> <span class="tk-p">[</span><span class="tk-s2">"kinh_doanh"</span><span class="tk-p">]))</span>
+<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-s2">"sai :"</span><span class="tk-p">,</span> <span class="tk-n">tim_sai</span><span class="tk-p">(</span><span class="tk-s2">"thưởng"</span><span class="tk-p">,</span> <span class="tk-p">[</span><span class="tk-s2">"kinh_doanh"</span><span class="tk-p">]))</span>
+</code></pre></div>
+
+<div class="run" data-group="e6" data-mode="py">
+<div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span></div>
+<pre class="run-out">đúng: [(3, &#x27;chung&#x27;), (4, &#x27;kinh_doanh&#x27;)]&#10;sai : []</pre>
+</div>
+<p>Cách sai lấy 2 tài liệu đầu (đều của phòng nhân sự) rồi lọc bỏ: người dùng nhận <strong>0 kết quả</strong> dù có tài liệu hợp lệ. Tệ hơn, nếu quên bước lọc thì tài liệu lương bị lộ. Lọc quyền phải nằm trong truy vấn (với pgvector: <code>WHERE</code> cùng câu với <code>ORDER BY embedding &lt;=&gt; ...</code>).</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 7</span><h3>Cache có thời hạn</h3><span class="ex-tag code">ứng dụng</span></div><div class="prose"><p><em>Dùng: cache với TTL (thời gian sống) như Redis <code>SETEX</code>, khóa cache, đo tỉ lệ trúng.</em></p>
+<p>Viết lớp <code>TTLCache</code> với <code>get(k, now)</code> và <code>set(k, v, ttl, now)</code>, trong đó <code>now</code> là thời điểm (giây) truyền vào để dễ kiểm thử. Dùng nó cache câu trả lời FAQ với TTL 60 giây. Chạy trên nhật ký 10 request (thời điểm, câu hỏi đã chuẩn hóa) và đếm số lần trúng cache.</p>
+<div class="hl"><pre><span></span><code><span class="tk-k">class</span><span class="tk-w"> </span><span class="tk-nc">TTLCache</span><span class="tk-p">:</span>
+    <span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-fm">__init__</span><span class="tk-p">(</span><span class="tk-bp">self</span><span class="tk-p">):</span>
+        <span class="tk-bp">self</span><span class="tk-o">.</span><span class="tk-n">data</span> <span class="tk-o">=</span> <span class="tk-p">{}</span>
+    <span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">get</span><span class="tk-p">(</span><span class="tk-bp">self</span><span class="tk-p">,</span> <span class="tk-n">k</span><span class="tk-p">,</span> <span class="tk-n">now</span><span class="tk-p">):</span>
+        <span class="tk-c1"># TODO: trả về giá trị nếu còn hạn, ngược lại None (và xóa khóa hết hạn)</span>
+        <span class="tk-k">return</span> <span class="tk-kc">None</span>
+    <span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">set</span><span class="tk-p">(</span><span class="tk-bp">self</span><span class="tk-p">,</span> <span class="tk-n">k</span><span class="tk-p">,</span> <span class="tk-n">v</span><span class="tk-p">,</span> <span class="tk-n">ttl</span><span class="tk-p">,</span> <span class="tk-n">now</span><span class="tk-p">):</span>
+        <span class="tk-c1"># TODO</span>
+        <span class="tk-k">pass</span>
+
+<span class="tk-n">log</span> <span class="tk-o">=</span> <span class="tk-p">[(</span><span class="tk-mi">0</span><span class="tk-p">,</span> <span class="tk-s2">"giờ mở cửa"</span><span class="tk-p">),</span> <span class="tk-p">(</span><span class="tk-mi">5</span><span class="tk-p">,</span> <span class="tk-s2">"phí ship"</span><span class="tk-p">),</span> <span class="tk-p">(</span><span class="tk-mi">20</span><span class="tk-p">,</span> <span class="tk-s2">"giờ mở cửa"</span><span class="tk-p">),</span> <span class="tk-p">(</span><span class="tk-mi">40</span><span class="tk-p">,</span> <span class="tk-s2">"phí ship"</span><span class="tk-p">),</span> <span class="tk-p">(</span><span class="tk-mi">65</span><span class="tk-p">,</span> <span class="tk-s2">"giờ mở cửa"</span><span class="tk-p">),</span>
+       <span class="tk-p">(</span><span class="tk-mi">70</span><span class="tk-p">,</span> <span class="tk-s2">"giờ mở cửa"</span><span class="tk-p">),</span> <span class="tk-p">(</span><span class="tk-mi">90</span><span class="tk-p">,</span> <span class="tk-s2">"đổi trả"</span><span class="tk-p">),</span> <span class="tk-p">(</span><span class="tk-mi">100</span><span class="tk-p">,</span> <span class="tk-s2">"phí ship"</span><span class="tk-p">),</span> <span class="tk-p">(</span><span class="tk-mi">110</span><span class="tk-p">,</span> <span class="tk-s2">"đổi trả"</span><span class="tk-p">),</span> <span class="tk-p">(</span><span class="tk-mi">130</span><span class="tk-p">,</span> <span class="tk-s2">"giờ mở cửa"</span><span class="tk-p">)]</span>
+</code></pre></div>
+
+<div class="run" data-mode="py" data-group="e7"><div class="run-bar"><span class="run-lbl">Code của bạn</span></div><pre class="run-out run-empty">Viết code vào chỗ trống rồi bấm Chạy.</pre></div>
+
+<div class="ans" id="p8-4-e7-a1"><div class="ans-fields"><label>Số lần trúng cache<input inputmode="decimal" data-ans="4.0" data-tol="0.0" autocomplete="off"></label><label>Số lần phải gọi model<input inputmode="decimal" data-ans="6.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+
+<details class="fold hint">
+<summary>Gợi ý</summary>
+<p>Lưu <code>(giá_trị, hết_hạn_lúc)</code> với <code>hết_hạn_lúc = now + ttl</code>. Khi <code>get</code>, nếu <code>now &gt;= hết_hạn_lúc</code> thì coi như không có.</p>
+</details>
+<details class="fold code">
+<summary>Code tham khảo</summary>
+<div class="hl"><pre><span></span><code><span class="tk-k">class</span><span class="tk-w"> </span><span class="tk-nc">TTLCache</span><span class="tk-p">:</span>
+    <span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-fm">__init__</span><span class="tk-p">(</span><span class="tk-bp">self</span><span class="tk-p">):</span>
+        <span class="tk-bp">self</span><span class="tk-o">.</span><span class="tk-n">data</span> <span class="tk-o">=</span> <span class="tk-p">{}</span>
+    <span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">get</span><span class="tk-p">(</span><span class="tk-bp">self</span><span class="tk-p">,</span> <span class="tk-n">k</span><span class="tk-p">,</span> <span class="tk-n">now</span><span class="tk-p">):</span>
+        <span class="tk-n">v</span> <span class="tk-o">=</span> <span class="tk-bp">self</span><span class="tk-o">.</span><span class="tk-n">data</span><span class="tk-o">.</span><span class="tk-n">get</span><span class="tk-p">(</span><span class="tk-n">k</span><span class="tk-p">)</span>
+        <span class="tk-k">if</span> <span class="tk-n">v</span> <span class="tk-ow">is</span> <span class="tk-kc">None</span> <span class="tk-ow">or</span> <span class="tk-n">now</span> <span class="tk-o">&gt;=</span> <span class="tk-n">v</span><span class="tk-p">[</span><span class="tk-mi">1</span><span class="tk-p">]:</span>
+            <span class="tk-bp">self</span><span class="tk-o">.</span><span class="tk-n">data</span><span class="tk-o">.</span><span class="tk-n">pop</span><span class="tk-p">(</span><span class="tk-n">k</span><span class="tk-p">,</span> <span class="tk-kc">None</span><span class="tk-p">)</span>
+            <span class="tk-k">return</span> <span class="tk-kc">None</span>
+        <span class="tk-k">return</span> <span class="tk-n">v</span><span class="tk-p">[</span><span class="tk-mi">0</span><span class="tk-p">]</span>
+    <span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">set</span><span class="tk-p">(</span><span class="tk-bp">self</span><span class="tk-p">,</span> <span class="tk-n">k</span><span class="tk-p">,</span> <span class="tk-n">v</span><span class="tk-p">,</span> <span class="tk-n">ttl</span><span class="tk-p">,</span> <span class="tk-n">now</span><span class="tk-p">):</span>
+        <span class="tk-bp">self</span><span class="tk-o">.</span><span class="tk-n">data</span><span class="tk-p">[</span><span class="tk-n">k</span><span class="tk-p">]</span> <span class="tk-o">=</span> <span class="tk-p">(</span><span class="tk-n">v</span><span class="tk-p">,</span> <span class="tk-n">now</span> <span class="tk-o">+</span> <span class="tk-n">ttl</span><span class="tk-p">)</span>
+
+<span class="tk-n">cache</span><span class="tk-p">,</span> <span class="tk-n">trung</span> <span class="tk-o">=</span> <span class="tk-n">TTLCache</span><span class="tk-p">(),</span> <span class="tk-mi">0</span>
+<span class="tk-k">for</span> <span class="tk-n">t</span><span class="tk-p">,</span> <span class="tk-n">q</span> <span class="tk-ow">in</span> <span class="tk-n">log</span><span class="tk-p">:</span>
+    <span class="tk-k">if</span> <span class="tk-n">cache</span><span class="tk-o">.</span><span class="tk-n">get</span><span class="tk-p">(</span><span class="tk-n">q</span><span class="tk-p">,</span> <span class="tk-n">t</span><span class="tk-p">)</span> <span class="tk-ow">is</span> <span class="tk-ow">not</span> <span class="tk-kc">None</span><span class="tk-p">:</span>
+        <span class="tk-n">trung</span> <span class="tk-o">+=</span> <span class="tk-mi">1</span><span class="tk-p">;</span> <span class="tk-n">nguon</span> <span class="tk-o">=</span> <span class="tk-s2">"cache"</span>
+    <span class="tk-k">else</span><span class="tk-p">:</span>
+        <span class="tk-n">cache</span><span class="tk-o">.</span><span class="tk-n">set</span><span class="tk-p">(</span><span class="tk-n">q</span><span class="tk-p">,</span> <span class="tk-sa">f</span><span class="tk-s2">"trả lời cho '</span><span class="tk-si">{</span><span class="tk-n">q</span><span class="tk-si">}</span><span class="tk-s2">'"</span><span class="tk-p">,</span> <span class="tk-mi">60</span><span class="tk-p">,</span> <span class="tk-n">t</span><span class="tk-p">);</span> <span class="tk-n">nguon</span> <span class="tk-o">=</span> <span class="tk-s2">"model"</span>
+    <span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-sa">f</span><span class="tk-s2">"t=</span><span class="tk-si">{</span><span class="tk-n">t</span><span class="tk-si">:</span><span class="tk-s2">3d</span><span class="tk-si">}</span><span class="tk-s2">s </span><span class="tk-si">{</span><span class="tk-n">q</span><span class="tk-si">:</span><span class="tk-s2">12s</span><span class="tk-si">}</span><span class="tk-s2"> → </span><span class="tk-si">{</span><span class="tk-n">nguon</span><span class="tk-si">}</span><span class="tk-s2">"</span><span class="tk-p">)</span>
+<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-sa">f</span><span class="tk-s2">"trúng </span><span class="tk-si">{</span><span class="tk-n">trung</span><span class="tk-si">}</span><span class="tk-s2">/</span><span class="tk-si">{</span><span class="tk-nb">len</span><span class="tk-p">(</span><span class="tk-n">log</span><span class="tk-p">)</span><span class="tk-si">}</span><span class="tk-s2">"</span><span class="tk-p">)</span>
+</code></pre></div>
+
+<div class="run" data-group="e7" data-mode="py">
+<div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span></div>
+<pre class="run-out">t=  0s giờ mở cửa   → model&#10;t=  5s phí ship     → model&#10;t= 20s giờ mở cửa   → cache&#10;t= 40s phí ship     → cache&#10;t= 65s giờ mở cửa   → model&#10;t= 70s giờ mở cửa   → cache&#10;t= 90s đổi trả      → model&#10;t=100s phí ship     → model&#10;t=110s đổi trả      → cache&#10;t=130s giờ mở cửa   → model&#10;trúng 4/10</pre>
+</div>
+<p>TTL cân bằng giữa tiết kiệm và độ mới: thông tin như giờ mở cửa ít đổi nên TTL dài được; giá, tồn kho cần TTL ngắn hoặc xóa cache chủ động khi dữ liệu đổi. Trên Redis thật: <code>r.setex(k, 60, v)</code> và <code>r.get(k)</code>.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 8</span><h3>Hàng đợi tác vụ có thử lại và hàng đợi lỗi</h3><span class="ex-tag code">ứng dụng</span></div><div class="prose"><p><em>Dùng: hàng đợi tác vụ cho việc chạy lâu (nạp tài liệu, tạo ảnh): worker lấy việc, thử lại khi lỗi tạm thời, chuyển vào dead-letter queue sau nhiều lần thất bại.</em></p>
+<p>Mô phỏng hàng đợi 8 tác vụ nạp tài liệu. Hàm <code>xu_ly(tac_vu, lan_thu)</code> thất bại tạm thời ở vài lần thử đầu với một số tác vụ, và luôn thất bại với file hỏng. Viết vòng worker: lấy tác vụ đầu hàng, xử lý; lỗi thì đưa lại cuối hàng với <code>lan_thu + 1</code>; quá 3 lần thì chuyển vào <code>dead_letter</code>. Đếm số tác vụ thành công, số trong dead-letter, và tổng số lần xử lý.</p>
+<div class="hl"><pre><span></span><code><span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">collections</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">deque</span>
+<span class="tk-n">tac_vu</span> <span class="tk-o">=</span> <span class="tk-p">[</span><span class="tk-sa">f</span><span class="tk-s2">"doc_</span><span class="tk-si">{</span><span class="tk-n">i</span><span class="tk-si">}</span><span class="tk-s2">.pdf"</span> <span class="tk-k">for</span> <span class="tk-n">i</span> <span class="tk-ow">in</span> <span class="tk-nb">range</span><span class="tk-p">(</span><span class="tk-mi">7</span><span class="tk-p">)]</span> <span class="tk-o">+</span> <span class="tk-p">[</span><span class="tk-s2">"hong.pdf"</span><span class="tk-p">]</span>
+<span class="tk-n">LOI_TAM</span> <span class="tk-o">=</span> <span class="tk-p">{</span><span class="tk-s2">"doc_2.pdf"</span><span class="tk-p">:</span> <span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-s2">"doc_5.pdf"</span><span class="tk-p">:</span> <span class="tk-mi">2</span><span class="tk-p">}</span>            <span class="tk-c1"># số lần thất bại trước khi thành công</span>
+
+<span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">xu_ly</span><span class="tk-p">(</span><span class="tk-n">ten</span><span class="tk-p">,</span> <span class="tk-n">lan_thu</span><span class="tk-p">):</span>
+    <span class="tk-k">if</span> <span class="tk-n">ten</span> <span class="tk-o">==</span> <span class="tk-s2">"hong.pdf"</span><span class="tk-p">:</span>
+        <span class="tk-k">raise</span> <span class="tk-ne">ValueError</span><span class="tk-p">(</span><span class="tk-s2">"file hỏng, không đọc được"</span><span class="tk-p">)</span>
+    <span class="tk-k">if</span> <span class="tk-n">lan_thu</span> <span class="tk-o">&lt;=</span> <span class="tk-n">LOI_TAM</span><span class="tk-o">.</span><span class="tk-n">get</span><span class="tk-p">(</span><span class="tk-n">ten</span><span class="tk-p">,</span> <span class="tk-mi">0</span><span class="tk-p">):</span>
+        <span class="tk-k">raise</span> <span class="tk-ne">TimeoutError</span><span class="tk-p">(</span><span class="tk-s2">"dịch vụ embedding quá tải"</span><span class="tk-p">)</span>
+    <span class="tk-k">return</span> <span class="tk-sa">f</span><span class="tk-s2">"đã nạp </span><span class="tk-si">{</span><span class="tk-n">ten</span><span class="tk-si">}</span><span class="tk-s2">"</span>
+<span class="tk-c1"># TODO: hang = deque((t, 1) for t in tac_vu); vòng worker; thanh_cong, dead_letter, so_lan_xu_ly</span>
+</code></pre></div>
+
+<div class="run" data-mode="py" data-group="e8"><div class="run-bar"><span class="run-lbl">Code của bạn</span></div><pre class="run-out run-empty">Viết code vào chỗ trống rồi bấm Chạy.</pre></div>
+
+<div class="ans" id="p8-4-e8-a1"><div class="ans-fields"><label>Số tác vụ thành công<input inputmode="decimal" data-ans="7.0" data-tol="0.0" autocomplete="off"></label><label>Số tác vụ trong dead-letter<input inputmode="decimal" data-ans="1.0" data-tol="0.0" autocomplete="off"></label><label>Tổng số lần xử lý<input inputmode="decimal" data-ans="13.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+
+<details class="fold hint">
+<summary>Gợi ý</summary>
+<p><code>while hang: ten, lan = hang.popleft()</code>. Trong <code>except</code>: nếu <code>lan &lt; 3</code> thì <code>hang.append((ten, lan + 1))</code>, ngược lại <code>dead_letter.append((ten, str(e)))</code>.</p>
+</details>
+<details class="fold code">
+<summary>Code tham khảo</summary>
+<div class="hl"><pre><span></span><code><span class="tk-n">hang</span> <span class="tk-o">=</span> <span class="tk-n">deque</span><span class="tk-p">((</span><span class="tk-n">t</span><span class="tk-p">,</span> <span class="tk-mi">1</span><span class="tk-p">)</span> <span class="tk-k">for</span> <span class="tk-n">t</span> <span class="tk-ow">in</span> <span class="tk-n">tac_vu</span><span class="tk-p">)</span>
+<span class="tk-n">thanh_cong</span><span class="tk-p">,</span> <span class="tk-n">dead_letter</span><span class="tk-p">,</span> <span class="tk-n">so_lan_xu_ly</span> <span class="tk-o">=</span> <span class="tk-p">[],</span> <span class="tk-p">[],</span> <span class="tk-mi">0</span>
+<span class="tk-k">while</span> <span class="tk-n">hang</span><span class="tk-p">:</span>
+    <span class="tk-n">ten</span><span class="tk-p">,</span> <span class="tk-n">lan</span> <span class="tk-o">=</span> <span class="tk-n">hang</span><span class="tk-o">.</span><span class="tk-n">popleft</span><span class="tk-p">()</span>
+    <span class="tk-n">so_lan_xu_ly</span> <span class="tk-o">+=</span> <span class="tk-mi">1</span>
+    <span class="tk-k">try</span><span class="tk-p">:</span>
+        <span class="tk-n">thanh_cong</span><span class="tk-o">.</span><span class="tk-n">append</span><span class="tk-p">(</span><span class="tk-n">xu_ly</span><span class="tk-p">(</span><span class="tk-n">ten</span><span class="tk-p">,</span> <span class="tk-n">lan</span><span class="tk-p">))</span>
+    <span class="tk-k">except</span> <span class="tk-ne">Exception</span> <span class="tk-k">as</span> <span class="tk-n">e</span><span class="tk-p">:</span>
+        <span class="tk-k">if</span> <span class="tk-n">lan</span> <span class="tk-o">&lt;</span> <span class="tk-mi">3</span><span class="tk-p">:</span>
+            <span class="tk-n">hang</span><span class="tk-o">.</span><span class="tk-n">append</span><span class="tk-p">((</span><span class="tk-n">ten</span><span class="tk-p">,</span> <span class="tk-n">lan</span> <span class="tk-o">+</span> <span class="tk-mi">1</span><span class="tk-p">))</span>
+        <span class="tk-k">else</span><span class="tk-p">:</span>
+            <span class="tk-n">dead_letter</span><span class="tk-o">.</span><span class="tk-n">append</span><span class="tk-p">((</span><span class="tk-n">ten</span><span class="tk-p">,</span> <span class="tk-sa">f</span><span class="tk-s2">"</span><span class="tk-si">{</span><span class="tk-nb">type</span><span class="tk-p">(</span><span class="tk-n">e</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-vm">__name__</span><span class="tk-si">}</span><span class="tk-s2">: </span><span class="tk-si">{</span><span class="tk-n">e</span><span class="tk-si">}</span><span class="tk-s2">"</span><span class="tk-p">))</span>
+<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-sa">f</span><span class="tk-s2">"thành công </span><span class="tk-si">{</span><span class="tk-nb">len</span><span class="tk-p">(</span><span class="tk-n">thanh_cong</span><span class="tk-p">)</span><span class="tk-si">}</span><span class="tk-s2">, dead-letter </span><span class="tk-si">{</span><span class="tk-n">dead_letter</span><span class="tk-si">}</span><span class="tk-s2">, tổng </span><span class="tk-si">{</span><span class="tk-n">so_lan_xu_ly</span><span class="tk-si">}</span><span class="tk-s2"> lần xử lý"</span><span class="tk-p">)</span>
+</code></pre></div>
+
+<div class="run" data-group="e8" data-mode="py">
+<div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span></div>
+<pre class="run-out">thành công 7, dead-letter [(&#x27;hong.pdf&#x27;, &#x27;ValueError: file hỏng, không đọc được&#x27;)], tổng 13 lần xử lý</pre>
+</div>
+<p>Lỗi tạm thời (quá tải, mạng chập chờn) tự hết sau vài lần thử; lỗi vĩnh viễn (file hỏng) thì thử mãi cũng vô ích, nên tách ra dead-letter queue để người xem. Celery, RQ, hay hàng đợi của cloud đều có sẵn cơ chế này.</p>
 </details></div></article><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p8.4:b">Tôi đã xong phần bài tập</label><button class="btn" type="button" data-goto="thuc-hanh">Sang thực hành <span class="arr">→</span></button></div></section><section class="panel" id="thuc-hanh" role="tabpanel" hidden><div class="prose"><h2>Thêm cơ sở dữ liệu, cache và hàng đợi vào API</h2>
 <p><strong>Các bước</strong></p>
 <ol>

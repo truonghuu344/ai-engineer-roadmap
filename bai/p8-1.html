@@ -24,7 +24,7 @@
   <section class="lhero"><div class="code">P8.1</div><h1>Bài 10a · Serving</h1><div class="lmeta"><span class="m">Giai đoạn P8 · Production và MLOps</span><span class="m">Tuần 35–39</span><span class="chip ready"><span class="dot"></span>Có nội dung đầy đủ</span></div>
     <div class="intro"><p>Model nằm trong notebook thì chỉ bạn dùng được. Bài này đưa model ra thành một <strong>API</strong> mà ứng dụng khác gọi được: FastAPI cho logic, streaming để người dùng thấy chữ chạy, Docker để chạy giống nhau ở mọi nơi, vLLM để phục vụ LLM hiệu quả, và cách tính cần bao nhiêu GPU. Code trong bài đã chạy thật (FastAPI 0.162), kèm số đo độ trễ streaming. Đây là nhóm kỹ năng "production" mà tin tuyển dụng nhắc nhiều sau Python và LLM.</p></div></section>
   
-  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">7 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
+  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">7 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">6 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
   <div class="lgrid" style="margin-top:22px">
     <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">Từ notebook tới service</h2>
 <div class="box why">
@@ -163,7 +163,7 @@
 <span class="tk-n">server</span><span class="tk-o">.</span><span class="tk-n">should_exit</span> <span class="tk-o">=</span> <span class="tk-kc">True</span>
 </code></pre></div>
 
-<div class="run" data-mode="static" data-group="t"><div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span><span class="run-note">đã chạy sẵn cần FastAPI</span><a class="run-colab" href="https://colab.research.google.com/github/truonghuu344/ai-engineer-roadmap/blob/main/notebooks/ly-thuyet/p8-1.ipynb" target="_blank" rel="noopener">Mở trên Colab ↗</a></div><pre class="run-out">151 mảnh | mảnh đầu sau 46 ms | xong sau 3.08 s</pre></div>
+<div class="run" data-mode="static" data-group="t"><div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span><span class="run-note">đã chạy sẵn cần FastAPI</span><a class="run-colab" href="https://colab.research.google.com/github/truonghuu344/ai-engineer-roadmap/blob/main/notebooks/ly-thuyet/p8-1.ipynb" target="_blank" rel="noopener">Mở trên Colab ↗</a></div><pre class="run-out">151 mảnh | mảnh đầu sau 52 ms | xong sau 3.08 s</pre></div>
 
 <figure class="fig"><img src="../assets/fig/p8-1-stream.svg" alt="Đo thật trên service ở trên: tổng thời gian như nhau (khoảng 3,05 giây), nhưng với streaming, mảnh đầu tiên tới sau 23 mili giây." loading="lazy"><figcaption>Đo thật trên service ở trên: tổng thời gian như nhau (khoảng 3,05 giây), nhưng với streaming, mảnh đầu tiên tới sau 23 mili giây.</figcaption></figure>
 
@@ -341,7 +341,7 @@
 <td>95% / 99% yêu cầu nhanh hơn mức này</td>
 </tr>
 </tbody>
-</table></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p8.1:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 3</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Định luật Little</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Lưu lượng đỉnh 20 yêu cầu/giây, mỗi yêu cầu xử lý trung bình 2 giây.</p>
+</table></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p8.1:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 4</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Định luật Little</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Lưu lượng đỉnh 20 yêu cầu/giây, mỗi yêu cầu xử lý trung bình 2 giây.</p>
 <div class="ans" id="p8-1-e1-a1"><div class="ans-fields"><label>Số yêu cầu đồng thời trung bình<input inputmode="decimal" data-ans="40.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
 
 <details class="fold solution">
@@ -353,13 +353,7 @@
 <details class="fold solution">
 <summary>Lời giải</summary>
 <p>20/8 = 2,5 → 3 GPU. Với dư 30%: 26/8 = 3,25 → 4 GPU.</p>
-</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 3</span><h3>Chi phí mỗi 1.000 yêu cầu</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Một GPU thuê giá ví dụ 1,2 USD/giờ, chạy đầy tải 8 yêu cầu/giây.</p>
-<div class="ans" id="p8-1-e3-a1"><div class="ans-fields"><label>Số yêu cầu mỗi giờ<input inputmode="decimal" data-ans="28800.0" data-tol="0.0" autocomplete="off"></label><label>Chi phí mỗi 1.000 yêu cầu (USD)<input inputmode="decimal" data-ans="0.0417" data-tol="0.0001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
-
-<details class="fold solution">
-<summary>Lời giải</summary>
-<p>8 × 3600 = 28.800 yêu cầu/giờ. 1,2/28,8 ≈ 0,042 USD mỗi 1.000 yêu cầu khi GPU chạy đầy. GPU thường không chạy đầy cả ngày, nên chi phí thật cao hơn: cần tự động giảm số GPU khi ít người dùng.</p>
-</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 4</span><h3>Đọc Dockerfile</h3><span class="ex-tag concept">khái niệm</span></div><div class="prose"><p>Dockerfile dưới build chậm (mỗi lần sửa một dòng code phải cài lại mọi thư viện) và image rất nặng. Chỉ ra ba vấn đề và sửa.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 3</span><h3>Đọc Dockerfile</h3><span class="ex-tag concept">khái niệm</span></div><div class="prose"><p>Dockerfile dưới build chậm (mỗi lần sửa một dòng code phải cài lại mọi thư viện) và image rất nặng. Chỉ ra ba vấn đề và sửa.</p>
 <div class="hl"><pre><span></span><code><span class="tk-k">FROM</span><span class="tk-w"> </span><span class="tk-s">python:3.11</span>
 <span class="tk-k">COPY</span><span class="tk-w"> </span>.<span class="tk-w"> </span>/app
 <span class="tk-k">WORKDIR</span><span class="tk-w"> </span><span class="tk-s">/app</span>
@@ -375,7 +369,7 @@
 <li>Base <code>python:3.11</code> đầy đủ nặng hơn nhiều so với <code>python:3.11-slim</code>.</li>
 <li>Đóng trọng số 16 GB vào image: image khổng lồ, đẩy và kéo rất chậm. Tải model khi khởi động hoặc gắn volume. Thêm <code>--no-cache-dir</code> cho pip, thêm <code>.dockerignore</code> để loại <code>data/</code>, <code>.git</code>, checkpoint.</li>
 </ol>
-</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 5</span><h3>API có streaming và kiểm tra đầu vào</h3><span class="ex-tag code">code</span></div><div class="prose"><p>Viết FastAPI service gọi một LLM (qua client OpenAI-compatible tới vLLM): <code>/health</code>, <code>/chat</code> nhận <code>message</code> (tối đa 2.000 ký tự), trả SSE từng mảnh, timeout và trả 503 khi model lỗi.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 4</span><h3>API có streaming và kiểm tra đầu vào</h3><span class="ex-tag code">code</span></div><div class="prose"><p>Viết FastAPI service gọi một LLM (qua client OpenAI-compatible tới vLLM): <code>/health</code>, <code>/chat</code> nhận <code>message</code> (tối đa 2.000 ký tự), trả SSE từng mảnh, timeout và trả 503 khi model lỗi.</p>
 <details class="fold code">
 <summary>Code tham khảo</summary>
 <div class="hl"><pre><span></span><code><span class="tk-c1"># Cần vLLM server đang chạy ở cổng 8000 (bước 2 của phần thực hành)</span>
@@ -416,9 +410,110 @@
     <span class="tk-k">return</span> <span class="tk-n">StreamingResponse</span><span class="tk-p">(</span><span class="tk-n">gen</span><span class="tk-p">(),</span> <span class="tk-n">media_type</span><span class="tk-o">=</span><span class="tk-s2">"text/event-stream"</span><span class="tk-p">)</span>
 </code></pre></div>
 
-<div class="run run-skip" data-group="e5" data-mode="static">
+<div class="run run-skip" data-group="e4" data-mode="static">
 <div class="run-bar"><span class="run-lbl">Không chạy trên trang</span><span class="run-note">Cần vLLM server đang chạy ở cổng 8000 (bước 2 của phần thực hành)</span><a class="run-colab" href="https://colab.research.google.com/github/truonghuu344/ai-engineer-roadmap/blob/main/notebooks/ly-thuyet/p8-1.ipynb" target="_blank" rel="noopener">Mở trên Colab ↗</a></div>
 </div>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 5</span><h3>Nạp model một lần khi khởi động</h3><span class="ex-tag code">ứng dụng</span></div><div class="prose"><p><em>Dùng: từ notebook tới service: model nạp ở <code>lifespan</code> thay vì trong mỗi request; endpoint <code>/health</code>; kiểm tra đầu vào bằng pydantic.</em></p>
+<p>Một lỗi rất hay gặp khi chuyển notebook thành API: nạp model <strong>bên trong</strong> hàm xử lý request. Viết hai phiên bản API cho cùng một "model" (nạp mất 0,2 giây, mô phỏng bằng <code>time.sleep</code>): bản sai nạp trong mỗi request, bản đúng nạp một lần trong <code>lifespan</code> và lưu vào <code>app.state</code>. Gửi 5 request tới mỗi bản bằng <code>TestClient</code>, đếm số lần nạp model và tổng thời gian.</p>
+<div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">time</span>
+<span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">contextlib</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">asynccontextmanager</span>
+<span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">fastapi</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">FastAPI</span>
+<span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">fastapi.testclient</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">TestClient</span>
+<span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">pydantic</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">BaseModel</span><span class="tk-p">,</span> <span class="tk-n">Field</span>
+<span class="tk-n">so_lan_nap</span> <span class="tk-o">=</span> <span class="tk-p">{</span><span class="tk-s2">"sai"</span><span class="tk-p">:</span> <span class="tk-mi">0</span><span class="tk-p">,</span> <span class="tk-s2">"dung"</span><span class="tk-p">:</span> <span class="tk-mi">0</span><span class="tk-p">}</span>
+
+<span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">nap_model</span><span class="tk-p">(</span><span class="tk-n">ban</span><span class="tk-p">):</span>
+    <span class="tk-n">so_lan_nap</span><span class="tk-p">[</span><span class="tk-n">ban</span><span class="tk-p">]</span> <span class="tk-o">+=</span> <span class="tk-mi">1</span>
+    <span class="tk-n">time</span><span class="tk-o">.</span><span class="tk-n">sleep</span><span class="tk-p">(</span><span class="tk-mf">0.2</span><span class="tk-p">)</span>                                     <span class="tk-c1"># đọc trọng số từ đĩa, chuyển lên GPU...</span>
+    <span class="tk-k">return</span> <span class="tk-k">lambda</span> <span class="tk-n">text</span><span class="tk-p">:</span> <span class="tk-p">{</span><span class="tk-s2">"nhan"</span><span class="tk-p">:</span> <span class="tk-s2">"tích cực"</span> <span class="tk-k">if</span> <span class="tk-s2">"tốt"</span> <span class="tk-ow">in</span> <span class="tk-n">text</span> <span class="tk-k">else</span> <span class="tk-s2">"tiêu cực"</span><span class="tk-p">}</span>
+
+<span class="tk-k">class</span><span class="tk-w"> </span><span class="tk-nc">Req</span><span class="tk-p">(</span><span class="tk-n">BaseModel</span><span class="tk-p">):</span>
+    <span class="tk-n">text</span><span class="tk-p">:</span> <span class="tk-nb">str</span> <span class="tk-o">=</span> <span class="tk-n">Field</span><span class="tk-p">(</span><span class="tk-n">min_length</span><span class="tk-o">=</span><span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-n">max_length</span><span class="tk-o">=</span><span class="tk-mi">500</span><span class="tk-p">)</span>
+<span class="tk-c1"># TODO: app_sai (nạp trong handler), app_dung (nạp trong lifespan, có /health); gửi 5 request mỗi app</span>
+</code></pre></div>
+
+<div class="ans" id="p8-1-e5-a1"><div class="ans-fields"><label>Số lần nạp model của bản sai sau 5 request<input inputmode="decimal" data-ans="5.0" data-tol="0.0" autocomplete="off"></label><label>Số lần nạp model của bản đúng sau 5 request<input inputmode="decimal" data-ans="1.0" data-tol="0.0" autocomplete="off"></label><label>Mã trạng thái khi gửi text rỗng<input inputmode="decimal" data-ans="422.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+
+<details class="fold hint">
+<summary>Gợi ý</summary>
+<p><code>@asynccontextmanager async def lifespan(app): app.state.model = nap_model("dung"); yield</code>, rồi <code>FastAPI(lifespan=lifespan)</code>. Với <code>TestClient</code>, dùng <code>with TestClient(app) as c:</code> để lifespan chạy.</p>
+</details>
+<details class="fold code">
+<summary>Code tham khảo</summary>
+<div class="hl"><pre><span></span><code><span class="tk-n">app_sai</span> <span class="tk-o">=</span> <span class="tk-n">FastAPI</span><span class="tk-p">()</span>
+
+<span class="tk-nd">@app_sai</span><span class="tk-o">.</span><span class="tk-n">post</span><span class="tk-p">(</span><span class="tk-s2">"/predict"</span><span class="tk-p">)</span>
+<span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">predict_sai</span><span class="tk-p">(</span><span class="tk-n">req</span><span class="tk-p">:</span> <span class="tk-n">Req</span><span class="tk-p">):</span>
+    <span class="tk-n">model</span> <span class="tk-o">=</span> <span class="tk-n">nap_model</span><span class="tk-p">(</span><span class="tk-s2">"sai"</span><span class="tk-p">)</span>
+    <span class="tk-k">return</span> <span class="tk-n">model</span><span class="tk-p">(</span><span class="tk-n">req</span><span class="tk-o">.</span><span class="tk-n">text</span><span class="tk-p">)</span>
+
+<span class="tk-nd">@asynccontextmanager</span>
+<span class="tk-k">async</span> <span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">lifespan</span><span class="tk-p">(</span><span class="tk-n">app</span><span class="tk-p">):</span>
+    <span class="tk-n">app</span><span class="tk-o">.</span><span class="tk-n">state</span><span class="tk-o">.</span><span class="tk-n">model</span> <span class="tk-o">=</span> <span class="tk-n">nap_model</span><span class="tk-p">(</span><span class="tk-s2">"dung"</span><span class="tk-p">)</span>
+    <span class="tk-k">yield</span>
+
+<span class="tk-n">app_dung</span> <span class="tk-o">=</span> <span class="tk-n">FastAPI</span><span class="tk-p">(</span><span class="tk-n">lifespan</span><span class="tk-o">=</span><span class="tk-n">lifespan</span><span class="tk-p">)</span>
+
+<span class="tk-nd">@app_dung</span><span class="tk-o">.</span><span class="tk-n">get</span><span class="tk-p">(</span><span class="tk-s2">"/health"</span><span class="tk-p">)</span>
+<span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">health</span><span class="tk-p">():</span>
+    <span class="tk-k">return</span> <span class="tk-p">{</span><span class="tk-s2">"ok"</span><span class="tk-p">:</span> <span class="tk-kc">True</span><span class="tk-p">}</span>
+
+<span class="tk-nd">@app_dung</span><span class="tk-o">.</span><span class="tk-n">post</span><span class="tk-p">(</span><span class="tk-s2">"/predict"</span><span class="tk-p">)</span>
+<span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">predict_dung</span><span class="tk-p">(</span><span class="tk-n">req</span><span class="tk-p">:</span> <span class="tk-n">Req</span><span class="tk-p">):</span>
+    <span class="tk-k">return</span> <span class="tk-n">app_dung</span><span class="tk-o">.</span><span class="tk-n">state</span><span class="tk-o">.</span><span class="tk-n">model</span><span class="tk-p">(</span><span class="tk-n">req</span><span class="tk-o">.</span><span class="tk-n">text</span><span class="tk-p">)</span>
+
+<span class="tk-k">for</span> <span class="tk-n">ten</span><span class="tk-p">,</span> <span class="tk-n">app</span> <span class="tk-ow">in</span> <span class="tk-p">[(</span><span class="tk-s2">"sai"</span><span class="tk-p">,</span> <span class="tk-n">app_sai</span><span class="tk-p">),</span> <span class="tk-p">(</span><span class="tk-s2">"dung"</span><span class="tk-p">,</span> <span class="tk-n">app_dung</span><span class="tk-p">)]:</span>
+    <span class="tk-k">with</span> <span class="tk-n">TestClient</span><span class="tk-p">(</span><span class="tk-n">app</span><span class="tk-p">)</span> <span class="tk-k">as</span> <span class="tk-n">c</span><span class="tk-p">:</span>
+        <span class="tk-n">t0</span> <span class="tk-o">=</span> <span class="tk-n">time</span><span class="tk-o">.</span><span class="tk-n">perf_counter</span><span class="tk-p">()</span>
+        <span class="tk-k">for</span> <span class="tk-n">_</span> <span class="tk-ow">in</span> <span class="tk-nb">range</span><span class="tk-p">(</span><span class="tk-mi">5</span><span class="tk-p">):</span>
+            <span class="tk-n">r</span> <span class="tk-o">=</span> <span class="tk-n">c</span><span class="tk-o">.</span><span class="tk-n">post</span><span class="tk-p">(</span><span class="tk-s2">"/predict"</span><span class="tk-p">,</span> <span class="tk-n">json</span><span class="tk-o">=</span><span class="tk-p">{</span><span class="tk-s2">"text"</span><span class="tk-p">:</span> <span class="tk-s2">"bàn tốt lắm"</span><span class="tk-p">})</span>
+        <span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-sa">f</span><span class="tk-s2">"bản </span><span class="tk-si">{</span><span class="tk-n">ten</span><span class="tk-si">}</span><span class="tk-s2">: </span><span class="tk-si">{</span><span class="tk-n">so_lan_nap</span><span class="tk-p">[</span><span class="tk-n">ten</span><span class="tk-p">]</span><span class="tk-si">}</span><span class="tk-s2"> lần nạp, </span><span class="tk-si">{</span><span class="tk-n">time</span><span class="tk-o">.</span><span class="tk-n">perf_counter</span><span class="tk-p">()</span><span class="tk-w"> </span><span class="tk-o">-</span><span class="tk-w"> </span><span class="tk-n">t0</span><span class="tk-si">:</span><span class="tk-s2">.2f</span><span class="tk-si">}</span><span class="tk-s2"> s cho 5 request, kết quả </span><span class="tk-si">{</span><span class="tk-n">r</span><span class="tk-o">.</span><span class="tk-n">json</span><span class="tk-p">()</span><span class="tk-si">}</span><span class="tk-s2">"</span><span class="tk-p">)</span>
+        <span class="tk-n">ma_rong</span> <span class="tk-o">=</span> <span class="tk-n">c</span><span class="tk-o">.</span><span class="tk-n">post</span><span class="tk-p">(</span><span class="tk-s2">"/predict"</span><span class="tk-p">,</span> <span class="tk-n">json</span><span class="tk-o">=</span><span class="tk-p">{</span><span class="tk-s2">"text"</span><span class="tk-p">:</span> <span class="tk-s2">""</span><span class="tk-p">})</span><span class="tk-o">.</span><span class="tk-n">status_code</span>
+<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-s2">"text rỗng →"</span><span class="tk-p">,</span> <span class="tk-n">ma_rong</span><span class="tk-p">)</span>
+</code></pre></div>
+
+<div class="run" data-group="e5" data-mode="py">
+<div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span></div>
+<pre class="run-out">bản sai: 5 lần nạp, 1.01 s cho 5 request, kết quả {&#x27;nhan&#x27;: &#x27;tích cực&#x27;}&#10;bản dung: 1 lần nạp, 0.01 s cho 5 request, kết quả {&#x27;nhan&#x27;: &#x27;tích cực&#x27;}&#10;text rỗng → 422</pre>
+</div>
+<p>Với model thật, nạp mất vài giây tới vài phút: bản sai chậm không dùng được và có thể hết bộ nhớ GPU khi nhiều request đến cùng lúc. <code>/health</code> cho load balancer biết khi nào service đã nạp xong model và sẵn sàng nhận request.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 6</span><h3>Bảng tính năng lực và chi phí</h3><span class="ex-tag code">ứng dụng</span></div><div class="prose"><p><em>Dùng: ước tính năng lực: định luật Little (số request đồng thời = tốc độ đến × thời gian xử lý), số GPU, chi phí mỗi 1.000 request.</em></p>
+<p>Viết <code>uoc_tinh(rps, giay_moi_req, dong_thoi_moi_gpu, gia_gpu_gio)</code> trả về số request đồng thời trung bình, số GPU cần (làm tròn lên, cộng dự phòng 30%), và chi phí mỗi 1.000 request khi chạy đủ số GPU đó cả giờ. So ba kịch bản: chatbot nội bộ, chatbot cho khách giờ cao điểm, và API tạo ảnh.</p>
+<div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">math</span>
+<span class="tk-n">kich_ban</span> <span class="tk-o">=</span> <span class="tk-p">{</span><span class="tk-s2">"chatbot nội bộ"</span><span class="tk-p">:</span> <span class="tk-p">(</span><span class="tk-mi">2</span><span class="tk-p">,</span> <span class="tk-mf">4.0</span><span class="tk-p">,</span> <span class="tk-mi">16</span><span class="tk-p">,</span> <span class="tk-mf">1.2</span><span class="tk-p">),</span> <span class="tk-s2">"chatbot khách hàng"</span><span class="tk-p">:</span> <span class="tk-p">(</span><span class="tk-mi">40</span><span class="tk-p">,</span> <span class="tk-mf">3.0</span><span class="tk-p">,</span> <span class="tk-mi">16</span><span class="tk-p">,</span> <span class="tk-mf">1.2</span><span class="tk-p">),</span> <span class="tk-s2">"tạo ảnh"</span><span class="tk-p">:</span> <span class="tk-p">(</span><span class="tk-mi">5</span><span class="tk-p">,</span> <span class="tk-mf">6.0</span><span class="tk-p">,</span> <span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-mf">0.8</span><span class="tk-p">)}</span>
+<span class="tk-c1">#                                  (request/giây, giây mỗi request, request đồng thời 1 GPU chịu được, USD/giờ/GPU)</span>
+
+<span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">uoc_tinh</span><span class="tk-p">(</span><span class="tk-n">rps</span><span class="tk-p">,</span> <span class="tk-n">giay</span><span class="tk-p">,</span> <span class="tk-n">dong_thoi_gpu</span><span class="tk-p">,</span> <span class="tk-n">gia</span><span class="tk-p">):</span>
+    <span class="tk-c1"># TODO: trả về (đồng thời, số GPU, USD mỗi 1.000 request)</span>
+    <span class="tk-k">return</span> <span class="tk-mi">0</span><span class="tk-p">,</span> <span class="tk-mi">0</span><span class="tk-p">,</span> <span class="tk-mf">0.0</span>
+</code></pre></div>
+
+<div class="run" data-mode="py" data-group="e6"><div class="run-bar"><span class="run-lbl">Code của bạn</span></div><pre class="run-out run-empty">Viết code vào chỗ trống rồi bấm Chạy.</pre></div>
+
+<div class="ans" id="p8-1-e6-a1"><div class="ans-fields"><label>Số GPU cho chatbot khách hàng<input inputmode="decimal" data-ans="10.0" data-tol="0.0" autocomplete="off"></label><label>Số GPU cho API tạo ảnh<input inputmode="decimal" data-ans="39.0" data-tol="0.0" autocomplete="off"></label><label>Chi phí mỗi 1.000 request tạo ảnh (USD, 2 chữ số)<input inputmode="decimal" data-ans="1.73" data-tol="0.01" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+
+<details class="fold hint">
+<summary>Gợi ý</summary>
+<p>Đồng thời L = rps × giây. GPU = <code>ceil(L × 1,3 / dong_thoi_gpu)</code>. Một giờ có <code>rps × 3600</code> request, chi phí giờ = GPU × giá: chia ra mỗi 1.000 request.</p>
+</details>
+<details class="fold code">
+<summary>Code tham khảo</summary>
+<div class="hl"><pre><span></span><code><span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">uoc_tinh</span><span class="tk-p">(</span><span class="tk-n">rps</span><span class="tk-p">,</span> <span class="tk-n">giay</span><span class="tk-p">,</span> <span class="tk-n">dong_thoi_gpu</span><span class="tk-p">,</span> <span class="tk-n">gia</span><span class="tk-p">):</span>
+    <span class="tk-n">L</span> <span class="tk-o">=</span> <span class="tk-n">rps</span> <span class="tk-o">*</span> <span class="tk-n">giay</span>
+    <span class="tk-n">gpu</span> <span class="tk-o">=</span> <span class="tk-n">math</span><span class="tk-o">.</span><span class="tk-n">ceil</span><span class="tk-p">(</span><span class="tk-n">L</span> <span class="tk-o">*</span> <span class="tk-mf">1.3</span> <span class="tk-o">/</span> <span class="tk-n">dong_thoi_gpu</span><span class="tk-p">)</span>
+    <span class="tk-k">return</span> <span class="tk-n">L</span><span class="tk-p">,</span> <span class="tk-n">gpu</span><span class="tk-p">,</span> <span class="tk-n">gpu</span> <span class="tk-o">*</span> <span class="tk-n">gia</span> <span class="tk-o">/</span> <span class="tk-p">(</span><span class="tk-n">rps</span> <span class="tk-o">*</span> <span class="tk-mi">3600</span><span class="tk-p">)</span> <span class="tk-o">*</span> <span class="tk-mi">1000</span>
+
+<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-sa">f</span><span class="tk-s2">"</span><span class="tk-si">{</span><span class="tk-s1">'kịch bản'</span><span class="tk-si">:</span><span class="tk-s2">20s</span><span class="tk-si">}</span><span class="tk-s2"> </span><span class="tk-si">{</span><span class="tk-s1">'đồng thời'</span><span class="tk-si">:</span><span class="tk-s2">&gt;9</span><span class="tk-si">}</span><span class="tk-s2"> </span><span class="tk-si">{</span><span class="tk-s1">'GPU'</span><span class="tk-si">:</span><span class="tk-s2">&gt;4</span><span class="tk-si">}</span><span class="tk-s2"> </span><span class="tk-si">{</span><span class="tk-s1">'USD/1000 req'</span><span class="tk-si">:</span><span class="tk-s2">&gt;13</span><span class="tk-si">}</span><span class="tk-s2">"</span><span class="tk-p">)</span>
+<span class="tk-k">for</span> <span class="tk-n">ten</span><span class="tk-p">,</span> <span class="tk-n">ts</span> <span class="tk-ow">in</span> <span class="tk-n">kich_ban</span><span class="tk-o">.</span><span class="tk-n">items</span><span class="tk-p">():</span>
+    <span class="tk-n">L</span><span class="tk-p">,</span> <span class="tk-n">g</span><span class="tk-p">,</span> <span class="tk-n">c</span> <span class="tk-o">=</span> <span class="tk-n">uoc_tinh</span><span class="tk-p">(</span><span class="tk-o">*</span><span class="tk-n">ts</span><span class="tk-p">)</span>
+    <span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-sa">f</span><span class="tk-s2">"</span><span class="tk-si">{</span><span class="tk-n">ten</span><span class="tk-si">:</span><span class="tk-s2">20s</span><span class="tk-si">}</span><span class="tk-s2"> </span><span class="tk-si">{</span><span class="tk-n">L</span><span class="tk-si">:</span><span class="tk-s2">9.0f</span><span class="tk-si">}</span><span class="tk-s2"> </span><span class="tk-si">{</span><span class="tk-n">g</span><span class="tk-si">:</span><span class="tk-s2">4d</span><span class="tk-si">}</span><span class="tk-s2"> </span><span class="tk-si">{</span><span class="tk-n">c</span><span class="tk-si">:</span><span class="tk-s2">13.3f</span><span class="tk-si">}</span><span class="tk-s2">"</span><span class="tk-p">)</span>
+</code></pre></div>
+
+<div class="run" data-group="e6" data-mode="py">
+<div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span></div>
+<pre class="run-out">kịch bản             đồng thời  GPU  USD/1000 req&#10;chatbot nội bộ               8    1         0.167&#10;chatbot khách hàng         120   10         0.083&#10;tạo ảnh                     30   39         1.733</pre>
+</div>
+<p>Chatbot nội bộ tải thấp nên 1 GPU đủ nhưng phần lớn thời gian ngồi không: chi phí mỗi request cao. Tạo ảnh không gom batch được nhiều nên cần nhiều GPU nhất. Những con số thô này đủ để trả lời câu hỏi "chạy cái này hết bao nhiêu tiền một tháng" trước khi viết dòng code nào.</p>
 </details></div></article><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p8.1:b">Tôi đã xong phần bài tập</label><button class="btn" type="button" data-goto="thuc-hanh">Sang thực hành <span class="arr">→</span></button></div></section><section class="panel" id="thuc-hanh" role="tabpanel" hidden><div class="prose"><h2>Lab 11: đóng gói model thành API</h2>
 <p>Dùng model của Lab 8 (hoặc Qwen2.5-1.5B-Instruct).</p>
 <p><strong>Các bước</strong></p>
