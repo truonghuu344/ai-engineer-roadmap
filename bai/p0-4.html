@@ -1,0 +1,812 @@
+<!doctype html>
+<html lang="vi" data-root="../">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>P0.4 · matplotlib: vẽ để hiểu dữ liệu và kết quả train · AI Engineer</title>
+<meta name="description" content="matplotlib: vẽ để hiểu dữ liệu và kết quả train: lý thuyết, bài tập và thực hành. Figure và Axes, cách viết fig, ax = plt.subplots(); line, bar, histogram, boxplot, scatter: chọn theo câu hỏi">
+<meta property="og:title" content="P0.4 · matplotlib: vẽ để hiểu dữ liệu và kết quả train · AI Engineer">
+<meta property="og:description" content="matplotlib: vẽ để hiểu dữ liệu và kết quả train: lý thuyết, bài tập và thực hành. Figure và Axes, cách viết fig, ax = plt.subplots(); line, bar, histogram, boxplot, scatter: chọn theo câu hỏi">
+<meta name="theme-color" content="#F4F6FB">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23131A33'/%3E%3Cpath d='M9 22 L16 10 L23 19' stroke='%23E5E9FB' stroke-width='2' fill='none'/%3E%3Ccircle cx='9' cy='22' r='3' fill='%23E5E9FB'/%3E%3Ccircle cx='16' cy='10' r='3' fill='%23E5E9FB'/%3E%3Ccircle cx='23' cy='19' r='3' fill='%23FF9361'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../assets/chrome.css">
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/lesson.css">
+</head>
+<body data-mid="p0.4">
+<header class="sh"><div class="sh-in"><a class="sh-brand" href="../index.html"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="var(--ink)"/><circle cx="9" cy="22" r="2.6" fill="var(--accent-soft)"/><circle cx="16" cy="10" r="2.6" fill="var(--accent-soft)"/><circle cx="23" cy="19" r="2.6" fill="#FF9361"/><path d="M9 22 L16 10 L23 19" stroke="var(--accent-soft)" stroke-width="1.8" fill="none"/></svg><span>AI Engineer<small>lộ trình tự học</small></span></a><nav class="sh-nav" id="sh-nav" aria-label="Chính"><a href="../index.html">Trang chủ</a><a href="../bai-hoc.html" aria-current="page">Bài học</a><a href="../lo-trinh.html">Lộ trình</a><a href="../notebooks.html">Notebook</a><a class="sh-cta-m" href="../bai/p0-1.html" data-next-lesson>Học tiếp →</a></nav><a class="sh-cta" href="../bai/p0-1.html" data-next-lesson>Học tiếp <span class="arr">→</span></a><button class="sh-burger" type="button" aria-expanded="false" aria-controls="sh-nav">Menu</button></div></header>
+
+<main class="container">
+  <div class="crumbs"><a href="../bai-hoc.html">Bài học</a><span>/</span><a href="../bai-hoc.html#p0">P0 · Nền móng</a><span>/</span><span>P0.4</span></div>
+  <section class="lhero"><div class="code">P0.4</div><h1>matplotlib: vẽ để hiểu dữ liệu và kết quả train</h1><div class="lmeta"><span class="m">Giai đoạn P0 · Nền móng</span><span class="m">Tuần 1–3</span><span class="chip ready"><span class="dot"></span>Có nội dung đầy đủ</span></div>
+    <div class="intro"><p>Thống kê tóm tắt có thể giống hệt nhau trong khi dữ liệu khác hẳn nhau. Bài này luyện <strong>matplotlib</strong>, thư viện vẽ mà mọi thư viện khác (pandas, seaborn) dựa vào: cách một hình được dựng lên, chọn loại biểu đồ theo câu hỏi, và các biểu đồ bạn sẽ vẽ suốt lộ trình ML: learning curve, confusion matrix, lưới ảnh. Mọi đoạn code dưới đây đều vẽ ra hình thật ngay bên dưới, và bấm <strong>Chạy</strong> để vẽ lại sau khi sửa.</p></div></section>
+  
+  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">7 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">4 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
+  <div class="lgrid" style="margin-top:22px">
+    <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">Vì sao phải vẽ</h2>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Một biểu đồ cho thấy ngay giá trị ngoại lai, phân bố lệch, xu hướng theo mùa, hay một cột bị nhập sai đơn vị. Khi train model, learning curve cho biết model đang học, đang overfit hay learning rate quá lớn, chỉ qua một cái nhìn. Vẽ trước khi train giúp bạn tránh train model trên dữ liệu hỏng; vẽ trong khi train giúp bạn dừng sớm một lần chạy hỏng thay vì chờ hết.</p>
+</div>
+<p>Lệnh <code>import matplotlib.pyplot as plt</code> nạp phần vẽ của matplotlib với tên ngắn <code>plt</code>; mọi đoạn code trong bài bắt đầu như vậy. Bốn bộ dữ liệu dưới đây có cùng trung bình, cùng độ lệch chuẩn của x và y, và cùng hệ số tương quan đến hai chữ số thập phân (bộ tứ Anscombe). Chỉ khi vẽ ra mới thấy chúng khác nhau hoàn toàn:</p>
+<div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">numpy</span><span class="tk-w"> </span><span class="tk-k">as</span><span class="tk-w"> </span><span class="tk-nn">np</span>
+<span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">matplotlib.pyplot</span><span class="tk-w"> </span><span class="tk-k">as</span><span class="tk-w"> </span><span class="tk-nn">plt</span>
+
+<span class="tk-n">x</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">array</span><span class="tk-p">([</span><span class="tk-mi">10</span><span class="tk-p">,</span> <span class="tk-mi">8</span><span class="tk-p">,</span> <span class="tk-mi">13</span><span class="tk-p">,</span> <span class="tk-mi">9</span><span class="tk-p">,</span> <span class="tk-mi">11</span><span class="tk-p">,</span> <span class="tk-mi">14</span><span class="tk-p">,</span> <span class="tk-mi">6</span><span class="tk-p">,</span> <span class="tk-mi">4</span><span class="tk-p">,</span> <span class="tk-mi">12</span><span class="tk-p">,</span> <span class="tk-mi">7</span><span class="tk-p">,</span> <span class="tk-mi">5</span><span class="tk-p">])</span>
+<span class="tk-n">x4</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">array</span><span class="tk-p">([</span><span class="tk-mi">8</span><span class="tk-p">,</span> <span class="tk-mi">8</span><span class="tk-p">,</span> <span class="tk-mi">8</span><span class="tk-p">,</span> <span class="tk-mi">8</span><span class="tk-p">,</span> <span class="tk-mi">8</span><span class="tk-p">,</span> <span class="tk-mi">8</span><span class="tk-p">,</span> <span class="tk-mi">8</span><span class="tk-p">,</span> <span class="tk-mi">19</span><span class="tk-p">,</span> <span class="tk-mi">8</span><span class="tk-p">,</span> <span class="tk-mi">8</span><span class="tk-p">,</span> <span class="tk-mi">8</span><span class="tk-p">])</span>
+<span class="tk-n">ys</span> <span class="tk-o">=</span> <span class="tk-p">[</span><span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">array</span><span class="tk-p">([</span><span class="tk-mf">8.04</span><span class="tk-p">,</span> <span class="tk-mf">6.95</span><span class="tk-p">,</span> <span class="tk-mf">7.58</span><span class="tk-p">,</span> <span class="tk-mf">8.81</span><span class="tk-p">,</span> <span class="tk-mf">8.33</span><span class="tk-p">,</span> <span class="tk-mf">9.96</span><span class="tk-p">,</span> <span class="tk-mf">7.24</span><span class="tk-p">,</span> <span class="tk-mf">4.26</span><span class="tk-p">,</span> <span class="tk-mf">10.84</span><span class="tk-p">,</span> <span class="tk-mf">4.82</span><span class="tk-p">,</span> <span class="tk-mf">5.68</span><span class="tk-p">]),</span>
+      <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">array</span><span class="tk-p">([</span><span class="tk-mf">9.14</span><span class="tk-p">,</span> <span class="tk-mf">8.14</span><span class="tk-p">,</span> <span class="tk-mf">8.74</span><span class="tk-p">,</span> <span class="tk-mf">8.77</span><span class="tk-p">,</span> <span class="tk-mf">9.26</span><span class="tk-p">,</span> <span class="tk-mf">8.10</span><span class="tk-p">,</span> <span class="tk-mf">6.13</span><span class="tk-p">,</span> <span class="tk-mf">3.10</span><span class="tk-p">,</span> <span class="tk-mf">9.13</span><span class="tk-p">,</span> <span class="tk-mf">7.26</span><span class="tk-p">,</span> <span class="tk-mf">4.74</span><span class="tk-p">]),</span>
+      <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">array</span><span class="tk-p">([</span><span class="tk-mf">7.46</span><span class="tk-p">,</span> <span class="tk-mf">6.77</span><span class="tk-p">,</span> <span class="tk-mf">12.74</span><span class="tk-p">,</span> <span class="tk-mf">7.11</span><span class="tk-p">,</span> <span class="tk-mf">7.81</span><span class="tk-p">,</span> <span class="tk-mf">8.84</span><span class="tk-p">,</span> <span class="tk-mf">6.08</span><span class="tk-p">,</span> <span class="tk-mf">5.39</span><span class="tk-p">,</span> <span class="tk-mf">8.15</span><span class="tk-p">,</span> <span class="tk-mf">6.42</span><span class="tk-p">,</span> <span class="tk-mf">5.73</span><span class="tk-p">]),</span>
+      <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">array</span><span class="tk-p">([</span><span class="tk-mf">6.58</span><span class="tk-p">,</span> <span class="tk-mf">5.76</span><span class="tk-p">,</span> <span class="tk-mf">7.71</span><span class="tk-p">,</span> <span class="tk-mf">8.84</span><span class="tk-p">,</span> <span class="tk-mf">8.47</span><span class="tk-p">,</span> <span class="tk-mf">7.04</span><span class="tk-p">,</span> <span class="tk-mf">5.25</span><span class="tk-p">,</span> <span class="tk-mf">12.50</span><span class="tk-p">,</span> <span class="tk-mf">5.56</span><span class="tk-p">,</span> <span class="tk-mf">7.91</span><span class="tk-p">,</span> <span class="tk-mf">6.89</span><span class="tk-p">])]</span>
+<span class="tk-n">xs</span> <span class="tk-o">=</span> <span class="tk-p">[</span><span class="tk-n">x</span><span class="tk-p">,</span> <span class="tk-n">x</span><span class="tk-p">,</span> <span class="tk-n">x</span><span class="tk-p">,</span> <span class="tk-n">x4</span><span class="tk-p">]</span>
+
+<span class="tk-n">fig</span><span class="tk-p">,</span> <span class="tk-n">axes</span> <span class="tk-o">=</span> <span class="tk-n">plt</span><span class="tk-o">.</span><span class="tk-n">subplots</span><span class="tk-p">(</span><span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-mi">4</span><span class="tk-p">,</span> <span class="tk-n">figsize</span><span class="tk-o">=</span><span class="tk-p">(</span><span class="tk-mi">12</span><span class="tk-p">,</span> <span class="tk-mf">2.8</span><span class="tk-p">),</span> <span class="tk-n">sharey</span><span class="tk-o">=</span><span class="tk-kc">True</span><span class="tk-p">)</span>   <span class="tk-c1"># 1 hàng 4 khung, chung trục y</span>
+<span class="tk-k">for</span> <span class="tk-n">k</span> <span class="tk-ow">in</span> <span class="tk-nb">range</span><span class="tk-p">(</span><span class="tk-mi">4</span><span class="tk-p">):</span>
+    <span class="tk-n">ax</span> <span class="tk-o">=</span> <span class="tk-n">axes</span><span class="tk-p">[</span><span class="tk-n">k</span><span class="tk-p">]</span>
+    <span class="tk-n">ax</span><span class="tk-o">.</span><span class="tk-n">scatter</span><span class="tk-p">(</span><span class="tk-n">xs</span><span class="tk-p">[</span><span class="tk-n">k</span><span class="tk-p">],</span> <span class="tk-n">ys</span><span class="tk-p">[</span><span class="tk-n">k</span><span class="tk-p">])</span>                                    <span class="tk-c1"># vẽ điểm (x, y)</span>
+    <span class="tk-n">r</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">corrcoef</span><span class="tk-p">(</span><span class="tk-n">xs</span><span class="tk-p">[</span><span class="tk-n">k</span><span class="tk-p">],</span> <span class="tk-n">ys</span><span class="tk-p">[</span><span class="tk-n">k</span><span class="tk-p">])[</span><span class="tk-mi">0</span><span class="tk-p">,</span> <span class="tk-mi">1</span><span class="tk-p">]</span>                         <span class="tk-c1"># hệ số tương quan, từ -1 tới 1</span>
+    <span class="tk-n">ax</span><span class="tk-o">.</span><span class="tk-n">set_title</span><span class="tk-p">(</span><span class="tk-sa">f</span><span class="tk-s2">"bộ </span><span class="tk-si">{</span><span class="tk-n">k</span><span class="tk-w"> </span><span class="tk-o">+</span><span class="tk-w"> </span><span class="tk-mi">1</span><span class="tk-si">}</span><span class="tk-s2">: mean y = </span><span class="tk-si">{</span><span class="tk-n">ys</span><span class="tk-p">[</span><span class="tk-n">k</span><span class="tk-p">]</span><span class="tk-o">.</span><span class="tk-n">mean</span><span class="tk-p">()</span><span class="tk-si">:</span><span class="tk-s2">.2f</span><span class="tk-si">}</span><span class="tk-s2">, r = </span><span class="tk-si">{</span><span class="tk-n">r</span><span class="tk-si">:</span><span class="tk-s2">.2f</span><span class="tk-si">}</span><span class="tk-s2">"</span><span class="tk-p">,</span> <span class="tk-n">fontsize</span><span class="tk-o">=</span><span class="tk-mi">9</span><span class="tk-p">)</span>
+<span class="tk-n">plt</span><span class="tk-o">.</span><span class="tk-n">tight_layout</span><span class="tk-p">()</span>
+</code></pre></div>
+
+<div class="run" data-mode="py" data-group="t"><div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span></div><img src="../assets/run/p0-4-3f2bafa54b4a-0.png" alt="Hình do đoạn code vẽ" loading="lazy"></div>
+
+<p>Bộ 1 là quan hệ tuyến tính có nhiễu, bộ 2 là đường cong, bộ 3 là đường thẳng với một điểm ngoại lai, bộ 4 gần như không có quan hệ, chỉ một điểm kéo cả hệ số tương quan lên. Một model hồi quy tuyến tính cho cả bốn cùng một đường thẳng.</p>
+<h2 id="lt-2">Figure và Axes</h2>
+<p>Một <strong>Figure</strong> là cả bức hình; mỗi <strong>Axes</strong> là một khung biểu đồ bên trong, có trục x, trục y, tiêu đề, chú thích riêng. Cách viết rõ ràng nhất là tạo cả hai bằng <code>plt.subplots</code> rồi gọi hàm vẽ trên từng <code>ax</code>:</p>
+<figure class="fig"><img src="../assets/fig/p0-4-anatomy.svg" alt="Các phần của một hình matplotlib và lệnh đặt từng phần. Mọi lệnh đều gọi qua ax, trừ những gì thuộc cả bức hình (fig.suptitle, fig.savefig)." loading="lazy"><figcaption>Các phần của một hình matplotlib và lệnh đặt từng phần. Mọi lệnh đều gọi qua ax, trừ những gì thuộc cả bức hình (fig.suptitle, fig.savefig).</figcaption></figure>
+
+<div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">numpy</span><span class="tk-w"> </span><span class="tk-k">as</span><span class="tk-w"> </span><span class="tk-nn">np</span>
+<span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">matplotlib.pyplot</span><span class="tk-w"> </span><span class="tk-k">as</span><span class="tk-w"> </span><span class="tk-nn">plt</span>
+
+<span class="tk-n">months</span> <span class="tk-o">=</span> <span class="tk-p">[</span><span class="tk-s2">"T1"</span><span class="tk-p">,</span> <span class="tk-s2">"T2"</span><span class="tk-p">,</span> <span class="tk-s2">"T3"</span><span class="tk-p">,</span> <span class="tk-s2">"T4"</span><span class="tk-p">,</span> <span class="tk-s2">"T5"</span><span class="tk-p">,</span> <span class="tk-s2">"T6"</span><span class="tk-p">]</span>
+<span class="tk-n">revenue</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">array</span><span class="tk-p">([</span><span class="tk-mi">120</span><span class="tk-p">,</span> <span class="tk-mi">135</span><span class="tk-p">,</span> <span class="tk-mi">128</span><span class="tk-p">,</span> <span class="tk-mi">160</span><span class="tk-p">,</span> <span class="tk-mi">210</span><span class="tk-p">,</span> <span class="tk-mi">190</span><span class="tk-p">])</span>       <span class="tk-c1"># triệu đồng</span>
+<span class="tk-n">orders</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">array</span><span class="tk-p">([</span><span class="tk-mi">80</span><span class="tk-p">,</span> <span class="tk-mi">88</span><span class="tk-p">,</span> <span class="tk-mi">85</span><span class="tk-p">,</span> <span class="tk-mi">101</span><span class="tk-p">,</span> <span class="tk-mi">140</span><span class="tk-p">,</span> <span class="tk-mi">122</span><span class="tk-p">])</span>
+
+<span class="tk-n">fig</span><span class="tk-p">,</span> <span class="tk-n">axes</span> <span class="tk-o">=</span> <span class="tk-n">plt</span><span class="tk-o">.</span><span class="tk-n">subplots</span><span class="tk-p">(</span><span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-mi">2</span><span class="tk-p">,</span> <span class="tk-n">figsize</span><span class="tk-o">=</span><span class="tk-p">(</span><span class="tk-mi">10</span><span class="tk-p">,</span> <span class="tk-mf">3.5</span><span class="tk-p">))</span>        <span class="tk-c1"># 1 hàng, 2 khung</span>
+<span class="tk-n">axes</span><span class="tk-p">[</span><span class="tk-mi">0</span><span class="tk-p">]</span><span class="tk-o">.</span><span class="tk-n">plot</span><span class="tk-p">(</span><span class="tk-n">months</span><span class="tk-p">,</span> <span class="tk-n">revenue</span><span class="tk-p">,</span> <span class="tk-n">marker</span><span class="tk-o">=</span><span class="tk-s2">"o"</span><span class="tk-p">)</span>
+<span class="tk-n">axes</span><span class="tk-p">[</span><span class="tk-mi">0</span><span class="tk-p">]</span><span class="tk-o">.</span><span class="tk-n">set_title</span><span class="tk-p">(</span><span class="tk-s2">"Doanh thu tháng 5 tăng vọt?"</span><span class="tk-p">)</span>
+<span class="tk-n">axes</span><span class="tk-p">[</span><span class="tk-mi">0</span><span class="tk-p">]</span><span class="tk-o">.</span><span class="tk-n">set_ylabel</span><span class="tk-p">(</span><span class="tk-s2">"triệu đồng"</span><span class="tk-p">)</span>
+<span class="tk-n">axes</span><span class="tk-p">[</span><span class="tk-mi">1</span><span class="tk-p">]</span><span class="tk-o">.</span><span class="tk-n">bar</span><span class="tk-p">(</span><span class="tk-n">months</span><span class="tk-p">,</span> <span class="tk-n">orders</span><span class="tk-p">,</span> <span class="tk-n">color</span><span class="tk-o">=</span><span class="tk-s2">"#7a8bd6"</span><span class="tk-p">)</span>
+<span class="tk-n">axes</span><span class="tk-p">[</span><span class="tk-mi">1</span><span class="tk-p">]</span><span class="tk-o">.</span><span class="tk-n">set_title</span><span class="tk-p">(</span><span class="tk-s2">"Số đơn theo tháng"</span><span class="tk-p">)</span>
+<span class="tk-n">axes</span><span class="tk-p">[</span><span class="tk-mi">1</span><span class="tk-p">]</span><span class="tk-o">.</span><span class="tk-n">set_ylabel</span><span class="tk-p">(</span><span class="tk-s2">"đơn"</span><span class="tk-p">)</span>
+<span class="tk-n">fig</span><span class="tk-o">.</span><span class="tk-n">suptitle</span><span class="tk-p">(</span><span class="tk-s2">"Shop nội thất, 6 tháng đầu 2026"</span><span class="tk-p">)</span>
+<span class="tk-n">plt</span><span class="tk-o">.</span><span class="tk-n">tight_layout</span><span class="tk-p">()</span>                                        <span class="tk-c1"># tránh chữ đè nhau</span>
+</code></pre></div>
+
+<div class="run" data-mode="py" data-group="t"><div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span></div><img src="../assets/run/p0-4-7d6a24abc037-0.png" alt="Hình do đoạn code vẽ" loading="lazy"></div>
+
+<p><code>plt.subplots(2, 3)</code> cho <code>axes</code> là mảng numpy shape <code>(2, 3)</code>, lấy khung bằng <code>axes[hàng, cột]</code>; <code>axes.ravel()</code> duỗi thành 1 chiều để duyệt bằng <code>for</code>.</p>
+<div class="box pitfall">
+<div class="box-h">Lỗi hay gặp</div>
+<p><strong>Trộn hai cách viết.</strong> matplotlib có hai kiểu: <code>plt.plot(...)</code> (vẽ lên "khung hiện tại") và <code>ax.plot(...)</code> (vẽ lên khung chỉ định). Khi có nhiều khung, <code>plt.title()</code> chỉ đặt tiêu đề cho khung <strong>cuối cùng</strong>, dễ nhầm. Có nhiều hơn một khung thì luôn dùng <code>fig, axes = plt.subplots(...)</code> và gọi qua từng <code>ax</code>. Tên hàm hơi khác nhau giữa hai kiểu: <code>plt.title</code> ứng với <code>ax.set_title</code>, <code>plt.xlabel</code> ứng với <code>ax.set_xlabel</code>.</p>
+</div>
+<h2 id="lt-3">Chọn biểu đồ theo câu hỏi</h2>
+<table>
+<thead>
+<tr>
+<th>Câu hỏi</th>
+<th>Biểu đồ</th>
+<th>Lệnh</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Thay đổi theo thời gian thế nào?</td>
+<td>line</td>
+<td><code>ax.plot(x, y)</code></td>
+</tr>
+<tr>
+<td>Nhóm nào lớn hơn?</td>
+<td>bar</td>
+<td><code>ax.bar(names, values)</code>, <code>ax.barh(...)</code></td>
+</tr>
+<tr>
+<td>Giá trị phân bố ra sao, có ngoại lai không?</td>
+<td>histogram, boxplot</td>
+<td><code>ax.hist(v, bins=30)</code>, <code>ax.boxplot(v)</code></td>
+</tr>
+<tr>
+<td>Hai biến có liên quan không?</td>
+<td>scatter</td>
+<td><code>ax.scatter(x, y, alpha=.3)</code></td>
+</tr>
+<tr>
+<td>Giá trị trên một lưới (ảnh, ma trận)?</td>
+<td>heatmap</td>
+<td><code>ax.imshow(M)</code></td>
+</tr>
+</tbody>
+</table>
+<figure class="fig"><img src="../assets/fig/p0-4-charts.svg" alt="Bốn loại biểu đồ cho bốn loại câu hỏi. Histogram giá ở đây lệch phải: nhiều đơn rẻ, ít đơn rất đắt, đúng kiểu dữ liệu bán hàng thật." loading="lazy"><figcaption>Bốn loại biểu đồ cho bốn loại câu hỏi. Histogram giá ở đây lệch phải: nhiều đơn rẻ, ít đơn rất đắt, đúng kiểu dữ liệu bán hàng thật.</figcaption></figure>
+
+<h3>line: learning curve</h3>
+<p>Biểu đồ đường bạn sẽ nhìn nhiều nhất là <strong>learning curve</strong>: loss trên tập train và tập validation theo từng epoch.</p>
+<div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">numpy</span><span class="tk-w"> </span><span class="tk-k">as</span><span class="tk-w"> </span><span class="tk-nn">np</span>
+<span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">matplotlib.pyplot</span><span class="tk-w"> </span><span class="tk-k">as</span><span class="tk-w"> </span><span class="tk-nn">plt</span>
+
+<span class="tk-c1"># loss ghi lại sau mỗi epoch của một lần train (số liệu ví dụ)</span>
+<span class="tk-n">train_loss</span> <span class="tk-o">=</span> <span class="tk-p">[</span><span class="tk-mf">2.10</span><span class="tk-p">,</span> <span class="tk-mf">1.52</span><span class="tk-p">,</span> <span class="tk-mf">1.18</span><span class="tk-p">,</span> <span class="tk-mf">0.95</span><span class="tk-p">,</span> <span class="tk-mf">0.80</span><span class="tk-p">,</span> <span class="tk-mf">0.68</span><span class="tk-p">,</span> <span class="tk-mf">0.59</span><span class="tk-p">,</span> <span class="tk-mf">0.52</span><span class="tk-p">,</span> <span class="tk-mf">0.46</span><span class="tk-p">,</span> <span class="tk-mf">0.41</span><span class="tk-p">,</span> <span class="tk-mf">0.37</span><span class="tk-p">,</span> <span class="tk-mf">0.33</span><span class="tk-p">,</span> <span class="tk-mf">0.30</span><span class="tk-p">,</span> <span class="tk-mf">0.27</span><span class="tk-p">,</span> <span class="tk-mf">0.25</span><span class="tk-p">]</span>
+<span class="tk-n">val_loss</span>   <span class="tk-o">=</span> <span class="tk-p">[</span><span class="tk-mf">2.15</span><span class="tk-p">,</span> <span class="tk-mf">1.60</span><span class="tk-p">,</span> <span class="tk-mf">1.29</span><span class="tk-p">,</span> <span class="tk-mf">1.10</span><span class="tk-p">,</span> <span class="tk-mf">0.99</span><span class="tk-p">,</span> <span class="tk-mf">0.92</span><span class="tk-p">,</span> <span class="tk-mf">0.88</span><span class="tk-p">,</span> <span class="tk-mf">0.86</span><span class="tk-p">,</span> <span class="tk-mf">0.87</span><span class="tk-p">,</span> <span class="tk-mf">0.89</span><span class="tk-p">,</span> <span class="tk-mf">0.92</span><span class="tk-p">,</span> <span class="tk-mf">0.96</span><span class="tk-p">,</span> <span class="tk-mf">1.00</span><span class="tk-p">,</span> <span class="tk-mf">1.05</span><span class="tk-p">,</span> <span class="tk-mf">1.10</span><span class="tk-p">]</span>
+<span class="tk-n">epochs</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">arange</span><span class="tk-p">(</span><span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-nb">len</span><span class="tk-p">(</span><span class="tk-n">train_loss</span><span class="tk-p">)</span> <span class="tk-o">+</span> <span class="tk-mi">1</span><span class="tk-p">)</span>       <span class="tk-c1"># 1, 2, ..., 15</span>
+<span class="tk-n">best</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">argmin</span><span class="tk-p">(</span><span class="tk-n">val_loss</span><span class="tk-p">)</span>                       <span class="tk-c1"># VỊ TRÍ (bắt đầu từ 0) của val loss nhỏ nhất</span>
+
+<span class="tk-n">fig</span><span class="tk-p">,</span> <span class="tk-n">ax</span> <span class="tk-o">=</span> <span class="tk-n">plt</span><span class="tk-o">.</span><span class="tk-n">subplots</span><span class="tk-p">(</span><span class="tk-n">figsize</span><span class="tk-o">=</span><span class="tk-p">(</span><span class="tk-mf">6.5</span><span class="tk-p">,</span> <span class="tk-mf">3.6</span><span class="tk-p">))</span>
+<span class="tk-n">ax</span><span class="tk-o">.</span><span class="tk-n">plot</span><span class="tk-p">(</span><span class="tk-n">epochs</span><span class="tk-p">,</span> <span class="tk-n">train_loss</span><span class="tk-p">,</span> <span class="tk-n">label</span><span class="tk-o">=</span><span class="tk-s2">"train"</span><span class="tk-p">)</span>
+<span class="tk-n">ax</span><span class="tk-o">.</span><span class="tk-n">plot</span><span class="tk-p">(</span><span class="tk-n">epochs</span><span class="tk-p">,</span> <span class="tk-n">val_loss</span><span class="tk-p">,</span> <span class="tk-n">label</span><span class="tk-o">=</span><span class="tk-s2">"validation"</span><span class="tk-p">)</span>
+<span class="tk-n">ax</span><span class="tk-o">.</span><span class="tk-n">axvline</span><span class="tk-p">(</span><span class="tk-n">epochs</span><span class="tk-p">[</span><span class="tk-n">best</span><span class="tk-p">],</span> <span class="tk-n">color</span><span class="tk-o">=</span><span class="tk-s2">"gray"</span><span class="tk-p">,</span> <span class="tk-n">ls</span><span class="tk-o">=</span><span class="tk-s2">"--"</span><span class="tk-p">,</span> <span class="tk-n">lw</span><span class="tk-o">=</span><span class="tk-mi">1</span><span class="tk-p">)</span>
+<span class="tk-n">ax</span><span class="tk-o">.</span><span class="tk-n">annotate</span><span class="tk-p">(</span><span class="tk-sa">f</span><span class="tk-s2">"tốt nhất: epoch </span><span class="tk-si">{</span><span class="tk-n">epochs</span><span class="tk-p">[</span><span class="tk-n">best</span><span class="tk-p">]</span><span class="tk-si">}</span><span class="tk-s2">"</span><span class="tk-p">,</span> <span class="tk-n">xy</span><span class="tk-o">=</span><span class="tk-p">(</span><span class="tk-n">epochs</span><span class="tk-p">[</span><span class="tk-n">best</span><span class="tk-p">],</span> <span class="tk-n">val_loss</span><span class="tk-p">[</span><span class="tk-n">best</span><span class="tk-p">]),</span>
+            <span class="tk-n">xytext</span><span class="tk-o">=</span><span class="tk-p">(</span><span class="tk-n">epochs</span><span class="tk-p">[</span><span class="tk-n">best</span><span class="tk-p">]</span> <span class="tk-o">+</span> <span class="tk-mf">1.5</span><span class="tk-p">,</span> <span class="tk-n">val_loss</span><span class="tk-p">[</span><span class="tk-n">best</span><span class="tk-p">]</span> <span class="tk-o">+</span> <span class="tk-mf">0.6</span><span class="tk-p">),</span> <span class="tk-n">arrowprops</span><span class="tk-o">=</span><span class="tk-nb">dict</span><span class="tk-p">(</span><span class="tk-n">arrowstyle</span><span class="tk-o">=</span><span class="tk-s2">"-&gt;"</span><span class="tk-p">))</span>
+<span class="tk-n">ax</span><span class="tk-o">.</span><span class="tk-n">set_xlabel</span><span class="tk-p">(</span><span class="tk-s2">"epoch"</span><span class="tk-p">);</span> <span class="tk-n">ax</span><span class="tk-o">.</span><span class="tk-n">set_ylabel</span><span class="tk-p">(</span><span class="tk-s2">"loss"</span><span class="tk-p">);</span> <span class="tk-n">ax</span><span class="tk-o">.</span><span class="tk-n">legend</span><span class="tk-p">()</span>
+<span class="tk-n">ax</span><span class="tk-o">.</span><span class="tk-n">set_title</span><span class="tk-p">(</span><span class="tk-s2">"Sau epoch tốt nhất, val loss tăng: model bắt đầu overfit"</span><span class="tk-p">)</span>
+<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-s2">"epoch tốt nhất:"</span><span class="tk-p">,</span> <span class="tk-n">epochs</span><span class="tk-p">[</span><span class="tk-n">best</span><span class="tk-p">])</span>
+</code></pre></div>
+
+<div class="run" data-mode="py" data-group="t"><div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span></div><pre class="run-out">epoch tốt nhất: 8</pre><img src="../assets/run/p0-4-2e4644ffb22a-0.png" alt="Hình do đoạn code vẽ" loading="lazy"></div>
+
+<p>Train loss giảm mãi, còn val loss chạm đáy rồi đi lên: khoảng cách giữa hai đường là dấu hiệu <strong>overfit</strong> (P1.2). Checkpoint nên giữ là checkpoint ở epoch có val loss thấp nhất.</p>
+<h3>bar: so sánh nhóm</h3>
+<div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">matplotlib.pyplot</span><span class="tk-w"> </span><span class="tk-k">as</span><span class="tk-w"> </span><span class="tk-nn">plt</span>
+
+<span class="tk-n">products</span> <span class="tk-o">=</span> <span class="tk-p">[</span><span class="tk-s2">"gương LED"</span><span class="tk-p">,</span> <span class="tk-s2">"bàn trang điểm"</span><span class="tk-p">,</span> <span class="tk-s2">"ghế đôn"</span><span class="tk-p">,</span> <span class="tk-s2">"kệ mỹ phẩm"</span><span class="tk-p">,</span> <span class="tk-s2">"đèn bàn"</span><span class="tk-p">]</span>
+<span class="tk-n">revenue</span> <span class="tk-o">=</span> <span class="tk-p">[</span><span class="tk-mi">270</span><span class="tk-p">,</span> <span class="tk-mi">560</span><span class="tk-p">,</span> <span class="tk-mi">95</span><span class="tk-p">,</span> <span class="tk-mi">88</span><span class="tk-p">,</span> <span class="tk-mi">52</span><span class="tk-p">]</span>                             <span class="tk-c1"># triệu đồng</span>
+
+<span class="tk-n">order</span> <span class="tk-o">=</span> <span class="tk-nb">sorted</span><span class="tk-p">(</span><span class="tk-nb">range</span><span class="tk-p">(</span><span class="tk-nb">len</span><span class="tk-p">(</span><span class="tk-n">products</span><span class="tk-p">)),</span> <span class="tk-n">key</span><span class="tk-o">=</span><span class="tk-k">lambda</span> <span class="tk-n">i</span><span class="tk-p">:</span> <span class="tk-n">revenue</span><span class="tk-p">[</span><span class="tk-n">i</span><span class="tk-p">])</span>   <span class="tk-c1"># sắp tăng dần để thanh dài nhất ở trên</span>
+<span class="tk-n">fig</span><span class="tk-p">,</span> <span class="tk-n">ax</span> <span class="tk-o">=</span> <span class="tk-n">plt</span><span class="tk-o">.</span><span class="tk-n">subplots</span><span class="tk-p">(</span><span class="tk-n">figsize</span><span class="tk-o">=</span><span class="tk-p">(</span><span class="tk-mf">6.5</span><span class="tk-p">,</span> <span class="tk-mi">3</span><span class="tk-p">))</span>
+<span class="tk-n">bars</span> <span class="tk-o">=</span> <span class="tk-n">ax</span><span class="tk-o">.</span><span class="tk-n">barh</span><span class="tk-p">([</span><span class="tk-n">products</span><span class="tk-p">[</span><span class="tk-n">i</span><span class="tk-p">]</span> <span class="tk-k">for</span> <span class="tk-n">i</span> <span class="tk-ow">in</span> <span class="tk-n">order</span><span class="tk-p">],</span> <span class="tk-p">[</span><span class="tk-n">revenue</span><span class="tk-p">[</span><span class="tk-n">i</span><span class="tk-p">]</span> <span class="tk-k">for</span> <span class="tk-n">i</span> <span class="tk-ow">in</span> <span class="tk-n">order</span><span class="tk-p">],</span> <span class="tk-n">color</span><span class="tk-o">=</span><span class="tk-s2">"#e8875a"</span><span class="tk-p">)</span>
+<span class="tk-n">ax</span><span class="tk-o">.</span><span class="tk-n">bar_label</span><span class="tk-p">(</span><span class="tk-n">bars</span><span class="tk-p">,</span> <span class="tk-n">fmt</span><span class="tk-o">=</span><span class="tk-s2">"</span><span class="tk-si">%d</span><span class="tk-s2"> tr"</span><span class="tk-p">)</span>                              <span class="tk-c1"># ghi số ở đầu mỗi thanh</span>
+<span class="tk-n">ax</span><span class="tk-o">.</span><span class="tk-n">set_xlabel</span><span class="tk-p">(</span><span class="tk-s2">"doanh thu (triệu đồng)"</span><span class="tk-p">)</span>
+<span class="tk-n">ax</span><span class="tk-o">.</span><span class="tk-n">set_title</span><span class="tk-p">(</span><span class="tk-s2">"Bàn trang điểm chiếm hơn nửa doanh thu"</span><span class="tk-p">)</span>
+</code></pre></div>
+
+<div class="run" data-mode="py" data-group="t"><div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span></div><pre class="run-out">[Text(0, 0, &#x27;52 tr&#x27;), Text(0, 0, &#x27;88 tr&#x27;), Text(0, 0, &#x27;95 tr&#x27;), Text(0, 0, &#x27;270 tr&#x27;), Text(0, 0, &#x27;560 tr&#x27;)]</pre><img src="../assets/run/p0-4-caefd1d03ab6-0.png" alt="Hình do đoạn code vẽ" loading="lazy"></div>
+
+<p>Tên nhóm dài thì dùng <code>barh</code> (thanh ngang) để chữ không đè nhau, và <strong>sắp theo giá trị</strong> để người xem thấy thứ hạng ngay.</p>
+<div class="box pitfall">
+<div class="box-h">Lỗi hay gặp</div>
+<p><strong>Trục y của biểu đồ cột không bắt đầu từ 0.</strong> Chiều dài thanh là thứ mắt so sánh. Hai cột 96 và 100 trên trục bắt đầu từ 95 trông như chênh nhau 5 lần. matplotlib tự bắt đầu cột từ 0, nhưng nếu bạn đặt <code>ax.set_ylim(95, 101)</code> để "nhìn rõ hơn" thì biểu đồ nói dối. Với biểu đồ đường thì không cần bắt đầu từ 0, vì mắt đọc độ dốc chứ không đọc chiều dài.</p>
+</div>
+<h3>histogram và boxplot: phân bố</h3>
+<div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">numpy</span><span class="tk-w"> </span><span class="tk-k">as</span><span class="tk-w"> </span><span class="tk-nn">np</span>
+<span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">matplotlib.pyplot</span><span class="tk-w"> </span><span class="tk-k">as</span><span class="tk-w"> </span><span class="tk-nn">plt</span>
+
+<span class="tk-n">rng</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">random</span><span class="tk-o">.</span><span class="tk-n">default_rng</span><span class="tk-p">(</span><span class="tk-mi">0</span><span class="tk-p">)</span>
+<span class="tk-n">order_value</span> <span class="tk-o">=</span> <span class="tk-n">rng</span><span class="tk-o">.</span><span class="tk-n">lognormal</span><span class="tk-p">(</span><span class="tk-n">mean</span><span class="tk-o">=</span><span class="tk-mi">6</span><span class="tk-p">,</span> <span class="tk-n">sigma</span><span class="tk-o">=</span><span class="tk-mf">0.7</span><span class="tk-p">,</span> <span class="tk-n">size</span><span class="tk-o">=</span><span class="tk-mi">2000</span><span class="tk-p">)</span>        <span class="tk-c1"># giá trị đơn (nghìn đồng), lệch phải như thật</span>
+
+<span class="tk-n">fig</span><span class="tk-p">,</span> <span class="tk-n">axes</span> <span class="tk-o">=</span> <span class="tk-n">plt</span><span class="tk-o">.</span><span class="tk-n">subplots</span><span class="tk-p">(</span><span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-mi">3</span><span class="tk-p">,</span> <span class="tk-n">figsize</span><span class="tk-o">=</span><span class="tk-p">(</span><span class="tk-mi">12</span><span class="tk-p">,</span> <span class="tk-mi">3</span><span class="tk-p">))</span>
+<span class="tk-n">axes</span><span class="tk-p">[</span><span class="tk-mi">0</span><span class="tk-p">]</span><span class="tk-o">.</span><span class="tk-n">hist</span><span class="tk-p">(</span><span class="tk-n">order_value</span><span class="tk-p">,</span> <span class="tk-n">bins</span><span class="tk-o">=</span><span class="tk-mi">5</span><span class="tk-p">)</span>
+<span class="tk-n">axes</span><span class="tk-p">[</span><span class="tk-mi">0</span><span class="tk-p">]</span><span class="tk-o">.</span><span class="tk-n">set_title</span><span class="tk-p">(</span><span class="tk-s2">"bins=5: mất hết chi tiết"</span><span class="tk-p">)</span>
+<span class="tk-n">axes</span><span class="tk-p">[</span><span class="tk-mi">1</span><span class="tk-p">]</span><span class="tk-o">.</span><span class="tk-n">hist</span><span class="tk-p">(</span><span class="tk-n">order_value</span><span class="tk-p">,</span> <span class="tk-n">bins</span><span class="tk-o">=</span><span class="tk-mi">50</span><span class="tk-p">)</span>
+<span class="tk-n">axes</span><span class="tk-p">[</span><span class="tk-mi">1</span><span class="tk-p">]</span><span class="tk-o">.</span><span class="tk-n">axvline</span><span class="tk-p">(</span><span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">median</span><span class="tk-p">(</span><span class="tk-n">order_value</span><span class="tk-p">),</span> <span class="tk-n">color</span><span class="tk-o">=</span><span class="tk-s2">"k"</span><span class="tk-p">,</span> <span class="tk-n">ls</span><span class="tk-o">=</span><span class="tk-s2">"--"</span><span class="tk-p">,</span> <span class="tk-n">label</span><span class="tk-o">=</span><span class="tk-sa">f</span><span class="tk-s2">"trung vị </span><span class="tk-si">{</span><span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">median</span><span class="tk-p">(</span><span class="tk-n">order_value</span><span class="tk-p">)</span><span class="tk-si">:</span><span class="tk-s2">.0f</span><span class="tk-si">}</span><span class="tk-s2">"</span><span class="tk-p">)</span>
+<span class="tk-n">axes</span><span class="tk-p">[</span><span class="tk-mi">1</span><span class="tk-p">]</span><span class="tk-o">.</span><span class="tk-n">axvline</span><span class="tk-p">(</span><span class="tk-n">order_value</span><span class="tk-o">.</span><span class="tk-n">mean</span><span class="tk-p">(),</span> <span class="tk-n">color</span><span class="tk-o">=</span><span class="tk-s2">"r"</span><span class="tk-p">,</span> <span class="tk-n">ls</span><span class="tk-o">=</span><span class="tk-s2">":"</span><span class="tk-p">,</span> <span class="tk-n">label</span><span class="tk-o">=</span><span class="tk-sa">f</span><span class="tk-s2">"trung bình </span><span class="tk-si">{</span><span class="tk-n">order_value</span><span class="tk-o">.</span><span class="tk-n">mean</span><span class="tk-p">()</span><span class="tk-si">:</span><span class="tk-s2">.0f</span><span class="tk-si">}</span><span class="tk-s2">"</span><span class="tk-p">)</span>
+<span class="tk-n">axes</span><span class="tk-p">[</span><span class="tk-mi">1</span><span class="tk-p">]</span><span class="tk-o">.</span><span class="tk-n">legend</span><span class="tk-p">();</span> <span class="tk-n">axes</span><span class="tk-p">[</span><span class="tk-mi">1</span><span class="tk-p">]</span><span class="tk-o">.</span><span class="tk-n">set_title</span><span class="tk-p">(</span><span class="tk-s2">"bins=50: thấy đuôi dài bên phải"</span><span class="tk-p">)</span>
+<span class="tk-n">axes</span><span class="tk-p">[</span><span class="tk-mi">2</span><span class="tk-p">]</span><span class="tk-o">.</span><span class="tk-n">boxplot</span><span class="tk-p">(</span><span class="tk-n">order_value</span><span class="tk-p">,</span> <span class="tk-n">vert</span><span class="tk-o">=</span><span class="tk-kc">False</span><span class="tk-p">)</span>
+<span class="tk-n">axes</span><span class="tk-p">[</span><span class="tk-mi">2</span><span class="tk-p">]</span><span class="tk-o">.</span><span class="tk-n">set_title</span><span class="tk-p">(</span><span class="tk-s2">"boxplot: các chấm là ngoại lai"</span><span class="tk-p">)</span>
+<span class="tk-k">for</span> <span class="tk-n">ax</span> <span class="tk-ow">in</span> <span class="tk-n">axes</span><span class="tk-p">:</span>
+    <span class="tk-n">ax</span><span class="tk-o">.</span><span class="tk-n">set_xlabel</span><span class="tk-p">(</span><span class="tk-s2">"giá trị đơn (nghìn đồng)"</span><span class="tk-p">)</span>
+<span class="tk-n">plt</span><span class="tk-o">.</span><span class="tk-n">tight_layout</span><span class="tk-p">()</span>
+</code></pre></div>
+
+<div class="run" data-mode="py" data-group="t"><div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span></div><img src="../assets/run/p0-4-8a829d7de28e-0.png" alt="Hình do đoạn code vẽ" loading="lazy"></div>
+
+<p>Histogram chia khoảng giá trị thành các <strong>bin</strong> bằng nhau rồi đếm số điểm rơi vào mỗi bin. Số bin quá ít làm mất hình dạng, quá nhiều làm biểu đồ lởm chởm; bắt đầu với 30–50 rồi chỉnh. Phân bố lệch phải thì trung bình bị kéo về phía đuôi, lớn hơn trung vị: báo cáo "giá trị đơn điển hình" nên dùng trung vị.</p>
+<p>Boxplot tóm tắt phân bố trong một hình: hộp từ phân vị 25% tới 75%, vạch giữa là trung vị, "râu" kéo tới điểm xa nhất còn nằm trong 1,5 lần độ rộng hộp, các chấm ngoài râu là ngoại lai.</p>
+<h3>scatter: quan hệ giữa hai biến</h3>
+<div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">numpy</span><span class="tk-w"> </span><span class="tk-k">as</span><span class="tk-w"> </span><span class="tk-nn">np</span>
+<span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">matplotlib.pyplot</span><span class="tk-w"> </span><span class="tk-k">as</span><span class="tk-w"> </span><span class="tk-nn">plt</span>
+
+<span class="tk-n">rng</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">random</span><span class="tk-o">.</span><span class="tk-n">default_rng</span><span class="tk-p">(</span><span class="tk-mi">1</span><span class="tk-p">)</span>
+<span class="tk-n">n</span> <span class="tk-o">=</span> <span class="tk-mi">300</span>
+<span class="tk-n">area</span> <span class="tk-o">=</span> <span class="tk-n">rng</span><span class="tk-o">.</span><span class="tk-n">uniform</span><span class="tk-p">(</span><span class="tk-mi">30</span><span class="tk-p">,</span> <span class="tk-mi">120</span><span class="tk-p">,</span> <span class="tk-n">n</span><span class="tk-p">)</span>                                     <span class="tk-c1"># diện tích căn hộ (m²)</span>
+<span class="tk-n">price</span> <span class="tk-o">=</span> <span class="tk-mf">0.045</span> <span class="tk-o">*</span> <span class="tk-n">area</span> <span class="tk-o">+</span> <span class="tk-n">rng</span><span class="tk-o">.</span><span class="tk-n">normal</span><span class="tk-p">(</span><span class="tk-mi">0</span><span class="tk-p">,</span> <span class="tk-mf">0.6</span><span class="tk-p">,</span> <span class="tk-n">n</span><span class="tk-p">)</span>                       <span class="tk-c1"># giá (tỷ đồng)</span>
+<span class="tk-n">district</span> <span class="tk-o">=</span> <span class="tk-n">rng</span><span class="tk-o">.</span><span class="tk-n">integers</span><span class="tk-p">(</span><span class="tk-mi">0</span><span class="tk-p">,</span> <span class="tk-mi">3</span><span class="tk-p">,</span> <span class="tk-n">n</span><span class="tk-p">)</span>                                   <span class="tk-c1"># 3 quận</span>
+<span class="tk-n">price</span> <span class="tk-o">+=</span> <span class="tk-n">district</span> <span class="tk-o">*</span> <span class="tk-mf">0.8</span>
+
+<span class="tk-n">fig</span><span class="tk-p">,</span> <span class="tk-n">ax</span> <span class="tk-o">=</span> <span class="tk-n">plt</span><span class="tk-o">.</span><span class="tk-n">subplots</span><span class="tk-p">(</span><span class="tk-n">figsize</span><span class="tk-o">=</span><span class="tk-p">(</span><span class="tk-mi">6</span><span class="tk-p">,</span> <span class="tk-mf">3.8</span><span class="tk-p">))</span>
+<span class="tk-n">sc</span> <span class="tk-o">=</span> <span class="tk-n">ax</span><span class="tk-o">.</span><span class="tk-n">scatter</span><span class="tk-p">(</span><span class="tk-n">area</span><span class="tk-p">,</span> <span class="tk-n">price</span><span class="tk-p">,</span> <span class="tk-n">c</span><span class="tk-o">=</span><span class="tk-n">district</span><span class="tk-p">,</span> <span class="tk-n">cmap</span><span class="tk-o">=</span><span class="tk-s2">"viridis"</span><span class="tk-p">,</span> <span class="tk-n">s</span><span class="tk-o">=</span><span class="tk-mi">14</span><span class="tk-p">,</span> <span class="tk-n">alpha</span><span class="tk-o">=</span><span class="tk-mf">0.6</span><span class="tk-p">)</span>
+<span class="tk-n">ax</span><span class="tk-o">.</span><span class="tk-n">legend</span><span class="tk-p">(</span><span class="tk-o">*</span><span class="tk-n">sc</span><span class="tk-o">.</span><span class="tk-n">legend_elements</span><span class="tk-p">(),</span> <span class="tk-n">title</span><span class="tk-o">=</span><span class="tk-s2">"quận"</span><span class="tk-p">)</span>
+<span class="tk-n">ax</span><span class="tk-o">.</span><span class="tk-n">set_xlabel</span><span class="tk-p">(</span><span class="tk-s2">"diện tích (m²)"</span><span class="tk-p">);</span> <span class="tk-n">ax</span><span class="tk-o">.</span><span class="tk-n">set_ylabel</span><span class="tk-p">(</span><span class="tk-s2">"giá (tỷ đồng)"</span><span class="tk-p">)</span>
+<span class="tk-n">ax</span><span class="tk-o">.</span><span class="tk-n">set_title</span><span class="tk-p">(</span><span class="tk-s2">"Giá tăng theo diện tích, mỗi quận một mức"</span><span class="tk-p">)</span>
+</code></pre></div>
+
+<div class="run" data-mode="py" data-group="t"><div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span></div><img src="../assets/run/p0-4-bc7ca151c65a-0.png" alt="Hình do đoạn code vẽ" loading="lazy"></div>
+
+<p><code>c=</code> tô màu theo một cột (nhãn lớp, quận), <code>alpha</code> làm điểm trong suốt để thấy chỗ dày đặc, <code>s</code> là kích thước điểm. Đây là cách xem dữ liệu phân loại ở P1: điểm của các lớp tách nhau hay chồng lên nhau.</p>
+<h2 id="lt-4">Biểu đồ cho ML: ảnh và confusion matrix</h2>
+<p><code>ax.imshow(M)</code> vẽ một mảng 2 chiều thành lưới ô màu. Ảnh xám là mảng <code>(H, W)</code>, ảnh màu là <code>(H, W, 3)</code>. Bộ chữ số viết tay <code>digits</code> có sẵn trong scikit-learn, mỗi ảnh 8×8:</p>
+<div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">matplotlib.pyplot</span><span class="tk-w"> </span><span class="tk-k">as</span><span class="tk-w"> </span><span class="tk-nn">plt</span>
+<span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">sklearn.datasets</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">load_digits</span>
+
+<span class="tk-n">digits</span> <span class="tk-o">=</span> <span class="tk-n">load_digits</span><span class="tk-p">()</span>
+<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-n">digits</span><span class="tk-o">.</span><span class="tk-n">images</span><span class="tk-o">.</span><span class="tk-n">shape</span><span class="tk-p">,</span> <span class="tk-n">digits</span><span class="tk-o">.</span><span class="tk-n">target</span><span class="tk-p">[:</span><span class="tk-mi">10</span><span class="tk-p">])</span>      <span class="tk-c1"># 1797 ảnh 8x8, nhãn 0..9</span>
+
+<span class="tk-n">fig</span><span class="tk-p">,</span> <span class="tk-n">axes</span> <span class="tk-o">=</span> <span class="tk-n">plt</span><span class="tk-o">.</span><span class="tk-n">subplots</span><span class="tk-p">(</span><span class="tk-mi">2</span><span class="tk-p">,</span> <span class="tk-mi">5</span><span class="tk-p">,</span> <span class="tk-n">figsize</span><span class="tk-o">=</span><span class="tk-p">(</span><span class="tk-mi">8</span><span class="tk-p">,</span> <span class="tk-mf">3.6</span><span class="tk-p">))</span>
+<span class="tk-k">for</span> <span class="tk-n">ax</span><span class="tk-p">,</span> <span class="tk-n">img</span><span class="tk-p">,</span> <span class="tk-n">label</span> <span class="tk-ow">in</span> <span class="tk-nb">zip</span><span class="tk-p">(</span><span class="tk-n">axes</span><span class="tk-o">.</span><span class="tk-n">ravel</span><span class="tk-p">(),</span> <span class="tk-n">digits</span><span class="tk-o">.</span><span class="tk-n">images</span><span class="tk-p">,</span> <span class="tk-n">digits</span><span class="tk-o">.</span><span class="tk-n">target</span><span class="tk-p">):</span>
+    <span class="tk-n">ax</span><span class="tk-o">.</span><span class="tk-n">imshow</span><span class="tk-p">(</span><span class="tk-n">img</span><span class="tk-p">,</span> <span class="tk-n">cmap</span><span class="tk-o">=</span><span class="tk-s2">"gray_r"</span><span class="tk-p">)</span>
+    <span class="tk-n">ax</span><span class="tk-o">.</span><span class="tk-n">set_title</span><span class="tk-p">(</span><span class="tk-sa">f</span><span class="tk-s2">"nhãn </span><span class="tk-si">{</span><span class="tk-n">label</span><span class="tk-si">}</span><span class="tk-s2">"</span><span class="tk-p">)</span>
+    <span class="tk-n">ax</span><span class="tk-o">.</span><span class="tk-n">axis</span><span class="tk-p">(</span><span class="tk-s2">"off"</span><span class="tk-p">)</span>                                   <span class="tk-c1"># ảnh thì bỏ trục số</span>
+<span class="tk-n">plt</span><span class="tk-o">.</span><span class="tk-n">tight_layout</span><span class="tk-p">()</span>
+</code></pre></div>
+
+<div class="run" data-mode="py" data-group="t"><div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span></div><pre class="run-out">(1797, 8, 8) [0 1 2 3 4 5 6 7 8 9]</pre><img src="../assets/run/p0-4-717bd3d34b4b-0.png" alt="Hình do đoạn code vẽ" loading="lazy"></div>
+
+<p>Luôn xem vài chục ảnh kèm nhãn trước khi train một model ảnh: bạn sẽ bắt được ảnh bị xoay, nhãn bị lệch, hay ảnh trắng trơn.</p>
+<p><strong>Confusion matrix</strong> cho biết model nhầm lớp nào thành lớp nào: ô <code>[i, j]</code> là số mẫu có nhãn thật <code>i</code> mà model đoán <code>j</code>. Vẽ bằng <code>imshow</code> và ghi số vào từng ô:</p>
+<div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">numpy</span><span class="tk-w"> </span><span class="tk-k">as</span><span class="tk-w"> </span><span class="tk-nn">np</span>
+<span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">matplotlib.pyplot</span><span class="tk-w"> </span><span class="tk-k">as</span><span class="tk-w"> </span><span class="tk-nn">plt</span>
+
+<span class="tk-n">classes</span> <span class="tk-o">=</span> <span class="tk-p">[</span><span class="tk-s2">"bàn"</span><span class="tk-p">,</span> <span class="tk-s2">"ghế"</span><span class="tk-p">,</span> <span class="tk-s2">"gương"</span><span class="tk-p">]</span>
+<span class="tk-n">cm</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">array</span><span class="tk-p">([[</span><span class="tk-mi">48</span><span class="tk-p">,</span> <span class="tk-mi">2</span><span class="tk-p">,</span> <span class="tk-mi">0</span><span class="tk-p">],</span>
+               <span class="tk-p">[</span><span class="tk-mi">6</span><span class="tk-p">,</span> <span class="tk-mi">41</span><span class="tk-p">,</span> <span class="tk-mi">3</span><span class="tk-p">],</span>
+               <span class="tk-p">[</span><span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-mi">4</span><span class="tk-p">,</span> <span class="tk-mi">45</span><span class="tk-p">]])</span>                         <span class="tk-c1"># hàng: nhãn thật, cột: model đoán</span>
+
+<span class="tk-n">fig</span><span class="tk-p">,</span> <span class="tk-n">ax</span> <span class="tk-o">=</span> <span class="tk-n">plt</span><span class="tk-o">.</span><span class="tk-n">subplots</span><span class="tk-p">(</span><span class="tk-n">figsize</span><span class="tk-o">=</span><span class="tk-p">(</span><span class="tk-mf">4.2</span><span class="tk-p">,</span> <span class="tk-mf">3.6</span><span class="tk-p">))</span>
+<span class="tk-n">im</span> <span class="tk-o">=</span> <span class="tk-n">ax</span><span class="tk-o">.</span><span class="tk-n">imshow</span><span class="tk-p">(</span><span class="tk-n">cm</span><span class="tk-p">,</span> <span class="tk-n">cmap</span><span class="tk-o">=</span><span class="tk-s2">"Blues"</span><span class="tk-p">)</span>
+<span class="tk-k">for</span> <span class="tk-n">i</span> <span class="tk-ow">in</span> <span class="tk-nb">range</span><span class="tk-p">(</span><span class="tk-mi">3</span><span class="tk-p">):</span>
+    <span class="tk-k">for</span> <span class="tk-n">j</span> <span class="tk-ow">in</span> <span class="tk-nb">range</span><span class="tk-p">(</span><span class="tk-mi">3</span><span class="tk-p">):</span>
+        <span class="tk-n">ax</span><span class="tk-o">.</span><span class="tk-n">text</span><span class="tk-p">(</span><span class="tk-n">j</span><span class="tk-p">,</span> <span class="tk-n">i</span><span class="tk-p">,</span> <span class="tk-n">cm</span><span class="tk-p">[</span><span class="tk-n">i</span><span class="tk-p">,</span> <span class="tk-n">j</span><span class="tk-p">],</span> <span class="tk-n">ha</span><span class="tk-o">=</span><span class="tk-s2">"center"</span><span class="tk-p">,</span> <span class="tk-n">va</span><span class="tk-o">=</span><span class="tk-s2">"center"</span><span class="tk-p">,</span>
+                <span class="tk-n">color</span><span class="tk-o">=</span><span class="tk-s2">"white"</span> <span class="tk-k">if</span> <span class="tk-n">cm</span><span class="tk-p">[</span><span class="tk-n">i</span><span class="tk-p">,</span> <span class="tk-n">j</span><span class="tk-p">]</span> <span class="tk-o">&gt;</span> <span class="tk-n">cm</span><span class="tk-o">.</span><span class="tk-n">max</span><span class="tk-p">()</span> <span class="tk-o">/</span> <span class="tk-mi">2</span> <span class="tk-k">else</span> <span class="tk-s2">"black"</span><span class="tk-p">)</span>
+<span class="tk-n">ax</span><span class="tk-o">.</span><span class="tk-n">set_xticks</span><span class="tk-p">(</span><span class="tk-nb">range</span><span class="tk-p">(</span><span class="tk-mi">3</span><span class="tk-p">),</span> <span class="tk-n">classes</span><span class="tk-p">);</span> <span class="tk-n">ax</span><span class="tk-o">.</span><span class="tk-n">set_yticks</span><span class="tk-p">(</span><span class="tk-nb">range</span><span class="tk-p">(</span><span class="tk-mi">3</span><span class="tk-p">),</span> <span class="tk-n">classes</span><span class="tk-p">)</span>
+<span class="tk-n">ax</span><span class="tk-o">.</span><span class="tk-n">set_xlabel</span><span class="tk-p">(</span><span class="tk-s2">"model đoán"</span><span class="tk-p">);</span> <span class="tk-n">ax</span><span class="tk-o">.</span><span class="tk-n">set_ylabel</span><span class="tk-p">(</span><span class="tk-s2">"nhãn thật"</span><span class="tk-p">)</span>
+<span class="tk-n">fig</span><span class="tk-o">.</span><span class="tk-n">colorbar</span><span class="tk-p">(</span><span class="tk-n">im</span><span class="tk-p">,</span> <span class="tk-n">ax</span><span class="tk-o">=</span><span class="tk-n">ax</span><span class="tk-p">)</span>
+<span class="tk-n">ax</span><span class="tk-o">.</span><span class="tk-n">set_title</span><span class="tk-p">(</span><span class="tk-s2">"Hay nhầm ghế thành bàn"</span><span class="tk-p">)</span>
+<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-s2">"accuracy:"</span><span class="tk-p">,</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">trace</span><span class="tk-p">(</span><span class="tk-n">cm</span><span class="tk-p">)</span> <span class="tk-o">/</span> <span class="tk-n">cm</span><span class="tk-o">.</span><span class="tk-n">sum</span><span class="tk-p">())</span>
+</code></pre></div>
+
+<div class="run" data-mode="py" data-group="t"><div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span></div><pre class="run-out">accuracy: 0.8933333333333333</pre><img src="../assets/run/p0-4-c0a49633ea3c-0.png" alt="Hình do đoạn code vẽ" loading="lazy"></div>
+
+<p>Đường chéo là phần đoán đúng. Ô lớn nhất ngoài đường chéo (6 cái ghế bị đoán là bàn) là chỗ đầu tiên cần xem lại: ảnh ghế đó trông thế nào, nhãn có sai không.</p>
+<h2 id="lt-5">Vẽ nhanh từ pandas</h2>
+<p>DataFrame và Series có sẵn <code>.plot</code>, bên dưới vẫn là matplotlib, nên truyền <code>ax=</code> để vẽ vào khung bạn chọn:</p>
+<div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">pandas</span><span class="tk-w"> </span><span class="tk-k">as</span><span class="tk-w"> </span><span class="tk-nn">pd</span>
+<span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">matplotlib.pyplot</span><span class="tk-w"> </span><span class="tk-k">as</span><span class="tk-w"> </span><span class="tk-nn">plt</span>
+
+<span class="tk-n">df</span> <span class="tk-o">=</span> <span class="tk-n">pd</span><span class="tk-o">.</span><span class="tk-n">DataFrame</span><span class="tk-p">({</span><span class="tk-s2">"month"</span><span class="tk-p">:</span> <span class="tk-p">[</span><span class="tk-s2">"T1"</span><span class="tk-p">,</span> <span class="tk-s2">"T2"</span><span class="tk-p">,</span> <span class="tk-s2">"T3"</span><span class="tk-p">,</span> <span class="tk-s2">"T4"</span><span class="tk-p">],</span>
+                   <span class="tk-s2">"Bàn A"</span><span class="tk-p">:</span> <span class="tk-p">[</span><span class="tk-mi">3000</span><span class="tk-p">,</span> <span class="tk-mi">6000</span><span class="tk-p">,</span> <span class="tk-mi">4500</span><span class="tk-p">,</span> <span class="tk-mi">7000</span><span class="tk-p">],</span>
+                   <span class="tk-s2">"Ghế B"</span><span class="tk-p">:</span> <span class="tk-p">[</span><span class="tk-mi">400</span><span class="tk-p">,</span> <span class="tk-mi">900</span><span class="tk-p">,</span> <span class="tk-mi">1200</span><span class="tk-p">,</span> <span class="tk-mi">800</span><span class="tk-p">]})</span><span class="tk-o">.</span><span class="tk-n">set_index</span><span class="tk-p">(</span><span class="tk-s2">"month"</span><span class="tk-p">)</span>
+
+<span class="tk-n">fig</span><span class="tk-p">,</span> <span class="tk-n">axes</span> <span class="tk-o">=</span> <span class="tk-n">plt</span><span class="tk-o">.</span><span class="tk-n">subplots</span><span class="tk-p">(</span><span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-mi">2</span><span class="tk-p">,</span> <span class="tk-n">figsize</span><span class="tk-o">=</span><span class="tk-p">(</span><span class="tk-mi">10</span><span class="tk-p">,</span> <span class="tk-mi">3</span><span class="tk-p">))</span>
+<span class="tk-n">df</span><span class="tk-o">.</span><span class="tk-n">plot</span><span class="tk-p">(</span><span class="tk-n">ax</span><span class="tk-o">=</span><span class="tk-n">axes</span><span class="tk-p">[</span><span class="tk-mi">0</span><span class="tk-p">],</span> <span class="tk-n">marker</span><span class="tk-o">=</span><span class="tk-s2">"o"</span><span class="tk-p">,</span> <span class="tk-n">title</span><span class="tk-o">=</span><span class="tk-s2">"Doanh thu theo tháng"</span><span class="tk-p">)</span>       <span class="tk-c1"># mỗi cột một đường</span>
+<span class="tk-n">df</span><span class="tk-o">.</span><span class="tk-n">sum</span><span class="tk-p">()</span><span class="tk-o">.</span><span class="tk-n">plot</span><span class="tk-o">.</span><span class="tk-n">bar</span><span class="tk-p">(</span><span class="tk-n">ax</span><span class="tk-o">=</span><span class="tk-n">axes</span><span class="tk-p">[</span><span class="tk-mi">1</span><span class="tk-p">],</span> <span class="tk-n">title</span><span class="tk-o">=</span><span class="tk-s2">"Tổng doanh thu"</span><span class="tk-p">,</span> <span class="tk-n">rot</span><span class="tk-o">=</span><span class="tk-mi">0</span><span class="tk-p">)</span>       <span class="tk-c1"># Series → bar</span>
+<span class="tk-n">axes</span><span class="tk-p">[</span><span class="tk-mi">0</span><span class="tk-p">]</span><span class="tk-o">.</span><span class="tk-n">set_ylabel</span><span class="tk-p">(</span><span class="tk-s2">"nghìn đồng"</span><span class="tk-p">)</span>
+<span class="tk-n">plt</span><span class="tk-o">.</span><span class="tk-n">tight_layout</span><span class="tk-p">()</span>
+</code></pre></div>
+
+<div class="run" data-mode="py" data-group="t"><div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span></div><img src="../assets/run/p0-4-4799aa7e7c80-0.png" alt="Hình do đoạn code vẽ" loading="lazy"></div>
+
+<p>Các kiểu hay dùng: <code>.plot()</code> (line), <code>.plot.bar()</code>, <code>.plot.barh()</code>, <code>.plot.hist(bins=...)</code>, <code>.plot.scatter(x=..., y=...)</code>. Muốn chỉnh chi tiết thì lấy <code>ax</code> về và chỉnh tiếp như mọi khung matplotlib.</p>
+<h2 id="lt-6">Thang log, lưu hình và vẽ nhiều hình</h2>
+<p>Khi giá trị trải từ vài chục tới vài triệu (lượt xem, giá nhà, learning rate), thang thường dồn mọi thứ nhỏ vào sát trục. <code>ax.set_yscale("log")</code> cho mỗi vạch chia cách nhau <strong>gấp 10 lần</strong> (10, 100, 1000...), nên số nhỏ và số lớn cùng đọc được:</p>
+<div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">matplotlib.pyplot</span><span class="tk-w"> </span><span class="tk-k">as</span><span class="tk-w"> </span><span class="tk-nn">plt</span>
+
+<span class="tk-n">videos</span> <span class="tk-o">=</span> <span class="tk-p">[</span><span class="tk-s2">"V1"</span><span class="tk-p">,</span> <span class="tk-s2">"V2"</span><span class="tk-p">,</span> <span class="tk-s2">"V3"</span><span class="tk-p">,</span> <span class="tk-s2">"V4"</span><span class="tk-p">,</span> <span class="tk-s2">"V5"</span><span class="tk-p">,</span> <span class="tk-s2">"V6"</span><span class="tk-p">]</span>
+<span class="tk-n">views</span> <span class="tk-o">=</span> <span class="tk-p">[</span><span class="tk-mi">120</span><span class="tk-p">,</span> <span class="tk-mi">950</span><span class="tk-p">,</span> <span class="tk-mi">3_400</span><span class="tk-p">,</span> <span class="tk-mi">15_000</span><span class="tk-p">,</span> <span class="tk-mi">82_000</span><span class="tk-p">,</span> <span class="tk-mi">2_400_000</span><span class="tk-p">]</span>     <span class="tk-c1"># lượt xem: từ trăm tới triệu</span>
+
+<span class="tk-n">fig</span><span class="tk-p">,</span> <span class="tk-n">axes</span> <span class="tk-o">=</span> <span class="tk-n">plt</span><span class="tk-o">.</span><span class="tk-n">subplots</span><span class="tk-p">(</span><span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-mi">2</span><span class="tk-p">,</span> <span class="tk-n">figsize</span><span class="tk-o">=</span><span class="tk-p">(</span><span class="tk-mi">10</span><span class="tk-p">,</span> <span class="tk-mi">3</span><span class="tk-p">))</span>
+<span class="tk-n">axes</span><span class="tk-p">[</span><span class="tk-mi">0</span><span class="tk-p">]</span><span class="tk-o">.</span><span class="tk-n">bar</span><span class="tk-p">(</span><span class="tk-n">videos</span><span class="tk-p">,</span> <span class="tk-n">views</span><span class="tk-p">)</span>
+<span class="tk-n">axes</span><span class="tk-p">[</span><span class="tk-mi">0</span><span class="tk-p">]</span><span class="tk-o">.</span><span class="tk-n">set_title</span><span class="tk-p">(</span><span class="tk-s2">"thang thường: 5 video đầu như bằng 0"</span><span class="tk-p">)</span>
+<span class="tk-n">axes</span><span class="tk-p">[</span><span class="tk-mi">1</span><span class="tk-p">]</span><span class="tk-o">.</span><span class="tk-n">bar</span><span class="tk-p">(</span><span class="tk-n">videos</span><span class="tk-p">,</span> <span class="tk-n">views</span><span class="tk-p">)</span>
+<span class="tk-n">axes</span><span class="tk-p">[</span><span class="tk-mi">1</span><span class="tk-p">]</span><span class="tk-o">.</span><span class="tk-n">set_yscale</span><span class="tk-p">(</span><span class="tk-s2">"log"</span><span class="tk-p">)</span>
+<span class="tk-n">axes</span><span class="tk-p">[</span><span class="tk-mi">1</span><span class="tk-p">]</span><span class="tk-o">.</span><span class="tk-n">set_title</span><span class="tk-p">(</span><span class="tk-s2">"thang log: thấy rõ cả 6 video"</span><span class="tk-p">)</span>
+<span class="tk-k">for</span> <span class="tk-n">ax</span> <span class="tk-ow">in</span> <span class="tk-n">axes</span><span class="tk-p">:</span>
+    <span class="tk-n">ax</span><span class="tk-o">.</span><span class="tk-n">set_ylabel</span><span class="tk-p">(</span><span class="tk-s2">"lượt xem"</span><span class="tk-p">)</span>
+<span class="tk-n">plt</span><span class="tk-o">.</span><span class="tk-n">tight_layout</span><span class="tk-p">()</span>
+<span class="tk-n">fig</span><span class="tk-o">.</span><span class="tk-n">savefig</span><span class="tk-p">(</span><span class="tk-s2">"views.png"</span><span class="tk-p">,</span> <span class="tk-n">dpi</span><span class="tk-o">=</span><span class="tk-mi">150</span><span class="tk-p">,</span> <span class="tk-n">bbox_inches</span><span class="tk-o">=</span><span class="tk-s2">"tight"</span><span class="tk-p">)</span>   <span class="tk-c1"># lưu để đưa vào README hay báo cáo</span>
+</code></pre></div>
+
+<div class="run" data-mode="py" data-group="t"><div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span></div><img src="../assets/run/p0-4-45a2ddb7b910-0.png" alt="Hình do đoạn code vẽ" loading="lazy"></div>
+
+<p>Lưu ý dấu <code>_</code> trong <code>2_400_000</code>: Python bỏ qua nó, chỉ để số dễ đọc. Learning rate ở P2 cũng hay được vẽ theo thang log, vì các giá trị thử thường là 0.0001, 0.001, 0.01.</p>
+<p><code>dpi=150</code> đủ nét cho README, <code>bbox_inches="tight"</code> cắt bớt lề trắng. Lưu <code>.svg</code> hoặc <code>.pdf</code> nếu cần phóng to không vỡ.</p>
+<div class="box pitfall">
+<div class="box-h">Lỗi hay gặp</div>
+<p><strong>Vẽ hàng trăm hình trong vòng lặp mà không đóng.</strong> Mỗi <code>plt.subplots()</code> tạo một hình mới và giữ trong bộ nhớ cho tới khi đóng. Vẽ một hình cho mỗi epoch hay mỗi mẫu sẽ làm notebook chậm dần rồi cảnh báo "More than 20 figures have been opened". Lưu xong thì gọi <code>plt.close(fig)</code>.</p>
+</div>
+<div class="keep">
+<p><strong>Ghi nhớ:</strong> biểu đồ tốt trả lời <strong>một câu hỏi</strong>. Viết câu hỏi hoặc kết luận làm tiêu đề ("Doanh thu tháng 5 tăng vọt?") thay vì tên dữ liệu ("revenue"), và luôn ghi tên trục kèm đơn vị.</p>
+</div>
+<div class="box check">
+<div class="box-h">Tự kiểm tra nhanh</div>
+<div class="ans" id="p0-4-t-b295-a1">
+<div class="ans-fields"><label>fig, axes = plt.subplots(2, 3): axes.size<input inputmode="decimal" data-ans="6.0" data-tol="0.0" autocomplete="off"></label><label>Confusion matrix ở trên: accuracy (3 chữ số)<input inputmode="decimal" data-ans="0.893" data-tol="0.001" autocomplete="off"></label><label>Confusion matrix ở trên: số ghế bị đoán sai<input inputmode="decimal" data-ans="9.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div>
+<div aria-live="polite" class="ans-fb"></div>
+</div>
+</div>
+<h2 id="lt-7">Tóm tắt bài và thuật ngữ</h2>
+<table>
+<thead>
+<tr>
+<th>Chủ đề</th>
+<th>Điều cần nhớ</th>
+<th>Lệnh tiêu biểu</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Cấu trúc hình</td>
+<td>Figure chứa các Axes; vẽ và chỉnh qua từng <code>ax</code></td>
+<td><code>fig, axes = plt.subplots(r, c)</code></td>
+</tr>
+<tr>
+<td>Chọn biểu đồ</td>
+<td>theo câu hỏi: thời gian, so nhóm, phân bố, quan hệ, lưới</td>
+<td><code>plot</code>, <code>barh</code>, <code>hist</code>, <code>scatter</code>, <code>imshow</code></td>
+</tr>
+<tr>
+<td>Learning curve</td>
+<td>train và val trên cùng khung; giữ epoch val thấp nhất</td>
+<td><code>ax.plot(...); ax.legend()</code></td>
+</tr>
+<tr>
+<td>Phân bố</td>
+<td>thử nhiều số bin; lệch phải thì dùng trung vị</td>
+<td><code>ax.hist(v, bins=50)</code>, <code>ax.boxplot(v)</code></td>
+</tr>
+<tr>
+<td>Ảnh, ma trận</td>
+<td><code>(H, W)</code> hoặc <code>(H, W, 3)</code>; tắt trục cho ảnh</td>
+<td><code>ax.imshow(img); ax.axis("off")</code></td>
+</tr>
+<tr>
+<td>Trình bày</td>
+<td>tiêu đề là câu hỏi, nhãn trục có đơn vị, thang log khi trải nhiều bậc</td>
+<td><code>set_title</code>, <code>set_xlabel</code>, <code>set_yscale("log")</code></td>
+</tr>
+<tr>
+<td>Lưu</td>
+<td>dpi đủ nét, cắt lề, đóng hình khi vẽ nhiều</td>
+<td><code>fig.savefig(..., dpi=150, bbox_inches="tight")</code>, <code>plt.close(fig)</code></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Thuật ngữ</th>
+<th>Nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Figure</td>
+<td>cả bức hình</td>
+</tr>
+<tr>
+<td>Axes</td>
+<td>một khung biểu đồ trong hình, có trục riêng</td>
+</tr>
+<tr>
+<td>tick / tick label</td>
+<td>vạch chia trên trục / chữ ghi ở vạch</td>
+</tr>
+<tr>
+<td>legend</td>
+<td>chú thích tên từng đường, từng nhóm điểm</td>
+</tr>
+<tr>
+<td>bin</td>
+<td>một khoảng giá trị trong histogram</td>
+</tr>
+<tr>
+<td>colormap (cmap)</td>
+<td>bảng màu ánh xạ số thành màu</td>
+</tr>
+<tr>
+<td>learning curve</td>
+<td>loss hoặc metric theo epoch trên train và validation</td>
+</tr>
+<tr>
+<td>confusion matrix</td>
+<td>bảng đếm nhãn thật × nhãn model đoán</td>
+</tr>
+<tr>
+<td>EDA</td>
+<td>Exploratory Data Analysis: xem và hiểu dữ liệu trước khi làm model</td>
+</tr>
+</tbody>
+</table></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p0.4:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 3</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Đếm histogram bằng tay</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p><code>ax.hist([1, 2, 2, 3, 7], bins=3)</code> chia khoảng từ giá trị nhỏ nhất tới lớn nhất thành 3 bin bằng nhau. Bin cuối gồm cả mép phải, các bin khác gồm mép trái nhưng không gồm mép phải.</p>
+<div class="ans" id="p0-4-e1-a1"><div class="ans-fields"><label>Độ rộng mỗi bin<input inputmode="decimal" data-ans="2.0" data-tol="0.0" autocomplete="off"></label><label>Số điểm trong bin 1<input inputmode="decimal" data-ans="3.0" data-tol="0.0" autocomplete="off"></label><label>Số điểm trong bin 2<input inputmode="decimal" data-ans="1.0" data-tol="0.0" autocomplete="off"></label><label>Số điểm trong bin 3<input inputmode="decimal" data-ans="1.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+
+<details class="fold hint">
+<summary>Gợi ý</summary>
+<p>Các mép bin là 1, 3, 5, 7. Giá trị 3 nằm đúng mép giữa bin 1 và bin 2.</p>
+</details>
+<details class="fold solution">
+<summary>Lời giải</summary>
+<p>Bin [1, 3) chứa 1, 2, 2; bin [3, 5) chứa 3; bin [5, 7] chứa 7. Kiểm tra: <code>np.histogram([1, 2, 2, 3, 7], bins=3)</code> trả về <code>(array([3, 1, 1]), array([1., 3., 5., 7.]))</code>. Bin giữa (5 tới 7) rỗng hoàn toàn không có ở đây, nhưng với dữ liệu có ngoại lai rất xa, phần lớn các bin sẽ rỗng và mọi điểm dồn vào bin đầu: lúc đó nên dùng thang log hoặc cắt ngoại lai trước khi vẽ.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 2</span><h3>Đọc learning curve</h3><span class="ex-tag concept">khái niệm</span></div><div class="prose"><p>Bạn train 40 epoch. Train loss giảm đều từ 2,1 xuống 0,05. Val loss giảm tới 0,42 ở epoch 14, sau đó tăng dần lên 0,71 ở epoch 40. Val accuracy cao nhất 88% ở epoch 15.</p>
+<ol>
+<li>Chuyện gì đang xảy ra sau epoch 14?</li>
+<li>Nên giữ checkpoint của epoch nào?</li>
+<li>Kể hai cách làm cho lần train sau.</li>
+</ol>
+<details class="fold solution">
+<summary>Lời giải</summary>
+<ol>
+<li><strong>Overfit:</strong> model tiếp tục khớp tập train (train loss vẫn giảm) nhưng tổng quát hóa kém đi (val loss tăng).</li>
+<li>Epoch 14 hoặc 15, tùy bạn chọn theo val loss hay val accuracy; quan trọng là chọn theo <strong>validation</strong>, không theo train, và báo cáo kết quả cuối trên tập test riêng.</li>
+<li>Dừng sớm (early stopping) khi val loss không giảm sau vài epoch; thêm regularization (weight decay, dropout, data augmentation); thêm dữ liệu; hoặc dùng model nhỏ hơn. Các cách này học kỹ ở P1.2 và P2.2.</li>
+</ol>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 3</span><h3>Learning curve có đánh dấu</h3><span class="ex-tag code">code</span></div><div class="prose"><p>Viết hàm <code>plot_curves(train, val)</code> nhận hai list loss, vẽ hai đường trên cùng khung, kẻ đường dọc tại epoch có val loss thấp nhất, ghi chú epoch đó, có nhãn trục và legend. Thử với dữ liệu dưới.</p>
+<div class="hl"><pre><span></span><code><span class="tk-n">train</span> <span class="tk-o">=</span> <span class="tk-p">[</span><span class="tk-mf">2.1</span><span class="tk-p">,</span> <span class="tk-mf">1.4</span><span class="tk-p">,</span> <span class="tk-mf">1.0</span><span class="tk-p">,</span> <span class="tk-mf">0.8</span><span class="tk-p">,</span> <span class="tk-mf">0.65</span><span class="tk-p">,</span> <span class="tk-mf">0.55</span><span class="tk-p">,</span> <span class="tk-mf">0.47</span><span class="tk-p">,</span> <span class="tk-mf">0.41</span><span class="tk-p">,</span> <span class="tk-mf">0.36</span><span class="tk-p">,</span> <span class="tk-mf">0.32</span><span class="tk-p">]</span>
+<span class="tk-n">val</span> <span class="tk-o">=</span> <span class="tk-p">[</span><span class="tk-mf">2.2</span><span class="tk-p">,</span> <span class="tk-mf">1.5</span><span class="tk-p">,</span> <span class="tk-mf">1.15</span><span class="tk-p">,</span> <span class="tk-mf">0.98</span><span class="tk-p">,</span> <span class="tk-mf">0.9</span><span class="tk-p">,</span> <span class="tk-mf">0.87</span><span class="tk-p">,</span> <span class="tk-mf">0.88</span><span class="tk-p">,</span> <span class="tk-mf">0.92</span><span class="tk-p">,</span> <span class="tk-mf">0.97</span><span class="tk-p">,</span> <span class="tk-mf">1.03</span><span class="tk-p">]</span>
+</code></pre></div>
+
+<div class="run" data-mode="py" data-group="e3"><div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span></div><pre class="run-out run-empty">(chạy xong, không in ra gì)</pre></div>
+
+<div class="ans" id="p0-4-e3-a1"><div class="ans-fields"><label>Epoch (đếm từ 1) có val loss thấp nhất<input inputmode="decimal" data-ans="6.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+
+<details class="fold code">
+<summary>Code tham khảo</summary>
+<div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">numpy</span><span class="tk-w"> </span><span class="tk-k">as</span><span class="tk-w"> </span><span class="tk-nn">np</span>
+<span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">matplotlib.pyplot</span><span class="tk-w"> </span><span class="tk-k">as</span><span class="tk-w"> </span><span class="tk-nn">plt</span>
+
+<span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">plot_curves</span><span class="tk-p">(</span><span class="tk-n">train</span><span class="tk-p">,</span> <span class="tk-n">val</span><span class="tk-p">):</span>
+    <span class="tk-n">epochs</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">arange</span><span class="tk-p">(</span><span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-nb">len</span><span class="tk-p">(</span><span class="tk-n">train</span><span class="tk-p">)</span> <span class="tk-o">+</span> <span class="tk-mi">1</span><span class="tk-p">)</span>
+    <span class="tk-n">best</span> <span class="tk-o">=</span> <span class="tk-nb">int</span><span class="tk-p">(</span><span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">argmin</span><span class="tk-p">(</span><span class="tk-n">val</span><span class="tk-p">))</span>
+    <span class="tk-n">fig</span><span class="tk-p">,</span> <span class="tk-n">ax</span> <span class="tk-o">=</span> <span class="tk-n">plt</span><span class="tk-o">.</span><span class="tk-n">subplots</span><span class="tk-p">(</span><span class="tk-n">figsize</span><span class="tk-o">=</span><span class="tk-p">(</span><span class="tk-mi">6</span><span class="tk-p">,</span> <span class="tk-mf">3.4</span><span class="tk-p">))</span>
+    <span class="tk-n">ax</span><span class="tk-o">.</span><span class="tk-n">plot</span><span class="tk-p">(</span><span class="tk-n">epochs</span><span class="tk-p">,</span> <span class="tk-n">train</span><span class="tk-p">,</span> <span class="tk-n">marker</span><span class="tk-o">=</span><span class="tk-s2">"o"</span><span class="tk-p">,</span> <span class="tk-n">label</span><span class="tk-o">=</span><span class="tk-s2">"train"</span><span class="tk-p">)</span>
+    <span class="tk-n">ax</span><span class="tk-o">.</span><span class="tk-n">plot</span><span class="tk-p">(</span><span class="tk-n">epochs</span><span class="tk-p">,</span> <span class="tk-n">val</span><span class="tk-p">,</span> <span class="tk-n">marker</span><span class="tk-o">=</span><span class="tk-s2">"o"</span><span class="tk-p">,</span> <span class="tk-n">label</span><span class="tk-o">=</span><span class="tk-s2">"validation"</span><span class="tk-p">)</span>
+    <span class="tk-n">ax</span><span class="tk-o">.</span><span class="tk-n">axvline</span><span class="tk-p">(</span><span class="tk-n">epochs</span><span class="tk-p">[</span><span class="tk-n">best</span><span class="tk-p">],</span> <span class="tk-n">color</span><span class="tk-o">=</span><span class="tk-s2">"gray"</span><span class="tk-p">,</span> <span class="tk-n">ls</span><span class="tk-o">=</span><span class="tk-s2">"--"</span><span class="tk-p">)</span>
+    <span class="tk-n">ax</span><span class="tk-o">.</span><span class="tk-n">annotate</span><span class="tk-p">(</span><span class="tk-sa">f</span><span class="tk-s2">"epoch </span><span class="tk-si">{</span><span class="tk-n">epochs</span><span class="tk-p">[</span><span class="tk-n">best</span><span class="tk-p">]</span><span class="tk-si">}</span><span class="tk-s2">: val </span><span class="tk-si">{</span><span class="tk-n">val</span><span class="tk-p">[</span><span class="tk-n">best</span><span class="tk-p">]</span><span class="tk-si">:</span><span class="tk-s2">.2f</span><span class="tk-si">}</span><span class="tk-s2">"</span><span class="tk-p">,</span> <span class="tk-n">xy</span><span class="tk-o">=</span><span class="tk-p">(</span><span class="tk-n">epochs</span><span class="tk-p">[</span><span class="tk-n">best</span><span class="tk-p">],</span> <span class="tk-n">val</span><span class="tk-p">[</span><span class="tk-n">best</span><span class="tk-p">]),</span>
+                <span class="tk-n">xytext</span><span class="tk-o">=</span><span class="tk-p">(</span><span class="tk-n">epochs</span><span class="tk-p">[</span><span class="tk-n">best</span><span class="tk-p">]</span> <span class="tk-o">+</span> <span class="tk-mf">0.4</span><span class="tk-p">,</span> <span class="tk-n">val</span><span class="tk-p">[</span><span class="tk-n">best</span><span class="tk-p">]</span> <span class="tk-o">+</span> <span class="tk-mf">0.5</span><span class="tk-p">),</span> <span class="tk-n">arrowprops</span><span class="tk-o">=</span><span class="tk-nb">dict</span><span class="tk-p">(</span><span class="tk-n">arrowstyle</span><span class="tk-o">=</span><span class="tk-s2">"-&gt;"</span><span class="tk-p">))</span>
+    <span class="tk-n">ax</span><span class="tk-o">.</span><span class="tk-n">set_xlabel</span><span class="tk-p">(</span><span class="tk-s2">"epoch"</span><span class="tk-p">);</span> <span class="tk-n">ax</span><span class="tk-o">.</span><span class="tk-n">set_ylabel</span><span class="tk-p">(</span><span class="tk-s2">"loss"</span><span class="tk-p">);</span> <span class="tk-n">ax</span><span class="tk-o">.</span><span class="tk-n">legend</span><span class="tk-p">()</span>
+    <span class="tk-n">ax</span><span class="tk-o">.</span><span class="tk-n">set_title</span><span class="tk-p">(</span><span class="tk-s2">"Val loss thấp nhất rồi tăng lại"</span><span class="tk-p">)</span>
+    <span class="tk-k">return</span> <span class="tk-n">fig</span><span class="tk-p">,</span> <span class="tk-n">ax</span>
+
+<span class="tk-n">train</span> <span class="tk-o">=</span> <span class="tk-p">[</span><span class="tk-mf">2.1</span><span class="tk-p">,</span> <span class="tk-mf">1.4</span><span class="tk-p">,</span> <span class="tk-mf">1.0</span><span class="tk-p">,</span> <span class="tk-mf">0.8</span><span class="tk-p">,</span> <span class="tk-mf">0.65</span><span class="tk-p">,</span> <span class="tk-mf">0.55</span><span class="tk-p">,</span> <span class="tk-mf">0.47</span><span class="tk-p">,</span> <span class="tk-mf">0.41</span><span class="tk-p">,</span> <span class="tk-mf">0.36</span><span class="tk-p">,</span> <span class="tk-mf">0.32</span><span class="tk-p">]</span>
+<span class="tk-n">val</span> <span class="tk-o">=</span> <span class="tk-p">[</span><span class="tk-mf">2.2</span><span class="tk-p">,</span> <span class="tk-mf">1.5</span><span class="tk-p">,</span> <span class="tk-mf">1.15</span><span class="tk-p">,</span> <span class="tk-mf">0.98</span><span class="tk-p">,</span> <span class="tk-mf">0.9</span><span class="tk-p">,</span> <span class="tk-mf">0.87</span><span class="tk-p">,</span> <span class="tk-mf">0.88</span><span class="tk-p">,</span> <span class="tk-mf">0.92</span><span class="tk-p">,</span> <span class="tk-mf">0.97</span><span class="tk-p">,</span> <span class="tk-mf">1.03</span><span class="tk-p">]</span>
+<span class="tk-n">fig</span><span class="tk-p">,</span> <span class="tk-n">ax</span> <span class="tk-o">=</span> <span class="tk-n">plot_curves</span><span class="tk-p">(</span><span class="tk-n">train</span><span class="tk-p">,</span> <span class="tk-n">val</span><span class="tk-p">)</span>
+</code></pre></div>
+
+<div class="run" data-group="e3" data-mode="py">
+<div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span></div><img src="../assets/run/p0-4-035bcc63d88d-0.png" alt="Hình do đoạn code vẽ" loading="lazy"></div>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 4</span><h3>Confusion matrix từ dự đoán</h3><span class="ex-tag code">code</span></div><div class="prose"><p>Cho nhãn thật và dự đoán của một model phân loại 3 lớp. Tự tính confusion matrix bằng numpy (không dùng scikit-learn), vẽ có số trong từng ô, và in accuracy.</p>
+<div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">numpy</span><span class="tk-w"> </span><span class="tk-k">as</span><span class="tk-w"> </span><span class="tk-nn">np</span>
+<span class="tk-n">y_true</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">array</span><span class="tk-p">([</span><span class="tk-mi">0</span><span class="tk-p">,</span> <span class="tk-mi">0</span><span class="tk-p">,</span> <span class="tk-mi">0</span><span class="tk-p">,</span> <span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-mi">2</span><span class="tk-p">,</span> <span class="tk-mi">2</span><span class="tk-p">,</span> <span class="tk-mi">2</span><span class="tk-p">,</span> <span class="tk-mi">0</span><span class="tk-p">,</span> <span class="tk-mi">1</span><span class="tk-p">])</span>
+<span class="tk-n">y_pred</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">array</span><span class="tk-p">([</span><span class="tk-mi">0</span><span class="tk-p">,</span> <span class="tk-mi">0</span><span class="tk-p">,</span> <span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-mi">0</span><span class="tk-p">,</span> <span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-mi">2</span><span class="tk-p">,</span> <span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-mi">2</span><span class="tk-p">,</span> <span class="tk-mi">0</span><span class="tk-p">,</span> <span class="tk-mi">1</span><span class="tk-p">])</span>
+</code></pre></div>
+
+<div class="run" data-mode="py" data-group="e4"><div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span></div><pre class="run-out run-empty">(chạy xong, không in ra gì)</pre></div>
+
+<div class="ans" id="p0-4-e4-a1"><div class="ans-fields"><label>cm[1, 0]: số mẫu lớp 1 bị đoán là lớp 0<input inputmode="decimal" data-ans="1.0" data-tol="0.0" autocomplete="off"></label><label>Accuracy (3 chữ số)<input inputmode="decimal" data-ans="0.75" data-tol="0.001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+
+<details class="fold hint">
+<summary>Gợi ý</summary>
+<p>Với k lớp, <code>np.zeros((k, k), int)</code> rồi <code>np.add.at(cm, (y_true, y_pred), 1)</code> cộng 1 vào ô <code>[y_true[i], y_pred[i]]</code> cho mọi i cùng lúc. Cách khác: <code>np.bincount(y_true * k + y_pred, minlength=k * k).reshape(k, k)</code>.</p>
+</details>
+<details class="fold code">
+<summary>Code tham khảo</summary>
+<div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">numpy</span><span class="tk-w"> </span><span class="tk-k">as</span><span class="tk-w"> </span><span class="tk-nn">np</span>
+<span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">matplotlib.pyplot</span><span class="tk-w"> </span><span class="tk-k">as</span><span class="tk-w"> </span><span class="tk-nn">plt</span>
+
+<span class="tk-n">y_true</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">array</span><span class="tk-p">([</span><span class="tk-mi">0</span><span class="tk-p">,</span> <span class="tk-mi">0</span><span class="tk-p">,</span> <span class="tk-mi">0</span><span class="tk-p">,</span> <span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-mi">2</span><span class="tk-p">,</span> <span class="tk-mi">2</span><span class="tk-p">,</span> <span class="tk-mi">2</span><span class="tk-p">,</span> <span class="tk-mi">0</span><span class="tk-p">,</span> <span class="tk-mi">1</span><span class="tk-p">])</span>
+<span class="tk-n">y_pred</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">array</span><span class="tk-p">([</span><span class="tk-mi">0</span><span class="tk-p">,</span> <span class="tk-mi">0</span><span class="tk-p">,</span> <span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-mi">0</span><span class="tk-p">,</span> <span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-mi">2</span><span class="tk-p">,</span> <span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-mi">2</span><span class="tk-p">,</span> <span class="tk-mi">0</span><span class="tk-p">,</span> <span class="tk-mi">1</span><span class="tk-p">])</span>
+<span class="tk-n">k</span> <span class="tk-o">=</span> <span class="tk-mi">3</span>
+<span class="tk-n">cm</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">zeros</span><span class="tk-p">((</span><span class="tk-n">k</span><span class="tk-p">,</span> <span class="tk-n">k</span><span class="tk-p">),</span> <span class="tk-nb">int</span><span class="tk-p">)</span>
+<span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">add</span><span class="tk-o">.</span><span class="tk-n">at</span><span class="tk-p">(</span><span class="tk-n">cm</span><span class="tk-p">,</span> <span class="tk-p">(</span><span class="tk-n">y_true</span><span class="tk-p">,</span> <span class="tk-n">y_pred</span><span class="tk-p">),</span> <span class="tk-mi">1</span><span class="tk-p">)</span>
+<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-n">cm</span><span class="tk-p">)</span>
+<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-s2">"accuracy:"</span><span class="tk-p">,</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">trace</span><span class="tk-p">(</span><span class="tk-n">cm</span><span class="tk-p">)</span> <span class="tk-o">/</span> <span class="tk-n">cm</span><span class="tk-o">.</span><span class="tk-n">sum</span><span class="tk-p">())</span>
+
+<span class="tk-n">fig</span><span class="tk-p">,</span> <span class="tk-n">ax</span> <span class="tk-o">=</span> <span class="tk-n">plt</span><span class="tk-o">.</span><span class="tk-n">subplots</span><span class="tk-p">(</span><span class="tk-n">figsize</span><span class="tk-o">=</span><span class="tk-p">(</span><span class="tk-mf">3.6</span><span class="tk-p">,</span> <span class="tk-mf">3.2</span><span class="tk-p">))</span>
+<span class="tk-n">ax</span><span class="tk-o">.</span><span class="tk-n">imshow</span><span class="tk-p">(</span><span class="tk-n">cm</span><span class="tk-p">,</span> <span class="tk-n">cmap</span><span class="tk-o">=</span><span class="tk-s2">"Blues"</span><span class="tk-p">)</span>
+<span class="tk-k">for</span> <span class="tk-n">i</span> <span class="tk-ow">in</span> <span class="tk-nb">range</span><span class="tk-p">(</span><span class="tk-n">k</span><span class="tk-p">):</span>
+    <span class="tk-k">for</span> <span class="tk-n">j</span> <span class="tk-ow">in</span> <span class="tk-nb">range</span><span class="tk-p">(</span><span class="tk-n">k</span><span class="tk-p">):</span>
+        <span class="tk-n">ax</span><span class="tk-o">.</span><span class="tk-n">text</span><span class="tk-p">(</span><span class="tk-n">j</span><span class="tk-p">,</span> <span class="tk-n">i</span><span class="tk-p">,</span> <span class="tk-n">cm</span><span class="tk-p">[</span><span class="tk-n">i</span><span class="tk-p">,</span> <span class="tk-n">j</span><span class="tk-p">],</span> <span class="tk-n">ha</span><span class="tk-o">=</span><span class="tk-s2">"center"</span><span class="tk-p">,</span> <span class="tk-n">va</span><span class="tk-o">=</span><span class="tk-s2">"center"</span><span class="tk-p">,</span> <span class="tk-n">color</span><span class="tk-o">=</span><span class="tk-s2">"white"</span> <span class="tk-k">if</span> <span class="tk-n">cm</span><span class="tk-p">[</span><span class="tk-n">i</span><span class="tk-p">,</span> <span class="tk-n">j</span><span class="tk-p">]</span> <span class="tk-o">&gt;</span> <span class="tk-n">cm</span><span class="tk-o">.</span><span class="tk-n">max</span><span class="tk-p">()</span> <span class="tk-o">/</span> <span class="tk-mi">2</span> <span class="tk-k">else</span> <span class="tk-s2">"black"</span><span class="tk-p">)</span>
+<span class="tk-n">ax</span><span class="tk-o">.</span><span class="tk-n">set_xticks</span><span class="tk-p">(</span><span class="tk-nb">range</span><span class="tk-p">(</span><span class="tk-n">k</span><span class="tk-p">));</span> <span class="tk-n">ax</span><span class="tk-o">.</span><span class="tk-n">set_yticks</span><span class="tk-p">(</span><span class="tk-nb">range</span><span class="tk-p">(</span><span class="tk-n">k</span><span class="tk-p">))</span>
+<span class="tk-n">ax</span><span class="tk-o">.</span><span class="tk-n">set_xlabel</span><span class="tk-p">(</span><span class="tk-s2">"model đoán"</span><span class="tk-p">);</span> <span class="tk-n">ax</span><span class="tk-o">.</span><span class="tk-n">set_ylabel</span><span class="tk-p">(</span><span class="tk-s2">"nhãn thật"</span><span class="tk-p">)</span>
+</code></pre></div>
+
+<div class="run" data-group="e4" data-mode="py">
+<div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span></div>
+<pre class="run-out">[[3 1 0]&#10; [1 4 0]&#10; [0 1 2]]&#10;accuracy: 0.75</pre><img src="../assets/run/p0-4-bd684ca5191a-0.png" alt="Hình do đoạn code vẽ" loading="lazy"></div>
+</details></div></article><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p0.4:b">Tôi đã xong phần bài tập</label><button class="btn" type="button" data-goto="thuc-hanh">Sang thực hành <span class="arr">→</span></button></div></section><section class="panel" id="thuc-hanh" role="tabpanel" hidden><div class="prose"><h2>Năm biểu đồ cho dữ liệu bán hàng</h2>
+<p>Tiếp notebook ở P0.3: từ bảng đã làm sạch, vẽ 5 biểu đồ và viết 5 kết luận. Nếu chưa làm P0.3, đoạn code khởi đầu dưới tạo sẵn bảng sạch.</p>
+<p><strong>Các bước</strong></p>
+<ol>
+<li>Nạp <code>orders_clean.csv</code> (hoặc chạy code khởi đầu).</li>
+<li>Vẽ trên một hình <code>2 × 3</code> khung: doanh thu theo tháng (line), top 5 sản phẩm theo số lượng (barh, sắp xếp), phân bố giá trị đơn (histogram, có đường trung vị), số lượng theo thứ trong tuần (bar), giá với số lượng (scatter, có <code>alpha</code>), tỉ lệ hoàn theo sản phẩm (barh).</li>
+<li>Mỗi khung có tiêu đề là một câu hỏi hoặc kết luận, nhãn trục có đơn vị.</li>
+<li>Lưu hình <code>eda.png</code> với <code>dpi=150</code>.</li>
+<li>Viết 5 kết luận, mỗi kết luận một câu có số liệu cụ thể, dựa trên biểu đồ.</li>
+</ol>
+<p><strong>Code khởi đầu (bảng sạch dữ liệu giả)</strong></p>
+<div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">numpy</span><span class="tk-w"> </span><span class="tk-k">as</span><span class="tk-w"> </span><span class="tk-nn">np</span><span class="tk-o">,</span><span class="tk-w"> </span><span class="tk-nn">pandas</span><span class="tk-w"> </span><span class="tk-k">as</span><span class="tk-w"> </span><span class="tk-nn">pd</span>
+<span class="tk-n">rng</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">random</span><span class="tk-o">.</span><span class="tk-n">default_rng</span><span class="tk-p">(</span><span class="tk-mi">0</span><span class="tk-p">)</span>
+<span class="tk-n">n</span> <span class="tk-o">=</span> <span class="tk-mi">2000</span>
+<span class="tk-n">products</span> <span class="tk-o">=</span> <span class="tk-p">{</span><span class="tk-s2">"bàn trang điểm"</span><span class="tk-p">:</span> <span class="tk-mi">1500</span><span class="tk-p">,</span> <span class="tk-s2">"gương LED"</span><span class="tk-p">:</span> <span class="tk-mi">450</span><span class="tk-p">,</span> <span class="tk-s2">"ghế đôn"</span><span class="tk-p">:</span> <span class="tk-mi">250</span><span class="tk-p">,</span> <span class="tk-s2">"kệ mỹ phẩm"</span><span class="tk-p">:</span> <span class="tk-mi">320</span><span class="tk-p">,</span> <span class="tk-s2">"đèn bàn"</span><span class="tk-p">:</span> <span class="tk-mi">280</span><span class="tk-p">}</span>
+<span class="tk-n">names</span> <span class="tk-o">=</span> <span class="tk-n">rng</span><span class="tk-o">.</span><span class="tk-n">choice</span><span class="tk-p">(</span><span class="tk-nb">list</span><span class="tk-p">(</span><span class="tk-n">products</span><span class="tk-p">),</span> <span class="tk-n">n</span><span class="tk-p">,</span> <span class="tk-n">p</span><span class="tk-o">=</span><span class="tk-p">[</span><span class="tk-mf">0.25</span><span class="tk-p">,</span> <span class="tk-mf">0.3</span><span class="tk-p">,</span> <span class="tk-mf">0.2</span><span class="tk-p">,</span> <span class="tk-mf">0.15</span><span class="tk-p">,</span> <span class="tk-mf">0.1</span><span class="tk-p">])</span>
+<span class="tk-n">df</span> <span class="tk-o">=</span> <span class="tk-n">pd</span><span class="tk-o">.</span><span class="tk-n">DataFrame</span><span class="tk-p">({</span>
+    <span class="tk-s2">"date"</span><span class="tk-p">:</span> <span class="tk-n">pd</span><span class="tk-o">.</span><span class="tk-n">Timestamp</span><span class="tk-p">(</span><span class="tk-s2">"2026-01-01"</span><span class="tk-p">)</span> <span class="tk-o">+</span> <span class="tk-n">pd</span><span class="tk-o">.</span><span class="tk-n">to_timedelta</span><span class="tk-p">(</span><span class="tk-n">rng</span><span class="tk-o">.</span><span class="tk-n">integers</span><span class="tk-p">(</span><span class="tk-mi">0</span><span class="tk-p">,</span> <span class="tk-mi">300</span><span class="tk-p">,</span> <span class="tk-n">n</span><span class="tk-p">),</span> <span class="tk-n">unit</span><span class="tk-o">=</span><span class="tk-s2">"D"</span><span class="tk-p">),</span>
+    <span class="tk-s2">"product"</span><span class="tk-p">:</span> <span class="tk-n">names</span><span class="tk-p">,</span>
+    <span class="tk-s2">"qty"</span><span class="tk-p">:</span> <span class="tk-n">rng</span><span class="tk-o">.</span><span class="tk-n">integers</span><span class="tk-p">(</span><span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-mi">4</span><span class="tk-p">,</span> <span class="tk-n">n</span><span class="tk-p">),</span>
+    <span class="tk-s2">"price"</span><span class="tk-p">:</span> <span class="tk-p">[</span><span class="tk-n">products</span><span class="tk-p">[</span><span class="tk-n">p</span><span class="tk-p">]</span> <span class="tk-o">*</span> <span class="tk-n">rng</span><span class="tk-o">.</span><span class="tk-n">uniform</span><span class="tk-p">(</span><span class="tk-mf">0.9</span><span class="tk-p">,</span> <span class="tk-mf">1.1</span><span class="tk-p">)</span> <span class="tk-k">for</span> <span class="tk-n">p</span> <span class="tk-ow">in</span> <span class="tk-n">names</span><span class="tk-p">],</span>
+    <span class="tk-s2">"returned"</span><span class="tk-p">:</span> <span class="tk-n">rng</span><span class="tk-o">.</span><span class="tk-n">random</span><span class="tk-p">(</span><span class="tk-n">n</span><span class="tk-p">)</span> <span class="tk-o">&lt;</span> <span class="tk-mf">0.06</span><span class="tk-p">,</span>
+<span class="tk-p">})</span>
+<span class="tk-n">df</span><span class="tk-p">[</span><span class="tk-s2">"revenue"</span><span class="tk-p">]</span> <span class="tk-o">=</span> <span class="tk-n">df</span><span class="tk-p">[</span><span class="tk-s2">"qty"</span><span class="tk-p">]</span> <span class="tk-o">*</span> <span class="tk-n">df</span><span class="tk-p">[</span><span class="tk-s2">"price"</span><span class="tk-p">]</span>
+</code></pre></div>
+
+<p><strong>Xong khi</strong></p>
+<ul>
+<li>Notebook chạy lại từ đầu không lỗi.</li>
+<li>Đủ 6 khung, mỗi khung có tiêu đề và nhãn trục, file <code>eda.png</code> mở ra đọc được chữ.</li>
+<li>Có 5 kết luận có số liệu.</li>
+</ul>
+<details class="fold code">
+<summary>Code tham khảo</summary>
+<div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">matplotlib.pyplot</span><span class="tk-w"> </span><span class="tk-k">as</span><span class="tk-w"> </span><span class="tk-nn">plt</span>
+<span class="tk-n">monthly</span> <span class="tk-o">=</span> <span class="tk-n">df</span><span class="tk-p">[</span><span class="tk-o">~</span><span class="tk-n">df</span><span class="tk-p">[</span><span class="tk-s2">"returned"</span><span class="tk-p">]]</span><span class="tk-o">.</span><span class="tk-n">groupby</span><span class="tk-p">(</span><span class="tk-n">df</span><span class="tk-p">[</span><span class="tk-s2">"date"</span><span class="tk-p">]</span><span class="tk-o">.</span><span class="tk-n">dt</span><span class="tk-o">.</span><span class="tk-n">to_period</span><span class="tk-p">(</span><span class="tk-s2">"M"</span><span class="tk-p">))[</span><span class="tk-s2">"revenue"</span><span class="tk-p">]</span><span class="tk-o">.</span><span class="tk-n">sum</span><span class="tk-p">()</span> <span class="tk-o">/</span> <span class="tk-mi">1000</span>
+<span class="tk-n">top5</span> <span class="tk-o">=</span> <span class="tk-n">df</span><span class="tk-o">.</span><span class="tk-n">groupby</span><span class="tk-p">(</span><span class="tk-s2">"product"</span><span class="tk-p">)[</span><span class="tk-s2">"qty"</span><span class="tk-p">]</span><span class="tk-o">.</span><span class="tk-n">sum</span><span class="tk-p">()</span><span class="tk-o">.</span><span class="tk-n">nlargest</span><span class="tk-p">(</span><span class="tk-mi">5</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">sort_values</span><span class="tk-p">()</span>
+<span class="tk-n">return_rate</span> <span class="tk-o">=</span> <span class="tk-n">df</span><span class="tk-o">.</span><span class="tk-n">groupby</span><span class="tk-p">(</span><span class="tk-s2">"product"</span><span class="tk-p">)[</span><span class="tk-s2">"returned"</span><span class="tk-p">]</span><span class="tk-o">.</span><span class="tk-n">mean</span><span class="tk-p">()</span><span class="tk-o">.</span><span class="tk-n">sort_values</span><span class="tk-p">()</span>
+<span class="tk-n">weekday</span> <span class="tk-o">=</span> <span class="tk-n">df</span><span class="tk-o">.</span><span class="tk-n">groupby</span><span class="tk-p">(</span><span class="tk-n">df</span><span class="tk-p">[</span><span class="tk-s2">"date"</span><span class="tk-p">]</span><span class="tk-o">.</span><span class="tk-n">dt</span><span class="tk-o">.</span><span class="tk-n">dayofweek</span><span class="tk-p">)[</span><span class="tk-s2">"qty"</span><span class="tk-p">]</span><span class="tk-o">.</span><span class="tk-n">sum</span><span class="tk-p">()</span>
+
+<span class="tk-n">fig</span><span class="tk-p">,</span> <span class="tk-n">ax</span> <span class="tk-o">=</span> <span class="tk-n">plt</span><span class="tk-o">.</span><span class="tk-n">subplots</span><span class="tk-p">(</span><span class="tk-mi">2</span><span class="tk-p">,</span> <span class="tk-mi">3</span><span class="tk-p">,</span> <span class="tk-n">figsize</span><span class="tk-o">=</span><span class="tk-p">(</span><span class="tk-mi">15</span><span class="tk-p">,</span> <span class="tk-mi">8</span><span class="tk-p">))</span>
+<span class="tk-n">monthly</span><span class="tk-o">.</span><span class="tk-n">plot</span><span class="tk-p">(</span><span class="tk-n">ax</span><span class="tk-o">=</span><span class="tk-n">ax</span><span class="tk-p">[</span><span class="tk-mi">0</span><span class="tk-p">,</span> <span class="tk-mi">0</span><span class="tk-p">],</span> <span class="tk-n">marker</span><span class="tk-o">=</span><span class="tk-s2">"o"</span><span class="tk-p">);</span> <span class="tk-n">ax</span><span class="tk-p">[</span><span class="tk-mi">0</span><span class="tk-p">,</span> <span class="tk-mi">0</span><span class="tk-p">]</span><span class="tk-o">.</span><span class="tk-n">set</span><span class="tk-p">(</span><span class="tk-n">title</span><span class="tk-o">=</span><span class="tk-s2">"Doanh thu có tăng theo tháng?"</span><span class="tk-p">,</span> <span class="tk-n">ylabel</span><span class="tk-o">=</span><span class="tk-s2">"triệu đồng"</span><span class="tk-p">,</span> <span class="tk-n">xlabel</span><span class="tk-o">=</span><span class="tk-s2">""</span><span class="tk-p">)</span>
+<span class="tk-n">top5</span><span class="tk-o">.</span><span class="tk-n">plot</span><span class="tk-o">.</span><span class="tk-n">barh</span><span class="tk-p">(</span><span class="tk-n">ax</span><span class="tk-o">=</span><span class="tk-n">ax</span><span class="tk-p">[</span><span class="tk-mi">0</span><span class="tk-p">,</span> <span class="tk-mi">1</span><span class="tk-p">]);</span> <span class="tk-n">ax</span><span class="tk-p">[</span><span class="tk-mi">0</span><span class="tk-p">,</span> <span class="tk-mi">1</span><span class="tk-p">]</span><span class="tk-o">.</span><span class="tk-n">set</span><span class="tk-p">(</span><span class="tk-n">title</span><span class="tk-o">=</span><span class="tk-s2">"Sản phẩm nào bán nhiều nhất?"</span><span class="tk-p">,</span> <span class="tk-n">xlabel</span><span class="tk-o">=</span><span class="tk-s2">"số lượng"</span><span class="tk-p">)</span>
+<span class="tk-n">ax</span><span class="tk-p">[</span><span class="tk-mi">0</span><span class="tk-p">,</span> <span class="tk-mi">2</span><span class="tk-p">]</span><span class="tk-o">.</span><span class="tk-n">hist</span><span class="tk-p">(</span><span class="tk-n">df</span><span class="tk-p">[</span><span class="tk-s2">"revenue"</span><span class="tk-p">],</span> <span class="tk-n">bins</span><span class="tk-o">=</span><span class="tk-mi">40</span><span class="tk-p">);</span> <span class="tk-n">ax</span><span class="tk-p">[</span><span class="tk-mi">0</span><span class="tk-p">,</span> <span class="tk-mi">2</span><span class="tk-p">]</span><span class="tk-o">.</span><span class="tk-n">axvline</span><span class="tk-p">(</span><span class="tk-n">df</span><span class="tk-p">[</span><span class="tk-s2">"revenue"</span><span class="tk-p">]</span><span class="tk-o">.</span><span class="tk-n">median</span><span class="tk-p">(),</span> <span class="tk-n">color</span><span class="tk-o">=</span><span class="tk-s2">"k"</span><span class="tk-p">,</span> <span class="tk-n">ls</span><span class="tk-o">=</span><span class="tk-s2">"--"</span><span class="tk-p">)</span>
+<span class="tk-n">ax</span><span class="tk-p">[</span><span class="tk-mi">0</span><span class="tk-p">,</span> <span class="tk-mi">2</span><span class="tk-p">]</span><span class="tk-o">.</span><span class="tk-n">set</span><span class="tk-p">(</span><span class="tk-n">title</span><span class="tk-o">=</span><span class="tk-s2">"Giá trị đơn điển hình bao nhiêu?"</span><span class="tk-p">,</span> <span class="tk-n">xlabel</span><span class="tk-o">=</span><span class="tk-s2">"nghìn đồng"</span><span class="tk-p">,</span> <span class="tk-n">ylabel</span><span class="tk-o">=</span><span class="tk-s2">"số đơn"</span><span class="tk-p">)</span>
+<span class="tk-n">ax</span><span class="tk-p">[</span><span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-mi">0</span><span class="tk-p">]</span><span class="tk-o">.</span><span class="tk-n">bar</span><span class="tk-p">([</span><span class="tk-s2">"T2"</span><span class="tk-p">,</span> <span class="tk-s2">"T3"</span><span class="tk-p">,</span> <span class="tk-s2">"T4"</span><span class="tk-p">,</span> <span class="tk-s2">"T5"</span><span class="tk-p">,</span> <span class="tk-s2">"T6"</span><span class="tk-p">,</span> <span class="tk-s2">"T7"</span><span class="tk-p">,</span> <span class="tk-s2">"CN"</span><span class="tk-p">],</span> <span class="tk-n">weekday</span><span class="tk-o">.</span><span class="tk-n">values</span><span class="tk-p">)</span>
+<span class="tk-n">ax</span><span class="tk-p">[</span><span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-mi">0</span><span class="tk-p">]</span><span class="tk-o">.</span><span class="tk-n">set</span><span class="tk-p">(</span><span class="tk-n">title</span><span class="tk-o">=</span><span class="tk-s2">"Thứ nào bán nhiều?"</span><span class="tk-p">,</span> <span class="tk-n">ylabel</span><span class="tk-o">=</span><span class="tk-s2">"số lượng"</span><span class="tk-p">)</span>
+<span class="tk-n">ax</span><span class="tk-p">[</span><span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-mi">1</span><span class="tk-p">]</span><span class="tk-o">.</span><span class="tk-n">scatter</span><span class="tk-p">(</span><span class="tk-n">df</span><span class="tk-p">[</span><span class="tk-s2">"price"</span><span class="tk-p">],</span> <span class="tk-n">df</span><span class="tk-p">[</span><span class="tk-s2">"qty"</span><span class="tk-p">]</span> <span class="tk-o">+</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">random</span><span class="tk-o">.</span><span class="tk-n">default_rng</span><span class="tk-p">(</span><span class="tk-mi">0</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">uniform</span><span class="tk-p">(</span><span class="tk-o">-</span><span class="tk-mf">.15</span><span class="tk-p">,</span> <span class="tk-mf">.15</span><span class="tk-p">,</span> <span class="tk-nb">len</span><span class="tk-p">(</span><span class="tk-n">df</span><span class="tk-p">)),</span> <span class="tk-n">s</span><span class="tk-o">=</span><span class="tk-mi">4</span><span class="tk-p">,</span> <span class="tk-n">alpha</span><span class="tk-o">=</span><span class="tk-mf">.3</span><span class="tk-p">)</span>
+<span class="tk-n">ax</span><span class="tk-p">[</span><span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-mi">1</span><span class="tk-p">]</span><span class="tk-o">.</span><span class="tk-n">set</span><span class="tk-p">(</span><span class="tk-n">title</span><span class="tk-o">=</span><span class="tk-s2">"Đồ đắt có bán ít hơn?"</span><span class="tk-p">,</span> <span class="tk-n">xlabel</span><span class="tk-o">=</span><span class="tk-s2">"giá (nghìn đồng)"</span><span class="tk-p">,</span> <span class="tk-n">ylabel</span><span class="tk-o">=</span><span class="tk-s2">"số lượng (có rung nhẹ)"</span><span class="tk-p">)</span>
+<span class="tk-p">(</span><span class="tk-n">return_rate</span> <span class="tk-o">*</span> <span class="tk-mi">100</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">plot</span><span class="tk-o">.</span><span class="tk-n">barh</span><span class="tk-p">(</span><span class="tk-n">ax</span><span class="tk-o">=</span><span class="tk-n">ax</span><span class="tk-p">[</span><span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-mi">2</span><span class="tk-p">]);</span> <span class="tk-n">ax</span><span class="tk-p">[</span><span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-mi">2</span><span class="tk-p">]</span><span class="tk-o">.</span><span class="tk-n">set</span><span class="tk-p">(</span><span class="tk-n">title</span><span class="tk-o">=</span><span class="tk-s2">"Sản phẩm nào hay bị hoàn?"</span><span class="tk-p">,</span> <span class="tk-n">xlabel</span><span class="tk-o">=</span><span class="tk-s2">"% đơn hoàn"</span><span class="tk-p">)</span>
+<span class="tk-n">plt</span><span class="tk-o">.</span><span class="tk-n">tight_layout</span><span class="tk-p">()</span>
+<span class="tk-n">fig</span><span class="tk-o">.</span><span class="tk-n">savefig</span><span class="tk-p">(</span><span class="tk-s2">"eda.png"</span><span class="tk-p">,</span> <span class="tk-n">dpi</span><span class="tk-o">=</span><span class="tk-mi">150</span><span class="tk-p">,</span> <span class="tk-n">bbox_inches</span><span class="tk-o">=</span><span class="tk-s2">"tight"</span><span class="tk-p">)</span>
+</code></pre></div>
+
+<p>Mẹo trong khung scatter: <code>qty</code> chỉ có 3 giá trị nên các điểm chồng khít lên nhau; cộng thêm một chút nhiễu nhỏ ("jitter") chỉ để vẽ giúp thấy được mật độ.</p>
+</details></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p0.4:p">Tôi đã xong phần thực hành</label></div></section>
+      <div class="donewhen"><b>Xong bài khi</b>Mỗi biểu đồ có tiêu đề là một câu hỏi, có nhãn trục và đơn vị, và một kết luận đi kèm.</div>
+      <nav class="pn" aria-label="Bài trước, bài sau"><a href="p0-3.html"><span class="dir">← Bài trước · P0.3</span><span class="tt">pandas: làm sạch và tổng hợp bảng dữ liệu</span></a><a class="nx" href="p0-5.html"><span class="dir">Bài sau · P0.5 →</span><span class="tt">Toán cho AI: đại số tuyến tính, giải tích, xác suất</span></a></nav>
+    </div>
+    <aside class="aside">
+      <div class="abox"><h4>Tiến độ bài này</h4><div class="ring"><svg viewBox="0 0 64 64" aria-hidden="true"><circle class="bg" cx="32" cy="32" r="28"/><circle class="fg" cx="32" cy="32" r="28" stroke-dasharray="176" stroke-dashoffset="176"/></svg><div><b id="ring-n">0/3</b><span id="ring-sub">phần đã xong</span></div></div></div>
+      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Vì sao phải vẽ</a></li><li><a href="#lt-2">Figure và Axes</a></li><li><a href="#lt-3">Chọn biểu đồ theo câu hỏi</a></li><li><a href="#lt-4">Biểu đồ cho ML: ảnh và confusion matrix</a></li><li><a href="#lt-5">Vẽ nhanh từ pandas</a></li><li><a href="#lt-6">Thang log, lưu hình và vẽ nhiều hình</a></li><li><a href="#lt-7">Tóm tắt bài và thuật ngữ</a></li></ol></div>
+      <div class="abox"><h4>Notebook</h4><div style="display:grid;gap:8px"><a class="dl" href="https://colab.research.google.com/github/truonghuu344/ai-engineer-roadmap/blob/main/notebooks/ly-thuyet/p0-4.ipynb" target="_blank" rel="noopener"><span class="ext">COLAB</span><span>Chạy toàn bộ code của bài<span style="display:block;font:400 12px var(--f-mono);color:var(--muted)">notebook có sẵn kết quả</span></span></a></div></div>
+      <div class="abox"><h4>Cùng giai đoạn</h4><ul><li><a href="p0-1.html">Python từ số 0</a></li><li><a href="p0-2.html">numpy: mảng, broadcasting, vector hóa</a></li><li><a href="p0-3.html">pandas: làm sạch và tổng hợp bảng dữ liệu</a></li><li><span class=cur>matplotlib: vẽ để hiểu dữ liệu và kết quả train</span></li><li><a href="p0-5.html">Toán cho AI: đại số tuyến tính, giải tích, xác suất</a></li><li><a href="p0-6.html">PyTorch cơ bản: tensor, autograd, nn.Module</a></li><li><a href="p0-7.html">Công cụ: Git, GitHub, terminal, Colab</a></li></ul></div>
+    </aside>
+  </div>
+</main>
+<footer class="sf"><div class="sf-in"><div><a class="sh-brand" href="../index.html" style="margin:0"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="var(--ink)"/><circle cx="9" cy="22" r="2.6" fill="var(--accent-soft)"/><circle cx="16" cy="10" r="2.6" fill="var(--accent-soft)"/><circle cx="23" cy="19" r="2.6" fill="#FF9361"/><path d="M9 22 L16 10 L23 19" stroke="var(--accent-soft)" stroke-width="1.8" fill="none"/></svg><span>AI Engineer<small>lộ trình tự học</small></span></a><p>Lộ trình tự học AI Engineer bằng tiếng Việt: lý thuyết tương tác, bài tập tính tay và notebook có ô tự chấm.</p></div><div><h4>Học</h4><ul><li><a href="../bai-hoc.html">Tất cả bài học</a></li><li><a href="../lo-trinh.html">Lộ trình và tiến độ</a></li><li><a href="../notebooks.html">Notebook thực hành</a></li></ul></div><div><h4>Đã có nội dung</h4><ul><li><a href="../bai01.html">Bài 1 · Mạng nơ-ron</a></li><li><a href="../bai/p2-2.html">Lab 1 · CIFAR-10</a></li><li><a href="../diffusion-gd1.html">Diffusion GĐ 1</a></li></ul></div><div><h4>Dự án</h4><ul><li><a href="https://github.com/truonghuu344/ai-engineer-roadmap" target="_blank" rel="noopener">Mã nguồn trên GitHub</a></li><li><a href="../bai-hoc.html#p5">Dự án Diffusion</a></li><li><a href="../bai-hoc.html#p10">Portfolio và đi làm</a></li></ul></div></div><div class="sf-bottom"><span>© 2026 Vũ Hữu Trường · soạn cùng Claude</span><span>Tiến độ lưu trên trình duyệt của bạn</span></div></footer>
+<script src="../assets/data.js"></script>
+<script src="../assets/chrome.js"></script>
+<script>
+
+(function () {
+  const mid = document.body.dataset.mid; let d = AIE.load();
+  const EXK = "aie-ex-" + mid;
+  let solved = {}; try { solved = JSON.parse(localStorage.getItem(EXK) || "{}") || {}; } catch (e) {}
+  const saveSolved = () => { try { localStorage.setItem(EXK, JSON.stringify(solved)); } catch (e) {} };
+  const tabs = [...document.querySelectorAll(".tab")], panels = [...document.querySelectorAll(".panel")];
+  const boxes = [...document.querySelectorAll("input[data-key]")], ring = document.querySelector(".ring .fg"), rt = document.getElementById("ring-n");
+  const toc = document.getElementById("toc-box");
+  function show(id, scroll) {
+    tabs.forEach((t) => t.setAttribute("aria-selected", String(t.dataset.tab === id)));
+    panels.forEach((p) => { const on = p.id === id; if (on && p.hidden) { p.classList.remove("enter"); void p.offsetWidth; p.classList.add("enter"); } p.hidden = !on; });
+    if (toc) toc.hidden = id !== "ly-thuyet";
+    if (scroll) document.querySelector(".tabs").scrollIntoView({ block: "start" });
+    movePill();
+  }
+  const tabBar = document.querySelector(".tabs"), pill = document.createElement("span");
+  pill.className = "pill"; pill.setAttribute("aria-hidden", "true"); tabBar.prepend(pill); tabBar.classList.add("has-pill");
+  function movePill() {
+    const on = tabs.find((t) => t.getAttribute("aria-selected") === "true"); if (!on) return;
+    pill.style.width = on.offsetWidth + "px"; pill.style.transform = `translateX(${on.offsetLeft}px)`;
+  }
+  window.addEventListener("resize", movePill);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(movePill);
+  tabs.forEach((t) => t.addEventListener("click", () => { history.replaceState(null, "", "#" + t.dataset.tab); show(t.dataset.tab, true); }));
+  document.querySelectorAll("[data-goto]").forEach((b) => b.addEventListener("click", () => { history.replaceState(null, "", "#" + b.dataset.goto); show(b.dataset.goto, true); }));
+  const start = ["ly-thuyet", "bai-tap", "thuc-hanh"].includes(location.hash.slice(1)) ? location.hash.slice(1) : "ly-thuyet";
+  show(start, false);
+  requestAnimationFrame(() => tabBar.classList.add("fx-pill"));
+  window.addEventListener("hashchange", () => { const h = location.hash.slice(1); if (["ly-thuyet", "bai-tap", "thuc-hanh"].includes(h)) show(h, true); });
+  document.querySelectorAll(".toc a").forEach((a) => a.addEventListener("click", () => show("ly-thuyet", false)));
+
+  function render() {
+    let n = 0;
+    const skip = !!d[mid + ":skip"];
+    boxes.forEach((b) => { const on = skip || !!d[b.dataset.key]; b.checked = on; if (on) n++; });
+    const kmap = { t: "ly-thuyet", b: "bai-tap", p: "thuc-hanh" };
+    tabs.forEach((t) => { const k = Object.keys(kmap).find((x) => kmap[x] === t.dataset.tab); t.classList.toggle("is-done", skip || !!d[mid + ":" + k]); });
+    ring.style.strokeDashoffset = String(176 * (1 - n / 3)); rt.textContent = n + "/3";
+    document.getElementById("ring-sub").textContent = n === 3 ? "hoàn thành bài này" : "phần đã xong";
+    if (n === 3 && lastN !== null && lastN < 3) { const rg = document.querySelector(".ring"); rg.classList.remove("fx-full"); void rg.offsetWidth; rg.classList.add("fx-full"); AIE.confetti && AIE.confetti(innerWidth / 2, innerHeight * .35, 120); }
+    lastN = n;
+  }
+  let lastN = null;
+  boxes.forEach((b) => b.addEventListener("change", () => {
+    d = AIE.load(); if (b.checked) d[b.dataset.key] = true; else delete d[b.dataset.key]; AIE.save(d);
+    boxes.filter((x) => x.dataset.key === b.dataset.key).forEach((x) => (x.checked = b.checked)); render();
+  }));
+  render();
+
+  /* answer boxes */
+  const parse = (s) => parseFloat(String(s).trim().replace(",", ".").replace("−", "-"));
+  const allAns = [...document.querySelectorAll(".ans")], exAns = allAns.filter((a) => a.closest("#bai-tap"));
+  function score() {
+    const ok = exAns.filter((a) => solved[a.id]).length;
+    const el = document.getElementById("ex-score");
+    if (el) { el.querySelector("b").textContent = `${ok} / ${exAns.length}`; el.querySelector(".bar i").style.width = (exAns.length ? ok / exAns.length * 100 : 0) + "%"; }
+    document.querySelectorAll(".excard").forEach((c) => { const as = [...c.querySelectorAll(".ans")]; c.classList.toggle("solved", as.length > 0 && as.every((a) => solved[a.id])); });
+  }
+  allAns.forEach((box) => {
+    const inputs = [...box.querySelectorAll("input")], fb = box.querySelector(".ans-fb");
+    const mark = () => { box.classList.add("ok"); inputs.forEach((i) => { i.classList.add("ok"); if (!i.value) i.value = i.dataset.ans; }); fb.className = "ans-fb ok"; fb.textContent = "Chính xác."; };
+    if (solved[box.id]) mark();
+    const run = () => {
+      let all = true, empty = false;
+      inputs.forEach((i) => {
+        const v = parse(i.value);
+        if (i.value.trim() === "" || Number.isNaN(v)) { empty = true; all = false; i.classList.remove("ok", "bad"); return; }
+        const good = Math.abs(v - parseFloat(i.dataset.ans)) <= parseFloat(i.dataset.tol) + 1e-9;
+        i.classList.toggle("ok", good); i.classList.toggle("bad", !good); if (!good) all = false;
+      });
+      if (all) {
+        const first = !solved[box.id];
+        solved[box.id] = true; saveSolved(); mark(); box.classList.remove("pop"); void box.offsetWidth; box.classList.add("pop"); score();
+        if (first && AIE.confettiAt) {
+          if (box.closest("#bai-tap") && exAns.every((a) => solved[a.id])) AIE.confetti(innerWidth / 2, innerHeight * .35, 120);
+          else AIE.confettiAt(box.querySelector(".btn-check"), 28);
+        }
+      }
+      else { inputs.filter((i) => i.classList.contains("bad")).forEach((i) => { i.classList.remove("fx-shake"); void i.offsetWidth; i.classList.add("fx-shake"); });
+        fb.className = "ans-fb bad"; fb.textContent = empty ? "Điền đủ các ô bằng số (dấu chấm hoặc phẩy đều được)." : "Ô màu cam chưa đúng. Xem lại bước đó, hoặc mở gợi ý."; }
+    };
+    box.querySelector(".btn-check").addEventListener("click", run);
+    inputs.forEach((i) => i.addEventListener("keydown", (e) => { if (e.key === "Enter") run(); }));
+  });
+  score();
+
+  /* copy button on code blocks */
+  document.querySelectorAll(".hl").forEach((h) => {
+    const pre = h.querySelector("pre"); if (!pre || !navigator.clipboard) return;
+    const b = document.createElement("button"); b.type = "button"; b.className = "copy"; b.textContent = "Chép";
+    b.addEventListener("click", () => navigator.clipboard.writeText(pre.innerText.replace(/\n$/, "")).then(() => {
+      b.textContent = "Đã chép ✓"; b.classList.add("done"); setTimeout(() => { b.textContent = "Chép"; b.classList.remove("done"); }, 1600);
+    }).catch(() => {}));
+    h.appendChild(b);
+  });
+
+  /* runnable code: Pyodide (Python chạy ngay trong trình duyệt) */
+  const RUNS = [...document.querySelectorAll(".run")];
+  const HELPER = `
+import ast, sys, io, base64, traceback, os, warnings
+os.environ.setdefault("MPLBACKEND", "AGG")
+warnings.filterwarnings("ignore", message=".*non-interactive.*")
+import ast
+ACTION = {"manual_seed", "seed", "write_text", "write", "load_dotenv", "savefig", "set_title", "set_xlabel", "set_ylabel",
+          "legend", "plot", "scatter", "bar", "barh", "hist", "imshow", "append", "extend", "update", "add", "fit", "backward",
+          "step", "zero_grad", "mkdir", "makedirs", "sleep", "close", "flush", "print", "show", "axhline", "axvline", "text",
+          "tight_layout", "subplots_adjust", "set_xlim", "set_ylim", "grid", "insert", "remove", "clear", "sort", "shuffle",
+          "to_csv", "save", "load_state_dict", "train", "eval", "requires_grad_", "set_printoptions", "filterwarnings",
+          "use", "setdefault", "register_buffer", "rc", "add_node", "add_edge", "add_conditional_edges", "set_entry_point", "login", "mount", "seed_everything", "log", "finish", "init", "info", "debug", "warning", "put", "add_argument", "set_xticks", "set_yticks", "annotate", "fill_between", "suptitle", "figure", "subplot"}
+
+
+def legacy_numpy_repr():
+    import sys
+    if "numpy" in sys.modules:
+        sys.modules["numpy"].set_printoptions(legacy="1.25")     # in 0.87 thay vì np.float64(0.87)
+
+
+def transform(code):
+    lines = code.split("\\n")
+    tree = ast.parse(code)
+    n = len(tree.body)
+    for k, node in enumerate(tree.body):
+        if not isinstance(node, ast.Expr):
+            continue
+        v = node.value
+        if isinstance(v, ast.Constant) and isinstance(v.value, str):          # docstring / string literal alone
+            continue
+        if isinstance(v, ast.Await):
+            continue
+        name = None
+        if isinstance(v, ast.Call):
+            f = v.func
+            name = f.attr if isinstance(f, ast.Attribute) else (f.id if isinstance(f, ast.Name) else None)
+        tail = lines[node.end_lineno - 1][node.end_col_offset:]
+        commented = "#" in tail
+        last = k == n - 1
+        if name in ACTION:
+            continue
+        if last or commented:
+            node.value = ast.Call(func=ast.Name("__show__", ast.Load()), args=[v], keywords=[])
+    ast.fix_missing_locations(tree)
+    return tree
+
+def __aie_run(code, ns):
+    buf = io.StringIO(); so, se = sys.stdout, sys.stderr; sys.stdout = sys.stderr = buf; ok = True
+    def show(v):
+        if v is None: return
+        try:
+            import pandas as pd
+            if isinstance(v, (pd.DataFrame, pd.Series)):
+                print(v.to_string(max_rows=20)); return
+        except Exception:
+            pass
+        print(repr(v))
+    ns["__show__"] = show
+    try:
+        legacy_numpy_repr(); exec(compile(transform(code), "<cell>", "exec"), ns)
+    except BaseException:
+        ok = False
+        et, ev, tb = sys.exc_info(); lines = traceback.format_exception(et, ev, tb)
+        print("".join(l for l in lines if "<cell>" in l or l is lines[-1]), end="")
+    finally:
+        sys.stdout, sys.stderr = so, se
+    imgs = []
+    if "matplotlib.pyplot" in sys.modules:
+        plt = sys.modules["matplotlib.pyplot"]
+        for n in plt.get_fignums():
+            b = io.BytesIO(); plt.figure(n).savefig(b, format="png", dpi=100, bbox_inches="tight", facecolor="white")
+            imgs.append(base64.b64encode(b.getvalue()).decode())
+        plt.close("all")
+    return [buf.getvalue()[-20000:], imgs, ok]
+`;
+  let pyP = null; const NS = {}, done = new Set();
+  function loadPy() {
+    if (pyP) return pyP;
+    const base = window.AIE_PYODIDE || "https://cdn.jsdelivr.net/pyodide/v0.28.3/full/";
+    pyP = new Promise((res, rej) => {
+      if (window.loadPyodide) return res();
+      const s = document.createElement("script"); s.src = base + "pyodide.js"; s.onload = () => res(); s.onerror = () => rej(new Error("load"));
+      document.head.appendChild(s);
+    }).then(() => window.loadPyodide({ indexURL: base })).then((py) => { py.runPython(HELPER); return py; });
+    pyP.catch(() => { pyP = null; });
+    return pyP;
+  }
+  const codeOf = (r) => r.previousElementSibling.querySelector("pre").innerText.replace(/\n$/, "");
+  async function exec(py, r, code) {
+    const g = r.dataset.group;
+    if (!NS[g]) NS[g] = py.globals.get("dict")();
+    try { await py.loadPackagesFromImports(code); } catch (e) {}
+    const res = py.globals.get("__aie_run")(code, NS[g]); const [out, imgs, ok] = res.toJs(); res.destroy();
+    return { out, imgs, ok };
+  }
+  function paint(r, res) {
+    r.querySelectorAll(".run-out, img").forEach((x) => x.remove());
+    const pre = document.createElement("pre"); pre.className = "run-out" + (res.out ? "" : " run-empty");
+    pre.textContent = res.out || "(chạy xong, không in ra gì)"; r.appendChild(pre);
+    res.imgs.forEach((b) => { const im = document.createElement("img"); im.alt = "Hình do đoạn code vẽ"; im.src = "data:image/png;base64," + b; r.appendChild(im); });
+    r.classList.toggle("err", !res.ok);
+  }
+  RUNS.filter((r) => r.dataset.mode === "py" && r.previousElementSibling && r.previousElementSibling.classList.contains("hl")).forEach((r) => {
+    const hl = r.previousElementSibling, pre = hl.querySelector("pre"), orig = pre.innerHTML;
+    const bar = r.querySelector(".run-bar"), box = document.createElement("span"); box.className = "run-btns";
+    const st = document.createElement("span"); st.className = "run-status";
+    const mk = (t, cls) => { const b = document.createElement("button"); b.type = "button"; b.className = "run-btn " + cls; b.textContent = t; box.appendChild(b); return b; };
+    const ed = mk("Sửa code", ""), go = mk("▶ Chạy", "go");
+    bar.appendChild(st); bar.appendChild(box);
+    ed.addEventListener("click", () => {
+      if (pre.hasAttribute("contenteditable")) { pre.removeAttribute("contenteditable"); pre.innerHTML = orig; ed.textContent = "Sửa code"; return; }
+      try { pre.contentEditable = "plaintext-only"; } catch (e) { pre.contentEditable = "true"; }
+      if (pre.contentEditable !== "plaintext-only") pre.contentEditable = "true";
+      pre.spellcheck = false; pre.focus(); ed.textContent = "Khôi phục code gốc";
+    });
+    go.addEventListener("click", async () => {
+      go.disabled = true; st.textContent = pyP ? "Đang chạy…" : "Đang tải Python trong trình duyệt (lần đầu khoảng 10–30 giây)…";
+      try {
+        const py = await loadPy(); st.textContent = "Đang chạy…";
+        const same = RUNS.filter((x) => x.dataset.group === r.dataset.group && x.dataset.mode === "py");
+        for (const x of same.slice(0, same.indexOf(r))) if (!done.has(x)) { await exec(py, x, codeOf(x)); done.add(x); }
+        const res = await exec(py, r, codeOf(r)); done.add(r); paint(r, res); st.textContent = res.ok ? "" : "Có lỗi, xem bên dưới";
+      } catch (e) { console.error("aie-run", e); st.textContent = "Không tải được Python trong trình duyệt. Kiểm tra mạng rồi thử lại."; }
+      go.disabled = false;
+    });
+  });
+
+  /* highlight current theory section in the toc */
+  if (toc && "IntersectionObserver" in window) {
+    const links = [...toc.querySelectorAll("a")];
+    const io = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) links.forEach((a) => a.classList.toggle("on", a.getAttribute("href") === "#" + e.target.id)); }), { rootMargin: "-140px 0px -65% 0px" });
+    document.querySelectorAll("#ly-thuyet h2[id]").forEach((h) => io.observe(h));
+  }
+})();
+
+</script>
+</body>
+</html>

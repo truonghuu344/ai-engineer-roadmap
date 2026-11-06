@@ -1,6 +1,6 @@
 # AI Engineer · Lộ trình tự học
 
-Website tự học AI Engineer bằng tiếng Việt: 11 giai đoạn, 46 bài. Mỗi bài có lý thuyết, bài tập và thực hành.
+Website tự học AI Engineer bằng tiếng Việt: 11 giai đoạn, 50 bài. Mỗi bài có lý thuyết, bài tập và thực hành.
 
 **Xem trực tuyến:** https://truonghuu344.github.io/ai-engineer-roadmap/
 
@@ -9,7 +9,7 @@ Website tự học AI Engineer bằng tiếng Việt: 11 giai đoạn, 46 bài. 
 | Đường dẫn | Nội dung |
 |---|---|
 | `index.html` | Trang chủ |
-| `bai-hoc.html` | Danh mục 46 bài, tìm kiếm và lọc |
+| `bai-hoc.html` | Danh mục 50 bài, tìm kiếm và lọc |
 | `bai/*.html` | Trang từng bài: đề cương lý thuyết, bài tập, thực hành, checklist |
 | `bai01.html`, `diffusion-gd1.html` | Bài có nội dung đầy đủ: lý thuyết tương tác, bài tính tay, kiểm tra |
 | `lo-trinh.html` | Lộ trình, dòng thời gian, tiến độ |

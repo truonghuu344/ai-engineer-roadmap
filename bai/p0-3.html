@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>P0.3 · Công cụ: Git, GitHub, terminal, Colab · AI Engineer</title>
-<meta name="description" content="Công cụ: Git, GitHub, terminal, Colab: lý thuyết, bài tập và thực hành. Git: commit, branch, merge, pull request, .gitignore; Terminal Linux: cd, ls, grep, pipe, quyền file, SSH">
-<meta property="og:title" content="P0.3 · Công cụ: Git, GitHub, terminal, Colab · AI Engineer">
-<meta property="og:description" content="Công cụ: Git, GitHub, terminal, Colab: lý thuyết, bài tập và thực hành. Git: commit, branch, merge, pull request, .gitignore; Terminal Linux: cd, ls, grep, pipe, quyền file, SSH">
+<title>P0.3 · pandas: làm sạch và tổng hợp bảng dữ liệu · AI Engineer</title>
+<meta name="description" content="pandas: làm sạch và tổng hợp bảng dữ liệu: lý thuyết, bài tập và thực hành. Series, DataFrame, đọc CSV/Excel, kiểu dữ liệu từng cột; Chọn dòng và cột (loc, iloc), lọc nhiều điều kiện">
+<meta property="og:title" content="P0.3 · pandas: làm sạch và tổng hợp bảng dữ liệu · AI Engineer">
+<meta property="og:description" content="pandas: làm sạch và tổng hợp bảng dữ liệu: lý thuyết, bài tập và thực hành. Series, DataFrame, đọc CSV/Excel, kiểu dữ liệu từng cột; Chọn dòng và cột (loc, iloc), lọc nhiều điều kiện">
 <meta name="theme-color" content="#F4F6FB">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23131A33'/%3E%3Cpath d='M9 22 L16 10 L23 19' stroke='%23E5E9FB' stroke-width='2' fill='none'/%3E%3Ccircle cx='9' cy='22' r='3' fill='%23E5E9FB'/%3E%3Ccircle cx='16' cy='10' r='3' fill='%23E5E9FB'/%3E%3Ccircle cx='23' cy='19' r='3' fill='%23FF9361'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -17,485 +17,350 @@
 <link rel="stylesheet" href="../assets/lesson.css">
 </head>
 <body data-mid="p0.3">
-<header class="sh"><div class="sh-in"><a class="sh-brand" href="../index.html"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="var(--ink)"/><circle cx="9" cy="22" r="2.6" fill="var(--accent-soft)"/><circle cx="16" cy="10" r="2.6" fill="var(--accent-soft)"/><circle cx="23" cy="19" r="2.6" fill="#FF9361"/><path d="M9 22 L16 10 L23 19" stroke="var(--accent-soft)" stroke-width="1.8" fill="none"/></svg><span>AI Engineer<small>lộ trình tự học</small></span></a><nav class="sh-nav" id="sh-nav" aria-label="Chính"><a href="../index.html">Trang chủ</a><a href="../bai-hoc.html" aria-current="page">Bài học</a><a href="../lo-trinh.html">Lộ trình</a><a href="../notebooks.html">Notebook</a><a class="sh-cta-m" href="../bai01.html" data-next-lesson>Học tiếp →</a></nav><a class="sh-cta" href="../bai01.html" data-next-lesson>Học tiếp <span class="arr">→</span></a><button class="sh-burger" type="button" aria-expanded="false" aria-controls="sh-nav">Menu</button></div></header>
+<header class="sh"><div class="sh-in"><a class="sh-brand" href="../index.html"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="var(--ink)"/><circle cx="9" cy="22" r="2.6" fill="var(--accent-soft)"/><circle cx="16" cy="10" r="2.6" fill="var(--accent-soft)"/><circle cx="23" cy="19" r="2.6" fill="#FF9361"/><path d="M9 22 L16 10 L23 19" stroke="var(--accent-soft)" stroke-width="1.8" fill="none"/></svg><span>AI Engineer<small>lộ trình tự học</small></span></a><nav class="sh-nav" id="sh-nav" aria-label="Chính"><a href="../index.html">Trang chủ</a><a href="../bai-hoc.html" aria-current="page">Bài học</a><a href="../lo-trinh.html">Lộ trình</a><a href="../notebooks.html">Notebook</a><a class="sh-cta-m" href="../bai/p0-1.html" data-next-lesson>Học tiếp →</a></nav><a class="sh-cta" href="../bai/p0-1.html" data-next-lesson>Học tiếp <span class="arr">→</span></a><button class="sh-burger" type="button" aria-expanded="false" aria-controls="sh-nav">Menu</button></div></header>
 
 <main class="container">
   <div class="crumbs"><a href="../bai-hoc.html">Bài học</a><span>/</span><a href="../bai-hoc.html#p0">P0 · Nền móng</a><span>/</span><span>P0.3</span></div>
-  <section class="lhero"><div class="code">P0.3</div><h1>Công cụ: Git, GitHub, terminal, Colab</h1><div class="lmeta"><span class="m">Giai đoạn P0 · Nền móng</span><span class="m">Tuần 1–3</span><span class="chip ready"><span class="dot"></span>Có nội dung đầy đủ</span></div>
-    <div class="intro"><p>Code ML không chỉ chạy trong notebook. Bạn cần điều khiển máy chủ GPU (terminal), lưu lịch sử thay đổi (Git), chia sẻ và nhận góp ý (GitHub), và train trên GPU miễn phí (Colab). Nhà tuyển dụng nhìn GitHub của bạn trước khi đọc CV, nên bài này cũng là bước đầu xây hồ sơ.</p></div></section>
+  <section class="lhero"><div class="code">P0.3</div><h1>pandas: làm sạch và tổng hợp bảng dữ liệu</h1><div class="lmeta"><span class="m">Giai đoạn P0 · Nền móng</span><span class="m">Tuần 1–3</span><span class="chip ready"><span class="dot"></span>Có nội dung đầy đủ</span></div>
+    <div class="intro"><p>Dữ liệu thật ít khi là mảng số sạch sẽ. Nó là bảng có cột chữ, cột ngày, ô trống, dòng trùng, tên sản phẩm viết lệch nhau. <strong>pandas</strong> là công cụ chuẩn để đọc, làm sạch, gộp nhóm và nối bảng trước khi đưa vào model. Bài này đi trọn một vòng trên một bảng đơn hàng nhỏ: đọc file lộn xộn, làm sạch, tạo cột mới, tổng hợp theo nhóm, nối với bảng khác. Biểu đồ cho bảng này để sang P0.4.</p></div></section>
   
-  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">7 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
+  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">12 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">4 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
   <div class="lgrid" style="margin-top:22px">
-    <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">Terminal Linux đủ dùng</h2>
+    <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">Series và DataFrame</h2>
 <div class="box why">
 <div class="box-h">Vì sao cần học</div>
-<p>Máy GPU thuê trên cloud (RunPod, Lambda, máy chủ trường) không có giao diện đồ họa: bạn chỉ có một cửa sổ terminal qua SSH. Biết khoảng 20 lệnh là đủ để cài môi trường, chạy train, theo dõi log và dọn ổ đĩa mà không phải tải file về máy.</p>
+<p>Phần lớn thời gian của một dự án ML thật nằm ở bước chuẩn bị dữ liệu, không phải ở bước chọn model. Model tốt nhất cũng cho kết quả sai nếu "Ghế B" và "ghế b" bị coi là hai sản phẩm, hay một đơn bị đếm hai lần. pandas cho phép làm những việc đó bằng vài dòng, trên cả cột một lúc, giống tinh thần vector hóa của numpy (P0.2).</p>
 </div>
-<h3>Cấu trúc thư mục và đường dẫn</h3>
-<p>Linux có một cây thư mục duy nhất bắt đầu từ <code>/</code>. Thư mục nhà của bạn là <code>~</code> (ví dụ <code>/home/truong</code>). Đường dẫn <strong>tuyệt đối</strong> bắt đầu bằng <code>/</code>; đường dẫn <strong>tương đối</strong> tính từ thư mục hiện tại, với <code>.</code> là "ở đây" và <code>..</code> là "thư mục cha".</p>
-<div class="hl"><pre><span></span><code><span class="tk-nb">pwd</span><span class="tk-w">                      </span><span class="tk-c1"># đang ở đâu: /home/truong/project</span>
-ls<span class="tk-w"> </span>-lh<span class="tk-w">                   </span><span class="tk-c1"># liệt kê, -l chi tiết, -h dung lượng dễ đọc (12K, 3.4G)</span>
-<span class="tk-nb">cd</span><span class="tk-w"> </span>data/raw<span class="tk-w">              </span><span class="tk-c1"># vào thư mục con (tương đối)</span>
-<span class="tk-nb">cd</span><span class="tk-w"> </span>..<span class="tk-w">                    </span><span class="tk-c1"># lên một cấp</span>
-<span class="tk-nb">cd</span><span class="tk-w"> </span>~<span class="tk-w">                     </span><span class="tk-c1"># về thư mục nhà</span>
-mkdir<span class="tk-w"> </span>-p<span class="tk-w"> </span>runs/exp1<span class="tk-w">       </span><span class="tk-c1"># tạo thư mục, -p tạo luôn thư mục cha nếu chưa có</span>
-cp<span class="tk-w"> </span>a.py<span class="tk-w"> </span>b.py<span class="tk-p">;</span><span class="tk-w"> </span>mv<span class="tk-w"> </span>b.py<span class="tk-w"> </span>src/<span class="tk-p">;</span><span class="tk-w"> </span>rm<span class="tk-w"> </span>old.log<span class="tk-w">   </span><span class="tk-c1"># chép, di chuyển/đổi tên, xóa</span>
-rm<span class="tk-w"> </span>-r<span class="tk-w"> </span>tmp/<span class="tk-w">               </span><span class="tk-c1"># xóa cả thư mục (không có thùng rác, cẩn thận)</span>
-</code></pre></div>
-
-<h3>Đọc và tìm trong file</h3>
-<div class="hl"><pre><span></span><code>cat<span class="tk-w"> </span>config.yaml<span class="tk-w">          </span><span class="tk-c1"># in cả file</span>
-head<span class="tk-w"> </span>-n<span class="tk-w"> </span><span class="tk-m">20</span><span class="tk-w"> </span>train.csv<span class="tk-w">     </span><span class="tk-c1"># 20 dòng đầu: xem nhanh cấu trúc CSV</span>
-tail<span class="tk-w"> </span>-n<span class="tk-w"> </span><span class="tk-m">50</span><span class="tk-w"> </span>train.log<span class="tk-w">     </span><span class="tk-c1"># 50 dòng cuối</span>
-tail<span class="tk-w"> </span>-f<span class="tk-w"> </span>train.log<span class="tk-w">        </span><span class="tk-c1"># theo dõi log đang được ghi (Ctrl+C để thoát)</span>
-grep<span class="tk-w"> </span><span class="tk-s2">"val_acc"</span><span class="tk-w"> </span>train.log<span class="tk-w"> </span><span class="tk-c1"># chỉ in dòng có chuỗi "val_acc"</span>
-grep<span class="tk-w"> </span>-c<span class="tk-w"> </span>ERROR<span class="tk-w"> </span>train.log<span class="tk-w">  </span><span class="tk-c1"># đếm số dòng khớp</span>
-grep<span class="tk-w"> </span>-v<span class="tk-w"> </span>ERROR<span class="tk-w"> </span>train.log<span class="tk-w">  </span><span class="tk-c1"># in các dòng KHÔNG khớp</span>
-wc<span class="tk-w"> </span>-l<span class="tk-w"> </span>train.csv<span class="tk-w">          </span><span class="tk-c1"># đếm số dòng (số mẫu + 1 dòng tiêu đề)</span>
-</code></pre></div>
-
-<h3>Pipe: ghép lệnh nhỏ thành công cụ lớn</h3>
-<p>Dấu <code>|</code> đưa <strong>đầu ra</strong> của lệnh trước làm <strong>đầu vào</strong> của lệnh sau. Mỗi lệnh làm một việc nhỏ; ghép lại giải được bài khó.</p>
-<figure class="fig"><img src="../assets/fig/p0-3-pipe.svg" alt="cat in nội dung, grep lọc dòng có ERROR, wc -l đếm: kết quả là số dòng lỗi." loading="lazy"><figcaption>cat in nội dung, grep lọc dòng có ERROR, wc -l đếm: kết quả là số dòng lỗi.</figcaption></figure>
-
-<div class="box example">
-<div class="box-h">Ví dụ từng bước</div>
-<p>Một file <code>val.log</code> có 8 dòng:</p>
-<div class="hl"><pre><span></span><code>step 100 val_acc 0.61
-step 200 val_acc 0.68
-WARNING slow dataloader
-step 300 val_acc 0.72
-ERROR disk full
-step 400 val_acc 0.74
-ERROR retry failed
-done
-</code></pre></div>
-
 <ul>
-<li><code>grep -c val_acc val.log</code> → <strong>4</strong></li>
-<li><code>cat val.log | grep -v step | wc -l</code> → <strong>4</strong> (8 dòng trừ 4 dòng có "step")</li>
-<li><code>grep val_acc val.log | tail -n 1</code> → <code>step 400 val_acc 0.74</code> (kết quả mới nhất)</li>
-<li><code>grep -E "ERROR|WARNING" val.log | wc -l</code> → <strong>3</strong> (<code>-E</code> cho phép "hoặc" bằng dấu |)</li>
+<li><strong>Series</strong>: một cột dữ liệu có nhãn (index). Giống mảng numpy 1 chiều có tên cho từng dòng.</li>
+<li><strong>DataFrame</strong>: một bảng gồm nhiều Series dùng chung index. Mỗi cột có thể khác kiểu.</li>
 </ul>
-<p>Thêm vài lệnh nối pipe hay dùng: <code>sort</code> (sắp xếp), <code>sort -n</code> (theo số), <code>uniq -c</code> (đếm dòng trùng liên tiếp), <code>cut -d, -f2</code> (lấy cột 2 của CSV). Ví dụ đếm số mẫu mỗi nhãn: <code>cut -d, -f2 train.csv | sort | uniq -c</code>.</p>
-</div>
-<h3>Chuyển hướng đầu ra</h3>
-<div class="hl"><pre><span></span><code>python<span class="tk-w"> </span>train.py<span class="tk-w"> </span>&gt;<span class="tk-w"> </span>train.log<span class="tk-w">          </span><span class="tk-c1"># ghi đầu ra vào file (ghi đè)</span>
-python<span class="tk-w"> </span>train.py<span class="tk-w"> </span>&gt;&gt;<span class="tk-w"> </span>train.log<span class="tk-w">         </span><span class="tk-c1"># ghi nối vào cuối file</span>
-python<span class="tk-w"> </span>train.py<span class="tk-w"> </span>&gt;<span class="tk-w"> </span>train.log<span class="tk-w"> </span><span class="tk-m">2</span>&gt;<span class="tk-p">&amp;</span><span class="tk-m">1</span><span class="tk-w">     </span><span class="tk-c1"># gộp cả lỗi (stderr, kênh 2) vào cùng file</span>
+<div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">pandas</span><span class="tk-w"> </span><span class="tk-k">as</span><span class="tk-w"> </span><span class="tk-nn">pd</span>
+<span class="tk-n">s</span> <span class="tk-o">=</span> <span class="tk-n">pd</span><span class="tk-o">.</span><span class="tk-n">Series</span><span class="tk-p">([</span><span class="tk-mi">1500</span><span class="tk-p">,</span> <span class="tk-mi">400</span><span class="tk-p">,</span> <span class="tk-mi">450</span><span class="tk-p">],</span> <span class="tk-n">index</span><span class="tk-o">=</span><span class="tk-p">[</span><span class="tk-s2">"Bàn A"</span><span class="tk-p">,</span> <span class="tk-s2">"Ghế B"</span><span class="tk-p">,</span> <span class="tk-s2">"Ghế C"</span><span class="tk-p">],</span> <span class="tk-n">name</span><span class="tk-o">=</span><span class="tk-s2">"price"</span><span class="tk-p">)</span>
+<span class="tk-n">s</span><span class="tk-p">[</span><span class="tk-s2">"Ghế B"</span><span class="tk-p">]</span>           <span class="tk-c1"># lấy theo nhãn: 400</span>
+<span class="tk-n">s</span><span class="tk-p">[</span><span class="tk-n">s</span> <span class="tk-o">&gt;</span> <span class="tk-mi">420</span><span class="tk-p">]</span>           <span class="tk-c1"># lọc bằng mặt nạ như numpy: Bàn A và Ghế C</span>
 </code></pre></div>
 
-<h3>Theo dõi máy và chạy lâu</h3>
-<div class="hl"><pre><span></span><code>nvidia-smi<span class="tk-w">                           </span><span class="tk-c1"># có GPU nào, đang dùng bao nhiêu VRAM, tiến trình nào</span>
-watch<span class="tk-w"> </span>-n<span class="tk-w"> </span><span class="tk-m">2</span><span class="tk-w"> </span>nvidia-smi<span class="tk-w">                </span><span class="tk-c1"># cập nhật mỗi 2 giây</span>
-df<span class="tk-w"> </span>-h<span class="tk-w">                                </span><span class="tk-c1"># ổ đĩa còn trống bao nhiêu</span>
-du<span class="tk-w"> </span>-sh<span class="tk-w"> </span>data/*<span class="tk-w"> </span><span class="tk-p">|</span><span class="tk-w"> </span>sort<span class="tk-w"> </span>-h<span class="tk-w">              </span><span class="tk-c1"># dung lượng từng thư mục, sắp tăng dần</span>
-htop<span class="tk-w">                                 </span><span class="tk-c1"># CPU, RAM, tiến trình (q để thoát)</span>
-nohup<span class="tk-w"> </span>python<span class="tk-w"> </span>train.py<span class="tk-w"> </span>&gt;<span class="tk-w"> </span>train.log<span class="tk-w"> </span><span class="tk-m">2</span>&gt;<span class="tk-p">&amp;</span><span class="tk-m">1</span><span class="tk-w"> </span><span class="tk-p">&amp;</span><span class="tk-w">   </span><span class="tk-c1"># chạy nền, đóng terminal vẫn chạy</span>
-tmux<span class="tk-w"> </span>new<span class="tk-w"> </span>-s<span class="tk-w"> </span>train<span class="tk-w">                    </span><span class="tk-c1"># phiên terminal "sống" kể cả khi mất kết nối SSH</span>
+<div class="run" data-mode="py" data-group="t"><div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span></div><pre class="run-out">400&#10;Bàn A    1500&#10;Ghế C     450</pre></div>
+
+<p>Một DataFrame có <code>df.columns</code> (tên các cột), <code>df.index</code> (nhãn các dòng), <code>df.shape</code> (số dòng, số cột) và <code>df.dtypes</code> (kiểu từng cột). Lấy một cột <code>df["qty"]</code> cho ra Series; mỗi Series có <code>.values</code> là mảng numpy bên dưới.</p>
+<h2 id="lt-2">Đọc dữ liệu và nhìn trước khi sửa</h2>
+<p>Bảng đơn hàng ví dụ được ghi thẳng trong code để chạy ở đâu cũng được. Với file thật, thay <code>io.StringIO(csv_text)</code> bằng đường dẫn file.</p>
+<div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">io</span>
+<span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">pandas</span><span class="tk-w"> </span><span class="tk-k">as</span><span class="tk-w"> </span><span class="tk-nn">pd</span>
+
+<span class="tk-n">csv_text</span> <span class="tk-o">=</span> <span class="tk-s2">"""date,product,qty,price</span>
+<span class="tk-s2">2026-01-03,Bàn A,2,1500</span>
+<span class="tk-s2">2026-01-15, ghế b,1,400</span>
+<span class="tk-s2">2026-02-02,Bàn A,1,</span>
+<span class="tk-s2">2026-02-20,Bàn A,3,"1,500"</span>
+<span class="tk-s2">2026-02-20,Bàn A,3,"1,500"</span>
+<span class="tk-s2">2026-02-21,Ghế B,2,450</span>
+<span class="tk-s2">"""</span>
+<span class="tk-n">raw</span> <span class="tk-o">=</span> <span class="tk-n">pd</span><span class="tk-o">.</span><span class="tk-n">read_csv</span><span class="tk-p">(</span><span class="tk-n">io</span><span class="tk-o">.</span><span class="tk-n">StringIO</span><span class="tk-p">(</span><span class="tk-n">csv_text</span><span class="tk-p">))</span>    <span class="tk-c1"># file thật: pd.read_csv("orders.csv"), pd.read_excel("orders.xlsx")</span>
+<span class="tk-n">raw</span>
 </code></pre></div>
 
-<p><code>nohup ... &amp;</code> và <code>tmux</code> giải cùng một vấn đề: train mất 10 tiếng nhưng kết nối SSH của bạn đứt sau 1 tiếng. Với <code>tmux</code>, gõ <code>Ctrl+B</code> rồi <code>D</code> để rời phiên, <code>tmux attach -t train</code> để quay lại.</p>
-<h3>Kết nối và quyền</h3>
-<div class="hl"><pre><span></span><code>ssh<span class="tk-w"> </span>user@1.2.3.4<span class="tk-w">                     </span><span class="tk-c1"># đăng nhập máy chủ</span>
-scp<span class="tk-w"> </span>model.pt<span class="tk-w"> </span>user@1.2.3.4:~/models/<span class="tk-w">  </span><span class="tk-c1"># chép file lên máy chủ</span>
-chmod<span class="tk-w"> </span>+x<span class="tk-w"> </span>run.sh<span class="tk-w"> </span><span class="tk-o">&amp;&amp;</span><span class="tk-w"> </span>./run.sh<span class="tk-w">          </span><span class="tk-c1"># cho phép chạy script rồi chạy</span>
-<span class="tk-nb">export</span><span class="tk-w"> </span><span class="tk-nv">CUDA_VISIBLE_DEVICES</span><span class="tk-o">=</span><span class="tk-m">0</span><span class="tk-w">        </span><span class="tk-c1"># biến môi trường: chỉ dùng GPU số 0</span>
+<div class="run" data-mode="py" data-group="t"><div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span></div><pre class="run-out">         date product  qty  price&#10;0  2026-01-03   Bàn A    2   1500&#10;1  2026-01-15   ghế b    1    400&#10;2  2026-02-02   Bàn A    1    NaN&#10;3  2026-02-20   Bàn A    3  1,500&#10;4  2026-02-20   Bàn A    3  1,500&#10;5  2026-02-21   Ghế B    2    450</pre></div>
+
+<p>Bảng có đủ các bệnh hay gặp: một ô giá trống, một giá ghi kiểu "1,500", một dòng bị chép hai lần, và tên " ghế b" viết lệch. Trước khi sửa, dùng vài lệnh để <strong>thấy</strong> chúng:</p>
+<div class="hl"><pre><span></span><code><span class="tk-n">raw</span><span class="tk-o">.</span><span class="tk-n">shape</span>                        <span class="tk-c1"># (6, 4): 6 dòng, 4 cột</span>
+<span class="tk-n">raw</span><span class="tk-o">.</span><span class="tk-n">dtypes</span>                       <span class="tk-c1"># price là kiểu chữ vì có "1,500"; date cũng đang là chữ</span>
+<span class="tk-n">raw</span><span class="tk-o">.</span><span class="tk-n">isna</span><span class="tk-p">()</span><span class="tk-o">.</span><span class="tk-n">sum</span><span class="tk-p">()</span>                 <span class="tk-c1"># số ô trống từng cột: price có 1</span>
+<span class="tk-n">raw</span><span class="tk-o">.</span><span class="tk-n">duplicated</span><span class="tk-p">()</span><span class="tk-o">.</span><span class="tk-n">sum</span><span class="tk-p">()</span>           <span class="tk-c1"># 1 dòng trùng hoàn toàn với một dòng phía trên</span>
+<span class="tk-n">raw</span><span class="tk-p">[</span><span class="tk-s2">"product"</span><span class="tk-p">]</span><span class="tk-o">.</span><span class="tk-n">value_counts</span><span class="tk-p">()</span>    <span class="tk-c1"># " ghế b" và "Ghế B" bị đếm thành hai sản phẩm</span>
 </code></pre></div>
 
+<div class="run" data-mode="py" data-group="t"><div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span></div><pre class="run-out">(6, 4)&#10;date         str&#10;product      str&#10;qty        int64&#10;price        str&#10;date       0&#10;product    0&#10;qty        0&#10;price      1&#10;1&#10;product&#10;Bàn A     4&#10; ghế b    1&#10;Ghế B     1</pre></div>
+
+<p><code>df.info()</code> gom shape, kiểu từng cột và số ô không trống vào một bảng; <code>df.describe()</code> cho đếm, trung bình, độ lệch chuẩn, min, các phân vị và max của cột số. Ba lệnh <code>head()</code>, <code>info()</code>, <code>describe()</code> nên chạy với mọi bảng mới.</p>
 <div class="box pitfall">
 <div class="box-h">Lỗi hay gặp</div>
-<p><strong><code>rm -rf</code> không có thùng rác.</strong> Một dấu cách sai (<code>rm -rf data /</code> thay vì <code>rm -rf data/</code>) có thể xóa thứ bạn không muốn. Trước khi xóa, chạy <code>ls</code> với cùng đường dẫn để xem đúng những gì sẽ bị xóa. Với dữ liệu quan trọng, luôn có bản sao ở nơi khác.</p>
+<p><strong>Cột số bị đọc thành chữ.</strong> Chỉ cần một ô như "1,500" hay "không rõ", cả cột thành kiểu chữ (pandas hiện là <code>object</code>, hoặc <code>str</code> ở pandas 3). Khi đó <code>raw["price"].sum()</code> không báo lỗi mà <strong>nối chuỗi</strong>, và <code>raw["price"] &gt; 1000</code> báo lỗi so sánh chữ với số. Luôn xem <code>dtypes</code> ngay sau khi đọc. Với dấu phân cách hàng nghìn có thể đọc thẳng bằng <code>pd.read_csv(..., thousands=",")</code>.</p>
 </div>
-<div class="box check">
-<div class="box-h">Tự kiểm tra nhanh</div>
-<p>File <code>results.csv</code> có dòng tiêu đề và 1.000 dòng dữ liệu.</p>
-<div class="ans" id="p0-3-t-b74-a1">
-<div class="ans-fields"><label>Kết quả của wc -l results.csv<input inputmode="decimal" data-ans="1001.0" data-tol="0.0" autocomplete="off"></label><label>Số dòng in ra khi nối tail -n 5 results.csv sang wc -l<input inputmode="decimal" data-ans="5.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div>
-<div aria-live="polite" class="ans-fb"></div>
-</div>
-</div>
-<h2 id="lt-2">Git hoạt động thế nào</h2>
-<div class="box why">
-<div class="box-h">Vì sao cần học</div>
-<p>Không có Git, bạn sẽ có <code>train_final.py</code>, <code>train_final2.py</code>, <code>train_final_THAT_SU.py</code> và không nhớ cái nào cho accuracy 82%. Git lưu mọi phiên bản, cho biết ai đổi gì khi nào, cho phép quay lại phiên bản cũ, và là cách duy nhất để làm việc nhóm trên cùng một codebase.</p>
-</div>
-<h3>Commit là một bức ảnh chụp</h3>
-<p>Mỗi <strong>commit</strong> là ảnh chụp toàn bộ dự án tại một thời điểm, kèm lời nhắn, tác giả, thời gian, và một mã định danh (hash) như <code>a3f9c21</code>. Lịch sử dự án là chuỗi các commit nối nhau.</p>
-<h3>Ba khu vực (và một khu vực từ xa)</h3>
-<figure class="fig"><img src="../assets/fig/p0-3-areas.svg" alt="Thay đổi đi từ thư mục làm việc vào vùng chuẩn bị (git add), vào lịch sử (git commit), rồi lên GitHub (git push)." loading="lazy"><figcaption>Thay đổi đi từ thư mục làm việc vào vùng chuẩn bị (git add), vào lịch sử (git commit), rồi lên GitHub (git push).</figcaption></figure>
-
-<table>
-<thead>
-<tr>
-<th>Khu vực</th>
-<th>Ý nghĩa</th>
-<th>Lệnh đưa vào</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Working directory</td>
-<td>file bạn đang sửa</td>
-<td>(sửa file)</td>
-</tr>
-<tr>
-<td>Staging area</td>
-<td>những thay đổi <strong>sẽ</strong> vào commit tiếp theo</td>
-<td><code>git add &lt;file&gt;</code></td>
-</tr>
-<tr>
-<td>Repository</td>
-<td>lịch sử các commit, nằm trong thư mục <code>.git</code></td>
-<td><code>git commit -m "..."</code></td>
-</tr>
-<tr>
-<td>Remote</td>
-<td>bản sao trên GitHub</td>
-<td><code>git push</code></td>
-</tr>
-</tbody>
-</table>
-<p>Vùng staging tồn tại để bạn <strong>chọn</strong> những gì vào commit. Bạn sửa 5 file nhưng chỉ 2 file liên quan đến việc "thêm checkpoint" thì chỉ <code>add</code> 2 file đó, commit, rồi xử lý 3 file kia ở commit khác. Lịch sử sẽ dễ đọc và dễ quay lui.</p>
-<h3>Vòng làm việc hằng ngày</h3>
-<div class="hl"><pre><span></span><code>git<span class="tk-w"> </span>init<span class="tk-w">                      </span><span class="tk-c1"># tạo repo mới (một lần)</span>
-git<span class="tk-w"> </span>status<span class="tk-w">                    </span><span class="tk-c1"># xem file nào đã sửa, đã stage — chạy lệnh này liên tục</span>
-git<span class="tk-w"> </span>diff<span class="tk-w">                      </span><span class="tk-c1"># xem chi tiết thay đổi chưa stage</span>
-git<span class="tk-w"> </span>add<span class="tk-w"> </span>train.py<span class="tk-w"> </span>utils.py<span class="tk-w">     </span><span class="tk-c1"># stage hai file</span>
-git<span class="tk-w"> </span>diff<span class="tk-w"> </span>--staged<span class="tk-w">             </span><span class="tk-c1"># xem chính xác những gì sắp được commit</span>
-git<span class="tk-w"> </span>commit<span class="tk-w"> </span>-m<span class="tk-w"> </span><span class="tk-s2">"Thêm checkpoint và resume cho vòng lặp train"</span>
-git<span class="tk-w"> </span>log<span class="tk-w"> </span>--oneline<span class="tk-w"> </span>-5<span class="tk-w">          </span><span class="tk-c1"># 5 commit gần nhất, mỗi commit một dòng</span>
+<h2 id="lt-3">Làm sạch</h2>
+<p>Mỗi bước làm sạch là một dòng, áp dụng trên cả cột:</p>
+<div class="hl"><pre><span></span><code><span class="tk-n">df</span> <span class="tk-o">=</span> <span class="tk-n">raw</span><span class="tk-o">.</span><span class="tk-n">drop_duplicates</span><span class="tk-p">()</span><span class="tk-o">.</span><span class="tk-n">reset_index</span><span class="tk-p">(</span><span class="tk-n">drop</span><span class="tk-o">=</span><span class="tk-kc">True</span><span class="tk-p">)</span>              <span class="tk-c1"># bỏ dòng trùng, đánh lại index 0, 1, 2...</span>
+<span class="tk-n">df</span><span class="tk-p">[</span><span class="tk-s2">"product"</span><span class="tk-p">]</span> <span class="tk-o">=</span> <span class="tk-n">df</span><span class="tk-p">[</span><span class="tk-s2">"product"</span><span class="tk-p">]</span><span class="tk-o">.</span><span class="tk-n">str</span><span class="tk-o">.</span><span class="tk-n">strip</span><span class="tk-p">()</span><span class="tk-o">.</span><span class="tk-n">str</span><span class="tk-o">.</span><span class="tk-n">title</span><span class="tk-p">()</span>          <span class="tk-c1"># " ghế b" → "Ghế B"</span>
+<span class="tk-n">df</span><span class="tk-p">[</span><span class="tk-s2">"price"</span><span class="tk-p">]</span> <span class="tk-o">=</span> <span class="tk-n">pd</span><span class="tk-o">.</span><span class="tk-n">to_numeric</span><span class="tk-p">(</span><span class="tk-n">df</span><span class="tk-p">[</span><span class="tk-s2">"price"</span><span class="tk-p">]</span><span class="tk-o">.</span><span class="tk-n">str</span><span class="tk-o">.</span><span class="tk-n">replace</span><span class="tk-p">(</span><span class="tk-s2">","</span><span class="tk-p">,</span> <span class="tk-s2">""</span><span class="tk-p">))</span>  <span class="tk-c1"># "1,500" → 1500.0; ô trống vẫn là NaN</span>
+<span class="tk-n">df</span><span class="tk-p">[</span><span class="tk-s2">"date"</span><span class="tk-p">]</span> <span class="tk-o">=</span> <span class="tk-n">pd</span><span class="tk-o">.</span><span class="tk-n">to_datetime</span><span class="tk-p">(</span><span class="tk-n">df</span><span class="tk-p">[</span><span class="tk-s2">"date"</span><span class="tk-p">])</span>                        <span class="tk-c1"># chữ → kiểu ngày, dùng được .dt.month</span>
+<span class="tk-n">df</span>
 </code></pre></div>
 
-<div class="box example">
-<div class="box-h">Ví dụ từng bước</div>
-<p>Bạn sửa <code>train.py</code>, <code>model.py</code>, <code>config.yaml</code>, <code>README.md</code>, rồi chạy:</p>
-<div class="hl"><pre><span></span><code>git<span class="tk-w"> </span>add<span class="tk-w"> </span>config.yaml
-git<span class="tk-w"> </span>commit<span class="tk-w"> </span>-m<span class="tk-w"> </span><span class="tk-s2">"Tăng batch size lên 128"</span>
-git<span class="tk-w"> </span>status
+<div class="run" data-mode="py" data-group="t"><div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span></div><pre class="run-out">        date product  qty   price&#10;0 2026-01-03   Bàn A    2  1500.0&#10;1 2026-01-15   Ghế B    1   400.0&#10;2 2026-02-02   Bàn A    1     NaN&#10;3 2026-02-20   Bàn A    3  1500.0&#10;4 2026-02-21   Ghế B    2   450.0</pre></div>
+
+<div class="hl"><pre><span></span><code><span class="tk-n">df</span><span class="tk-o">.</span><span class="tk-n">dtypes</span>                         <span class="tk-c1"># date là datetime64, price là float64</span>
+<span class="tk-n">df</span><span class="tk-p">[</span><span class="tk-s2">"product"</span><span class="tk-p">]</span><span class="tk-o">.</span><span class="tk-n">value_counts</span><span class="tk-p">()</span>      <span class="tk-c1"># còn đúng hai sản phẩm: Bàn A 3, Ghế B 2</span>
 </code></pre></div>
 
-<p>Commit chỉ chứa <strong>1 file</strong> (<code>config.yaml</code>). Ba file kia vẫn ở trạng thái "modified" chưa stage, chờ commit sau. Nếu sau commit bạn lại sửa tiếp <code>train.py</code>, nó cũng hiện là "modified" lần nữa: Git theo dõi thay đổi so với commit gần nhất.</p>
-</div>
-<h3>Viết commit message tốt</h3>
-<p>Một dòng tóm tắt (dưới khoảng 70 ký tự), nói <strong>làm gì</strong>, nếu cần thì thêm đoạn <strong>vì sao</strong>:</p>
-<table>
-<thead>
-<tr>
-<th>Kém</th>
-<th>Tốt</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>update</code></td>
-<td><code>Sửa rò dữ liệu khi chia train/val theo người dùng</code></td>
-</tr>
-<tr>
-<td><code>fix bug</code></td>
-<td><code>Chặn NaN khi batch toàn nhãn 0 trong focal loss</code></td>
-</tr>
-<tr>
-<td><code>final</code></td>
-<td><code>Thêm script đánh giá trên tập test, ghi kết quả ra JSON</code></td>
-</tr>
-</tbody>
-</table>
-<p>Nhìn lịch sử commit, người khác (và bạn 3 tháng sau) phải hiểu dự án tiến triển thế nào.</p>
-<h3>Quay lui khi lỡ tay</h3>
-<div class="hl"><pre><span></span><code>git<span class="tk-w"> </span>restore<span class="tk-w"> </span>train.py<span class="tk-w">                 </span><span class="tk-c1"># bỏ thay đổi chưa stage, về bản commit gần nhất</span>
-git<span class="tk-w"> </span>restore<span class="tk-w"> </span>--staged<span class="tk-w"> </span>train.py<span class="tk-w">        </span><span class="tk-c1"># bỏ stage (thay đổi vẫn còn trong file)</span>
-git<span class="tk-w"> </span>commit<span class="tk-w"> </span>--amend<span class="tk-w"> </span>-m<span class="tk-w"> </span><span class="tk-s2">"Lời nhắn mới"</span><span class="tk-w"> </span><span class="tk-c1"># sửa commit vừa tạo (chỉ khi chưa push)</span>
-git<span class="tk-w"> </span>revert<span class="tk-w"> </span>a3f9c21<span class="tk-w">                   </span><span class="tk-c1"># tạo commit mới đảo ngược commit cũ (an toàn khi đã push)</span>
-git<span class="tk-w"> </span>log<span class="tk-w"> </span>-p<span class="tk-w"> </span>train.py<span class="tk-w">                  </span><span class="tk-c1"># xem lịch sử thay đổi của một file</span>
-</code></pre></div>
+<div class="run" data-mode="py" data-group="t"><div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span></div><pre class="run-out">date       datetime64[us]&#10;product               str&#10;qty                 int64&#10;price             float64&#10;product&#10;Bàn A    3&#10;Ghế B    2</pre></div>
 
-<div class="box pitfall">
-<div class="box-h">Lỗi hay gặp</div>
-<p><strong><code>git add .</code> mọi thứ.</strong> Lệnh này stage tất cả, kể cả file dữ liệu 2 GB, checkpoint, thư mục <code>.venv</code>, file <code>.env</code> chứa khóa API. Khi đã commit và push, xóa khỏi lịch sử rất mất công. Luôn có <code>.gitignore</code> trước (mục dưới) và chạy <code>git status</code> trước khi commit.</p>
-</div>
-<h2 id="lt-3">Branch, merge và pull request</h2>
-<div class="box why">
-<div class="box-h">Vì sao cần học</div>
-<p>Bạn muốn thử augmentation mới nhưng không chắc nó tốt hơn. Branch cho phép thử trên một "dòng thời gian" riêng: hỏng thì bỏ, tốt thì gộp vào. Pull request là cách các đội làm phần mềm (và đội ML) review code trước khi gộp.</p>
-</div>
-<figure class="fig"><img src="../assets/fig/p0-3-branch.svg" alt="Branch tách ra từ main, có 3 commit thử nghiệm, rồi được merge trở lại qua pull request." loading="lazy"><figcaption>Branch tách ra từ main, có 3 commit thử nghiệm, rồi được merge trở lại qua pull request.</figcaption></figure>
-
-<div class="hl"><pre><span></span><code>git<span class="tk-w"> </span>switch<span class="tk-w"> </span>-c<span class="tk-w"> </span>feature/augmentation<span class="tk-w">   </span><span class="tk-c1"># tạo branch mới và chuyển sang</span>
-<span class="tk-c1"># ... sửa code, commit vài lần ...</span>
-git<span class="tk-w"> </span>push<span class="tk-w"> </span>-u<span class="tk-w"> </span>origin<span class="tk-w"> </span>feature/augmentation<span class="tk-w">   </span><span class="tk-c1"># đẩy branch lên GitHub lần đầu</span>
-git<span class="tk-w"> </span>switch<span class="tk-w"> </span>main<span class="tk-w">                      </span><span class="tk-c1"># quay về nhánh chính</span>
-git<span class="tk-w"> </span>pull<span class="tk-w">                             </span><span class="tk-c1"># lấy thay đổi mới nhất từ GitHub</span>
-git<span class="tk-w"> </span>merge<span class="tk-w"> </span>feature/augmentation<span class="tk-w">       </span><span class="tk-c1"># gộp (hoặc làm qua pull request trên web)</span>
-git<span class="tk-w"> </span>branch<span class="tk-w"> </span>-d<span class="tk-w"> </span>feature/augmentation<span class="tk-w">   </span><span class="tk-c1"># xóa branch đã gộp</span>
-</code></pre></div>
-
-<h3>Pull request (PR)</h3>
-<p>Trên GitHub, bạn mở <strong>pull request</strong> để đề nghị gộp branch vào <code>main</code>. Trang PR hiển thị toàn bộ thay đổi, cho phép bình luận từng dòng, và chạy kiểm tra tự động (CI, học ở P8). Một PR tốt có:</p>
-<ul>
-<li>Tiêu đề rõ như commit message.</li>
-<li>Mô tả: thay đổi gì, vì sao, đã kiểm tra thế nào (ví dụ "val acc 81.2% → 83.0%, 3 seed").</li>
-<li>Kích thước vừa phải: dưới vài trăm dòng thì người review đọc kỹ được.</li>
-</ul>
-<p>Ngay cả khi làm một mình, dùng PR giúp bạn tự đọc lại thay đổi trước khi gộp và để lại dấu vết dễ hiểu trên GitHub.</p>
-<h3>Xung đột (conflict)</h3>
-<p>Khi hai branch cùng sửa <strong>một dòng</strong>, Git không tự quyết được và đánh dấu trong file:</p>
-<div class="hl"><pre><span></span><code>&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD
-lr = 3e-4
-=======
-lr = 1e-3
-&gt;&gt;&gt;&gt;&gt;&gt;&gt; feature/augmentation
-</code></pre></div>
-
-<p>Bạn sửa file giữ lại dòng đúng, xóa các dấu <code>&lt;&lt;&lt;&lt;&lt;&lt;&lt;</code>, <code>=======</code>, <code>&gt;&gt;&gt;&gt;&gt;&gt;&gt;</code>, rồi <code>git add</code> và <code>git commit</code>. Xung đột là chuyện bình thường, không phải lỗi.</p>
-<div class="box check">
-<div class="box-h">Tự kiểm tra nhanh</div>
-<p>Bạn đang ở <code>main</code> có 4 commit. Bạn tạo branch <code>exp</code>, commit thêm 3 lần trên <code>exp</code>, rồi quay về <code>main</code> và merge <code>exp</code> (không có commit mới nào trên <code>main</code> trong lúc đó).</p>
-<div class="ans" id="p0-3-t-b175-a1">
-<div class="ans-fields"><label>Số commit trên exp trước khi merge<input inputmode="decimal" data-ans="7.0" data-tol="0.0" autocomplete="off"></label><label>Số commit thấy được từ main sau khi merge (fast-forward)<input inputmode="decimal" data-ans="7.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div>
-<div aria-live="polite" class="ans-fb"></div>
-</div>
-</div>
-<h2 id="lt-4">.gitignore và bí mật cho dự án ML</h2>
-<div class="box why">
-<div class="box-h">Vì sao cần học</div>
-<p>Repo ML khác repo web: có dữ liệu hàng GB, checkpoint hàng trăm MB, log thí nghiệm, và khóa API để gọi LLM. Thứ nào trong số đó vào Git là rắc rối: GitHub chặn file trên 100 MB, repo phình to làm <code>clone</code> chậm, và khóa API lộ ra sẽ bị bot quét lấy trong vài phút.</p>
-</div>
-<p>File <code>.gitignore</code> liệt kê những gì Git bỏ qua. Mẫu cho dự án ML:</p>
-<div class="hl"><pre><span></span><code># môi trường và cache
-.venv/
-__pycache__/
-.ipynb_checkpoints/
-
-# dữ liệu, model, log
-data/
-checkpoints/
-*.pt
-*.ckpt
-*.safetensors
-wandb/
-runs/
-
-# bí mật
-.env
-</code></pre></div>
-
-<p>Một dòng <code>data/</code> bỏ qua cả thư mục; <code>*.pt</code> bỏ qua mọi file đuôi <code>.pt</code>; dòng bắt đầu bằng <code>#</code> là chú thích; thêm <code>!data/README.md</code> để vẫn giữ lại một file cụ thể.</p>
-<h3>Giữ khóa API ngoài code</h3>
-<div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">os</span>
-<span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">pathlib</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">Path</span>
-<span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">dotenv</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">load_dotenv</span>     <span class="tk-c1"># pip install python-dotenv</span>
-
-<span class="tk-c1"># trên máy bạn, file .env được tạo bằng tay và nằm trong .gitignore; ở đây tạo tạm một khóa giả để chạy thử</span>
-<span class="tk-n">Path</span><span class="tk-p">(</span><span class="tk-s2">".env"</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">write_text</span><span class="tk-p">(</span><span class="tk-s2">"ANTHROPIC_API_KEY=sk-ant-khoa-gia-de-minh-hoa</span><span class="tk-se">\n</span><span class="tk-s2">"</span><span class="tk-p">)</span>
-
-<span class="tk-n">load_dotenv</span><span class="tk-p">(</span><span class="tk-s2">".env"</span><span class="tk-p">)</span>                <span class="tk-c1"># đọc .env vào biến môi trường</span>
-<span class="tk-n">key</span> <span class="tk-o">=</span> <span class="tk-n">os</span><span class="tk-o">.</span><span class="tk-n">environ</span><span class="tk-p">[</span><span class="tk-s2">"ANTHROPIC_API_KEY"</span><span class="tk-p">]</span>
-<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-s2">"đã đọc khóa, bắt đầu bằng:"</span><span class="tk-p">,</span> <span class="tk-n">key</span><span class="tk-p">[:</span><span class="tk-mi">7</span><span class="tk-p">]</span> <span class="tk-o">+</span> <span class="tk-s2">"…"</span><span class="tk-p">)</span>   <span class="tk-c1"># không bao giờ in cả khóa ra log</span>
-</code></pre></div>
-
-<div class="run" data-mode="static" data-group="t"><div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span><span class="run-note">đã chạy sẵn</span><a class="run-colab" href="https://colab.research.google.com/github/truonghuu344/ai-engineer-roadmap/blob/main/notebooks/ly-thuyet/p0-3.ipynb" target="_blank" rel="noopener">Mở trên Colab ↗</a></div><pre class="run-out">đã đọc khóa, bắt đầu bằng: sk-ant-…</pre></div>
-
-<p>Trong repo, thêm file <code>.env.example</code> có tên biến nhưng không có giá trị thật, để người khác biết cần đặt biến gì.</p>
-<h3>Dữ liệu và model lớn để ở đâu</h3>
-<table>
-<thead>
-<tr>
-<th>Thứ</th>
-<th>Nơi lưu</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Dữ liệu công khai</td>
-<td>link tải + script tải trong repo (<code>scripts/download_data.py</code>)</td>
-</tr>
-<tr>
-<td>Dữ liệu riêng, nhỏ</td>
-<td>Google Drive, đọc từ Colab</td>
-</tr>
-<tr>
-<td>Model đã train</td>
-<td>Hugging Face Hub (có model card)</td>
-</tr>
-<tr>
-<td>Phiên bản dữ liệu theo thí nghiệm</td>
-<td>DVC (học ở P8)</td>
-</tr>
-</tbody>
-</table>
+<p>Ô trống hiện là <code>NaN</code> (Not a Number). Cột số có ô trống luôn thành kiểu <code>float</code>, đó là lý do giá hiện <code>1500.0</code>.</p>
 <div class="keep">
-<p><strong>Ghi nhớ:</strong> khóa API đặt trong file <code>.env</code>, đọc bằng <code>os.environ</code>, và <code>.env</code> luôn nằm trong <code>.gitignore</code>. Nếu lỡ push khóa lên GitHub, <strong>thu hồi khóa ngay</strong> ở trang quản lý của nhà cung cấp; xóa commit thôi là không đủ vì khóa đã bị quét.</p>
+<p><strong>Ghi nhớ:</strong> ghi lại <strong>mỗi quyết định làm sạch và lý do</strong> (bỏ dòng trùng vì sao, sửa tên theo quy tắc nào). Sau này kết quả lạ, bạn biết quay lại kiểm tra ở đâu.</p>
+</div>
+<h2 id="lt-4">Đếm, sắp xếp và lấy top</h2>
+<div class="hl"><pre><span></span><code><span class="tk-n">df</span><span class="tk-o">.</span><span class="tk-n">sort_values</span><span class="tk-p">(</span><span class="tk-s2">"qty"</span><span class="tk-p">,</span> <span class="tk-n">ascending</span><span class="tk-o">=</span><span class="tk-kc">False</span><span class="tk-p">)</span>     <span class="tk-c1"># sắp theo qty giảm dần</span>
+<span class="tk-n">df</span><span class="tk-o">.</span><span class="tk-n">nlargest</span><span class="tk-p">(</span><span class="tk-mi">2</span><span class="tk-p">,</span> <span class="tk-s2">"qty"</span><span class="tk-p">)</span>                      <span class="tk-c1"># 2 dòng có qty lớn nhất</span>
+<span class="tk-n">df</span><span class="tk-p">[</span><span class="tk-s2">"product"</span><span class="tk-p">]</span><span class="tk-o">.</span><span class="tk-n">nunique</span><span class="tk-p">()</span>                    <span class="tk-c1"># 2: số giá trị khác nhau</span>
+<span class="tk-n">df</span><span class="tk-p">[</span><span class="tk-s2">"product"</span><span class="tk-p">]</span><span class="tk-o">.</span><span class="tk-n">value_counts</span><span class="tk-p">(</span><span class="tk-n">normalize</span><span class="tk-o">=</span><span class="tk-kc">True</span><span class="tk-p">)</span> <span class="tk-c1"># tỉ lệ thay vì số đếm: Bàn A 0.6, Ghế B 0.4</span>
+</code></pre></div>
+
+<div class="run" data-mode="py" data-group="t"><div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span></div><pre class="run-out">        date product  qty   price&#10;3 2026-02-20   Bàn A    3  1500.0&#10;0 2026-01-03   Bàn A    2  1500.0&#10;4 2026-02-21   Ghế B    2   450.0&#10;2 2026-02-02   Bàn A    1     NaN&#10;1 2026-01-15   Ghế B    1   400.0&#10;        date product  qty   price&#10;3 2026-02-20   Bàn A    3  1500.0&#10;0 2026-01-03   Bàn A    2  1500.0&#10;2&#10;product&#10;Bàn A    0.6&#10;Ghế B    0.4</pre></div>
+
+<p><code>value_counts()</code> là lệnh đầu tiên nên chạy với mọi cột chữ: nó cho biết có bao nhiêu nhóm, nhóm nào chiếm đa số, và có giá trị viết lệch không, như vừa thấy ở trên.</p>
+<h2 id="lt-5">Chọn dòng và cột: loc và iloc</h2>
+<div class="hl"><pre><span></span><code><span class="tk-n">df</span><span class="tk-p">[[</span><span class="tk-s2">"product"</span><span class="tk-p">,</span> <span class="tk-s2">"qty"</span><span class="tk-p">]]</span>                     <span class="tk-c1"># nhiều cột → DataFrame</span>
+<span class="tk-n">df</span><span class="tk-o">.</span><span class="tk-n">loc</span><span class="tk-p">[</span><span class="tk-n">df</span><span class="tk-p">[</span><span class="tk-s2">"qty"</span><span class="tk-p">]</span> <span class="tk-o">&gt;=</span> <span class="tk-mi">2</span><span class="tk-p">,</span> <span class="tk-p">[</span><span class="tk-s2">"product"</span><span class="tk-p">,</span> <span class="tk-s2">"qty"</span><span class="tk-p">]]</span> <span class="tk-c1"># loc: lọc theo điều kiện và tên cột</span>
+<span class="tk-n">df</span><span class="tk-o">.</span><span class="tk-n">iloc</span><span class="tk-p">[</span><span class="tk-mi">0</span><span class="tk-p">:</span><span class="tk-mi">2</span><span class="tk-p">,</span> <span class="tk-mi">1</span><span class="tk-p">:</span><span class="tk-mi">3</span><span class="tk-p">]</span>                          <span class="tk-c1"># iloc: theo vị trí, giống slicing của numpy</span>
+</code></pre></div>
+
+<div class="run" data-mode="py" data-group="t"><div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span></div><pre class="run-out">  product  qty&#10;0   Bàn A    2&#10;1   Ghế B    1&#10;2   Bàn A    1&#10;3   Bàn A    3&#10;4   Ghế B    2&#10;  product  qty&#10;0   Bàn A    2&#10;3   Bàn A    3&#10;4   Ghế B    2&#10;  product  qty&#10;0   Bàn A    2&#10;1   Ghế B    1</pre></div>
+
+<p><code>loc</code> dùng <strong>nhãn</strong> (tên cột, giá trị index, mặt nạ boolean), <code>iloc</code> dùng <strong>vị trí số</strong>. Khi lọc nhiều điều kiện, dùng <code>&amp;</code> (và), <code>|</code> (hoặc), <code>~</code> (phủ định), và <strong>bọc từng điều kiện trong ngoặc</strong>.</p>
+<div class="box pitfall">
+<div class="box-h">Lỗi hay gặp</div>
+<p><strong>Quên ngoặc khi kết hợp điều kiện.</strong> Toán tử <code>&amp;</code> được tính trước <code>&gt;=</code>, nên dòng dưới không báo lỗi mà lọc sai:</p>
+<div class="hl"><pre><span></span><code><span class="tk-nb">len</span><span class="tk-p">(</span><span class="tk-n">df</span><span class="tk-p">[</span><span class="tk-n">df</span><span class="tk-p">[</span><span class="tk-s2">"qty"</span><span class="tk-p">]</span> <span class="tk-o">&gt;=</span> <span class="tk-mi">2</span> <span class="tk-o">&amp;</span> <span class="tk-p">(</span><span class="tk-n">df</span><span class="tk-p">[</span><span class="tk-s2">"price"</span><span class="tk-p">]</span> <span class="tk-o">&gt;</span> <span class="tk-mi">1000</span><span class="tk-p">)])</span>      <span class="tk-c1"># sai: ra 5 dòng</span>
+<span class="tk-nb">len</span><span class="tk-p">(</span><span class="tk-n">df</span><span class="tk-p">[(</span><span class="tk-n">df</span><span class="tk-p">[</span><span class="tk-s2">"qty"</span><span class="tk-p">]</span> <span class="tk-o">&gt;=</span> <span class="tk-mi">2</span><span class="tk-p">)</span> <span class="tk-o">&amp;</span> <span class="tk-p">(</span><span class="tk-n">df</span><span class="tk-p">[</span><span class="tk-s2">"price"</span><span class="tk-p">]</span> <span class="tk-o">&gt;</span> <span class="tk-mi">1000</span><span class="tk-p">)])</span>    <span class="tk-c1"># đúng: ra 2 dòng</span>
+</code></pre></div>
+
+<div class="run" data-group="t" data-mode="py">
+<div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span></div>
+<pre class="run-out">5&#10;2</pre>
+</div>
 </div>
 <div class="box pitfall">
 <div class="box-h">Lỗi hay gặp</div>
-<p><strong>Thêm <code>.gitignore</code> sau khi đã commit file.</strong> <code>.gitignore</code> chỉ có tác dụng với file <strong>chưa</strong> được Git theo dõi. Nếu <code>data/</code> đã nằm trong một commit, phải gỡ khỏi Git (giữ lại trên máy) bằng <code>git rm -r --cached data/</code> rồi commit.</p>
+<p><strong>Sửa trên một bảng đã lọc.</strong> <code>sub = df[df["qty"] &gt;= 2]</code> rồi <code>sub["qty"] = 0</code> sẽ hiện cảnh báo <code>SettingWithCopyWarning</code>, và tùy trường hợp <code>df</code> có thể đổi hoặc không. Muốn sửa bảng gốc thì sửa thẳng bằng <code>df.loc[điều_kiện, "cột"] = giá_trị</code>; muốn một bảng con độc lập thì thêm <code>.copy()</code>: <code>sub = df[df["qty"] &gt;= 2].copy()</code>.</p>
 </div>
-<h2 id="lt-5">GitHub như một hồ sơ</h2>
-<div class="box why">
-<div class="box-h">Vì sao cần học</div>
-<p>Với vị trí AI Engineer, đặc biệt là việc remote, GitHub là bằng chứng bạn làm được việc. Người tuyển dụng mở 2–3 repo ghim đầu trang, đọc README trong vài chục giây, và quyết định có đọc tiếp không.</p>
-</div>
-<p>Mỗi repo dự án cần một <strong>README</strong> trả lời được 5 câu hỏi trong 30 giây đầu:</p>
-<ol>
-<li>Dự án làm gì? (một câu)</li>
-<li>Kết quả thế nào? (bảng số, ảnh hoặc GIF)</li>
-<li>Chạy thế nào? (3–5 lệnh copy được)</li>
-<li>Cấu trúc code ra sao?</li>
-<li>Hạn chế và hướng phát triển?</li>
-</ol>
-<div class="hl"><pre><span></span><code><span class="tk-gh"># Phân loại ảnh CIFAR-10 từ con số 0</span>
-
-CNN tự viết bằng PyTorch, đạt 82.4% trên tập test sau 30 epoch trên GPU T4.
-
-| Model | Tham số | Test acc |
-|---|---|---|
-| MLP | 1.6M | 52.1% |
-| CNN 3 lớp | 0.3M | 82.4% |
-
-<span class="tk-gu">### Chạy</span>
-pip install -r requirements.txt
-python train.py --epochs 30
-</code></pre></div>
-
-<p>Commit đều đặn (lịch sử xanh trên trang cá nhân), mỗi repo có mô tả ngắn và topics, và một <strong>profile README</strong> giới thiệu bạn. Bài P10.2 đi sâu phần này.</p>
-<h2 id="lt-6">Colab và VS Code</h2>
-<div class="box why">
-<div class="box-h">Vì sao cần học</div>
-<p>Không phải ai cũng có GPU. Colab cho GPU miễn phí đủ để làm gần hết lộ trình này, còn VS Code là nơi bạn viết code "thật" có cấu trúc, có test, có Git. Biết khi nào dùng cái nào giúp bạn không bị kẹt trong notebook rối.</p>
-</div>
-<h3>Colab</h3>
-<p>Colab là Jupyter notebook chạy trên máy của Google, có GPU miễn phí (thường là T4 16 GB VRAM). Đổi sang GPU: <strong>Runtime → Change runtime type → T4 GPU</strong>. Hạn chế: phiên bị ngắt sau vài giờ hoặc khi bạn bỏ máy lâu, và mọi file trong <code>/content</code> mất khi phiên kết thúc.</p>
-<p>Ba thói quen bắt buộc ở ô đầu tiên của mọi notebook:</p>
-<div class="hl"><pre><span></span><code><span class="tk-c1"># Chạy trên Colab: ô này chỉ có ý nghĩa trong Colab (Google Drive, GPU của Colab)</span>
-<span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">google.colab</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">drive</span>
-<span class="tk-n">drive</span><span class="tk-o">.</span><span class="tk-n">mount</span><span class="tk-p">(</span><span class="tk-s2">"/content/drive"</span><span class="tk-p">)</span>                  <span class="tk-c1"># 1. lưu checkpoint, kết quả vào Drive</span>
-<span class="tk-err">!</span><span class="tk-n">nvidia</span><span class="tk-o">-</span><span class="tk-n">smi</span>                                    <span class="tk-c1"># 2. kiểm tra đã có GPU chưa</span>
-<span class="tk-err">!</span><span class="tk-n">pip</span> <span class="tk-n">install</span> <span class="tk-o">-</span><span class="tk-n">q</span> <span class="tk-n">transformers</span> <span class="tk-n">datasets</span>          <span class="tk-c1"># 3. cài thư viện thiếu ngay từ đầu</span>
-</code></pre></div>
-
-<div class="run run-skip" data-mode="static" data-group="t"><div class="run-bar"><span class="run-lbl">Không chạy trên trang</span><span class="run-note">Chạy trên Colab: ô này chỉ có ý nghĩa trong Colab (Google Drive, GPU của Colab)</span><a class="run-colab" href="https://colab.research.google.com/github/truonghuu344/ai-engineer-roadmap/blob/main/notebooks/ly-thuyet/p0-3.ipynb" target="_blank" rel="noopener">Mở trên Colab ↗</a></div></div>
-
-<p>Dấu <code>!</code> chạy lệnh terminal ngay trong ô notebook, nên mọi lệnh ở mục Terminal đều dùng được trong Colab.</p>
-<div class="box example">
-<div class="box-h">Ví dụ từng bước</div>
-<p><strong>Train sống sót qua việc bị ngắt.</strong> Lưu checkpoint mỗi epoch vào Drive, và khi khởi động lại thì nạp checkpoint mới nhất nếu có:</p>
-<div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">os</span><span class="tk-o">,</span><span class="tk-w"> </span><span class="tk-nn">torch</span><span class="tk-o">,</span><span class="tk-w"> </span><span class="tk-nn">torch.nn</span><span class="tk-w"> </span><span class="tk-k">as</span><span class="tk-w"> </span><span class="tk-nn">nn</span>
-<span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">manual_seed</span><span class="tk-p">(</span><span class="tk-mi">0</span><span class="tk-p">)</span>
-<span class="tk-n">X</span><span class="tk-p">,</span> <span class="tk-n">y</span> <span class="tk-o">=</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">randn</span><span class="tk-p">(</span><span class="tk-mi">256</span><span class="tk-p">,</span> <span class="tk-mi">4</span><span class="tk-p">),</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">randn</span><span class="tk-p">(</span><span class="tk-mi">256</span><span class="tk-p">,</span> <span class="tk-mi">1</span><span class="tk-p">)</span>                 <span class="tk-c1"># dữ liệu nhỏ để chạy thử</span>
-<span class="tk-n">model</span> <span class="tk-o">=</span> <span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">Linear</span><span class="tk-p">(</span><span class="tk-mi">4</span><span class="tk-p">,</span> <span class="tk-mi">1</span><span class="tk-p">);</span> <span class="tk-n">opt</span> <span class="tk-o">=</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">optim</span><span class="tk-o">.</span><span class="tk-n">Adam</span><span class="tk-p">(</span><span class="tk-n">model</span><span class="tk-o">.</span><span class="tk-n">parameters</span><span class="tk-p">(),</span> <span class="tk-n">lr</span><span class="tk-o">=</span><span class="tk-mf">0.05</span><span class="tk-p">)</span>
-
-<span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">train_one_epoch</span><span class="tk-p">(</span><span class="tk-n">model</span><span class="tk-p">,</span> <span class="tk-n">opt</span><span class="tk-p">):</span>
-    <span class="tk-n">loss</span> <span class="tk-o">=</span> <span class="tk-p">((</span><span class="tk-n">model</span><span class="tk-p">(</span><span class="tk-n">X</span><span class="tk-p">)</span> <span class="tk-o">-</span> <span class="tk-n">y</span><span class="tk-p">)</span> <span class="tk-o">**</span> <span class="tk-mi">2</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">mean</span><span class="tk-p">()</span>
-    <span class="tk-n">opt</span><span class="tk-o">.</span><span class="tk-n">zero_grad</span><span class="tk-p">();</span> <span class="tk-n">loss</span><span class="tk-o">.</span><span class="tk-n">backward</span><span class="tk-p">();</span> <span class="tk-n">opt</span><span class="tk-o">.</span><span class="tk-n">step</span><span class="tk-p">()</span>
-    <span class="tk-k">return</span> <span class="tk-n">loss</span><span class="tk-o">.</span><span class="tk-n">item</span><span class="tk-p">()</span>
-
-<span class="tk-n">CKPT</span> <span class="tk-o">=</span> <span class="tk-s2">"runs/exp1/last.pt"</span>           <span class="tk-c1"># trên Colab: "/content/drive/MyDrive/runs/exp1/last.pt"</span>
-<span class="tk-n">os</span><span class="tk-o">.</span><span class="tk-n">makedirs</span><span class="tk-p">(</span><span class="tk-n">os</span><span class="tk-o">.</span><span class="tk-n">path</span><span class="tk-o">.</span><span class="tk-n">dirname</span><span class="tk-p">(</span><span class="tk-n">CKPT</span><span class="tk-p">),</span> <span class="tk-n">exist_ok</span><span class="tk-o">=</span><span class="tk-kc">True</span><span class="tk-p">)</span>
-
-<span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">train</span><span class="tk-p">(</span><span class="tk-n">n_epochs</span><span class="tk-p">,</span> <span class="tk-n">stop_after</span><span class="tk-o">=</span><span class="tk-kc">None</span><span class="tk-p">):</span>
-    <span class="tk-n">start_epoch</span> <span class="tk-o">=</span> <span class="tk-mi">0</span>
-    <span class="tk-k">if</span> <span class="tk-n">os</span><span class="tk-o">.</span><span class="tk-n">path</span><span class="tk-o">.</span><span class="tk-n">exists</span><span class="tk-p">(</span><span class="tk-n">CKPT</span><span class="tk-p">):</span>                                      <span class="tk-c1"># có checkpoint: nạp và train tiếp</span>
-        <span class="tk-n">state</span> <span class="tk-o">=</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">load</span><span class="tk-p">(</span><span class="tk-n">CKPT</span><span class="tk-p">)</span>
-        <span class="tk-n">model</span><span class="tk-o">.</span><span class="tk-n">load_state_dict</span><span class="tk-p">(</span><span class="tk-n">state</span><span class="tk-p">[</span><span class="tk-s2">"model"</span><span class="tk-p">]);</span> <span class="tk-n">opt</span><span class="tk-o">.</span><span class="tk-n">load_state_dict</span><span class="tk-p">(</span><span class="tk-n">state</span><span class="tk-p">[</span><span class="tk-s2">"opt"</span><span class="tk-p">])</span>
-        <span class="tk-n">start_epoch</span> <span class="tk-o">=</span> <span class="tk-n">state</span><span class="tk-p">[</span><span class="tk-s2">"epoch"</span><span class="tk-p">]</span> <span class="tk-o">+</span> <span class="tk-mi">1</span>
-        <span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-sa">f</span><span class="tk-s2">"nạp checkpoint, train tiếp từ epoch </span><span class="tk-si">{</span><span class="tk-n">start_epoch</span><span class="tk-si">}</span><span class="tk-s2">"</span><span class="tk-p">)</span>
-    <span class="tk-k">for</span> <span class="tk-n">epoch</span> <span class="tk-ow">in</span> <span class="tk-nb">range</span><span class="tk-p">(</span><span class="tk-n">start_epoch</span><span class="tk-p">,</span> <span class="tk-n">n_epochs</span><span class="tk-p">):</span>
-        <span class="tk-n">loss</span> <span class="tk-o">=</span> <span class="tk-n">train_one_epoch</span><span class="tk-p">(</span><span class="tk-n">model</span><span class="tk-p">,</span> <span class="tk-n">opt</span><span class="tk-p">)</span>
-        <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">save</span><span class="tk-p">({</span><span class="tk-s2">"model"</span><span class="tk-p">:</span> <span class="tk-n">model</span><span class="tk-o">.</span><span class="tk-n">state_dict</span><span class="tk-p">(),</span> <span class="tk-s2">"opt"</span><span class="tk-p">:</span> <span class="tk-n">opt</span><span class="tk-o">.</span><span class="tk-n">state_dict</span><span class="tk-p">(),</span> <span class="tk-s2">"epoch"</span><span class="tk-p">:</span> <span class="tk-n">epoch</span><span class="tk-p">},</span> <span class="tk-n">CKPT</span><span class="tk-p">)</span>
-        <span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-sa">f</span><span class="tk-s2">"epoch </span><span class="tk-si">{</span><span class="tk-n">epoch</span><span class="tk-si">}</span><span class="tk-s2">: loss </span><span class="tk-si">{</span><span class="tk-n">loss</span><span class="tk-si">:</span><span class="tk-s2">.3f</span><span class="tk-si">}</span><span class="tk-s2">"</span><span class="tk-p">)</span>
-        <span class="tk-k">if</span> <span class="tk-n">stop_after</span> <span class="tk-ow">is</span> <span class="tk-ow">not</span> <span class="tk-kc">None</span> <span class="tk-ow">and</span> <span class="tk-n">epoch</span> <span class="tk-o">==</span> <span class="tk-n">stop_after</span><span class="tk-p">:</span>
-            <span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-s2">"... phiên Colab bị ngắt ..."</span><span class="tk-p">);</span> <span class="tk-k">return</span>
-
-<span class="tk-n">train</span><span class="tk-p">(</span><span class="tk-mi">6</span><span class="tk-p">,</span> <span class="tk-n">stop_after</span><span class="tk-o">=</span><span class="tk-mi">2</span><span class="tk-p">)</span>        <span class="tk-c1"># lần 1: bị ngắt sau epoch 2</span>
-<span class="tk-n">train</span><span class="tk-p">(</span><span class="tk-mi">6</span><span class="tk-p">)</span>                      <span class="tk-c1"># lần 2: chạy lại ô, tự train tiếp từ epoch 3</span>
-</code></pre></div>
-
-<div class="run" data-group="t" data-mode="static">
-<div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span><span class="run-note">đã chạy sẵn</span><a class="run-colab" href="https://colab.research.google.com/github/truonghuu344/ai-engineer-roadmap/blob/main/notebooks/ly-thuyet/p0-3.ipynb" target="_blank" rel="noopener">Mở trên Colab ↗</a></div>
-<pre class="run-out">epoch 0: loss 1.271&#10;epoch 1: loss 1.204&#10;epoch 2: loss 1.160&#10;... phiên Colab bị ngắt ...&#10;nạp checkpoint, train tiếp từ epoch 3&#10;epoch 3: loss 1.127&#10;epoch 4: loss 1.099&#10;epoch 5: loss 1.080</pre>
-</div>
-<p>Lưu cả trạng thái optimizer, không chỉ model: Adam có "bộ nhớ" riêng, thiếu nó thì train tiếp sẽ khác với train liền một mạch.</p>
-</div>
-<h3>VS Code và khi nào rời notebook</h3>
+<h2 id="lt-6">Xử lý ô trống</h2>
+<p>Ba lựa chọn, tùy ý nghĩa dữ liệu:</p>
 <table>
 <thead>
 <tr>
-<th>Dùng notebook khi</th>
-<th>Dùng file <code>.py</code> trong VS Code khi</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>khám phá dữ liệu, vẽ biểu đồ</td>
-<td>code được dùng lại nhiều lần (model, dataset, train loop)</td>
-</tr>
-<tr>
-<td>thử nhanh một ý tưởng</td>
-<td>cần test, cần chạy bằng lệnh trên máy chủ</td>
-</tr>
-<tr>
-<td>trình bày kết quả có hình</td>
-<td>làm việc nhóm, review qua pull request</td>
-</tr>
-</tbody>
-</table>
-<p>Cách làm phổ biến: notebook <code>import</code> các hàm từ thư mục <code>src/</code>, chỉ giữ phần khám phá và trình bày. Repo vừa gọn vừa chạy lại được.</p>
-<div class="keep">
-<p><strong>Ghi nhớ:</strong> trên Colab, mọi thứ không nằm trong Drive sẽ mất khi phiên kết thúc. Lưu checkpoint gồm model, optimizer và số epoch.</p>
-</div>
-<div class="box check">
-<div class="box-h">Tự kiểm tra nhanh</div>
-<p>Phiên Colab của bạn bị ngắt ở giữa epoch 18 của 30 epoch. Bạn lưu checkpoint vào Drive sau mỗi epoch theo đoạn code trên.</p>
-<div class="ans" id="p0-3-t-b303-a1">
-<div class="ans-fields"><label>start_epoch khi chạy lại<input inputmode="decimal" data-ans="17.0" data-tol="0.0" autocomplete="off"></label><label>Số epoch còn phải train<input inputmode="decimal" data-ans="13.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div>
-<div aria-live="polite" class="ans-fb"></div>
-</div>
-</div>
-<h2 id="lt-7">Tóm tắt bài và thuật ngữ</h2>
-<table>
-<thead>
-<tr>
-<th>Việc</th>
+<th>Cách</th>
 <th>Lệnh</th>
+<th>Khi nào</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>Xem đang ở đâu, có gì</td>
-<td><code>pwd</code>, <code>ls -lh</code></td>
+<td>Bỏ dòng</td>
+<td><code>df.dropna(subset=["price"])</code></td>
+<td>ít dòng thiếu, thiếu ngẫu nhiên</td>
 </tr>
 <tr>
-<td>Đọc log</td>
-<td><code>tail -f</code>, <code>grep</code>, <code>wc -l</code></td>
+<td>Điền giá trị</td>
+<td><code>df["price"].fillna(...)</code></td>
+<td>có giá trị hợp lý để điền (trung vị, giá trị của nhóm)</td>
 </tr>
 <tr>
-<td>Ghép lệnh</td>
-<td><code>cmd1 \| cmd2</code>, <code>&gt; file 2&gt;&amp;1</code></td>
+<td>Giữ và đánh dấu</td>
+<td><code>df["price_missing"] = df["price"].isna()</code></td>
+<td>việc thiếu tự nó mang thông tin</td>
+</tr>
+</tbody>
+</table>
+<p>Ở bảng ví dụ, cùng một sản phẩm thường cùng giá, nên điền theo <strong>trung vị của sản phẩm đó</strong> hợp lý hơn trung vị cả bảng:</p>
+<div class="hl"><pre><span></span><code><span class="tk-n">df</span><span class="tk-p">[</span><span class="tk-s2">"price"</span><span class="tk-p">]</span> <span class="tk-o">=</span> <span class="tk-n">df</span><span class="tk-p">[</span><span class="tk-s2">"price"</span><span class="tk-p">]</span><span class="tk-o">.</span><span class="tk-n">fillna</span><span class="tk-p">(</span><span class="tk-n">df</span><span class="tk-o">.</span><span class="tk-n">groupby</span><span class="tk-p">(</span><span class="tk-s2">"product"</span><span class="tk-p">)[</span><span class="tk-s2">"price"</span><span class="tk-p">]</span><span class="tk-o">.</span><span class="tk-n">transform</span><span class="tk-p">(</span><span class="tk-s2">"median"</span><span class="tk-p">))</span>
+<span class="tk-n">df</span><span class="tk-p">[</span><span class="tk-s2">"revenue"</span><span class="tk-p">]</span> <span class="tk-o">=</span> <span class="tk-n">df</span><span class="tk-p">[</span><span class="tk-s2">"qty"</span><span class="tk-p">]</span> <span class="tk-o">*</span> <span class="tk-n">df</span><span class="tk-p">[</span><span class="tk-s2">"price"</span><span class="tk-p">]</span>     <span class="tk-c1"># cột mới, tính trên cả cột (vector hóa)</span>
+<span class="tk-n">df</span>
+</code></pre></div>
+
+<div class="run" data-mode="py" data-group="t"><div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span></div><pre class="run-out">        date product  qty   price  revenue&#10;0 2026-01-03   Bàn A    2  1500.0   3000.0&#10;1 2026-01-15   Ghế B    1   400.0    400.0&#10;2 2026-02-02   Bàn A    1  1500.0   1500.0&#10;3 2026-02-20   Bàn A    3  1500.0   4500.0&#10;4 2026-02-21   Ghế B    2   450.0    900.0</pre></div>
+
+<p><code>transform("median")</code> tính trung vị theo nhóm nhưng trả về một cột <strong>cùng độ dài với bảng</strong> (mỗi dòng nhận trung vị của nhóm mình), nên ghép thẳng vào <code>fillna</code> được.</p>
+<h2 id="lt-7">groupby: tách nhóm, tính, gộp lại</h2>
+<p><code>groupby</code> là thao tác bạn dùng nhiều nhất khi phân tích. Nó làm ba việc: <strong>tách</strong> bảng thành các nhóm theo một cột, <strong>áp dụng</strong> một hàm cho từng nhóm, <strong>gộp</strong> kết quả thành bảng mới.</p>
+<figure class="fig"><img src="../assets/fig/p0-3-groupby.svg" alt="groupby(&quot;product&quot;)[&quot;revenue&quot;].sum(): tách theo sản phẩm, cộng từng nhóm, gộp thành bảng nhỏ." loading="lazy"><figcaption>groupby(&quot;product&quot;)[&quot;revenue&quot;].sum(): tách theo sản phẩm, cộng từng nhóm, gộp thành bảng nhỏ.</figcaption></figure>
+
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<div class="hl"><pre><span></span><code><span class="tk-n">df</span><span class="tk-o">.</span><span class="tk-n">groupby</span><span class="tk-p">(</span><span class="tk-s2">"product"</span><span class="tk-p">)[</span><span class="tk-s2">"revenue"</span><span class="tk-p">]</span><span class="tk-o">.</span><span class="tk-n">sum</span><span class="tk-p">()</span>
+<span class="tk-c1"># Bàn A    9000.0      ← 3000 + 1500 + 4500</span>
+<span class="tk-c1"># Ghế B    1300.0      ← 400 + 900</span>
+</code></pre></div>
+
+<div class="run" data-group="t" data-mode="py">
+<div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span></div>
+<pre class="run-out">product&#10;Bàn A    9000.0&#10;Ghế B    1300.0</pre>
+</div>
+<p>Nhiều phép tính một lúc, đặt tên cột kết quả:</p>
+<div class="hl"><pre><span></span><code><span class="tk-n">df</span><span class="tk-o">.</span><span class="tk-n">groupby</span><span class="tk-p">(</span><span class="tk-s2">"product"</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">agg</span><span class="tk-p">(</span>
+    <span class="tk-n">so_don</span><span class="tk-o">=</span><span class="tk-p">(</span><span class="tk-s2">"qty"</span><span class="tk-p">,</span> <span class="tk-s2">"size"</span><span class="tk-p">),</span>       <span class="tk-c1"># số dòng mỗi nhóm</span>
+    <span class="tk-n">tong_sl</span><span class="tk-o">=</span><span class="tk-p">(</span><span class="tk-s2">"qty"</span><span class="tk-p">,</span> <span class="tk-s2">"sum"</span><span class="tk-p">),</span>
+    <span class="tk-n">doanh_thu</span><span class="tk-o">=</span><span class="tk-p">(</span><span class="tk-s2">"revenue"</span><span class="tk-p">,</span> <span class="tk-s2">"sum"</span><span class="tk-p">),</span>
+<span class="tk-p">)</span>
+</code></pre></div>
+
+<div class="run" data-group="t" data-mode="py">
+<div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span></div>
+<pre class="run-out">         so_don  tong_sl  doanh_thu&#10;product                            &#10;Bàn A         3        6     9000.0&#10;Ghế B         2        3     1300.0</pre>
+</div>
+<p>Theo tháng: nhóm theo một biểu thức thay vì một cột có sẵn.</p>
+<div class="hl"><pre><span></span><code><span class="tk-n">df</span><span class="tk-o">.</span><span class="tk-n">groupby</span><span class="tk-p">(</span><span class="tk-n">df</span><span class="tk-p">[</span><span class="tk-s2">"date"</span><span class="tk-p">]</span><span class="tk-o">.</span><span class="tk-n">dt</span><span class="tk-o">.</span><span class="tk-n">to_period</span><span class="tk-p">(</span><span class="tk-s2">"M"</span><span class="tk-p">))[</span><span class="tk-s2">"revenue"</span><span class="tk-p">]</span><span class="tk-o">.</span><span class="tk-n">sum</span><span class="tk-p">()</span>
+<span class="tk-c1"># 2026-01    3400.0</span>
+<span class="tk-c1"># 2026-02    6900.0</span>
+</code></pre></div>
+
+<div class="run" data-group="t" data-mode="py">
+<div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span></div>
+<pre class="run-out">date&#10;2026-01    3400.0&#10;2026-02    6900.0&#10;Freq: M</pre>
+</div>
+</div>
+<p><code>pivot_table</code> là groupby theo hai chiều, cho ra bảng chéo như Excel:</p>
+<div class="hl"><pre><span></span><code><span class="tk-n">df</span><span class="tk-o">.</span><span class="tk-n">pivot_table</span><span class="tk-p">(</span><span class="tk-n">index</span><span class="tk-o">=</span><span class="tk-n">df</span><span class="tk-p">[</span><span class="tk-s2">"date"</span><span class="tk-p">]</span><span class="tk-o">.</span><span class="tk-n">dt</span><span class="tk-o">.</span><span class="tk-n">month</span><span class="tk-p">,</span> <span class="tk-n">columns</span><span class="tk-o">=</span><span class="tk-s2">"product"</span><span class="tk-p">,</span>
+               <span class="tk-n">values</span><span class="tk-o">=</span><span class="tk-s2">"revenue"</span><span class="tk-p">,</span> <span class="tk-n">aggfunc</span><span class="tk-o">=</span><span class="tk-s2">"sum"</span><span class="tk-p">,</span> <span class="tk-n">fill_value</span><span class="tk-o">=</span><span class="tk-mi">0</span><span class="tk-p">)</span>
+</code></pre></div>
+
+<div class="run" data-mode="py" data-group="t"><div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span></div><pre class="run-out">product   Bàn A  Ghế B&#10;date                  &#10;1        3000.0  400.0&#10;2        6000.0  900.0</pre></div>
+
+<details class="fold deep">
+<summary>Đào sâu thêm</summary>
+<p><strong>groupby trả về bảng có index là nhóm.</strong> Kết quả <code>df.groupby("product")["revenue"].sum()</code> có index là tên sản phẩm. Muốn đưa nhóm trở lại thành cột thường (để merge hay lưu CSV), thêm <code>.reset_index()</code>, hoặc viết <code>df.groupby("product", as_index=False)</code>. Nhóm theo nhiều cột (<code>groupby(["month", "product"])</code>) cho index nhiều tầng (MultiIndex); <code>.unstack()</code> biến tầng trong thành cột, ra đúng bảng như <code>pivot_table</code>.</p>
+</details>
+<h2 id="lt-8">Nối bảng: merge và concat</h2>
+<p><code>merge</code> nối <strong>ngang</strong> theo cột khóa, như SQL JOIN:</p>
+<div class="hl"><pre><span></span><code><span class="tk-n">products</span> <span class="tk-o">=</span> <span class="tk-n">pd</span><span class="tk-o">.</span><span class="tk-n">DataFrame</span><span class="tk-p">({</span><span class="tk-s2">"product"</span><span class="tk-p">:</span> <span class="tk-p">[</span><span class="tk-s2">"Bàn A"</span><span class="tk-p">,</span> <span class="tk-s2">"Ghế B"</span><span class="tk-p">],</span> <span class="tk-s2">"category"</span><span class="tk-p">:</span> <span class="tk-p">[</span><span class="tk-s2">"Bàn"</span><span class="tk-p">,</span> <span class="tk-s2">"Ghế"</span><span class="tk-p">]})</span>
+<span class="tk-n">full</span> <span class="tk-o">=</span> <span class="tk-n">df</span><span class="tk-o">.</span><span class="tk-n">merge</span><span class="tk-p">(</span><span class="tk-n">products</span><span class="tk-p">,</span> <span class="tk-n">on</span><span class="tk-o">=</span><span class="tk-s2">"product"</span><span class="tk-p">,</span> <span class="tk-n">how</span><span class="tk-o">=</span><span class="tk-s2">"left"</span><span class="tk-p">)</span>   <span class="tk-c1"># thêm cột category vào mỗi đơn</span>
+<span class="tk-n">full</span><span class="tk-p">[[</span><span class="tk-s2">"date"</span><span class="tk-p">,</span> <span class="tk-s2">"product"</span><span class="tk-p">,</span> <span class="tk-s2">"category"</span><span class="tk-p">]]</span>
+</code></pre></div>
+
+<div class="run" data-mode="py" data-group="t"><div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span></div><pre class="run-out">        date product category&#10;0 2026-01-03   Bàn A      Bàn&#10;1 2026-01-15   Ghế B      Ghế&#10;2 2026-02-02   Bàn A      Bàn&#10;3 2026-02-20   Bàn A      Bàn&#10;4 2026-02-21   Ghế B      Ghế</pre></div>
+
+<p><code>how</code> quyết định giữ dòng nào: <code>"left"</code> giữ mọi dòng bảng trái (hay dùng nhất), <code>"inner"</code> chỉ giữ dòng khớp ở cả hai bảng, <code>"outer"</code> giữ hết.</p>
+<figure class="fig"><img src="../assets/fig/p0-3-merge.svg" alt="left giữ mọi đơn, đơn của sản phẩm không có trong bảng phải nhận NaN; inner chỉ giữ đơn khớp được." loading="lazy"><figcaption>left giữ mọi đơn, đơn của sản phẩm không có trong bảng phải nhận NaN; inner chỉ giữ đơn khớp được.</figcaption></figure>
+
+<p><code>concat</code> nối <strong>dọc</strong>, ví dụ gộp file của từng tháng thành một bảng:</p>
+<div class="hl"><pre><span></span><code><span class="tk-n">jan</span> <span class="tk-o">=</span> <span class="tk-n">df</span><span class="tk-p">[</span><span class="tk-n">df</span><span class="tk-p">[</span><span class="tk-s2">"date"</span><span class="tk-p">]</span><span class="tk-o">.</span><span class="tk-n">dt</span><span class="tk-o">.</span><span class="tk-n">month</span> <span class="tk-o">==</span> <span class="tk-mi">1</span><span class="tk-p">]</span>
+<span class="tk-n">feb</span> <span class="tk-o">=</span> <span class="tk-n">df</span><span class="tk-p">[</span><span class="tk-n">df</span><span class="tk-p">[</span><span class="tk-s2">"date"</span><span class="tk-p">]</span><span class="tk-o">.</span><span class="tk-n">dt</span><span class="tk-o">.</span><span class="tk-n">month</span> <span class="tk-o">==</span> <span class="tk-mi">2</span><span class="tk-p">]</span>
+<span class="tk-n">pd</span><span class="tk-o">.</span><span class="tk-n">concat</span><span class="tk-p">([</span><span class="tk-n">jan</span><span class="tk-p">,</span> <span class="tk-n">feb</span><span class="tk-p">],</span> <span class="tk-n">ignore_index</span><span class="tk-o">=</span><span class="tk-kc">True</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">shape</span>    <span class="tk-c1"># (5, 5): lại đủ 5 đơn</span>
+</code></pre></div>
+
+<div class="run" data-mode="py" data-group="t"><div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span></div><pre class="run-out">(5, 5)</pre></div>
+
+<div class="box pitfall">
+<div class="box-h">Lỗi hay gặp</div>
+<p><strong>Khóa bị trùng ở bảng phải làm số dòng tăng.</strong> Nếu bảng phải có 2 dòng cho "Bàn A" (ví dụ hai màu), mỗi đơn "Bàn A" bị nhân đôi:</p>
+<div class="hl"><pre><span></span><code><span class="tk-n">dup</span> <span class="tk-o">=</span> <span class="tk-n">pd</span><span class="tk-o">.</span><span class="tk-n">DataFrame</span><span class="tk-p">({</span><span class="tk-s2">"product"</span><span class="tk-p">:</span> <span class="tk-p">[</span><span class="tk-s2">"Bàn A"</span><span class="tk-p">,</span> <span class="tk-s2">"Bàn A"</span><span class="tk-p">],</span> <span class="tk-s2">"color"</span><span class="tk-p">:</span> <span class="tk-p">[</span><span class="tk-s2">"trắng"</span><span class="tk-p">,</span> <span class="tk-s2">"đen"</span><span class="tk-p">]})</span>
+<span class="tk-nb">len</span><span class="tk-p">(</span><span class="tk-n">df</span><span class="tk-p">),</span> <span class="tk-nb">len</span><span class="tk-p">(</span><span class="tk-n">df</span><span class="tk-o">.</span><span class="tk-n">merge</span><span class="tk-p">(</span><span class="tk-n">dup</span><span class="tk-p">,</span> <span class="tk-n">on</span><span class="tk-o">=</span><span class="tk-s2">"product"</span><span class="tk-p">,</span> <span class="tk-n">how</span><span class="tk-o">=</span><span class="tk-s2">"left"</span><span class="tk-p">))</span>   <span class="tk-c1"># (5, 8)</span>
+</code></pre></div>
+
+<div class="run" data-group="t" data-mode="py">
+<div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span></div>
+<pre class="run-out">(5, 8)</pre>
+</div>
+<p>Doanh thu cộng lại sẽ bị đếm hai lần. Luôn so <code>len()</code> trước và sau khi merge, hoặc dùng <code>validate="many_to_one"</code> để pandas báo lỗi khi khóa bị trùng.</p>
+</div>
+<h2 id="lt-9">.str và .dt thay cho apply</h2>
+<p><code>df["x"].apply(f)</code> gọi hàm Python cho từng dòng, chậm như vòng <code>for</code>. Với phép toán số, dùng phép tính trên cả cột (<code>df["qty"] * df["price"]</code>). Với chữ, dùng các hàm <code>.str</code> (<code>.str.lower()</code>, <code>.str.contains("Bàn")</code>). Với ngày, dùng <code>.dt</code> (<code>.dt.month</code>, <code>.dt.dayofweek</code>). Chỉ dùng <code>apply</code> khi không có cách vector hóa.</p>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<p>Tạo đặc trưng từ cột ngày và cột chữ, không vòng lặp nào:</p>
+<div class="hl"><pre><span></span><code><span class="tk-n">df</span><span class="tk-p">[</span><span class="tk-s2">"month"</span><span class="tk-p">]</span> <span class="tk-o">=</span> <span class="tk-n">df</span><span class="tk-p">[</span><span class="tk-s2">"date"</span><span class="tk-p">]</span><span class="tk-o">.</span><span class="tk-n">dt</span><span class="tk-o">.</span><span class="tk-n">month</span>                     <span class="tk-c1"># [1, 1, 2, 2, 2]</span>
+<span class="tk-n">df</span><span class="tk-p">[</span><span class="tk-s2">"weekday"</span><span class="tk-p">]</span> <span class="tk-o">=</span> <span class="tk-n">df</span><span class="tk-p">[</span><span class="tk-s2">"date"</span><span class="tk-p">]</span><span class="tk-o">.</span><span class="tk-n">dt</span><span class="tk-o">.</span><span class="tk-n">dayofweek</span>               <span class="tk-c1"># 0 = thứ Hai, ..., 6 = Chủ nhật</span>
+<span class="tk-n">df</span><span class="tk-p">[</span><span class="tk-s2">"is_table"</span><span class="tk-p">]</span> <span class="tk-o">=</span> <span class="tk-n">df</span><span class="tk-p">[</span><span class="tk-s2">"product"</span><span class="tk-p">]</span><span class="tk-o">.</span><span class="tk-n">str</span><span class="tk-o">.</span><span class="tk-n">contains</span><span class="tk-p">(</span><span class="tk-s2">"Bàn"</span><span class="tk-p">)</span>    <span class="tk-c1"># True/False</span>
+<span class="tk-n">df</span><span class="tk-p">[</span><span class="tk-s2">"size"</span><span class="tk-p">]</span> <span class="tk-o">=</span> <span class="tk-n">pd</span><span class="tk-o">.</span><span class="tk-n">cut</span><span class="tk-p">(</span><span class="tk-n">df</span><span class="tk-p">[</span><span class="tk-s2">"revenue"</span><span class="tk-p">],</span> <span class="tk-n">bins</span><span class="tk-o">=</span><span class="tk-p">[</span><span class="tk-mi">0</span><span class="tk-p">,</span> <span class="tk-mi">1000</span><span class="tk-p">,</span> <span class="tk-mi">3000</span><span class="tk-p">,</span> <span class="tk-mi">10_000</span><span class="tk-p">],</span> <span class="tk-n">labels</span><span class="tk-o">=</span><span class="tk-p">[</span><span class="tk-s2">"nhỏ"</span><span class="tk-p">,</span> <span class="tk-s2">"vừa"</span><span class="tk-p">,</span> <span class="tk-s2">"lớn"</span><span class="tk-p">])</span>
+<span class="tk-n">df</span><span class="tk-p">[[</span><span class="tk-s2">"product"</span><span class="tk-p">,</span> <span class="tk-s2">"revenue"</span><span class="tk-p">,</span> <span class="tk-s2">"month"</span><span class="tk-p">,</span> <span class="tk-s2">"weekday"</span><span class="tk-p">,</span> <span class="tk-s2">"is_table"</span><span class="tk-p">,</span> <span class="tk-s2">"size"</span><span class="tk-p">]]</span>
+</code></pre></div>
+
+<div class="run" data-group="t" data-mode="py">
+<div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span></div>
+<pre class="run-out">  product  revenue  month  weekday  is_table size&#10;0   Bàn A   3000.0      1        5      True  vừa&#10;1   Ghế B    400.0      1        3     False  nhỏ&#10;2   Bàn A   1500.0      2        0      True  vừa&#10;3   Bàn A   4500.0      2        4      True  lớn&#10;4   Ghế B    900.0      2        5     False  nhỏ</pre>
+</div>
+<p><code>pd.cut</code> chia một cột số thành các khoảng có tên. Đây là bước <strong>feature engineering</strong>: biến dữ liệu thô thành các cột mà model dùng được. Ở P1 bạn sẽ thấy một cột tạo khéo thường giúp model nhiều hơn đổi sang model phức tạp hơn.</p>
+</div>
+<div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">numpy</span><span class="tk-w"> </span><span class="tk-k">as</span><span class="tk-w"> </span><span class="tk-nn">np</span><span class="tk-o">,</span><span class="tk-w"> </span><span class="tk-nn">time</span>
+<span class="tk-n">big</span> <span class="tk-o">=</span> <span class="tk-n">pd</span><span class="tk-o">.</span><span class="tk-n">DataFrame</span><span class="tk-p">({</span><span class="tk-s2">"qty"</span><span class="tk-p">:</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">random</span><span class="tk-o">.</span><span class="tk-n">default_rng</span><span class="tk-p">(</span><span class="tk-mi">0</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">integers</span><span class="tk-p">(</span><span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-mi">5</span><span class="tk-p">,</span> <span class="tk-mi">200_000</span><span class="tk-p">),</span> <span class="tk-s2">"price"</span><span class="tk-p">:</span> <span class="tk-mf">450.0</span><span class="tk-p">})</span>
+<span class="tk-n">t</span> <span class="tk-o">=</span> <span class="tk-n">time</span><span class="tk-o">.</span><span class="tk-n">time</span><span class="tk-p">();</span> <span class="tk-n">r1</span> <span class="tk-o">=</span> <span class="tk-n">big</span><span class="tk-o">.</span><span class="tk-n">apply</span><span class="tk-p">(</span><span class="tk-k">lambda</span> <span class="tk-n">row</span><span class="tk-p">:</span> <span class="tk-n">row</span><span class="tk-p">[</span><span class="tk-s2">"qty"</span><span class="tk-p">]</span> <span class="tk-o">*</span> <span class="tk-n">row</span><span class="tk-p">[</span><span class="tk-s2">"price"</span><span class="tk-p">],</span> <span class="tk-n">axis</span><span class="tk-o">=</span><span class="tk-mi">1</span><span class="tk-p">);</span> <span class="tk-n">t1</span> <span class="tk-o">=</span> <span class="tk-n">time</span><span class="tk-o">.</span><span class="tk-n">time</span><span class="tk-p">()</span> <span class="tk-o">-</span> <span class="tk-n">t</span>
+<span class="tk-n">t</span> <span class="tk-o">=</span> <span class="tk-n">time</span><span class="tk-o">.</span><span class="tk-n">time</span><span class="tk-p">();</span> <span class="tk-n">r2</span> <span class="tk-o">=</span> <span class="tk-n">big</span><span class="tk-p">[</span><span class="tk-s2">"qty"</span><span class="tk-p">]</span> <span class="tk-o">*</span> <span class="tk-n">big</span><span class="tk-p">[</span><span class="tk-s2">"price"</span><span class="tk-p">];</span> <span class="tk-n">t2</span> <span class="tk-o">=</span> <span class="tk-n">time</span><span class="tk-o">.</span><span class="tk-n">time</span><span class="tk-p">()</span> <span class="tk-o">-</span> <span class="tk-n">t</span>
+<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-sa">f</span><span class="tk-s2">"apply: </span><span class="tk-si">{</span><span class="tk-n">t1</span><span class="tk-si">:</span><span class="tk-s2">.2f</span><span class="tk-si">}</span><span class="tk-s2"> s, vector hóa: </span><span class="tk-si">{</span><span class="tk-n">t2</span><span class="tk-w"> </span><span class="tk-o">*</span><span class="tk-w"> </span><span class="tk-mi">1000</span><span class="tk-si">:</span><span class="tk-s2">.1f</span><span class="tk-si">}</span><span class="tk-s2"> ms, cùng kết quả: </span><span class="tk-si">{</span><span class="tk-n">r1</span><span class="tk-o">.</span><span class="tk-n">equals</span><span class="tk-p">(</span><span class="tk-n">r2</span><span class="tk-p">)</span><span class="tk-si">}</span><span class="tk-s2">"</span><span class="tk-p">)</span>
+</code></pre></div>
+
+<div class="run" data-mode="py" data-group="t"><div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span></div><pre class="run-out">apply: 0.82 s, vector hóa: 1.0 ms, cùng kết quả: True</pre></div>
+
+<h2 id="lt-10">Lưu kết quả</h2>
+<div class="hl"><pre><span></span><code><span class="tk-n">df</span><span class="tk-o">.</span><span class="tk-n">to_csv</span><span class="tk-p">(</span><span class="tk-s2">"orders_clean.csv"</span><span class="tk-p">,</span> <span class="tk-n">index</span><span class="tk-o">=</span><span class="tk-kc">False</span><span class="tk-p">)</span>       <span class="tk-c1"># index=False: không ghi cột số thứ tự</span>
+<span class="tk-n">pd</span><span class="tk-o">.</span><span class="tk-n">read_csv</span><span class="tk-p">(</span><span class="tk-s2">"orders_clean.csv"</span><span class="tk-p">,</span> <span class="tk-n">parse_dates</span><span class="tk-o">=</span><span class="tk-p">[</span><span class="tk-s2">"date"</span><span class="tk-p">])</span><span class="tk-o">.</span><span class="tk-n">shape</span>   <span class="tk-c1"># đọc lại đủ (5, 9)</span>
+</code></pre></div>
+
+<div class="run" data-mode="py" data-group="t"><div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span></div><pre class="run-out">(5, 9)</pre></div>
+
+<div class="box pitfall">
+<div class="box-h">Lỗi hay gặp</div>
+<p><strong>Quên <code>index=False</code>.</strong> Mặc định <code>to_csv</code> ghi cả index thành cột đầu. Đọc lại sẽ có thêm cột <code>Unnamed: 0</code>, mỗi lần lưu rồi đọc lại thêm một cột. Với bảng lớn, lưu dạng Parquet (<code>df.to_parquet(...)</code>) nhanh hơn, nhỏ hơn và giữ được kiểu từng cột.</p>
+</div>
+<div class="box check">
+<div class="box-h">Tự kiểm tra nhanh</div>
+<p>Từ bảng <code>df</code> đã làm sạch, đã điền giá và có cột <code>revenue</code> ở trên:</p>
+<div class="ans" id="p0-3-t-b220-a1">
+<div class="ans-fields"><label>Doanh thu tháng 2 của Bàn A<input inputmode="decimal" data-ans="6000.0" data-tol="0.0" autocomplete="off"></label><label>Số đơn có qty từ 2 trở lên<input inputmode="decimal" data-ans="3.0" data-tol="0.0" autocomplete="off"></label><label>Trung bình qty mỗi đơn của Ghế B<input inputmode="decimal" data-ans="1.5" data-tol="0.001" autocomplete="off"></label><label>Số dòng của df.merge(dup, on=&quot;product&quot;, how=&quot;inner&quot;)<input inputmode="decimal" data-ans="6.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div>
+<div aria-live="polite" class="ans-fb"></div>
+</div>
+</div>
+<h2 id="lt-11">Quy trình làm sạch và tổng hợp trong 6 bước</h2>
+<p>Gộp mọi thứ ở trên thành một quy trình bạn sẽ lặp lại ở mọi dự án:</p>
+<ol>
+<li><strong>Đọc và nhìn:</strong> <code>read_csv</code>, <code>head</code>, <code>info</code>, <code>describe</code>. Ghi lại số dòng, số cột, kiểu từng cột.</li>
+<li><strong>Kiểm tra chất lượng:</strong> ô trống (<code>isna().sum()</code>), dòng trùng (<code>duplicated().sum()</code>), giá trị viết lệch (<code>value_counts()</code>), giá trị vô lý (giá âm, ngày ở tương lai).</li>
+<li><strong>Làm sạch:</strong> sửa kiểu dữ liệu, chuẩn hóa chữ, xử lý ô trống có lý do, bỏ trùng. Ghi lại mỗi quyết định.</li>
+<li><strong>Tạo cột mới:</strong> doanh thu, tháng, thứ trong tuần, bằng phép tính vector hóa.</li>
+<li><strong>Tổng hợp:</strong> <code>groupby</code>, <code>pivot_table</code>, <code>merge</code> với bảng danh mục.</li>
+<li><strong>Vẽ và kết luận:</strong> mỗi biểu đồ trả lời một câu hỏi (P0.4), viết 3–5 câu có số liệu cụ thể ("Bàn A chiếm 87% doanh thu").</li>
+</ol>
+<div class="box check">
+<div class="box-h">Tự kiểm tra nhanh</div>
+<p>Bạn vừa đọc một file có 10.000 đơn hàng. <code>describe()</code> cho thấy cột <code>qty</code> có min là −3. Bước nào trong quy trình trên phát hiện vấn đề này, và bạn sẽ xử lý thế nào?</p>
+<details class="fold answer">
+<summary>Xem đáp án</summary>
+<p>Bước 2 (kiểm tra chất lượng). Số lượng âm có thể là <strong>đơn trả hàng</strong> chứ không hẳn là lỗi. Đếm có bao nhiêu dòng như vậy, xem chúng có cột trạng thái riêng không, rồi quyết định: tách riêng để tính tỉ lệ hoàn, hoặc loại khỏi phần tính doanh thu bán. Ghi quyết định vào notebook.</p>
+</details>
+</div>
+<h2 id="lt-12">Tóm tắt bài và thuật ngữ</h2>
+<table>
+<thead>
+<tr>
+<th>Chủ đề</th>
+<th>Điều cần nhớ</th>
+<th>Lệnh tiêu biểu</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Đọc và nhìn</td>
+<td>xem <code>dtypes</code> ngay sau khi đọc</td>
+<td><code>read_csv</code>, <code>info</code>, <code>value_counts</code></td>
 </tr>
 <tr>
-<td>Theo dõi GPU, ổ đĩa</td>
-<td><code>nvidia-smi</code>, <code>df -h</code>, <code>du -sh</code></td>
+<td>Làm sạch</td>
+<td>mỗi bước một dòng trên cả cột, ghi lại lý do</td>
+<td><code>drop_duplicates</code>, <code>.str.strip()</code>, <code>to_numeric</code>, <code>to_datetime</code></td>
 </tr>
 <tr>
-<td>Chạy lâu</td>
-<td><code>nohup ... &amp;</code>, <code>tmux</code></td>
+<td>Chọn dữ liệu</td>
+<td><code>loc</code> theo nhãn, <code>iloc</code> theo vị trí; ngoặc quanh từng điều kiện</td>
+<td><code>df.loc[(a) &amp; (b), cols]</code></td>
 </tr>
 <tr>
-<td>Lưu một phiên bản</td>
-<td><code>git add</code> → <code>git commit -m</code></td>
+<td>Ô trống</td>
+<td>bỏ, điền có lý do, hoặc đánh dấu</td>
+<td><code>fillna(groupby().transform())</code></td>
 </tr>
 <tr>
-<td>Thử nghiệm riêng</td>
-<td><code>git switch -c</code>, pull request</td>
+<td>Tổng hợp</td>
+<td>tách, áp dụng, gộp</td>
+<td><code>groupby().agg</code>, <code>pivot_table</code></td>
 </tr>
 <tr>
-<td>Không commit</td>
-<td>dữ liệu, checkpoint, <code>.venv</code>, <code>.env</code></td>
+<td>Nối bảng</td>
+<td>so <code>len()</code> trước và sau merge</td>
+<td><code>merge(how="left")</code>, <code>concat</code></td>
 </tr>
 <tr>
-<td>Colab</td>
-<td>mount Drive, kiểm tra GPU, lưu checkpoint đầy đủ</td>
+<td>Vector hóa</td>
+<td><code>.str</code>, <code>.dt</code>, phép trên cả cột thay cho <code>apply</code></td>
+<td><code>df["date"].dt.month</code></td>
 </tr>
 </tbody>
 </table>
@@ -508,172 +373,214 @@ python train.py --epochs 30
 </thead>
 <tbody>
 <tr>
-<td>terminal / shell</td>
-<td>cửa sổ gõ lệnh / chương trình hiểu lệnh (bash)</td>
+<td>DataFrame / Series</td>
+<td>bảng / một cột có nhãn của pandas</td>
 </tr>
 <tr>
-<td>path (absolute / relative)</td>
-<td>đường dẫn tuyệt đối từ <code>/</code> / tương đối từ thư mục hiện tại</td>
+<td>index</td>
+<td>nhãn của các dòng</td>
 </tr>
 <tr>
-<td>pipe</td>
-<td><code>\|</code>, nối đầu ra lệnh trước vào đầu vào lệnh sau</td>
+<td>dtype <code>object</code> / <code>str</code></td>
+<td>cột chứa chữ (hoặc trộn nhiều kiểu)</td>
 </tr>
 <tr>
-<td>stdout / stderr</td>
-<td>kênh đầu ra thường / kênh báo lỗi</td>
+<td>NaN</td>
+<td>ô trống (Not a Number)</td>
 </tr>
 <tr>
-<td>SSH</td>
-<td>đăng nhập máy chủ từ xa qua mạng</td>
+<td>duplicated</td>
+<td>dòng giống hệt một dòng khác</td>
 </tr>
 <tr>
-<td>repository (repo)</td>
-<td>thư mục dự án có lịch sử Git</td>
+<td>groupby</td>
+<td>tách nhóm, áp dụng hàm, gộp kết quả</td>
 </tr>
 <tr>
-<td>commit</td>
-<td>ảnh chụp dự án kèm lời nhắn</td>
+<td>pivot table</td>
+<td>bảng chéo: nhóm theo dòng và theo cột cùng lúc</td>
 </tr>
 <tr>
-<td>staging area</td>
-<td>vùng chọn thay đổi cho commit tiếp theo</td>
+<td>merge / join</td>
+<td>nối hai bảng theo cột khóa</td>
 </tr>
 <tr>
-<td>branch / merge</td>
-<td>nhánh phát triển riêng / gộp nhánh</td>
+<td>concat</td>
+<td>nối các bảng theo chiều dọc (hoặc ngang)</td>
 </tr>
 <tr>
-<td>pull request (PR)</td>
-<td>đề nghị gộp nhánh, kèm review</td>
-</tr>
-<tr>
-<td>remote / origin</td>
-<td>bản repo trên máy chủ (GitHub) / tên mặc định của nó</td>
-</tr>
-<tr>
-<td>conflict</td>
-<td>hai nhánh cùng sửa một chỗ, cần chọn tay</td>
-</tr>
-<tr>
-<td>.gitignore</td>
-<td>danh sách file Git bỏ qua</td>
-</tr>
-<tr>
-<td>runtime (Colab)</td>
-<td>máy ảo đang chạy notebook của bạn</td>
+<td>feature engineering</td>
+<td>tạo cột đặc trưng mới từ dữ liệu thô</td>
 </tr>
 </tbody>
-</table></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p0.3:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 2</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Đếm bằng pipe</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>File <code>train.log</code> có 6 dòng dưới đây. Mỗi lệnh in ra số mấy?</p>
-<ol>
-<li><code>cat train.log | grep ERROR | wc -l</code></li>
-<li><code>grep -c epoch train.log</code></li>
-<li><code>grep -v ERROR train.log | wc -l</code></li>
-</ol>
-<p>Nội dung file:</p>
-<div class="hl"><pre><span></span><code>epoch 1 loss 2.10
-ERROR cuda out of memory
-epoch 2 loss 1.80
-WARNING lr too high
-ERROR nan loss
-epoch 3 loss 1.75
-</code></pre></div>
-
-<div class="ans" id="p0-3-e1-a1"><div class="ans-fields"><label>Lệnh 1: đếm dòng ERROR<input inputmode="decimal" data-ans="2.0" data-tol="0.0" autocomplete="off"></label><label>Lệnh 2: grep -c epoch<input inputmode="decimal" data-ans="3.0" data-tol="0.0" autocomplete="off"></label><label>Lệnh 3: grep -v ERROR, đếm dòng<input inputmode="decimal" data-ans="4.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+</table></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p0.3:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 3</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>groupby bằng tay</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Bảng đơn hàng (giá tính bằng nghìn đồng):</p>
+<table>
+<thead>
+<tr>
+<th>tháng</th>
+<th>sản phẩm</th>
+<th>số lượng</th>
+<th>giá</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>bàn trang điểm</td>
+<td>2</td>
+<td>1500</td>
+</tr>
+<tr>
+<td>1</td>
+<td>gương</td>
+<td>1</td>
+<td>300</td>
+</tr>
+<tr>
+<td>2</td>
+<td>gương</td>
+<td>3</td>
+<td>300</td>
+</tr>
+<tr>
+<td>2</td>
+<td>bàn trang điểm</td>
+<td>1</td>
+<td>1500</td>
+</tr>
+</tbody>
+</table>
+<div class="ans" id="p0-3-e1-a1"><div class="ans-fields"><label>Doanh thu tháng 1<input inputmode="decimal" data-ans="3300.0" data-tol="0.0" autocomplete="off"></label><label>Doanh thu tháng 2<input inputmode="decimal" data-ans="2400.0" data-tol="0.0" autocomplete="off"></label><label>Tổng số gương bán ra<input inputmode="decimal" data-ans="4.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
 
 <details class="fold solution">
 <summary>Lời giải</summary>
-<p><code>grep ERROR</code> giữ 2 dòng chứa ERROR, <code>wc -l</code> đếm số dòng. <code>grep -c</code> đếm trực tiếp số dòng khớp. <code>grep -v</code> lấy các dòng <strong>không</strong> khớp: 6 − 2 = 4.</p>
-</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 2</span><h3>Cái gì vào commit</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Bạn sửa <code>model.py</code>, <code>train.py</code>, tạo file mới <code>utils.py</code>, rồi chạy:</p>
-<div class="hl"><pre><span></span><code>git<span class="tk-w"> </span>add<span class="tk-w"> </span>model.py<span class="tk-w"> </span>utils.py
-git<span class="tk-w"> </span>commit<span class="tk-w"> </span>-m<span class="tk-w"> </span><span class="tk-s2">"Tách hàm tiện ích"</span>
-</code></pre></div>
+<p><code>df["revenue"] = qty * price</code> rồi <code>groupby("tháng")["revenue"].sum()</code>: tháng 1 là 3000 + 300 = 3300, tháng 2 là 900 + 1500 = 2400. <code>groupby("sản phẩm")["số lượng"].sum()</code> cho gương: 1 + 3 = 4.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 2</span><h3>Đếm dòng sau merge</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Bảng <code>orders</code> có 4 đơn với sản phẩm lần lượt là A, A, B, C. Bảng <code>colors</code> có 3 dòng: (A, trắng), (A, đen), (B, gỗ). Không có dòng nào cho C.</p>
+<div class="ans" id="p0-3-e2-a1"><div class="ans-fields"><label>Số dòng của orders.merge(colors, on=&quot;product&quot;, how=&quot;left&quot;)<input inputmode="decimal" data-ans="6.0" data-tol="0.0" autocomplete="off"></label><label>Số dòng với how=&quot;inner&quot;<input inputmode="decimal" data-ans="5.0" data-tol="0.0" autocomplete="off"></label><label>Số ô NaN ở cột color khi how=&quot;left&quot;<input inputmode="decimal" data-ans="1.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
 
-<div class="ans" id="p0-3-e2-a1"><div class="ans-fields"><label>Số file trong commit<input inputmode="decimal" data-ans="2.0" data-tol="0.0" autocomplete="off"></label><label>Số file còn &quot;modified&quot; chưa stage<input inputmode="decimal" data-ans="1.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
-
-<details class="fold solution">
-<summary>Lời giải</summary>
-<p>Chỉ những gì đã <code>git add</code> mới vào commit: <code>model.py</code> và <code>utils.py</code>. <code>train.py</code> vẫn ở trạng thái modified. Đây là lý do nên chạy <code>git status</code> trước mỗi commit.</p>
-</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 3</span><h3>Viết .gitignore</h3><span class="ex-tag concept">khái niệm</span></div><div class="prose"><p>Dự án có các thư mục: <code>.venv/</code>, <code>data/raw/</code> (8 GB ảnh), <code>notebooks/</code>, <code>src/</code>, <code>checkpoints/</code> (file <code>.pt</code>), <code>wandb/</code>, và file <code>.env</code> chứa <code>OPENAI_API_KEY</code>. Viết <code>.gitignore</code> và giải thích dòng nào quan trọng nhất.</p>
-<details class="fold solution">
-<summary>Lời giải</summary>
-<div class="hl"><pre><span></span><code>.venv/
-data/
-checkpoints/
-*.pt
-wandb/
-.env
-__pycache__/
-.ipynb_checkpoints/
-</code></pre></div>
-
-<p>Quan trọng nhất là <code>.env</code>: lộ khóa API gây mất tiền ngay. Sau đó là <code>data/</code> và <code>checkpoints/</code> vì vượt giới hạn dung lượng của GitHub. <code>notebooks/</code> và <code>src/</code> phải được commit.</p>
-</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 4</span><h3>Năm file lớn nhất</h3><span class="ex-tag code">code</span></div><div class="prose"><p>Viết một dòng lệnh terminal in ra 5 file lớn nhất trong thư mục hiện tại và các thư mục con, kèm dung lượng dễ đọc.</p>
 <details class="fold hint">
 <summary>Gợi ý</summary>
-<p><code>du -ah .</code> liệt kê dung lượng, <code>sort -rh</code> sắp xếp giảm dần theo dạng dễ đọc, <code>head -5</code> lấy 5 dòng đầu.</p>
+<p>Mỗi đơn A khớp với 2 dòng màu nên thành 2 dòng. Với <code>left</code>, đơn C không khớp gì vẫn được giữ, cột màu để trống.</p>
+</details>
+<details class="fold solution">
+<summary>Lời giải</summary>
+<p><code>left</code>: mỗi đơn A thành 2 dòng (4 dòng), đơn B một dòng, đơn C giữ lại với màu NaN: 6 dòng. <code>inner</code> bỏ đơn C: 5 dòng. Đây đúng là tình huống "khóa trùng ở bảng phải": nếu cộng doanh thu sau merge, đơn A bị đếm hai lần.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 3</span><h3>Làm sạch tên sản phẩm</h3><span class="ex-tag code">code</span></div><div class="prose"><p>Cột tên sản phẩm nhập tay có đủ kiểu viết. Làm sạch để <code>value_counts()</code> cho đúng hai sản phẩm, rồi đếm số dòng thiếu tên.</p>
+<div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">pandas</span><span class="tk-w"> </span><span class="tk-k">as</span><span class="tk-w"> </span><span class="tk-nn">pd</span>
+<span class="tk-n">names</span> <span class="tk-o">=</span> <span class="tk-n">pd</span><span class="tk-o">.</span><span class="tk-n">Series</span><span class="tk-p">([</span><span class="tk-s2">" Bàn A"</span><span class="tk-p">,</span> <span class="tk-s2">"bàn a"</span><span class="tk-p">,</span> <span class="tk-s2">"BÀN A "</span><span class="tk-p">,</span> <span class="tk-s2">"Ghế B"</span><span class="tk-p">,</span> <span class="tk-s2">"ghế  b"</span><span class="tk-p">,</span> <span class="tk-kc">None</span><span class="tk-p">])</span>
+</code></pre></div>
+
+<div class="run" data-mode="py" data-group="e3"><div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span></div><pre class="run-out run-empty">(chạy xong, không in ra gì)</pre></div>
+
+<details class="fold hint">
+<summary>Gợi ý</summary>
+<p><code>.str.strip()</code> bỏ khoảng trắng hai đầu, <code>.str.split().str.join(" ")</code> gộp nhiều khoảng trắng giữa các từ thành một, <code>.str.title()</code> viết hoa chữ đầu mỗi từ. Ô <code>None</code> đi qua các hàm <code>.str</code> vẫn là NaN.</p>
 </details>
 <details class="fold code">
 <summary>Code tham khảo</summary>
-<div class="hl"><pre><span></span><code>du<span class="tk-w"> </span>-ah<span class="tk-w"> </span>.<span class="tk-w"> </span><span class="tk-m">2</span>&gt;/dev/null<span class="tk-w"> </span><span class="tk-p">|</span><span class="tk-w"> </span>sort<span class="tk-w"> </span>-rh<span class="tk-w"> </span><span class="tk-p">|</span><span class="tk-w"> </span>head<span class="tk-w"> </span>-5
-<span class="tk-c1"># hoặc chỉ lấy file, bỏ thư mục:</span>
-find<span class="tk-w"> </span>.<span class="tk-w"> </span>-type<span class="tk-w"> </span>f<span class="tk-w"> </span>-exec<span class="tk-w"> </span>du<span class="tk-w"> </span>-h<span class="tk-w"> </span><span class="tk-o">{}</span><span class="tk-w"> </span>+<span class="tk-w"> </span><span class="tk-m">2</span>&gt;/dev/null<span class="tk-w"> </span><span class="tk-p">|</span><span class="tk-w"> </span>sort<span class="tk-w"> </span>-rh<span class="tk-w"> </span><span class="tk-p">|</span><span class="tk-w"> </span>head<span class="tk-w"> </span>-5
+<div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">pandas</span><span class="tk-w"> </span><span class="tk-k">as</span><span class="tk-w"> </span><span class="tk-nn">pd</span>
+<span class="tk-n">names</span> <span class="tk-o">=</span> <span class="tk-n">pd</span><span class="tk-o">.</span><span class="tk-n">Series</span><span class="tk-p">([</span><span class="tk-s2">" Bàn A"</span><span class="tk-p">,</span> <span class="tk-s2">"bàn a"</span><span class="tk-p">,</span> <span class="tk-s2">"BÀN A "</span><span class="tk-p">,</span> <span class="tk-s2">"Ghế B"</span><span class="tk-p">,</span> <span class="tk-s2">"ghế  b"</span><span class="tk-p">,</span> <span class="tk-kc">None</span><span class="tk-p">])</span>
+<span class="tk-n">clean</span> <span class="tk-o">=</span> <span class="tk-n">names</span><span class="tk-o">.</span><span class="tk-n">str</span><span class="tk-o">.</span><span class="tk-n">strip</span><span class="tk-p">()</span><span class="tk-o">.</span><span class="tk-n">str</span><span class="tk-o">.</span><span class="tk-n">split</span><span class="tk-p">()</span><span class="tk-o">.</span><span class="tk-n">str</span><span class="tk-o">.</span><span class="tk-n">join</span><span class="tk-p">(</span><span class="tk-s2">" "</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">str</span><span class="tk-o">.</span><span class="tk-n">title</span><span class="tk-p">()</span>
+<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-n">clean</span><span class="tk-o">.</span><span class="tk-n">value_counts</span><span class="tk-p">())</span>
+<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-s2">"thiếu tên:"</span><span class="tk-p">,</span> <span class="tk-n">clean</span><span class="tk-o">.</span><span class="tk-n">isna</span><span class="tk-p">()</span><span class="tk-o">.</span><span class="tk-n">sum</span><span class="tk-p">())</span>
 </code></pre></div>
 
-</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 5</span><h3>Colab bị ngắt giữa chừng</h3><span class="ex-tag concept">khái niệm</span></div><div class="prose"><p>Bạn train 3 giờ trên Colab, checkpoint lưu ở <code>/content/checkpoints/</code>. Tới giờ thứ 2 phiên bị ngắt. Cái gì bị mất? Sửa quy trình thế nào để lần sau chỉ mất tối đa vài phút?</p>
-<details class="fold solution">
-<summary>Lời giải</summary>
-<p>Mất toàn bộ: <code>/content</code> bị xóa khi phiên kết thúc, gồm checkpoint, dữ liệu đã tải và thư viện đã cài. Cách sửa: mount Drive và lưu checkpoint vào <code>/content/drive/MyDrive/...</code> sau mỗi epoch (hoặc mỗi N bước). Lưu đủ model, optimizer, scheduler, epoch như Lab 1. Thêm cờ <code>RESUME</code> để nạp checkpoint cuối khi chạy lại.</p>
-</details></div></article><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p0.3:b">Tôi đã xong phần bài tập</label><button class="btn" type="button" data-goto="thuc-hanh">Sang thực hành <span class="arr">→</span></button></div></section><section class="panel" id="thuc-hanh" role="tabpanel" hidden><div class="prose"><h2>Repo ai-engineer-labs</h2>
-<p>Tạo repo chứa toàn bộ lab trong lộ trình. Đây là trang đầu tiên nhà tuyển dụng thấy trên GitHub của bạn.</p>
+<div class="run" data-group="e3" data-mode="py">
+<div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span></div>
+<pre class="run-out">Bàn A    3&#10;Ghế B    2&#10;Name: count, dtype: int64&#10;thiếu tên: 1</pre>
+</div>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 4</span><h3>Doanh thu theo tháng và tỉ lệ hoàn</h3><span class="ex-tag code">code</span></div><div class="prose"><p>Với bảng dưới (giá nghìn đồng), tính: (1) doanh thu mỗi tháng, <strong>không tính đơn bị hoàn</strong>; (2) tỉ lệ hoàn của từng sản phẩm, sắp giảm dần.</p>
+<div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">pandas</span><span class="tk-w"> </span><span class="tk-k">as</span><span class="tk-w"> </span><span class="tk-nn">pd</span>
+<span class="tk-n">orders</span> <span class="tk-o">=</span> <span class="tk-n">pd</span><span class="tk-o">.</span><span class="tk-n">DataFrame</span><span class="tk-p">({</span>
+    <span class="tk-s2">"date"</span><span class="tk-p">:</span> <span class="tk-n">pd</span><span class="tk-o">.</span><span class="tk-n">to_datetime</span><span class="tk-p">([</span><span class="tk-s2">"2026-03-02"</span><span class="tk-p">,</span> <span class="tk-s2">"2026-03-15"</span><span class="tk-p">,</span> <span class="tk-s2">"2026-03-20"</span><span class="tk-p">,</span> <span class="tk-s2">"2026-04-01"</span><span class="tk-p">,</span> <span class="tk-s2">"2026-04-09"</span><span class="tk-p">,</span> <span class="tk-s2">"2026-04-28"</span><span class="tk-p">]),</span>
+    <span class="tk-s2">"product"</span><span class="tk-p">:</span> <span class="tk-p">[</span><span class="tk-s2">"Bàn A"</span><span class="tk-p">,</span> <span class="tk-s2">"Gương"</span><span class="tk-p">,</span> <span class="tk-s2">"Gương"</span><span class="tk-p">,</span> <span class="tk-s2">"Bàn A"</span><span class="tk-p">,</span> <span class="tk-s2">"Gương"</span><span class="tk-p">,</span> <span class="tk-s2">"Bàn A"</span><span class="tk-p">],</span>
+    <span class="tk-s2">"qty"</span><span class="tk-p">:</span> <span class="tk-p">[</span><span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-mi">2</span><span class="tk-p">,</span> <span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-mi">2</span><span class="tk-p">,</span> <span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-mi">1</span><span class="tk-p">],</span>
+    <span class="tk-s2">"price"</span><span class="tk-p">:</span> <span class="tk-p">[</span><span class="tk-mi">1500</span><span class="tk-p">,</span> <span class="tk-mi">300</span><span class="tk-p">,</span> <span class="tk-mi">300</span><span class="tk-p">,</span> <span class="tk-mi">1500</span><span class="tk-p">,</span> <span class="tk-mi">300</span><span class="tk-p">,</span> <span class="tk-mi">1500</span><span class="tk-p">],</span>
+    <span class="tk-s2">"returned"</span><span class="tk-p">:</span> <span class="tk-p">[</span><span class="tk-kc">False</span><span class="tk-p">,</span> <span class="tk-kc">True</span><span class="tk-p">,</span> <span class="tk-kc">False</span><span class="tk-p">,</span> <span class="tk-kc">False</span><span class="tk-p">,</span> <span class="tk-kc">False</span><span class="tk-p">,</span> <span class="tk-kc">True</span><span class="tk-p">],</span>
+<span class="tk-p">})</span>
+</code></pre></div>
+
+<div class="run" data-mode="py" data-group="e4"><div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span></div><pre class="run-out run-empty">(chạy xong, không in ra gì)</pre></div>
+
+<div class="ans" id="p0-3-e4-a1"><div class="ans-fields"><label>Doanh thu tháng 3 không tính đơn hoàn<input inputmode="decimal" data-ans="1800.0" data-tol="0.0" autocomplete="off"></label><label>Tỉ lệ hoàn của Gương<input inputmode="decimal" data-ans="0.333" data-tol="0.001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+
+<details class="fold hint">
+<summary>Gợi ý</summary>
+<p>Lọc <code>~orders["returned"]</code> trước rồi mới groupby theo tháng. Cột <code>True/False</code> có trung bình chính là tỉ lệ <code>True</code>.</p>
+</details>
+<details class="fold code">
+<summary>Code tham khảo</summary>
+<div class="hl"><pre><span></span><code><span class="tk-n">orders</span><span class="tk-p">[</span><span class="tk-s2">"revenue"</span><span class="tk-p">]</span> <span class="tk-o">=</span> <span class="tk-n">orders</span><span class="tk-p">[</span><span class="tk-s2">"qty"</span><span class="tk-p">]</span> <span class="tk-o">*</span> <span class="tk-n">orders</span><span class="tk-p">[</span><span class="tk-s2">"price"</span><span class="tk-p">]</span>
+<span class="tk-n">sold</span> <span class="tk-o">=</span> <span class="tk-n">orders</span><span class="tk-p">[</span><span class="tk-o">~</span><span class="tk-n">orders</span><span class="tk-p">[</span><span class="tk-s2">"returned"</span><span class="tk-p">]]</span>
+<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-n">sold</span><span class="tk-o">.</span><span class="tk-n">groupby</span><span class="tk-p">(</span><span class="tk-n">sold</span><span class="tk-p">[</span><span class="tk-s2">"date"</span><span class="tk-p">]</span><span class="tk-o">.</span><span class="tk-n">dt</span><span class="tk-o">.</span><span class="tk-n">to_period</span><span class="tk-p">(</span><span class="tk-s2">"M"</span><span class="tk-p">))[</span><span class="tk-s2">"revenue"</span><span class="tk-p">]</span><span class="tk-o">.</span><span class="tk-n">sum</span><span class="tk-p">())</span>
+<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-n">orders</span><span class="tk-o">.</span><span class="tk-n">groupby</span><span class="tk-p">(</span><span class="tk-s2">"product"</span><span class="tk-p">)[</span><span class="tk-s2">"returned"</span><span class="tk-p">]</span><span class="tk-o">.</span><span class="tk-n">mean</span><span class="tk-p">()</span><span class="tk-o">.</span><span class="tk-n">sort_values</span><span class="tk-p">(</span><span class="tk-n">ascending</span><span class="tk-o">=</span><span class="tk-kc">False</span><span class="tk-p">))</span>
+</code></pre></div>
+
+<div class="run" data-group="e4" data-mode="py">
+<div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span></div>
+<pre class="run-out">date&#10;2026-03    1800&#10;2026-04    3300&#10;Freq: M, Name: revenue, dtype: int64&#10;product&#10;Bàn A    0.333333&#10;Gương    0.333333&#10;Name: returned, dtype: float64</pre>
+</div>
+</details></div></article><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p0.3:b">Tôi đã xong phần bài tập</label><button class="btn" type="button" data-goto="thuc-hanh">Sang thực hành <span class="arr">→</span></button></div></section><section class="panel" id="thuc-hanh" role="tabpanel" hidden><div class="prose"><h2>Làm sạch và tổng hợp dữ liệu bán hàng</h2>
+<p>Bạn viết phần pandas của một notebook phân tích hoàn chỉnh; phần biểu đồ làm tiếp ở P0.4 trên cùng bảng. Dùng dữ liệu đơn hàng thật của bạn (ví dụ xuất từ kênh người bán), hoặc tạo dữ liệu giả bằng đoạn code dưới. Dữ liệu giả cố ý có ô trống, dòng trùng và tên viết lệch.</p>
 <p><strong>Các bước</strong></p>
 <ol>
-<li>Tạo repo <code>ai-engineer-labs</code> trên GitHub (public, có README), clone về máy.</li>
-<li>Tạo cấu trúc:</li>
+<li>Nạp dữ liệu, xem <code>info()</code>, <code>describe()</code>, đếm ô trống, dòng trùng, và <code>value_counts()</code> cột sản phẩm.</li>
+<li>Làm sạch: bỏ dòng trùng, chuẩn hóa tên sản phẩm, bỏ dòng thiếu giá (ghi lý do), đổi cột ngày sang <code>datetime</code>.</li>
+<li>Tạo cột <code>revenue</code>, <code>month</code>, <code>weekday</code>.</li>
+<li>Tính doanh thu theo tháng (không tính đơn hoàn), 5 sản phẩm bán chạy nhất theo số lượng, tỉ lệ hoàn theo sản phẩm.</li>
+<li>Lưu bảng sạch ra <code>orders_clean.csv</code> để dùng ở P0.4.</li>
 </ol>
-<div class="hl"><pre><span></span><code>ai-engineer-labs/
-├── README.md
-├── .gitignore
-├── requirements.txt
-├── lab00-python-ml/
-├── lab01-training-loop/
-└── utils/
-    └── __init__.py
-</code></pre></div>
-
-<ol start="3">
-<li>Commit lần đầu trên <code>main</code>.</li>
-<li>Tạo branch <code>add-lab00</code>, thêm notebook phân tích dữ liệu từ bài P0.1 vào <code>lab00-python-ml/</code> cùng một README ngắn (mục tiêu, cách chạy, kết quả), commit.</li>
-<li>Push branch, mở pull request, tự review (đọc diff, sửa một lỗi chính tả, commit thêm), rồi merge.</li>
-<li>Trên Colab, mở notebook từ GitHub (File → Open notebook → GitHub), chạy, và lưu một file kết quả vào Drive.</li>
-</ol>
-<p><strong>README chính nên có</strong></p>
-<div class="hl"><pre><span></span><code><span class="tk-gh"># AI Engineer Labs</span>
-Các bài thực hành theo lộ trình AI Engineer, từ numpy tới LLM và diffusion.
-
-| Lab | Nội dung | Kết quả |
-|---|---|---|
-| 00 | Phân tích dữ liệu bán hàng | 5 biểu đồ, 5 kết luận |
-| 01 | Training loop CIFAR-10 | test acc ≥ 70% |
-
-<span class="tk-gu">## Chạy</span>
-pip install -r requirements.txt
+<p><strong>Code khởi đầu (dữ liệu giả)</strong></p>
+<div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">numpy</span><span class="tk-w"> </span><span class="tk-k">as</span><span class="tk-w"> </span><span class="tk-nn">np</span><span class="tk-o">,</span><span class="tk-w"> </span><span class="tk-nn">pandas</span><span class="tk-w"> </span><span class="tk-k">as</span><span class="tk-w"> </span><span class="tk-nn">pd</span>
+<span class="tk-n">rng</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">random</span><span class="tk-o">.</span><span class="tk-n">default_rng</span><span class="tk-p">(</span><span class="tk-mi">0</span><span class="tk-p">)</span>
+<span class="tk-n">n</span> <span class="tk-o">=</span> <span class="tk-mi">2000</span>
+<span class="tk-n">products</span> <span class="tk-o">=</span> <span class="tk-p">{</span><span class="tk-s2">"bàn trang điểm"</span><span class="tk-p">:</span> <span class="tk-mi">1500</span><span class="tk-p">,</span> <span class="tk-s2">"gương LED"</span><span class="tk-p">:</span> <span class="tk-mi">450</span><span class="tk-p">,</span> <span class="tk-s2">"ghế đôn"</span><span class="tk-p">:</span> <span class="tk-mi">250</span><span class="tk-p">,</span> <span class="tk-s2">"kệ mỹ phẩm"</span><span class="tk-p">:</span> <span class="tk-mi">320</span><span class="tk-p">,</span> <span class="tk-s2">"đèn bàn"</span><span class="tk-p">:</span> <span class="tk-mi">280</span><span class="tk-p">}</span>
+<span class="tk-n">names</span> <span class="tk-o">=</span> <span class="tk-n">rng</span><span class="tk-o">.</span><span class="tk-n">choice</span><span class="tk-p">(</span><span class="tk-nb">list</span><span class="tk-p">(</span><span class="tk-n">products</span><span class="tk-p">),</span> <span class="tk-n">n</span><span class="tk-p">,</span> <span class="tk-n">p</span><span class="tk-o">=</span><span class="tk-p">[</span><span class="tk-mf">0.25</span><span class="tk-p">,</span> <span class="tk-mf">0.3</span><span class="tk-p">,</span> <span class="tk-mf">0.2</span><span class="tk-p">,</span> <span class="tk-mf">0.15</span><span class="tk-p">,</span> <span class="tk-mf">0.1</span><span class="tk-p">])</span>
+<span class="tk-n">df</span> <span class="tk-o">=</span> <span class="tk-n">pd</span><span class="tk-o">.</span><span class="tk-n">DataFrame</span><span class="tk-p">({</span>
+    <span class="tk-s2">"date"</span><span class="tk-p">:</span> <span class="tk-p">(</span><span class="tk-n">pd</span><span class="tk-o">.</span><span class="tk-n">Timestamp</span><span class="tk-p">(</span><span class="tk-s2">"2026-01-01"</span><span class="tk-p">)</span> <span class="tk-o">+</span> <span class="tk-n">pd</span><span class="tk-o">.</span><span class="tk-n">to_timedelta</span><span class="tk-p">(</span><span class="tk-n">rng</span><span class="tk-o">.</span><span class="tk-n">integers</span><span class="tk-p">(</span><span class="tk-mi">0</span><span class="tk-p">,</span> <span class="tk-mi">300</span><span class="tk-p">,</span> <span class="tk-n">n</span><span class="tk-p">),</span> <span class="tk-n">unit</span><span class="tk-o">=</span><span class="tk-s2">"D"</span><span class="tk-p">))</span><span class="tk-o">.</span><span class="tk-n">strftime</span><span class="tk-p">(</span><span class="tk-s2">"%Y-%m-</span><span class="tk-si">%d</span><span class="tk-s2">"</span><span class="tk-p">),</span>
+    <span class="tk-s2">"product"</span><span class="tk-p">:</span> <span class="tk-n">names</span><span class="tk-p">,</span>
+    <span class="tk-s2">"qty"</span><span class="tk-p">:</span> <span class="tk-n">rng</span><span class="tk-o">.</span><span class="tk-n">integers</span><span class="tk-p">(</span><span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-mi">4</span><span class="tk-p">,</span> <span class="tk-n">n</span><span class="tk-p">),</span>
+    <span class="tk-s2">"price"</span><span class="tk-p">:</span> <span class="tk-p">[</span><span class="tk-n">products</span><span class="tk-p">[</span><span class="tk-n">p</span><span class="tk-p">]</span> <span class="tk-o">*</span> <span class="tk-n">rng</span><span class="tk-o">.</span><span class="tk-n">uniform</span><span class="tk-p">(</span><span class="tk-mf">0.9</span><span class="tk-p">,</span> <span class="tk-mf">1.1</span><span class="tk-p">)</span> <span class="tk-k">for</span> <span class="tk-n">p</span> <span class="tk-ow">in</span> <span class="tk-n">names</span><span class="tk-p">],</span>
+    <span class="tk-s2">"returned"</span><span class="tk-p">:</span> <span class="tk-n">rng</span><span class="tk-o">.</span><span class="tk-n">random</span><span class="tk-p">(</span><span class="tk-n">n</span><span class="tk-p">)</span> <span class="tk-o">&lt;</span> <span class="tk-mf">0.06</span><span class="tk-p">,</span>
+<span class="tk-p">})</span>
+<span class="tk-n">df</span><span class="tk-o">.</span><span class="tk-n">loc</span><span class="tk-p">[</span><span class="tk-n">rng</span><span class="tk-o">.</span><span class="tk-n">choice</span><span class="tk-p">(</span><span class="tk-n">n</span><span class="tk-p">,</span> <span class="tk-mi">30</span><span class="tk-p">,</span> <span class="tk-n">replace</span><span class="tk-o">=</span><span class="tk-kc">False</span><span class="tk-p">),</span> <span class="tk-s2">"price"</span><span class="tk-p">]</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">nan</span>                      <span class="tk-c1"># ô trống</span>
+<span class="tk-n">df</span><span class="tk-o">.</span><span class="tk-n">loc</span><span class="tk-p">[</span><span class="tk-n">rng</span><span class="tk-o">.</span><span class="tk-n">choice</span><span class="tk-p">(</span><span class="tk-n">n</span><span class="tk-p">,</span> <span class="tk-mi">40</span><span class="tk-p">,</span> <span class="tk-n">replace</span><span class="tk-o">=</span><span class="tk-kc">False</span><span class="tk-p">),</span> <span class="tk-s2">"product"</span><span class="tk-p">]</span> <span class="tk-o">=</span> <span class="tk-n">df</span><span class="tk-p">[</span><span class="tk-s2">"product"</span><span class="tk-p">]</span><span class="tk-o">.</span><span class="tk-n">str</span><span class="tk-o">.</span><span class="tk-n">upper</span><span class="tk-p">()</span>  <span class="tk-c1"># tên viết lệch</span>
+<span class="tk-n">df</span> <span class="tk-o">=</span> <span class="tk-n">pd</span><span class="tk-o">.</span><span class="tk-n">concat</span><span class="tk-p">([</span><span class="tk-n">df</span><span class="tk-p">,</span> <span class="tk-n">df</span><span class="tk-o">.</span><span class="tk-n">sample</span><span class="tk-p">(</span><span class="tk-mi">25</span><span class="tk-p">,</span> <span class="tk-n">random_state</span><span class="tk-o">=</span><span class="tk-mi">0</span><span class="tk-p">)],</span> <span class="tk-n">ignore_index</span><span class="tk-o">=</span><span class="tk-kc">True</span><span class="tk-p">)</span>          <span class="tk-c1"># dòng trùng</span>
 </code></pre></div>
 
 <p><strong>Xong khi</strong></p>
 <ul>
-<li>Repo công khai, có ít nhất 5 commit có message rõ nghĩa.</li>
-<li>Có một pull request đã merge.</li>
-<li><code>.gitignore</code> chặn <code>.venv</code>, <code>data/</code>, checkpoint và <code>.env</code>.</li>
-</ul></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p0.3:p">Tôi đã xong phần thực hành</label></div></section>
-      <div class="donewhen"><b>Xong bài khi</b>Repo công khai, có ít nhất 5 commit có ý nghĩa và một pull request đã merge.</div>
-      <nav class="pn" aria-label="Bài trước, bài sau"><a href="p0-2.html"><span class="dir">← Bài trước · P0.2</span><span class="tt">Toán cho AI: đại số tuyến tính, giải tích, xác suất</span></a><a class="nx" href="p1-1.html"><span class="dir">Bài sau · P1.1 →</span><span class="tt">Hồi quy tuyến tính và logistic</span></a></nav>
+<li>Notebook chạy lại từ đầu không lỗi (Kernel → Restart &amp; Run All).</li>
+<li>Không có vòng <code>for</code> duyệt từng dòng dữ liệu.</li>
+<li><code>value_counts()</code> cột sản phẩm sau làm sạch còn đúng 5 sản phẩm, và mỗi bước làm sạch có một dòng ghi lý do.</li>
+</ul>
+<details class="fold code">
+<summary>Code tham khảo</summary>
+<div class="hl"><pre><span></span><code><span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-n">df</span><span class="tk-o">.</span><span class="tk-n">shape</span><span class="tk-p">,</span> <span class="tk-n">df</span><span class="tk-o">.</span><span class="tk-n">duplicated</span><span class="tk-p">()</span><span class="tk-o">.</span><span class="tk-n">sum</span><span class="tk-p">(),</span> <span class="tk-n">df</span><span class="tk-o">.</span><span class="tk-n">isna</span><span class="tk-p">()</span><span class="tk-o">.</span><span class="tk-n">sum</span><span class="tk-p">()</span><span class="tk-o">.</span><span class="tk-n">to_dict</span><span class="tk-p">())</span>
+<span class="tk-n">df</span> <span class="tk-o">=</span> <span class="tk-n">df</span><span class="tk-o">.</span><span class="tk-n">drop_duplicates</span><span class="tk-p">()</span>                                  <span class="tk-c1"># dòng chép lặp: cùng ngày, cùng sản phẩm, cùng giá lẻ tới từng số</span>
+<span class="tk-n">df</span><span class="tk-p">[</span><span class="tk-s2">"product"</span><span class="tk-p">]</span> <span class="tk-o">=</span> <span class="tk-n">df</span><span class="tk-p">[</span><span class="tk-s2">"product"</span><span class="tk-p">]</span><span class="tk-o">.</span><span class="tk-n">str</span><span class="tk-o">.</span><span class="tk-n">strip</span><span class="tk-p">()</span><span class="tk-o">.</span><span class="tk-n">str</span><span class="tk-o">.</span><span class="tk-n">lower</span><span class="tk-p">()</span><span class="tk-o">.</span><span class="tk-n">str</span><span class="tk-o">.</span><span class="tk-n">replace</span><span class="tk-p">(</span><span class="tk-s2">"led"</span><span class="tk-p">,</span> <span class="tk-s2">"LED"</span><span class="tk-p">)</span>
+<span class="tk-n">df</span> <span class="tk-o">=</span> <span class="tk-n">df</span><span class="tk-o">.</span><span class="tk-n">dropna</span><span class="tk-p">(</span><span class="tk-n">subset</span><span class="tk-o">=</span><span class="tk-p">[</span><span class="tk-s2">"price"</span><span class="tk-p">])</span>                           <span class="tk-c1"># 30/2000 dòng thiếu giá, thiếu ngẫu nhiên: bỏ</span>
+<span class="tk-n">df</span><span class="tk-p">[</span><span class="tk-s2">"date"</span><span class="tk-p">]</span> <span class="tk-o">=</span> <span class="tk-n">pd</span><span class="tk-o">.</span><span class="tk-n">to_datetime</span><span class="tk-p">(</span><span class="tk-n">df</span><span class="tk-p">[</span><span class="tk-s2">"date"</span><span class="tk-p">])</span>
+<span class="tk-n">df</span><span class="tk-p">[</span><span class="tk-s2">"revenue"</span><span class="tk-p">]</span> <span class="tk-o">=</span> <span class="tk-n">df</span><span class="tk-p">[</span><span class="tk-s2">"qty"</span><span class="tk-p">]</span> <span class="tk-o">*</span> <span class="tk-n">df</span><span class="tk-p">[</span><span class="tk-s2">"price"</span><span class="tk-p">]</span>
+<span class="tk-n">df</span><span class="tk-p">[</span><span class="tk-s2">"month"</span><span class="tk-p">]</span> <span class="tk-o">=</span> <span class="tk-n">df</span><span class="tk-p">[</span><span class="tk-s2">"date"</span><span class="tk-p">]</span><span class="tk-o">.</span><span class="tk-n">dt</span><span class="tk-o">.</span><span class="tk-n">to_period</span><span class="tk-p">(</span><span class="tk-s2">"M"</span><span class="tk-p">)</span>
+<span class="tk-n">df</span><span class="tk-p">[</span><span class="tk-s2">"weekday"</span><span class="tk-p">]</span> <span class="tk-o">=</span> <span class="tk-n">df</span><span class="tk-p">[</span><span class="tk-s2">"date"</span><span class="tk-p">]</span><span class="tk-o">.</span><span class="tk-n">dt</span><span class="tk-o">.</span><span class="tk-n">dayofweek</span>
+
+<span class="tk-n">monthly</span> <span class="tk-o">=</span> <span class="tk-n">df</span><span class="tk-p">[</span><span class="tk-o">~</span><span class="tk-n">df</span><span class="tk-p">[</span><span class="tk-s2">"returned"</span><span class="tk-p">]]</span><span class="tk-o">.</span><span class="tk-n">groupby</span><span class="tk-p">(</span><span class="tk-s2">"month"</span><span class="tk-p">)[</span><span class="tk-s2">"revenue"</span><span class="tk-p">]</span><span class="tk-o">.</span><span class="tk-n">sum</span><span class="tk-p">()</span>
+<span class="tk-n">top5</span> <span class="tk-o">=</span> <span class="tk-n">df</span><span class="tk-o">.</span><span class="tk-n">groupby</span><span class="tk-p">(</span><span class="tk-s2">"product"</span><span class="tk-p">)[</span><span class="tk-s2">"qty"</span><span class="tk-p">]</span><span class="tk-o">.</span><span class="tk-n">sum</span><span class="tk-p">()</span><span class="tk-o">.</span><span class="tk-n">nlargest</span><span class="tk-p">(</span><span class="tk-mi">5</span><span class="tk-p">)</span>
+<span class="tk-n">return_rate</span> <span class="tk-o">=</span> <span class="tk-n">df</span><span class="tk-o">.</span><span class="tk-n">groupby</span><span class="tk-p">(</span><span class="tk-s2">"product"</span><span class="tk-p">)[</span><span class="tk-s2">"returned"</span><span class="tk-p">]</span><span class="tk-o">.</span><span class="tk-n">mean</span><span class="tk-p">()</span><span class="tk-o">.</span><span class="tk-n">sort_values</span><span class="tk-p">(</span><span class="tk-n">ascending</span><span class="tk-o">=</span><span class="tk-kc">False</span><span class="tk-p">)</span>
+<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-n">df</span><span class="tk-p">[</span><span class="tk-s2">"product"</span><span class="tk-p">]</span><span class="tk-o">.</span><span class="tk-n">value_counts</span><span class="tk-p">(),</span> <span class="tk-n">monthly</span><span class="tk-o">.</span><span class="tk-n">round</span><span class="tk-p">(</span><span class="tk-mi">0</span><span class="tk-p">),</span> <span class="tk-n">top5</span><span class="tk-p">,</span> <span class="tk-n">return_rate</span><span class="tk-o">.</span><span class="tk-n">round</span><span class="tk-p">(</span><span class="tk-mi">3</span><span class="tk-p">),</span> <span class="tk-n">sep</span><span class="tk-o">=</span><span class="tk-s2">"</span><span class="tk-se">\n\n</span><span class="tk-s2">"</span><span class="tk-p">)</span>
+<span class="tk-n">df</span><span class="tk-o">.</span><span class="tk-n">to_csv</span><span class="tk-p">(</span><span class="tk-s2">"orders_clean.csv"</span><span class="tk-p">,</span> <span class="tk-n">index</span><span class="tk-o">=</span><span class="tk-kc">False</span><span class="tk-p">)</span>
+</code></pre></div>
+
+</details></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p0.3:p">Tôi đã xong phần thực hành</label></div></section>
+      <div class="donewhen"><b>Xong bài khi</b>Notebook chạy lại từ đầu được, không vòng for duyệt từng dòng, và mỗi bước làm sạch có ghi lý do.</div>
+      <nav class="pn" aria-label="Bài trước, bài sau"><a href="p0-2.html"><span class="dir">← Bài trước · P0.2</span><span class="tt">numpy: mảng, broadcasting, vector hóa</span></a><a class="nx" href="p0-4.html"><span class="dir">Bài sau · P0.4 →</span><span class="tt">matplotlib: vẽ để hiểu dữ liệu và kết quả train</span></a></nav>
     </div>
     <aside class="aside">
       <div class="abox"><h4>Tiến độ bài này</h4><div class="ring"><svg viewBox="0 0 64 64" aria-hidden="true"><circle class="bg" cx="32" cy="32" r="28"/><circle class="fg" cx="32" cy="32" r="28" stroke-dasharray="176" stroke-dashoffset="176"/></svg><div><b id="ring-n">0/3</b><span id="ring-sub">phần đã xong</span></div></div></div>
-      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Terminal Linux đủ dùng</a></li><li><a href="#lt-2">Git hoạt động thế nào</a></li><li><a href="#lt-3">Branch, merge và pull request</a></li><li><a href="#lt-4">.gitignore và bí mật cho dự án ML</a></li><li><a href="#lt-5">GitHub như một hồ sơ</a></li><li><a href="#lt-6">Colab và VS Code</a></li><li><a href="#lt-7">Tóm tắt bài và thuật ngữ</a></li></ol></div>
+      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Series và DataFrame</a></li><li><a href="#lt-2">Đọc dữ liệu và nhìn trước khi sửa</a></li><li><a href="#lt-3">Làm sạch</a></li><li><a href="#lt-4">Đếm, sắp xếp và lấy top</a></li><li><a href="#lt-5">Chọn dòng và cột: loc và iloc</a></li><li><a href="#lt-6">Xử lý ô trống</a></li><li><a href="#lt-7">groupby: tách nhóm, tính, gộp lại</a></li><li><a href="#lt-8">Nối bảng: merge và concat</a></li><li><a href="#lt-9">.str và .dt thay cho apply</a></li><li><a href="#lt-10">Lưu kết quả</a></li><li><a href="#lt-11">Quy trình làm sạch và tổng hợp trong 6 bước</a></li><li><a href="#lt-12">Tóm tắt bài và thuật ngữ</a></li></ol></div>
       <div class="abox"><h4>Notebook</h4><div style="display:grid;gap:8px"><a class="dl" href="https://colab.research.google.com/github/truonghuu344/ai-engineer-roadmap/blob/main/notebooks/ly-thuyet/p0-3.ipynb" target="_blank" rel="noopener"><span class="ext">COLAB</span><span>Chạy toàn bộ code của bài<span style="display:block;font:400 12px var(--f-mono);color:var(--muted)">notebook có sẵn kết quả</span></span></a></div></div>
-      <div class="abox"><h4>Cùng giai đoạn</h4><ul><li><a href="p0-1.html">Python cho ML: numpy, pandas, matplotlib</a></li><li><a href="p0-2.html">Toán cho AI: đại số tuyến tính, giải tích, xác suất</a></li><li><span class=cur>Công cụ: Git, GitHub, terminal, Colab</span></li></ul></div>
+      <div class="abox"><h4>Cùng giai đoạn</h4><ul><li><a href="p0-1.html">Python từ số 0</a></li><li><a href="p0-2.html">numpy: mảng, broadcasting, vector hóa</a></li><li><span class=cur>pandas: làm sạch và tổng hợp bảng dữ liệu</span></li><li><a href="p0-4.html">matplotlib: vẽ để hiểu dữ liệu và kết quả train</a></li><li><a href="p0-5.html">Toán cho AI: đại số tuyến tính, giải tích, xác suất</a></li><li><a href="p0-6.html">PyTorch cơ bản: tensor, autograd, nn.Module</a></li><li><a href="p0-7.html">Công cụ: Git, GitHub, terminal, Colab</a></li></ul></div>
     </aside>
   </div>
 </main>

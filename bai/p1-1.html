@@ -17,7 +17,7 @@
 <link rel="stylesheet" href="../assets/lesson.css">
 </head>
 <body data-mid="p1.1">
-<header class="sh"><div class="sh-in"><a class="sh-brand" href="../index.html"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="var(--ink)"/><circle cx="9" cy="22" r="2.6" fill="var(--accent-soft)"/><circle cx="16" cy="10" r="2.6" fill="var(--accent-soft)"/><circle cx="23" cy="19" r="2.6" fill="#FF9361"/><path d="M9 22 L16 10 L23 19" stroke="var(--accent-soft)" stroke-width="1.8" fill="none"/></svg><span>AI Engineer<small>lộ trình tự học</small></span></a><nav class="sh-nav" id="sh-nav" aria-label="Chính"><a href="../index.html">Trang chủ</a><a href="../bai-hoc.html" aria-current="page">Bài học</a><a href="../lo-trinh.html">Lộ trình</a><a href="../notebooks.html">Notebook</a><a class="sh-cta-m" href="../bai01.html" data-next-lesson>Học tiếp →</a></nav><a class="sh-cta" href="../bai01.html" data-next-lesson>Học tiếp <span class="arr">→</span></a><button class="sh-burger" type="button" aria-expanded="false" aria-controls="sh-nav">Menu</button></div></header>
+<header class="sh"><div class="sh-in"><a class="sh-brand" href="../index.html"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="var(--ink)"/><circle cx="9" cy="22" r="2.6" fill="var(--accent-soft)"/><circle cx="16" cy="10" r="2.6" fill="var(--accent-soft)"/><circle cx="23" cy="19" r="2.6" fill="#FF9361"/><path d="M9 22 L16 10 L23 19" stroke="var(--accent-soft)" stroke-width="1.8" fill="none"/></svg><span>AI Engineer<small>lộ trình tự học</small></span></a><nav class="sh-nav" id="sh-nav" aria-label="Chính"><a href="../index.html">Trang chủ</a><a href="../bai-hoc.html" aria-current="page">Bài học</a><a href="../lo-trinh.html">Lộ trình</a><a href="../notebooks.html">Notebook</a><a class="sh-cta-m" href="../bai/p0-1.html" data-next-lesson>Học tiếp →</a></nav><a class="sh-cta" href="../bai/p0-1.html" data-next-lesson>Học tiếp <span class="arr">→</span></a><button class="sh-burger" type="button" aria-expanded="false" aria-controls="sh-nav">Menu</button></div></header>
 
 <main class="container">
   <div class="crumbs"><a href="../bai-hoc.html">Bài học</a><span>/</span><a href="../bai-hoc.html#p1">P1 · Machine Learning cổ điển</a><span>/</span><span>P1.1</span></div>
@@ -142,7 +142,7 @@
 </tr>
 </tbody>
 </table>
-<p>Trong thực tế: làm sạch dữ liệu trước (P0.1), rồi dùng MSE; nếu ngoại lai là thật và không bỏ được thì dùng MAE hoặc <strong>Huber loss</strong> (giống MSE khi lỗi nhỏ, giống MAE khi lỗi lớn).</p>
+<p>Trong thực tế: làm sạch dữ liệu trước (P0.3), rồi dùng MSE; nếu ngoại lai là thật và không bỏ được thì dùng MAE hoặc <strong>Huber loss</strong> (giống MSE khi lỗi nhỏ, giống MAE khi lỗi lớn).</p>
 <div class="box check">
 <div class="box-h">Tự kiểm tra nhanh</div>
 <p>Model dự đoán [3, 5, 2] cho đáp án [2, 5, 4].</p>
@@ -297,7 +297,7 @@ p = σ(z) = 1 / (1 + e⁻ᶻ)       xác suất thuộc lớp 1
 <h2 id="lt-5">Binary cross-entropy và gradient đẹp</h2>
 <div class="box why">
 <div class="box-h">Vì sao cần học</div>
-<p>Không dùng MSE cho phân loại vì kết hợp với sigmoid, MSE cho gradient rất nhỏ khi model sai mà tự tin, nên học chậm. Cross-entropy sinh ra từ maximum likelihood (P0.2) và cho gradient đơn giản đến bất ngờ.</p>
+<p>Không dùng MSE cho phân loại vì kết hợp với sigmoid, MSE cho gradient rất nhỏ khi model sai mà tự tin, nên học chậm. Cross-entropy sinh ra từ maximum likelihood (P0.5) và cho gradient đơn giản đến bất ngờ.</p>
 </div>
 <h3>Công thức</h3>
 <div class="hl"><pre><span></span><code>BCE = −[ y·log p + (1 − y)·log(1 − p) ]
@@ -657,7 +657,7 @@ p = σ(z) = 1 / (1 + e⁻ᶻ)       xác suất thuộc lớp 1
 
 </details></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p1.1:p">Tôi đã xong phần thực hành</label></div></section>
       <div class="donewhen"><b>Xong bài khi</b>Bản numpy của bạn cho kết quả chênh không quá 1% so với scikit-learn.</div>
-      <nav class="pn" aria-label="Bài trước, bài sau"><a href="p0-3.html"><span class="dir">← Bài trước · P0.3</span><span class="tt">Công cụ: Git, GitHub, terminal, Colab</span></a><a class="nx" href="p1-2.html"><span class="dir">Bài sau · P1.2 →</span><span class="tt">Đánh giá model đúng cách</span></a></nav>
+      <nav class="pn" aria-label="Bài trước, bài sau"><a href="p0-7.html"><span class="dir">← Bài trước · P0.7</span><span class="tt">Công cụ: Git, GitHub, terminal, Colab</span></a><a class="nx" href="p1-2.html"><span class="dir">Bài sau · P1.2 →</span><span class="tt">Đánh giá model đúng cách</span></a></nav>
     </div>
     <aside class="aside">
       <div class="abox"><h4>Tiến độ bài này</h4><div class="ring"><svg viewBox="0 0 64 64" aria-hidden="true"><circle class="bg" cx="32" cy="32" r="28"/><circle class="fg" cx="32" cy="32" r="28" stroke-dasharray="176" stroke-dashoffset="176"/></svg><div><b id="ring-n">0/3</b><span id="ring-sub">phần đã xong</span></div></div></div>

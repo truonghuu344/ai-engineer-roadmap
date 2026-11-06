@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>P0.2 · Toán cho AI: đại số tuyến tính, giải tích, xác suất · AI Engineer</title>
-<meta name="description" content="Toán cho AI: đại số tuyến tính, giải tích, xác suất: lý thuyết, bài tập và thực hành. Vector, dot product, ma trận, nhân ma trận, chuyển vị, norm, suy luận shape; Đạo hàm, đạo hàm riêng, gradient, quy tắc dây chuyền">
-<meta property="og:title" content="P0.2 · Toán cho AI: đại số tuyến tính, giải tích, xác suất · AI Engineer">
-<meta property="og:description" content="Toán cho AI: đại số tuyến tính, giải tích, xác suất: lý thuyết, bài tập và thực hành. Vector, dot product, ma trận, nhân ma trận, chuyển vị, norm, suy luận shape; Đạo hàm, đạo hàm riêng, gradient, quy tắc dây chuyền">
+<title>P0.2 · numpy: mảng, broadcasting, vector hóa · AI Engineer</title>
+<meta name="description" content="numpy: mảng, broadcasting, vector hóa: lý thuyết, bài tập và thực hành. Mảng numpy: array, shape, dtype, indexing, slicing, view và copy, axis; Ghép mảng (concatenate, stack), broadcasting">
+<meta property="og:title" content="P0.2 · numpy: mảng, broadcasting, vector hóa · AI Engineer">
+<meta property="og:description" content="numpy: mảng, broadcasting, vector hóa: lý thuyết, bài tập và thực hành. Mảng numpy: array, shape, dtype, indexing, slicing, view và copy, axis; Ghép mảng (concatenate, stack), broadcasting">
 <meta name="theme-color" content="#F4F6FB">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23131A33'/%3E%3Cpath d='M9 22 L16 10 L23 19' stroke='%23E5E9FB' stroke-width='2' fill='none'/%3E%3Ccircle cx='9' cy='22' r='3' fill='%23E5E9FB'/%3E%3Ccircle cx='16' cy='10' r='3' fill='%23E5E9FB'/%3E%3Ccircle cx='23' cy='19' r='3' fill='%23FF9361'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -17,521 +17,339 @@
 <link rel="stylesheet" href="../assets/lesson.css">
 </head>
 <body data-mid="p0.2">
-<header class="sh"><div class="sh-in"><a class="sh-brand" href="../index.html"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="var(--ink)"/><circle cx="9" cy="22" r="2.6" fill="var(--accent-soft)"/><circle cx="16" cy="10" r="2.6" fill="var(--accent-soft)"/><circle cx="23" cy="19" r="2.6" fill="#FF9361"/><path d="M9 22 L16 10 L23 19" stroke="var(--accent-soft)" stroke-width="1.8" fill="none"/></svg><span>AI Engineer<small>lộ trình tự học</small></span></a><nav class="sh-nav" id="sh-nav" aria-label="Chính"><a href="../index.html">Trang chủ</a><a href="../bai-hoc.html" aria-current="page">Bài học</a><a href="../lo-trinh.html">Lộ trình</a><a href="../notebooks.html">Notebook</a><a class="sh-cta-m" href="../bai01.html" data-next-lesson>Học tiếp →</a></nav><a class="sh-cta" href="../bai01.html" data-next-lesson>Học tiếp <span class="arr">→</span></a><button class="sh-burger" type="button" aria-expanded="false" aria-controls="sh-nav">Menu</button></div></header>
+<header class="sh"><div class="sh-in"><a class="sh-brand" href="../index.html"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="var(--ink)"/><circle cx="9" cy="22" r="2.6" fill="var(--accent-soft)"/><circle cx="16" cy="10" r="2.6" fill="var(--accent-soft)"/><circle cx="23" cy="19" r="2.6" fill="#FF9361"/><path d="M9 22 L16 10 L23 19" stroke="var(--accent-soft)" stroke-width="1.8" fill="none"/></svg><span>AI Engineer<small>lộ trình tự học</small></span></a><nav class="sh-nav" id="sh-nav" aria-label="Chính"><a href="../index.html">Trang chủ</a><a href="../bai-hoc.html" aria-current="page">Bài học</a><a href="../lo-trinh.html">Lộ trình</a><a href="../notebooks.html">Notebook</a><a class="sh-cta-m" href="../bai/p0-1.html" data-next-lesson>Học tiếp →</a></nav><a class="sh-cta" href="../bai/p0-1.html" data-next-lesson>Học tiếp <span class="arr">→</span></a><button class="sh-burger" type="button" aria-expanded="false" aria-controls="sh-nav">Menu</button></div></header>
 
 <main class="container">
   <div class="crumbs"><a href="../bai-hoc.html">Bài học</a><span>/</span><a href="../bai-hoc.html#p0">P0 · Nền móng</a><span>/</span><span>P0.2</span></div>
-  <section class="lhero"><div class="code">P0.2</div><h1>Toán cho AI: đại số tuyến tính, giải tích, xác suất</h1><div class="lmeta"><span class="m">Giai đoạn P0 · Nền móng</span><span class="m">Tuần 1–3</span><span class="chip ready"><span class="dot"></span>Có nội dung đầy đủ</span></div>
-    <div class="intro"><p>Ba nhánh toán chống lưng cho mọi model: <strong>đại số tuyến tính</strong> (dữ liệu và trọng số là ma trận), <strong>giải tích</strong> (gradient cho biết sửa trọng số theo hướng nào), <strong>xác suất</strong> (loss và dữ liệu nhiễu). Bài này chỉ dạy phần bạn thật sự dùng, đi từ trực giác tới công thức, và mỗi công thức đều kiểm chứng được bằng vài dòng numpy.</p></div></section>
+  <section class="lhero"><div class="code">P0.2</div><h1>numpy: mảng, broadcasting, vector hóa</h1><div class="lmeta"><span class="m">Giai đoạn P0 · Nền móng</span><span class="m">Tuần 1–3</span><span class="chip ready"><span class="dot"></span>Có nội dung đầy đủ</span></div>
+    <div class="intro"><p>Python thuần tính toán trên từng số một, nên chậm khi dữ liệu có hàng triệu số. <strong>numpy</strong> cho bạn <strong>mảng</strong>: một khối số cùng kiểu, tính trên cả khối một lúc bằng code C bên dưới. Bài này đi từ cách tạo mảng, xem shape, lấy phần tử, tới hai ý quan trọng nhất: <strong>broadcasting</strong> (tính giữa hai mảng khác kích thước) và <strong>vector hóa</strong> (viết phép tính trên cả mảng thay cho vòng <code>for</code>). Bạn chỉ cần Python ở mức bài P0.1. Ba bài tiếp theo dùng lại đúng các ý ở đây: pandas (P0.3) lọc bảng bằng mặt nạ như numpy, matplotlib (P0.4) vẽ từ mảng numpy, và tensor của PyTorch (P0.6) gần như là mảng numpy chạy được trên GPU.</p></div></section>
   
-  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">7 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">6 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
+  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">4 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
   <div class="lgrid" style="margin-top:22px">
-    <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">Vector và tích vô hướng</h2>
+    <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">Mảng numpy: shape, dtype, indexing</h2>
 <div class="box why">
 <div class="box-h">Vì sao cần học</div>
-<p>Trong ML, mọi thứ đều thành vector: một ảnh 28×28 là vector 784 số, một câu văn là embedding 1024 số, một khách hàng là vector các đặc trưng (tuổi, số đơn, tổng chi). Khi đã là vector, "hai thứ giống nhau đến đâu" trở thành một phép tính: tích vô hướng.</p>
+<p>List Python chứa được mọi thứ nhưng không biết làm toán: <code>[1, 2] * 2</code> cho <code>[1, 2, 1, 2]</code> chứ không phải <code>[2, 4]</code>. Mảng numpy là khối số cùng kiểu nằm liền nhau trong bộ nhớ, tính toán trên cả khối bằng code C. Tensor của PyTorch dùng gần như y hệt cách đánh chỉ số và shape của numpy, nên học kỹ ở đây là học luôn cho PyTorch.</p>
 </div>
-<h3>Vector là gì</h3>
-<p>Vector là một danh sách số có thứ tự. Với 2 hoặc 3 số, bạn có thể hình dung nó là <strong>mũi tên</strong> từ gốc tọa độ: <code>u = (3, 4)</code> là mũi tên đi 3 bước sang phải, 4 bước lên trên. Với 784 số thì không vẽ được, nhưng mọi công thức vẫn y nguyên.</p>
-<p>Các phép cơ bản làm <strong>từng phần tử</strong>:</p>
-<div class="hl"><pre><span></span><code>u + v = (u₁ + v₁, u₂ + v₂, …)      cộng hai mũi tên nối đuôi nhau
-c · u = (c·u₁, c·u₂, …)            kéo dài hoặc thu ngắn mũi tên
+<h3>Tạo mảng</h3>
+<div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">numpy</span><span class="tk-w"> </span><span class="tk-k">as</span><span class="tk-w"> </span><span class="tk-nn">np</span>
+<span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">array</span><span class="tk-p">([</span><span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-mi">2</span><span class="tk-p">,</span> <span class="tk-mi">3</span><span class="tk-p">])</span>          <span class="tk-c1"># từ list</span>
+<span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">zeros</span><span class="tk-p">((</span><span class="tk-mi">2</span><span class="tk-p">,</span> <span class="tk-mi">3</span><span class="tk-p">))</span>             <span class="tk-c1"># toàn số 0, shape (2, 3)</span>
+<span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">ones</span><span class="tk-p">(</span><span class="tk-mi">4</span><span class="tk-p">)</span>                   <span class="tk-c1"># [1. 1. 1. 1.]</span>
+<span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">arange</span><span class="tk-p">(</span><span class="tk-mi">0</span><span class="tk-p">,</span> <span class="tk-mi">10</span><span class="tk-p">,</span> <span class="tk-mi">2</span><span class="tk-p">)</span>          <span class="tk-c1"># [0 2 4 6 8], giống range</span>
+<span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">linspace</span><span class="tk-p">(</span><span class="tk-mi">0</span><span class="tk-p">,</span> <span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-mi">5</span><span class="tk-p">)</span>         <span class="tk-c1"># [0.   0.25 0.5  0.75 1.  ], 5 điểm chia đều</span>
+<span class="tk-n">rng</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">random</span><span class="tk-o">.</span><span class="tk-n">default_rng</span><span class="tk-p">(</span><span class="tk-mi">0</span><span class="tk-p">)</span>
+<span class="tk-n">rng</span><span class="tk-o">.</span><span class="tk-n">normal</span><span class="tk-p">(</span><span class="tk-n">size</span><span class="tk-o">=</span><span class="tk-p">(</span><span class="tk-mi">2</span><span class="tk-p">,</span> <span class="tk-mi">3</span><span class="tk-p">))</span>      <span class="tk-c1"># số ngẫu nhiên phân phối chuẩn, cố định seed để chạy lại ra giống nhau</span>
 </code></pre></div>
 
-<h3>Độ dài (norm)</h3>
-<div class="hl"><pre><span></span><code>‖u‖₂ = √(u₁² + u₂² + … + uₙ²)      norm L2: độ dài thật (Pythagore)
-‖u‖₁ = |u₁| + |u₂| + … + |uₙ|      norm L1: tổng giá trị tuyệt đối
+<div class="run" data-mode="py" data-group="t"><div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span></div><pre class="run-out">array([1, 2, 3])&#10;array([[0., 0., 0.],&#10;       [0., 0., 0.]])&#10;array([1., 1., 1., 1.])&#10;array([0, 2, 4, 6, 8])&#10;array([0.  , 0.25, 0.5 , 0.75, 1.  ])&#10;array([[ 0.12573022, -0.13210486,  0.64042265],&#10;       [ 0.10490012, -0.53566937,  0.36159505]])</pre></div>
+
+<h3>Bốn thuộc tính cần nhìn đầu tiên</h3>
+<div class="hl"><pre><span></span><code><span class="tk-n">x</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">arange</span><span class="tk-p">(</span><span class="tk-mi">12</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">reshape</span><span class="tk-p">(</span><span class="tk-mi">3</span><span class="tk-p">,</span> <span class="tk-mi">4</span><span class="tk-p">)</span>
+<span class="tk-c1"># [[ 0  1  2  3]</span>
+<span class="tk-c1">#  [ 4  5  6  7]</span>
+<span class="tk-c1">#  [ 8  9 10 11]]</span>
+<span class="tk-n">x</span><span class="tk-o">.</span><span class="tk-n">shape</span>    <span class="tk-c1"># (3, 4)   số phần tử theo từng trục: 3 hàng, 4 cột</span>
+<span class="tk-n">x</span><span class="tk-o">.</span><span class="tk-n">ndim</span>     <span class="tk-c1"># 2        số trục</span>
+<span class="tk-n">x</span><span class="tk-o">.</span><span class="tk-n">size</span>     <span class="tk-c1"># 12       tổng số phần tử</span>
+<span class="tk-n">x</span><span class="tk-o">.</span><span class="tk-n">dtype</span>    <span class="tk-c1"># int64    kiểu số của mọi phần tử</span>
 </code></pre></div>
 
-<p>Với <code>u = (3, 4)</code>: ‖u‖₂ = √(9 + 16) = 5, ‖u‖₁ = 7. Norm xuất hiện trong regularization (phạt trọng số lớn: L2 ở weight decay, L1 làm nhiều trọng số về 0) và trong chuẩn hóa embedding.</p>
-<h3>Tích vô hướng và ý nghĩa hình học</h3>
-<div class="hl"><pre><span></span><code>u · v = u₁v₁ + u₂v₂ + … + uₙvₙ             định nghĩa đại số: nhân từng cặp rồi cộng
-u · v = ‖u‖ · ‖v‖ · cos θ                    định nghĩa hình học: θ là góc giữa hai vector
-cos(u, v) = (u · v) / (‖u‖ ‖v‖)              cosine similarity, từ −1 đến 1
+<div class="run" data-mode="py" data-group="t"><div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span></div><pre class="run-out">(3, 4)&#10;2&#10;12&#10;dtype(&#x27;int64&#x27;)</pre></div>
+
+<p><strong>Shape</strong> là thứ bạn kiểm tra nhiều nhất trong cả sự nghiệp ML. Phần lớn lỗi khi viết model là lỗi shape. Thói quen tốt: in <code>x.shape</code> sau mỗi bước biến đổi khi còn chưa chắc.</p>
+<h3>dtype: kiểu số quyết định kết quả</h3>
+<div class="hl"><pre><span></span><code><span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">array</span><span class="tk-p">([</span><span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-mi">2</span><span class="tk-p">,</span> <span class="tk-mi">3</span><span class="tk-p">])</span><span class="tk-o">.</span><span class="tk-n">dtype</span>     <span class="tk-c1"># int64</span>
+<span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">array</span><span class="tk-p">([</span><span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-mf">2.5</span><span class="tk-p">])</span><span class="tk-o">.</span><span class="tk-n">dtype</span>      <span class="tk-c1"># float64 (chỉ cần một số thực là cả mảng thành float)</span>
+<span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">array</span><span class="tk-p">([</span><span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-mi">2</span><span class="tk-p">,</span> <span class="tk-mi">3</span><span class="tk-p">])</span> <span class="tk-o">/</span> <span class="tk-mi">2</span>       <span class="tk-c1"># [0.5 1.  1.5] (chia luôn ra float)</span>
+
+<span class="tk-n">a</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">array</span><span class="tk-p">([</span><span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-mi">2</span><span class="tk-p">,</span> <span class="tk-mi">3</span><span class="tk-p">])</span>
+<span class="tk-n">a</span><span class="tk-p">[</span><span class="tk-mi">0</span><span class="tk-p">]</span> <span class="tk-o">=</span> <span class="tk-mf">9.7</span>
+<span class="tk-n">a</span>                             <span class="tk-c1"># [9 2 3]  ← 9.7 bị cắt thành 9 vì mảng là int</span>
 </code></pre></div>
 
-<p>Hai định nghĩa cho cùng một số. Từ đó suy ra: tích vô hướng <strong>dương</strong> khi hai vector cùng hướng (góc nhọn), <strong>bằng 0</strong> khi vuông góc, <strong>âm</strong> khi ngược hướng.</p>
-<figure class="fig"><img src="../assets/fig/p0-2-vectors.svg" alt="Hai vector gần cùng hướng: góc θ nhỏ nên cos θ = 0.96 gần 1. Đoạn xanh lá là hình chiếu của u lên v, dài u·v / ‖v‖ = 24/5 = 4.8." loading="lazy"><figcaption>Hai vector gần cùng hướng: góc θ nhỏ nên cos θ = 0.96 gần 1. Đoạn xanh lá là hình chiếu của u lên v, dài u·v / ‖v‖ = 24/5 = 4.8.</figcaption></figure>
+<div class="run" data-mode="py" data-group="t"><div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span></div><pre class="run-out">dtype(&#x27;int64&#x27;)&#10;dtype(&#x27;float64&#x27;)&#10;array([0.5, 1. , 1.5])&#10;array([9, 2, 3])</pre></div>
 
+<p>Deep learning thường dùng <code>float32</code> (nửa bộ nhớ so với <code>float64</code>, đủ chính xác). Đổi kiểu bằng <code>x.astype(np.float32)</code>.</p>
+<h3>Lấy phần tử: slicing, mặt nạ, danh sách chỉ số</h3>
+<div class="hl"><pre><span></span><code><span class="tk-n">x</span><span class="tk-p">[</span><span class="tk-mi">1</span><span class="tk-p">]</span>          <span class="tk-c1"># [4 5 6 7]         hàng thứ 2 (chỉ số bắt đầu từ 0), shape (4,)</span>
+<span class="tk-n">x</span><span class="tk-p">[:,</span> <span class="tk-mi">0</span><span class="tk-p">]</span>       <span class="tk-c1"># [0 4 8]           cột đầu, ":" nghĩa là "lấy hết trục này"</span>
+<span class="tk-n">x</span><span class="tk-p">[</span><span class="tk-mi">1</span><span class="tk-p">:,</span> <span class="tk-mi">2</span><span class="tk-p">:]</span>     <span class="tk-c1"># [[ 6  7]</span>
+              <span class="tk-c1">#  [10 11]]         từ hàng 1 trở đi, từ cột 2 trở đi</span>
+<span class="tk-n">x</span><span class="tk-p">[</span><span class="tk-n">x</span> <span class="tk-o">&gt;</span> <span class="tk-mi">5</span><span class="tk-p">]</span>      <span class="tk-c1"># [ 6  7  8  9 10 11]   mặt nạ boolean: chỉ giữ chỗ True, kết quả luôn 1 chiều</span>
+<span class="tk-n">x</span><span class="tk-p">[[</span><span class="tk-mi">0</span><span class="tk-p">,</span> <span class="tk-mi">2</span><span class="tk-p">]]</span>     <span class="tk-c1"># hàng 0 và hàng 2 (fancy indexing bằng danh sách chỉ số)</span>
+</code></pre></div>
+
+<div class="run" data-mode="py" data-group="t"><div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span></div><pre class="run-out">array([4, 5, 6, 7])&#10;array([0, 4, 8])&#10;array([[ 6,  7],&#10;       [10, 11]])&#10;array([ 6,  7,  8,  9, 10, 11])&#10;array([[ 0,  1,  2,  3],&#10;       [ 8,  9, 10, 11]])</pre></div>
+
+<p><code>x &gt; 5</code> tạo một mảng <code>True/False</code> cùng shape với <code>x</code>. Đặt nó vào trong <code>[...]</code> để lọc. Đây chính là cách bạn lọc dữ liệu trong pandas ở P0.3.</p>
+<h3>reshape và transpose</h3>
+<div class="hl"><pre><span></span><code><span class="tk-n">x</span><span class="tk-o">.</span><span class="tk-n">reshape</span><span class="tk-p">(</span><span class="tk-mi">2</span><span class="tk-p">,</span> <span class="tk-o">-</span><span class="tk-mi">1</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">shape</span>   <span class="tk-c1"># (2, 6)   -1 nghĩa là "tự tính": 12 / 2 = 6</span>
+<span class="tk-n">x</span><span class="tk-o">.</span><span class="tk-n">reshape</span><span class="tk-p">(</span><span class="tk-o">-</span><span class="tk-mi">1</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">shape</span>      <span class="tk-c1"># (12,)    duỗi thành 1 chiều</span>
+<span class="tk-n">x</span><span class="tk-o">.</span><span class="tk-n">T</span><span class="tk-o">.</span><span class="tk-n">shape</span>                <span class="tk-c1"># (4, 3)   đổi hàng thành cột</span>
+<span class="tk-n">x</span><span class="tk-p">[</span><span class="tk-kc">None</span><span class="tk-p">]</span><span class="tk-o">.</span><span class="tk-n">shape</span>            <span class="tk-c1"># (1, 3, 4) chèn thêm một trục độ dài 1 ở đầu</span>
+</code></pre></div>
+
+<div class="run" data-mode="py" data-group="t"><div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span></div><pre class="run-out">(2, 6)&#10;(12,)&#10;(4, 3)&#10;(1, 3, 4)</pre></div>
+
+<p><code>reshape</code> không đổi thứ tự các số, chỉ đổi cách "xếp" chúng vào các trục. Tổng số phần tử phải giữ nguyên: <code>x.reshape(5, -1)</code> sẽ báo lỗi vì 12 không chia hết cho 5.</p>
+<h3>Ghép mảng: concatenate và stack</h3>
+<div class="hl"><pre><span></span><code><span class="tk-n">a</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">array</span><span class="tk-p">([[</span><span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-mi">2</span><span class="tk-p">],</span> <span class="tk-p">[</span><span class="tk-mi">3</span><span class="tk-p">,</span> <span class="tk-mi">4</span><span class="tk-p">]])</span>          <span class="tk-c1"># shape (2, 2)</span>
+<span class="tk-n">b</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">array</span><span class="tk-p">([[</span><span class="tk-mi">5</span><span class="tk-p">,</span> <span class="tk-mi">6</span><span class="tk-p">]])</span>                  <span class="tk-c1"># shape (1, 2)</span>
+<span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">concatenate</span><span class="tk-p">([</span><span class="tk-n">a</span><span class="tk-p">,</span> <span class="tk-n">b</span><span class="tk-p">],</span> <span class="tk-n">axis</span><span class="tk-o">=</span><span class="tk-mi">0</span><span class="tk-p">)</span>          <span class="tk-c1"># (3, 2): nối thêm hàng</span>
+<span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">stack</span><span class="tk-p">([</span><span class="tk-n">a</span><span class="tk-p">,</span> <span class="tk-n">a</span><span class="tk-p">])</span><span class="tk-o">.</span><span class="tk-n">shape</span>                  <span class="tk-c1"># (2, 2, 2): tạo trục MỚI rồi xếp chồng</span>
+<span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">concatenate</span><span class="tk-p">([</span><span class="tk-n">a</span><span class="tk-p">,</span> <span class="tk-n">a</span><span class="tk-p">],</span> <span class="tk-n">axis</span><span class="tk-o">=</span><span class="tk-mi">1</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">shape</span>    <span class="tk-c1"># (2, 4): nối theo cột</span>
+</code></pre></div>
+
+<div class="run" data-mode="py" data-group="t"><div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span></div><pre class="run-out">array([[1, 2],&#10;       [3, 4],&#10;       [5, 6]])&#10;(2, 2, 2)&#10;(2, 4)</pre></div>
+
+<p><code>concatenate</code> nối dọc một trục <strong>đã có</strong>, số trục giữ nguyên, và mọi trục khác phải bằng nhau. <code>stack</code> tạo <strong>trục mới</strong>, số trục tăng thêm 1, và các mảng phải cùng shape. Gom 32 ảnh shape <code>(28, 28)</code> thành một batch là <code>np.stack(images)</code>, ra <code>(32, 28, 28)</code>: đúng việc <code>DataLoader</code> của PyTorch làm cho bạn ở P0.6.</p>
+<h3>axis: trục bị gộp mất</h3>
+<p>Các hàm tổng hợp (<code>sum</code>, <code>mean</code>, <code>max</code>, <code>argmax</code>...) nhận tham số <code>axis</code>. Cách nhớ chắc nhất: <strong><code>axis=k</code> là trục biến mất trong kết quả</strong>.</p>
 <div class="box example">
 <div class="box-h">Ví dụ từng bước</div>
-<p><strong>So sánh embedding.</strong> Giả sử một model biến từ thành vector 3 chiều (số thật thì có hàng trăm chiều):</p>
-<div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">numpy</span><span class="tk-w"> </span><span class="tk-k">as</span><span class="tk-w"> </span><span class="tk-nn">np</span>
-<span class="tk-n">e</span> <span class="tk-o">=</span> <span class="tk-p">{</span><span class="tk-s2">"vua"</span><span class="tk-p">:</span>        <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">array</span><span class="tk-p">([</span><span class="tk-mf">0.9</span><span class="tk-p">,</span> <span class="tk-mf">0.8</span><span class="tk-p">,</span> <span class="tk-mf">0.1</span><span class="tk-p">]),</span>
-     <span class="tk-s2">"hoàng hậu"</span><span class="tk-p">:</span>  <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">array</span><span class="tk-p">([</span><span class="tk-mf">0.85</span><span class="tk-p">,</span> <span class="tk-mf">0.75</span><span class="tk-p">,</span> <span class="tk-mf">0.2</span><span class="tk-p">]),</span>
-     <span class="tk-s2">"quả táo"</span><span class="tk-p">:</span>    <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">array</span><span class="tk-p">([</span><span class="tk-mf">0.1</span><span class="tk-p">,</span> <span class="tk-mf">0.2</span><span class="tk-p">,</span> <span class="tk-mf">0.9</span><span class="tk-p">])}</span>
-<span class="tk-n">cos</span> <span class="tk-o">=</span> <span class="tk-k">lambda</span> <span class="tk-n">a</span><span class="tk-p">,</span> <span class="tk-n">b</span><span class="tk-p">:</span> <span class="tk-n">a</span> <span class="tk-o">@</span> <span class="tk-n">b</span> <span class="tk-o">/</span> <span class="tk-p">(</span><span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">linalg</span><span class="tk-o">.</span><span class="tk-n">norm</span><span class="tk-p">(</span><span class="tk-n">a</span><span class="tk-p">)</span> <span class="tk-o">*</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">linalg</span><span class="tk-o">.</span><span class="tk-n">norm</span><span class="tk-p">(</span><span class="tk-n">b</span><span class="tk-p">))</span>
-<span class="tk-n">cos</span><span class="tk-p">(</span><span class="tk-n">e</span><span class="tk-p">[</span><span class="tk-s2">"vua"</span><span class="tk-p">],</span> <span class="tk-n">e</span><span class="tk-p">[</span><span class="tk-s2">"hoàng hậu"</span><span class="tk-p">])</span>   <span class="tk-c1"># 0.996  rất giống</span>
-<span class="tk-n">cos</span><span class="tk-p">(</span><span class="tk-n">e</span><span class="tk-p">[</span><span class="tk-s2">"vua"</span><span class="tk-p">],</span> <span class="tk-n">e</span><span class="tk-p">[</span><span class="tk-s2">"quả táo"</span><span class="tk-p">])</span>     <span class="tk-c1"># 0.303  khác xa</span>
+<p>Với <code>x</code> shape <code>(3, 4)</code> ở trên:</p>
+<ul>
+<li><code>x.sum(axis=0)</code> gộp trục 0 (3 hàng) → còn shape <code>(4,)</code>, mỗi cột một tổng: <code>[0+4+8, 1+5+9, 2+6+10, 3+7+11]</code> = <code>[12 15 18 21]</code>.</li>
+<li><code>x.sum(axis=1)</code> gộp trục 1 (4 cột) → còn shape <code>(3,)</code>, mỗi hàng một tổng: <code>[6 22 38]</code>.</li>
+<li><code>x.sum()</code> gộp tất cả → một số: <code>66</code>.</li>
+<li><code>x.mean(axis=1)</code> → <code>[1.5 5.5 9.5]</code>: trung bình mỗi hàng.</li>
+</ul>
+<p>Trong ML, dữ liệu thường có shape <code>(số mẫu, số đặc trưng)</code>. "Trung bình mỗi đặc trưng" là <code>axis=0</code>; "tổng điểm của từng mẫu" là <code>axis=1</code>.</p>
+</div>
+<figure class="fig"><img src="../assets/fig/p0-2-axis.svg" alt="axis=k là trục biến mất: gộp 3 hàng còn một giá trị mỗi cột (xanh), gộp 4 cột còn một giá trị mỗi hàng (cam)." loading="lazy"><figcaption>axis=k là trục biến mất: gộp 3 hàng còn một giá trị mỗi cột (xanh), gộp 4 cột còn một giá trị mỗi hàng (cam).</figcaption></figure>
+
+<details class="fold deep">
+<summary>Đào sâu thêm</summary>
+<p><strong>Mảng nằm trong bộ nhớ thế nào.</strong> Mảng <code>(3, 4)</code> kiểu <code>int64</code> thực chất là 12 số nằm liền nhau (96 byte). numpy ghi thêm <strong>strides</strong>: phải nhảy bao nhiêu byte để sang phần tử kế tiếp theo mỗi trục. Với <code>x</code>, <code>x.strides</code> là <code>(32, 8)</code>: sang hàng sau nhảy 32 byte (4 số × 8 byte), sang cột sau nhảy 8 byte.</p>
+<p>Vì vậy <code>x.T</code> (chuyển vị) gần như miễn phí: numpy chỉ đổi strides thành <code>(8, 32)</code> chứ không chép dữ liệu. Slicing <code>x[:, 1:3]</code> cũng chỉ là "nhìn" vào cùng vùng nhớ với strides khác. Đó là lý do slicing trả về <strong>view</strong>. Đổi sang <code>float32</code> (<code>x.astype(np.float32)</code>) giảm từ 96 xuống 48 byte, một nửa bộ nhớ: GPU có hạn bộ nhớ nên deep learning hầu như luôn dùng <code>float32</code> hoặc thấp hơn.</p>
+</details>
+<div class="box pitfall">
+<div class="box-h">Lỗi hay gặp</div>
+<p><strong>Slicing trả về view, không phải bản sao.</strong> Sửa trên view là sửa luôn mảng gốc:</p>
+<div class="hl"><pre><span></span><code><span class="tk-n">v</span> <span class="tk-o">=</span> <span class="tk-n">x</span><span class="tk-p">[</span><span class="tk-mi">0</span><span class="tk-p">]</span>        <span class="tk-c1"># view của hàng 0</span>
+<span class="tk-n">v</span><span class="tk-p">[</span><span class="tk-mi">0</span><span class="tk-p">]</span> <span class="tk-o">=</span> <span class="tk-mi">100</span>
+<span class="tk-n">x</span><span class="tk-p">[</span><span class="tk-mi">0</span><span class="tk-p">,</span> <span class="tk-mi">0</span><span class="tk-p">]</span>         <span class="tk-c1"># 100  ← mảng gốc bị đổi theo</span>
+
+<span class="tk-n">c</span> <span class="tk-o">=</span> <span class="tk-n">x</span><span class="tk-p">[</span><span class="tk-mi">0</span><span class="tk-p">]</span><span class="tk-o">.</span><span class="tk-n">copy</span><span class="tk-p">()</span> <span class="tk-c1"># bản sao độc lập</span>
+<span class="tk-n">c</span><span class="tk-p">[</span><span class="tk-mi">0</span><span class="tk-p">]</span> <span class="tk-o">=</span> <span class="tk-o">-</span><span class="tk-mi">5</span>       <span class="tk-c1"># x không đổi</span>
 </code></pre></div>
 
 <div class="run" data-group="t" data-mode="py">
 <div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span></div>
-<pre class="run-out">0.9957846018984898&#10;0.3034263294974635</pre>
+<pre class="run-out">100</pre>
 </div>
-<p>Đây chính là cách tìm kiếm ngữ nghĩa và RAG ở P4 hoạt động: biến câu hỏi và tài liệu thành vector, lấy các tài liệu có cosine cao nhất.</p>
-</div>
-<h3>Một neuron là một tích vô hướng</h3>
-<p>Neuron nhận đầu vào <code>x</code>, có trọng số <code>w</code> và bias <code>b</code>, tính <code>z = w · x + b</code>. Ví dụ <code>x = (1, 2, 3)</code>, <code>w = (0.5, −1, 2)</code>, <code>b = 0.5</code>: z = 0.5 − 2 + 6 + 0.5 = <strong>5</strong>. Trọng số dương lớn nghĩa là "đặc trưng này đẩy kết quả lên", âm là "kéo xuống". Học máy là đi tìm <code>w</code> và <code>b</code> tốt.</p>
-<div class="box pitfall">
-<div class="box-h">Lỗi hay gặp</div>
-<p><strong>So khoảng cách khi độ dài vector khác nhau.</strong> Hai đoạn văn cùng chủ đề nhưng một đoạn dài gấp đôi có thể cho embedding dài hơn, khiến tích vô hướng lớn hơn dù nghĩa không giống hơn. Cosine chia cho độ dài nên chỉ so <strong>hướng</strong>. Nhiều thư viện chuẩn hóa embedding về độ dài 1 sẵn; khi đó tích vô hướng bằng cosine luôn.</p>
+<p>Ngược lại, lọc bằng mặt nạ (<code>x[x &gt; 5]</code>) và danh sách chỉ số (<code>x[[0, 2]]</code>) luôn tạo bản sao. Khi cần sửa một phần dữ liệu mà không muốn ảnh hưởng bản gốc, gọi <code>.copy()</code> cho chắc.</p>
 </div>
 <div class="box check">
 <div class="box-h">Tự kiểm tra nhanh</div>
-<p>Với <code>u = (1, 2, 2)</code> và <code>v = (2, 0, 1)</code>:</p>
-<div class="ans" id="p0-2-t-b45-a1">
-<div class="ans-fields"><label>u · v<input inputmode="decimal" data-ans="4.0" data-tol="0.0" autocomplete="off"></label><label>‖u‖₂<input inputmode="decimal" data-ans="3.0" data-tol="0.001" autocomplete="off"></label><label>‖v‖₁<input inputmode="decimal" data-ans="3.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div>
+<p>Với <code>x = np.arange(12).reshape(3, 4)</code> như trên, tính bằng tay:</p>
+<div class="ans" id="p0-2-t-b113-a1">
+<div class="ans-fields"><label>x.sum(axis=0)[2]<input inputmode="decimal" data-ans="18.0" data-tol="0.0" autocomplete="off"></label><label>x[:, 1:3].sum()<input inputmode="decimal" data-ans="33.0" data-tol="0.0" autocomplete="off"></label><label>x.mean(axis=1)[2]<input inputmode="decimal" data-ans="9.5" data-tol="0.001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div>
 <div aria-live="polite" class="ans-fb"></div>
 </div>
 </div>
-<h2 id="lt-2">Ma trận và phép nhân ma trận</h2>
+<h2 id="lt-2">Broadcasting</h2>
 <div class="box why">
 <div class="box-h">Vì sao cần học</div>
-<p>Một lớp <code>Linear</code> trong mạng nơ-ron là một ma trận trọng số. Đưa một batch 128 ảnh qua lớp đó là <strong>một</strong> phép nhân ma trận, chạy song song trên GPU. Hiểu phép nhân ma trận là hiểu deep learning tính toán gì.</p>
+<p>Bạn sẽ liên tục làm phép tính giữa mảng lớn và mảng nhỏ: trừ trung bình của từng cột, cộng bias vào từng hàng, nhân trọng số. Broadcasting cho phép viết những phép đó trong một dòng mà không cần copy dữ liệu, và cũng là nguồn lỗi im lặng phổ biến nhất trong code ML.</p>
 </div>
-<h3>Ma trận và shape</h3>
-<p>Ma trận là bảng số <code>m</code> hàng × <code>n</code> cột, shape <code>(m, n)</code>. Trong ML có hai cách nhìn:</p>
-<ul>
-<li><strong>Như một bảng dữ liệu</strong>: mỗi hàng là một mẫu, mỗi cột là một đặc trưng. <code>X</code> shape <code>(128, 784)</code> là 128 ảnh, mỗi ảnh 784 điểm ảnh.</li>
-<li><strong>Như một phép biến đổi</strong>: nhân ma trận với vector biến vector đó thành vector khác (kéo giãn, xoay, chiếu sang không gian khác số chiều).</li>
-</ul>
-<h3>Quy tắc nhân</h3>
-<p><code>A</code> shape <code>(m, n)</code> nhân <code>B</code> shape <code>(n, p)</code> cho <code>C</code> shape <code>(m, p)</code>. Phần tử <code>C[i, j]</code> là <strong>tích vô hướng giữa hàng i của A và cột j của B</strong>. Điều kiện bắt buộc: số cột của A bằng số hàng của B (hai số <code>n</code> ở giữa phải khớp, rồi "biến mất").</p>
-<figure class="fig"><img src="../assets/fig/p0-2-matmul.svg" alt="Mỗi ô của C là một tích vô hướng hàng × cột. Ô C[0, 1] lấy hàng 0 của A (xanh) và cột 1 của B (cam)." loading="lazy"><figcaption>Mỗi ô của C là một tích vô hướng hàng × cột. Ô C[0, 1] lấy hàng 0 của A (xanh) và cột 1 của B (cam).</figcaption></figure>
-
+<h3>Quy tắc</h3>
+<p>Khi tính <code>a + b</code> với hai shape khác nhau, numpy làm ba bước:</p>
+<ol>
+<li><strong>Căn phải</strong> hai shape. Nếu một bên ít trục hơn, coi như có thêm trục độ dài 1 ở bên trái.</li>
+<li>So <strong>từng cặp kích thước từ phải sang trái</strong>: khớp nếu bằng nhau, hoặc một trong hai bằng 1.</li>
+<li>Trục nào bằng 1 sẽ được "kéo dài" cho bằng bên kia (không tốn bộ nhớ thật). Nếu có cặp không khớp, báo lỗi.</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>a</th>
+<th>b</th>
+<th>căn phải</th>
+<th>kết quả</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>(4, 3)</td>
+<td>(3,)</td>
+<td>(4, 3) với (1, 3)</td>
+<td>(4, 3): b cộng vào từng hàng</td>
+</tr>
+<tr>
+<td>(4, 3)</td>
+<td>(4, 1)</td>
+<td>(4, 3) với (4, 1)</td>
+<td>(4, 3): b cộng vào từng cột</td>
+</tr>
+<tr>
+<td>(4, 3)</td>
+<td>(4,)</td>
+<td>(4, 3) với (1, 4)</td>
+<td>lỗi: 3 và 4 không khớp</td>
+</tr>
+<tr>
+<td>(3, 1)</td>
+<td>(1, 4)</td>
+<td>(3, 1) với (1, 4)</td>
+<td>(3, 4): cả hai cùng được kéo dài</td>
+</tr>
+</tbody>
+</table>
+<h3>Ví dụ: chuẩn hóa từng cột</h3>
+<p>Đặc trưng có thang đo khác nhau (diện tích tính bằng m², giá tính bằng triệu) làm model học chậm. Chuẩn hóa đưa mỗi cột về trung bình 0, độ lệch chuẩn 1:</p>
 <div class="box example">
 <div class="box-h">Ví dụ từng bước</div>
-<p>Tính tay <code>A @ B</code> với <code>A = [[1, 2], [3, 4]]</code>, <code>B = [[5, 6], [7, 8]]</code>:</p>
-<div class="hl"><pre><span></span><code>C[0,0] = 1·5 + 2·7 = 19        C[0,1] = 1·6 + 2·8 = 22
-C[1,0] = 3·5 + 4·7 = 43        C[1,1] = 3·6 + 4·8 = 50
-</code></pre></div>
-
-<div class="hl"><pre><span></span><code><span class="tk-n">A</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">array</span><span class="tk-p">([[</span><span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-mi">2</span><span class="tk-p">],</span> <span class="tk-p">[</span><span class="tk-mi">3</span><span class="tk-p">,</span> <span class="tk-mi">4</span><span class="tk-p">]]);</span> <span class="tk-n">B</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">array</span><span class="tk-p">([[</span><span class="tk-mi">5</span><span class="tk-p">,</span> <span class="tk-mi">6</span><span class="tk-p">],</span> <span class="tk-p">[</span><span class="tk-mi">7</span><span class="tk-p">,</span> <span class="tk-mi">8</span><span class="tk-p">]])</span>
-<span class="tk-n">A</span> <span class="tk-o">@</span> <span class="tk-n">B</span>        <span class="tk-c1"># [[19 22] [43 50]]</span>
-<span class="tk-n">B</span> <span class="tk-o">@</span> <span class="tk-n">A</span>        <span class="tk-c1"># [[23 34] [31 46]]   ← khác! nhân ma trận không giao hoán</span>
-<span class="tk-n">A</span> <span class="tk-o">*</span> <span class="tk-n">B</span>        <span class="tk-c1"># [[ 5 12] [21 32]]   ← * là nhân từng phần tử, không phải nhân ma trận</span>
+<div class="hl"><pre><span></span><code><span class="tk-n">X</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">array</span><span class="tk-p">([[</span><span class="tk-mf">1.</span><span class="tk-p">,</span> <span class="tk-mf">200.</span><span class="tk-p">],</span>
+              <span class="tk-p">[</span><span class="tk-mf">2.</span><span class="tk-p">,</span> <span class="tk-mf">400.</span><span class="tk-p">],</span>
+              <span class="tk-p">[</span><span class="tk-mf">3.</span><span class="tk-p">,</span> <span class="tk-mf">600.</span><span class="tk-p">]])</span>           <span class="tk-c1"># shape (3, 2): 3 mẫu, 2 đặc trưng</span>
+<span class="tk-n">mu</span> <span class="tk-o">=</span> <span class="tk-n">X</span><span class="tk-o">.</span><span class="tk-n">mean</span><span class="tk-p">(</span><span class="tk-n">axis</span><span class="tk-o">=</span><span class="tk-mi">0</span><span class="tk-p">)</span>                  <span class="tk-c1"># [  2. 400.]          shape (2,)</span>
+<span class="tk-n">sd</span> <span class="tk-o">=</span> <span class="tk-n">X</span><span class="tk-o">.</span><span class="tk-n">std</span><span class="tk-p">(</span><span class="tk-n">axis</span><span class="tk-o">=</span><span class="tk-mi">0</span><span class="tk-p">)</span>                   <span class="tk-c1"># [  0.816 163.299]    shape (2,)</span>
+<span class="tk-n">Z</span> <span class="tk-o">=</span> <span class="tk-p">(</span><span class="tk-n">X</span> <span class="tk-o">-</span> <span class="tk-n">mu</span><span class="tk-p">)</span> <span class="tk-o">/</span> <span class="tk-n">sd</span>                    <span class="tk-c1"># (3, 2) với (2,) → mỗi hàng trừ mu, chia sd</span>
+<span class="tk-c1"># [[-1.2247 -1.2247]</span>
+<span class="tk-c1">#  [ 0.      0.    ]</span>
+<span class="tk-c1">#  [ 1.2247  1.2247]]</span>
 </code></pre></div>
 
 <div class="run" data-group="t" data-mode="py">
 <div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span></div>
-<pre class="run-out">array([[19, 22],&#10;       [43, 50]])&#10;array([[23, 34],&#10;       [31, 46]])&#10;array([[ 5, 12],&#10;       [21, 32]])</pre>
+<pre class="run-out run-empty">(chạy xong, không in ra gì)</pre>
 </div>
+<p>Bước broadcasting: <code>X</code> shape <code>(3, 2)</code>, <code>mu</code> shape <code>(2,)</code> được căn phải thành <code>(1, 2)</code>, rồi kéo dài thành <code>(3, 2)</code>: hàng nào cũng trừ cùng một vector <code>mu</code>. Sau chuẩn hóa hai cột có cùng thang đo dù ban đầu chênh nhau 200 lần.</p>
 </div>
-<h3>Lớp Linear trong code thật</h3>
-<div class="hl"><pre><span></span><code><span class="tk-n">X</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">random</span><span class="tk-o">.</span><span class="tk-n">rand</span><span class="tk-p">(</span><span class="tk-mi">128</span><span class="tk-p">,</span> <span class="tk-mi">784</span><span class="tk-p">)</span>   <span class="tk-c1"># batch 128 ảnh, mỗi ảnh 784 số</span>
-<span class="tk-n">W</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">random</span><span class="tk-o">.</span><span class="tk-n">rand</span><span class="tk-p">(</span><span class="tk-mi">256</span><span class="tk-p">,</span> <span class="tk-mi">784</span><span class="tk-p">)</span>   <span class="tk-c1"># nn.Linear(784, 256) lưu weight shape (out, in)</span>
-<span class="tk-n">b</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">random</span><span class="tk-o">.</span><span class="tk-n">rand</span><span class="tk-p">(</span><span class="tk-mi">256</span><span class="tk-p">)</span>
-<span class="tk-n">H</span> <span class="tk-o">=</span> <span class="tk-n">X</span> <span class="tk-o">@</span> <span class="tk-n">W</span><span class="tk-o">.</span><span class="tk-n">T</span> <span class="tk-o">+</span> <span class="tk-n">b</span>                <span class="tk-c1"># (128, 784) @ (784, 256) → (128, 256), cộng b nhờ broadcasting</span>
+<figure class="fig"><img src="../assets/fig/p0-2-broadcast.svg" alt="Trái: vector b shape (3,) được kéo dài thành 4 hàng rồi cộng vào A. Phải: cột (3, 1) nhân hàng (1, 4) cho bảng (3, 4)." loading="lazy"><figcaption>Trái: vector b shape (3,) được kéo dài thành 4 hàng rồi cộng vào A. Phải: cột (3, 1) nhân hàng (1, 4) cho bảng (3, 4).</figcaption></figure>
+
+<h3>Ví dụ: tạo bảng cửu chương không cần vòng lặp</h3>
+<div class="hl"><pre><span></span><code><span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">arange</span><span class="tk-p">(</span><span class="tk-mi">3</span><span class="tk-p">)[:,</span> <span class="tk-kc">None</span><span class="tk-p">]</span> <span class="tk-o">*</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">arange</span><span class="tk-p">(</span><span class="tk-mi">4</span><span class="tk-p">)[</span><span class="tk-kc">None</span><span class="tk-p">,</span> <span class="tk-p">:]</span>
+<span class="tk-c1"># (3, 1) * (1, 4) → (3, 4)</span>
+<span class="tk-c1"># [[0 0 0 0]</span>
+<span class="tk-c1">#  [0 1 2 3]</span>
+<span class="tk-c1">#  [0 2 4 6]]</span>
+</code></pre></div>
+
+<div class="run" data-mode="py" data-group="t"><div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span></div><pre class="run-out">array([[0, 0, 0, 0],&#10;       [0, 1, 2, 3],&#10;       [0, 2, 4, 6]])</pre></div>
+
+<p><code>[:, None]</code> biến vector thành cột, <code>[None, :]</code> biến thành hàng. Đây là mẹo bạn sẽ gặp lại trong attention ở P3 và khoảng cách giữa các điểm ở phần tiếp theo.</p>
+<div class="box pitfall">
+<div class="box-h">Lỗi hay gặp</div>
+<p><strong>Shape <code>(n,)</code> và <code>(n, 1)</code> trộn nhau.</strong> Lỗi này không báo đỏ, chỉ cho ra số sai:</p>
+<div class="hl"><pre><span></span><code><span class="tk-n">y</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">array</span><span class="tk-p">([</span><span class="tk-mf">1.</span><span class="tk-p">,</span> <span class="tk-mf">2.</span><span class="tk-p">,</span> <span class="tk-mf">3.</span><span class="tk-p">])</span>             <span class="tk-c1"># nhãn thật, shape (3,)</span>
+<span class="tk-n">y_pred</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">array</span><span class="tk-p">([[</span><span class="tk-mf">1.</span><span class="tk-p">],</span> <span class="tk-p">[</span><span class="tk-mf">2.</span><span class="tk-p">],</span> <span class="tk-p">[</span><span class="tk-mf">4.</span><span class="tk-p">]])</span>  <span class="tk-c1"># model trả về shape (3, 1)</span>
+<span class="tk-p">(</span><span class="tk-n">y_pred</span> <span class="tk-o">-</span> <span class="tk-n">y</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">shape</span>                     <span class="tk-c1"># (3, 3)  ← broadcasting thành ma trận 3x3!</span>
+<span class="tk-p">((</span><span class="tk-n">y_pred</span> <span class="tk-o">-</span> <span class="tk-n">y</span><span class="tk-p">)</span> <span class="tk-o">**</span> <span class="tk-mi">2</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">mean</span><span class="tk-p">()</span>             <span class="tk-c1"># 2.33   sai</span>
+<span class="tk-p">((</span><span class="tk-n">y_pred</span><span class="tk-o">.</span><span class="tk-n">ravel</span><span class="tk-p">()</span> <span class="tk-o">-</span> <span class="tk-n">y</span><span class="tk-p">)</span> <span class="tk-o">**</span> <span class="tk-mi">2</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">mean</span><span class="tk-p">()</span>     <span class="tk-c1"># 0.33   đúng</span>
+</code></pre></div>
+
+<div class="run" data-group="t" data-mode="py">
+<div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span></div>
+<pre class="run-out">(3, 3)&#10;2.3333333333333335&#10;0.3333333333333333</pre>
+</div>
+<p>Mỗi khi tính loss bằng tay, in shape của dự đoán và nhãn, hoặc dùng <code>.ravel()</code> / <code>.reshape(-1)</code> để đưa cả hai về 1 chiều.</p>
+</div>
+<h2 id="lt-3">Vector hóa thay vòng for</h2>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>Dữ liệu thật có hàng triệu dòng. Cùng một phép tính, viết bằng vòng <code>for</code> có thể mất vài phút; viết vector hóa mất vài giây. Đây cũng là cách tư duy của GPU: làm cùng một phép tính trên cả khối dữ liệu một lúc.</p>
+</div>
+<h3>Vì sao nhanh hơn</h3>
+<p>Mỗi vòng lặp Python phải kiểm tra kiểu của biến, tra cứu phép toán, tạo đối tượng số mới. Phép toán numpy làm việc đó <strong>một lần</strong> cho cả mảng, rồi chạy vòng lặp bằng C trên vùng nhớ liền nhau (và tận dụng lệnh SIMD của CPU).</p>
+<div class="hl"><pre><span></span><code><span class="tk-n">big</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">random</span><span class="tk-o">.</span><span class="tk-n">default_rng</span><span class="tk-p">(</span><span class="tk-mi">0</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">random</span><span class="tk-p">(</span><span class="tk-mi">1_000_000</span><span class="tk-p">)</span>
+
+<span class="tk-n">s</span> <span class="tk-o">=</span> <span class="tk-mf">0.0</span>
+<span class="tk-k">for</span> <span class="tk-n">v</span> <span class="tk-ow">in</span> <span class="tk-n">big</span><span class="tk-p">:</span>        <span class="tk-c1"># khoảng 150 ms</span>
+    <span class="tk-n">s</span> <span class="tk-o">+=</span> <span class="tk-n">v</span> <span class="tk-o">*</span> <span class="tk-n">v</span>
+
+<span class="tk-n">s2</span> <span class="tk-o">=</span> <span class="tk-p">(</span><span class="tk-n">big</span> <span class="tk-o">*</span> <span class="tk-n">big</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">sum</span><span class="tk-p">()</span>   <span class="tk-c1"># khoảng 5 ms, nhanh hơn khoảng 30 lần</span>
 </code></pre></div>
 
 <div class="run" data-mode="py" data-group="t"><div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span></div><pre class="run-out run-empty">(chạy xong, không in ra gì)</pre></div>
 
-<p>Mỗi hàng của <code>H</code> là 256 neuron tính cho một ảnh; mỗi neuron là một tích vô hướng như ở mục trước. Một phép <code>@</code> làm 128 × 256 = 32.768 tích vô hướng cùng lúc.</p>
-<h3>Ma trận như một phép biến đổi</h3>
-<p>Nhân ma trận <code>(2, 2)</code> với mọi điểm của mặt phẳng là biến đổi cả mặt phẳng. Cột thứ nhất của ma trận cho biết vector <code>(1, 0)</code> đi đâu, cột thứ hai cho biết <code>(0, 1)</code> đi đâu:</p>
-<figure class="fig"><img src="../assets/fig/p0-2-transform.svg" alt="Ma trận [[2, 0], [0, 0.5]] kéo dài trục ngang gấp đôi, nén trục dọc một nửa. Ma trận [[0, −1], [1, 0]] xoay 90°: (1, 0) thành (0, 1)." loading="lazy"><figcaption>Ma trận [[2, 0], [0, 0.5]] kéo dài trục ngang gấp đôi, nén trục dọc một nửa. Ma trận [[0, −1], [1, 0]] xoay 90°: (1, 0) thành (0, 1).</figcaption></figure>
+<p>Con số cụ thể tùy máy, nhưng chênh lệch vài chục đến vài trăm lần là bình thường.</p>
+<figure class="fig"><img src="../assets/fig/p0-2-speed.svg" alt="Đo trên máy chủ chạy bài này: cùng một phép tính, vòng for chậm hơn khoảng 30 lần." loading="lazy"><figcaption>Đo trên máy chủ chạy bài này: cùng một phép tính, vòng for chậm hơn khoảng 30 lần.</figcaption></figure>
 
-<p>Mạng nơ-ron xếp chồng nhiều phép biến đổi như vậy, xen giữa là hàm phi tuyến (ReLU), để "uốn" không gian dữ liệu tới khi các lớp tách ra được.</p>
-<h3>Vài tính chất cần nhớ</h3>
-<table>
-<thead>
-<tr>
-<th>Tính chất</th>
-<th>Ý nghĩa</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>(A @ B) @ C = A @ (B @ C)</code></td>
-<td>kết hợp được, nên có thể tính theo thứ tự rẻ hơn</td>
-</tr>
-<tr>
-<td><code>A @ B ≠ B @ A</code></td>
-<td>không giao hoán, thứ tự quan trọng</td>
-</tr>
-<tr>
-<td><code>(A @ B).T = B.T @ A.T</code></td>
-<td>chuyển vị đảo thứ tự, gặp khi tính gradient</td>
-</tr>
-<tr>
-<td><code>I @ A = A</code></td>
-<td>ma trận đơn vị <code>np.eye(n)</code> không đổi gì</td>
-</tr>
-</tbody>
-</table>
-<div class="keep">
-<p><strong>Ghi nhớ:</strong> (m, n) @ (n, p) → (m, p). Viết shape bên cạnh mỗi dòng code; hầu hết lỗi deep learning là lỗi shape.</p>
+<h3>Các hàm thay thế vòng lặp hay dùng</h3>
+<div class="hl"><pre><span></span><code><span class="tk-n">z</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">array</span><span class="tk-p">([</span><span class="tk-o">-</span><span class="tk-mf">2.</span><span class="tk-p">,</span> <span class="tk-mf">0.5</span><span class="tk-p">,</span> <span class="tk-mf">3.</span><span class="tk-p">,</span> <span class="tk-o">-</span><span class="tk-mf">1.</span><span class="tk-p">])</span>
+<span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">where</span><span class="tk-p">(</span><span class="tk-n">z</span> <span class="tk-o">&gt;</span> <span class="tk-mi">0</span><span class="tk-p">,</span> <span class="tk-n">z</span><span class="tk-p">,</span> <span class="tk-mi">0</span><span class="tk-p">)</span>     <span class="tk-c1"># [0.  0.5 3.  0. ]  ReLU: giữ số dương, còn lại thành 0</span>
+<span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">clip</span><span class="tk-p">(</span><span class="tk-n">z</span><span class="tk-p">,</span> <span class="tk-o">-</span><span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-mi">1</span><span class="tk-p">)</span>         <span class="tk-c1"># [-1.  0.5 1.  -1. ] chặn trong khoảng [-1, 1]</span>
+<span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">cumsum</span><span class="tk-p">([</span><span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-mi">2</span><span class="tk-p">,</span> <span class="tk-mi">3</span><span class="tk-p">,</span> <span class="tk-mi">4</span><span class="tk-p">])</span>   <span class="tk-c1"># [ 1  3  6 10]       tổng tích lũy</span>
+<span class="tk-n">z</span><span class="tk-o">.</span><span class="tk-n">argmax</span><span class="tk-p">()</span>                <span class="tk-c1"># 2                   chỉ số của phần tử lớn nhất</span>
+<span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">argsort</span><span class="tk-p">(</span><span class="tk-o">-</span><span class="tk-n">z</span><span class="tk-p">)[:</span><span class="tk-mi">2</span><span class="tk-p">]</span>        <span class="tk-c1"># [2 1]               chỉ số của 2 phần tử lớn nhất (top-k)</span>
+</code></pre></div>
+
+<div class="run" data-mode="py" data-group="t"><div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span></div><pre class="run-out">array([0. , 0.5, 3. , 0. ])&#10;array([-1. ,  0.5,  1. , -1. ])&#10;array([ 1,  3,  6, 10])&#10;2&#10;array([2, 1])</pre></div>
+
+<h3>Ví dụ lớn: khoảng cách giữa mọi cặp điểm</h3>
+<p>Bài toán: có <code>n</code> điểm trong <code>A</code> và <code>m</code> điểm trong <code>B</code> (mỗi điểm <code>d</code> chiều), cần ma trận khoảng cách <code>D</code> shape <code>(n, m)</code>. Bạn sẽ dùng đúng phép này ở k-means (P1) và tìm kiếm vector (P4).</p>
+<div class="box example">
+<div class="box-h">Ví dụ từng bước</div>
+<div class="hl"><pre><span></span><code><span class="tk-n">A</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">array</span><span class="tk-p">([[</span><span class="tk-mf">0.</span><span class="tk-p">,</span> <span class="tk-mf">0.</span><span class="tk-p">],</span> <span class="tk-p">[</span><span class="tk-mf">3.</span><span class="tk-p">,</span> <span class="tk-mf">4.</span><span class="tk-p">]])</span>            <span class="tk-c1"># n = 2 điểm</span>
+<span class="tk-n">B</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">array</span><span class="tk-p">([[</span><span class="tk-mf">0.</span><span class="tk-p">,</span> <span class="tk-mf">0.</span><span class="tk-p">],</span> <span class="tk-p">[</span><span class="tk-mf">6.</span><span class="tk-p">,</span> <span class="tk-mf">8.</span><span class="tk-p">],</span> <span class="tk-p">[</span><span class="tk-mf">3.</span><span class="tk-p">,</span> <span class="tk-mf">0.</span><span class="tk-p">]])</span>  <span class="tk-c1"># m = 3 điểm</span>
+
+<span class="tk-n">diff</span> <span class="tk-o">=</span> <span class="tk-n">A</span><span class="tk-p">[:,</span> <span class="tk-kc">None</span><span class="tk-p">,</span> <span class="tk-p">:]</span> <span class="tk-o">-</span> <span class="tk-n">B</span><span class="tk-p">[</span><span class="tk-kc">None</span><span class="tk-p">,</span> <span class="tk-p">:,</span> <span class="tk-p">:]</span>   <span class="tk-c1"># (2, 1, 2) - (1, 3, 2) → (2, 3, 2)</span>
+<span class="tk-n">D</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">sqrt</span><span class="tk-p">((</span><span class="tk-n">diff</span> <span class="tk-o">**</span> <span class="tk-mi">2</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">sum</span><span class="tk-p">(</span><span class="tk-n">axis</span><span class="tk-o">=-</span><span class="tk-mi">1</span><span class="tk-p">))</span>  <span class="tk-c1"># gộp trục cuối (tọa độ) → (2, 3)</span>
+<span class="tk-c1"># [[ 0. 10.  3.]</span>
+<span class="tk-c1">#  [ 5.  5.  4.]]</span>
+</code></pre></div>
+
+<div class="run" data-group="t" data-mode="py">
+<div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span></div>
+<pre class="run-out run-empty">(chạy xong, không in ra gì)</pre>
 </div>
+<p>Từng bước:</p>
+<ol>
+<li><code>A[:, None, :]</code> chèn trục ở giữa: mỗi điểm của A thành một "hàng" riêng.</li>
+<li><code>B[None, :, :]</code> chèn trục ở đầu: cả B thành một khối.</li>
+<li>Phép trừ broadcasting thành <code>(2, 3, 2)</code>: phần tử <code>diff[i, j]</code> là vector <code>A[i] - B[j]</code>.</li>
+<li>Bình phương, cộng theo trục tọa độ, lấy căn: ra khoảng cách Euclid.</li>
+</ol>
+<p>Kiểm tra một ô: <code>D[1, 1]</code> là khoảng cách từ <code>(3, 4)</code> tới <code>(6, 8)</code> = √(3² + 4²) = 5. Đúng.</p>
+</div>
+<div class="keep">
+<p><strong>Ghi nhớ:</strong> trước khi viết vòng <code>for</code> trên mảng, hỏi: "phép này viết trên cả mảng được không?". Hầu như luôn được, nhờ broadcasting, mặt nạ và các hàm như <code>where</code>, <code>cumsum</code>, <code>argsort</code>.</p>
+</div>
+<details class="fold deep">
+<summary>Đào sâu thêm</summary>
+<p><strong>So sánh số thực.</strong> Máy tính lưu số thực ở dạng nhị phân nên <code>0.1 + 0.2 == 0.3</code> cho <code>False</code>. Khi kiểm tra kết quả tính toán (ví dụ so code của bạn với PyTorch trong notebook), dùng <code>np.isclose(a, b)</code> hoặc <code>np.allclose(A, B, atol=1e-6)</code> thay cho <code>==</code>. Các ô tự chấm trong lộ trình này đều so theo cách đó.</p>
+</details>
 <div class="box pitfall">
 <div class="box-h">Lỗi hay gặp</div>
-<p><strong>Dùng <code>*</code> thay cho <code>@</code>.</strong> Với hai ma trận vuông cùng shape, cả hai đều chạy không báo lỗi nhưng cho kết quả khác hẳn. Trong PyTorch cũng vậy: <code>*</code> là nhân từng phần tử, <code>@</code> (hoặc <code>torch.matmul</code>) mới là nhân ma trận.</p>
+<p><strong>Mảng trung gian quá lớn.</strong> Ví dụ khoảng cách ở trên tạo mảng <code>diff</code> shape <code>(n, m, d)</code>. Với 100.000 × 100.000 điểm 128 chiều, mảng đó cần hơn 10 TB. Khi <code>n·m·d</code> lớn, chia <code>A</code> thành từng khúc (ví dụ 1.000 điểm) rồi tính lần lượt, hoặc dùng công thức ‖a − b‖² = ‖a‖² + ‖b‖² − 2a·b để chỉ cần ma trận <code>(n, m)</code>.</p>
 </div>
-<details class="fold deep">
-<summary>Đào sâu thêm</summary>
-<p><strong>Chi phí tính toán.</strong> Nhân <code>(m, n) @ (n, p)</code> cần <code>m·n·p</code> phép nhân và gần ấy phép cộng. Lớp Linear(784, 256) với batch 128 tốn khoảng 128 × 784 × 256 ≈ 25,7 triệu phép nhân. Model ngôn ngữ lớn tốn gần như toàn bộ thời gian vào các phép nhân ma trận kiểu này, nên GPU được thiết kế để làm đúng một việc: nhân ma trận thật nhanh. Ở P9 bạn sẽ ước lượng chi phí train model theo đúng cách đếm này.</p>
-</details>
-<div class="box check">
-<div class="box-h">Tự kiểm tra nhanh</div>
-<p><code>X</code> shape <code>(32, 10)</code>, <code>W</code> shape <code>(10, 4)</code>, <code>V</code> shape <code>(4, 1)</code>.</p>
-<div class="ans" id="p0-2-t-b103-a1">
-<div class="ans-fields"><label>Số hàng của X @ W @ V<input inputmode="decimal" data-ans="32.0" data-tol="0.0" autocomplete="off"></label><label>Số cột của X @ W @ V<input inputmode="decimal" data-ans="1.0" data-tol="0.0" autocomplete="off"></label><label>Số phép nhân của X @ W<input inputmode="decimal" data-ans="1280.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div>
-<div aria-live="polite" class="ans-fb"></div>
-</div>
-</div>
-<h2 id="lt-3">Đạo hàm, gradient và quy tắc dây chuyền</h2>
-<div class="box why">
-<div class="box-h">Vì sao cần học</div>
-<p>Train một model nghĩa là chỉnh hàng triệu trọng số để loss giảm. Với mỗi trọng số, ta cần biết: tăng nó một chút thì loss tăng hay giảm, và bao nhiêu? Câu trả lời là đạo hàm. Gom đạo hàm của mọi trọng số lại là gradient, và mọi thuật toán train (SGD, Adam) đều đi theo gradient.</p>
-</div>
-<h3>Đạo hàm là độ dốc</h3>
-<p>Đạo hàm f′(x) đo <strong>f thay đổi bao nhiêu khi x tăng một chút</strong>:</p>
-<div class="hl"><pre><span></span><code>f′(x) ≈ (f(x + h) − f(x)) / h       với h rất nhỏ
-</code></pre></div>
-
-<p>Với f(x) = x² tại x = 3: f′(3) = 6. Nghĩa là quanh x = 3, tăng x thêm 0.5 thì f tăng khoảng 6 × 0.5 = 3. Trên đồ thị, đạo hàm là độ dốc của tiếp tuyến.</p>
-<figure class="fig"><img src="../assets/fig/p0-2-slope.svg" alt="Tại x = 3, tiếp tuyến có độ dốc 6. Gần điểm đó, đường cong và tiếp tuyến gần như trùng nhau: đạo hàm là &quot;xấp xỉ tuyến tính&quot; của hàm." loading="lazy"><figcaption>Tại x = 3, tiếp tuyến có độ dốc 6. Gần điểm đó, đường cong và tiếp tuyến gần như trùng nhau: đạo hàm là &quot;xấp xỉ tuyến tính&quot; của hàm.</figcaption></figure>
-
-<h3>Bảng đạo hàm bạn dùng thường xuyên</h3>
-<table>
-<thead>
-<tr>
-<th>Hàm</th>
-<th>Đạo hàm</th>
-<th>Gặp ở đâu</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>xⁿ</td>
-<td>n·xⁿ⁻¹</td>
-<td>loss bình phương (MSE)</td>
-</tr>
-<tr>
-<td>eˣ</td>
-<td>eˣ</td>
-<td>softmax</td>
-</tr>
-<tr>
-<td>ln x</td>
-<td>1/x</td>
-<td>cross-entropy</td>
-</tr>
-<tr>
-<td>σ(x) = 1/(1 + e⁻ˣ)</td>
-<td>σ(x)(1 − σ(x))</td>
-<td>sigmoid, logistic regression</td>
-</tr>
-<tr>
-<td>max(0, x)</td>
-<td>1 nếu x &gt; 0, 0 nếu x &lt; 0</td>
-<td>ReLU</td>
-</tr>
-<tr>
-<td>c · f(x)</td>
-<td>c · f′(x)</td>
-<td>hằng số đi ra ngoài</td>
-</tr>
-<tr>
-<td>f(x) + g(x)</td>
-<td>f′(x) + g′(x)</td>
-<td>đạo hàm của tổng là tổng đạo hàm</td>
-</tr>
-</tbody>
-</table>
-<h3>Đạo hàm riêng và gradient</h3>
-<p>Hàm nhiều biến (loss phụ thuộc mọi trọng số) có <strong>đạo hàm riêng</strong> theo từng biến: giữ các biến khác cố định, đạo hàm theo biến đang xét.</p>
-<div class="box example">
-<div class="box-h">Ví dụ từng bước</div>
-<p>f(x, y) = x²·y tại (x, y) = (2, 3):</p>
-<ul>
-<li>∂f/∂x: coi y là hằng số → 2x·y = 2·2·3 = <strong>12</strong></li>
-<li>∂f/∂y: coi x là hằng số → x² = 4</li>
-</ul>
-<p><strong>Gradient</strong> gom mọi đạo hàm riêng thành một vector: ∇f(2, 3) = (12, 4). Gradient chỉ <strong>hướng f tăng nhanh nhất</strong>; đi ngược gradient (−∇f) là hướng giảm nhanh nhất.</p>
-</div>
-<figure class="fig"><img src="../assets/fig/p0-2-gradient.svg" alt="Đường đồng mức của f(w₁, w₂) = w₁² + 3w₂². Mũi tên cam là −∇f, luôn vuông góc với đường đồng mức và chỉ vào đáy. Đường xanh: mỗi bước đi một đoạn theo −∇f." loading="lazy"><figcaption>Đường đồng mức của f(w₁, w₂) = w₁² + 3w₂². Mũi tên cam là −∇f, luôn vuông góc với đường đồng mức và chỉ vào đáy. Đường xanh: mỗi bước đi một đoạn theo −∇f.</figcaption></figure>
-
-<h3>Gradient descent: dùng gradient để học</h3>
-<p>Quy tắc cập nhật cốt lõi của mọi thuật toán train:</p>
-<div class="hl"><pre><span></span><code>w ← w − η · ∂L/∂w         η (eta) là learning rate: bước đi dài bao nhiêu
-</code></pre></div>
-
-<div class="box example">
-<div class="box-h">Ví dụ từng bước</div>
-<p>Tìm w làm L(w) = (w − 3)² nhỏ nhất, bắt đầu từ w = 0, η = 0.1. Đạo hàm L′(w) = 2(w − 3).</p>
-<table>
-<thead>
-<tr>
-<th>Bước</th>
-<th>w</th>
-<th>L′(w)</th>
-<th>w mới = w − 0.1·L′(w)</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>1</td>
-<td>0</td>
-<td>−6</td>
-<td>0.6</td>
-</tr>
-<tr>
-<td>2</td>
-<td>0.6</td>
-<td>−4.8</td>
-<td>1.08</td>
-</tr>
-<tr>
-<td>3</td>
-<td>1.08</td>
-<td>−3.84</td>
-<td>1.464</td>
-</tr>
-</tbody>
-</table>
-<p>w tiến dần về 3, mỗi bước chậm lại vì gradient nhỏ dần khi gần đáy. η quá lớn (ví dụ 1.1) thì w nhảy qua đáy và văng ra xa hơn; η quá nhỏ thì cần hàng nghìn bước.</p>
-</div>
-<h3>Quy tắc dây chuyền</h3>
-<p>Khi L phụ thuộc a, và a phụ thuộc w:</p>
-<div class="hl"><pre><span></span><code>∂L/∂w = ∂L/∂a · ∂a/∂w
-</code></pre></div>
-
-<p>Trực giác: nếu w tăng 1 làm a tăng 2, và a tăng 1 làm L tăng 3, thì w tăng 1 làm L tăng 2 × 3 = 6. Một mạng nơ-ron là chuỗi hàm lồng nhau, nên gradient của trọng số lớp đầu là tích các đạo hàm dọc theo chuỗi. <strong>Backpropagation</strong> chỉ là áp dụng quy tắc này từ loss ngược về từng trọng số, tái sử dụng kết quả trung gian để khỏi tính lại.</p>
-<div class="box example">
-<div class="box-h">Ví dụ từng bước</div>
-<p>Neuron sigmoid: a = σ(z), z = w·x + b, với w = 2, x = 1, b = −1.</p>
-<ul>
-<li>z = 2·1 − 1 = 1, a = σ(1) ≈ 0.731</li>
-<li>∂a/∂z = σ(1)(1 − σ(1)) ≈ 0.731 × 0.269 ≈ 0.197</li>
-<li>∂z/∂w = x = 1</li>
-<li>∂a/∂w = ∂a/∂z · ∂z/∂w ≈ 0.197</li>
-</ul>
-<p>Nếu x = 2 thì ∂z/∂w = 2 và ∂a/∂w gấp đôi: đầu vào càng lớn, trọng số tương ứng càng được sửa mạnh.</p>
-</div>
-<h3>Kiểm tra gradient bằng số</h3>
-<p>Khi tự viết backward, bạn kiểm tra bằng <strong>gradient số</strong> (sai phân trung tâm):</p>
-<div class="hl"><pre><span></span><code>f′(x) ≈ (f(x + h) − f(x − h)) / 2h
-</code></pre></div>
-
-<div class="hl"><pre><span></span><code><span class="tk-n">f</span> <span class="tk-o">=</span> <span class="tk-k">lambda</span> <span class="tk-n">x</span><span class="tk-p">:</span> <span class="tk-n">x</span> <span class="tk-o">**</span> <span class="tk-mi">2</span>
-<span class="tk-p">(</span><span class="tk-n">f</span><span class="tk-p">(</span><span class="tk-mi">3</span> <span class="tk-o">+</span> <span class="tk-mf">1e-5</span><span class="tk-p">)</span> <span class="tk-o">-</span> <span class="tk-n">f</span><span class="tk-p">(</span><span class="tk-mi">3</span> <span class="tk-o">-</span> <span class="tk-mf">1e-5</span><span class="tk-p">))</span> <span class="tk-o">/</span> <span class="tk-mf">2e-5</span>      <span class="tk-c1"># 6.00000000004  khớp đạo hàm thật 6</span>
-</code></pre></div>
-
-<div class="run" data-mode="py" data-group="t"><div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span></div><pre class="run-out">6.000000000039306</pre></div>
-
-<div class="box pitfall">
-<div class="box-h">Lỗi hay gặp</div>
-<p><strong>Chọn h sai.</strong> h quá lớn thì xấp xỉ kém; h quá nhỏ thì sai số làm tròn của số thực chiếm ưu thế. Với sin tại x = 1: h = 0.1 sai khoảng 9·10⁻⁴, h = 10⁻⁵ sai khoảng 10⁻¹¹ (tốt nhất), h = 10⁻¹² lại sai tới 10⁻⁵. Dùng h khoảng 10⁻⁵ với <code>float64</code>, và đừng kiểm tra gradient bằng <code>float32</code>.</p>
-</div>
-<div class="box check">
-<div class="box-h">Tự kiểm tra nhanh</div>
-<p>L(w, b) = (w·x + b − y)² với x = 3, y = 10, tại w = 2, b = 1. Gợi ý: đặt e = w·x + b − y, rồi dùng quy tắc dây chuyền.</p>
-<div class="ans" id="p0-2-t-b181-a1">
-<div class="ans-fields"><label>e<input inputmode="decimal" data-ans="-3.0" data-tol="0.0" autocomplete="off"></label><label>∂L/∂b<input inputmode="decimal" data-ans="-6.0" data-tol="0.0" autocomplete="off"></label><label>∂L/∂w<input inputmode="decimal" data-ans="-18.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div>
-<div aria-live="polite" class="ans-fb"></div>
-</div>
-</div>
-<h2 id="lt-4">Xác suất và thống kê cơ bản</h2>
-<div class="box why">
-<div class="box-h">Vì sao cần học</div>
-<p>Dữ liệu thật có nhiễu, model trả về xác suất chứ không phải chắc chắn, trọng số được khởi tạo ngẫu nhiên, diffusion cộng nhiễu Gaussian vào ảnh. Xác suất là ngôn ngữ để nói về những thứ không chắc chắn đó, và thống kê là cách đo chúng từ dữ liệu.</p>
-</div>
-<h3>Biến ngẫu nhiên và phân phối</h3>
-<p><strong>Biến ngẫu nhiên</strong> là một đại lượng có thể nhận nhiều giá trị, mỗi giá trị với một xác suất. <strong>Phân phối</strong> cho biết xác suất đó. Ví dụ xúc xắc: X nhận 1 đến 6, mỗi mặt xác suất 1/6. Tổng xác suất mọi giá trị luôn bằng 1.</p>
-<h3>Kỳ vọng, phương sai, độ lệch chuẩn</h3>
-<div class="hl"><pre><span></span><code>Kỳ vọng        E[X] = Σ x · P(x)            trung bình có trọng số theo xác suất
-Phương sai     Var(X) = E[(X − E[X])²]       bình phương khoảng cách tới trung bình, tính trung bình
-Độ lệch chuẩn  σ = √Var(X)                   cùng đơn vị với X, dễ diễn giải hơn
-</code></pre></div>
-
-<div class="box example">
-<div class="box-h">Ví dụ từng bước</div>
-<p>Xúc xắc: E[X] = (1 + 2 + … + 6)/6 = <strong>3.5</strong>. Phương sai = trung bình của (x − 3.5)²:</p>
-<div class="hl"><pre><span></span><code>(2.5² + 1.5² + 0.5² + 0.5² + 1.5² + 2.5²) / 6 = 17.5 / 6 ≈ 2.917
-σ = √2.917 ≈ 1.708
-</code></pre></div>
-
-<p>Từ dữ liệu <code>[1, 3, 5, 7]</code>: trung bình 4, phương sai (9 + 1 + 1 + 9)/4 = 5, độ lệch chuẩn √5 ≈ 2.236 (chia cho n). Nếu chia cho n − 1 (<code>np.std(x, ddof=1)</code>, "độ lệch chuẩn mẫu") thì ra √(20/3) ≈ 2.582. Với dữ liệu lớn hai cách gần như bằng nhau; khi so với thư viện khác, nhớ kiểm tra họ dùng cách nào (<code>pandas.std()</code> mặc định là n − 1, <code>numpy.std()</code> mặc định là n).</p>
-</div>
-<h3>Tính chất hay dùng</h3>
-<div class="hl"><pre><span></span><code>E[aX + b] = a·E[X] + b
-Var(aX + b) = a²·Var(X)                      cộng hằng số không đổi độ tản ra
-Var(X + Y) = Var(X) + Var(Y)                 nếu X, Y độc lập
-</code></pre></div>
-
-<p>Tính chất cuối giải thích vì sao khởi tạo trọng số phải chia cho √n: tổng của n số độc lập có phương sai gấp n lần, nên đầu ra của neuron sẽ "nổ" nếu không thu nhỏ trọng số. Bạn sẽ gặp lại ở P2 (khởi tạo He/Xavier) và P3 (chia √d_k trong attention).</p>
-<h3>Phân phối chuẩn (Gaussian)</h3>
-<p>N(μ, σ²) có hình chuông đối xứng quanh μ. Khoảng <strong>68%</strong> giá trị nằm trong μ ± σ, <strong>95%</strong> trong μ ± 2σ, <strong>99.7%</strong> trong μ ± 3σ. Mô phỏng 100.000 mẫu bằng numpy cho 68.4% và 95.5%, đúng như lý thuyết.</p>
-<figure class="fig"><img src="../assets/fig/p0-2-gaussian.svg" alt="Quy tắc 68–95–99.7 của phân phối chuẩn. Giá trị cách trung bình hơn 3σ rất hiếm, nên hay được dùng làm ngưỡng phát hiện ngoại lai." loading="lazy"><figcaption>Quy tắc 68–95–99.7 của phân phối chuẩn. Giá trị cách trung bình hơn 3σ rất hiếm, nên hay được dùng làm ngưỡng phát hiện ngoại lai.</figcaption></figure>
-
-<p>Gaussian có mặt khắp nơi: khởi tạo trọng số (<code>torch.randn</code>), nhiễu trong diffusion (P5), giả định sai số của hồi quy tuyến tính (P1).</p>
-<details class="fold deep">
-<summary>Đào sâu thêm</summary>
-<p><strong>Vì sao Gaussian phổ biến đến vậy?</strong> Định lý giới hạn trung tâm: tổng (hoặc trung bình) của nhiều đại lượng ngẫu nhiên độc lập có phân phối gần Gaussian, bất kể từng đại lượng phân phối thế nào. Chiều cao, sai số đo, điểm thi đều là tổng của rất nhiều yếu tố nhỏ, nên gần hình chuông. Cũng vì vậy mà đầu ra của một neuron (tổng của nhiều tích wᵢxᵢ) thường gần Gaussian.</p>
-</details>
-<div class="box check">
-<div class="box-h">Tự kiểm tra nhanh</div>
-<p>Thời gian phản hồi của một API có trung bình 200 ms, độ lệch chuẩn 20 ms, phân phối gần chuẩn.</p>
-<div class="ans" id="p0-2-t-b221-a1">
-<div class="ans-fields"><label>Khoảng 95% request nằm dưới bao nhiêu ms<input inputmode="decimal" data-ans="240.0" data-tol="0.0" autocomplete="off"></label><label>Var của thời gian tính bằng giây (đổi đơn vị chia 1000)<input inputmode="decimal" data-ans="0.0004" data-tol="1e-06" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div>
-<div aria-live="polite" class="ans-fb"></div>
-</div>
-</div>
-<h2 id="lt-5">Bayes và xác suất có điều kiện</h2>
-<div class="box why">
-<div class="box-h">Vì sao cần học</div>
-<p>"Model báo email này là spam, khả năng nó thật sự là spam là bao nhiêu?" là câu hỏi xác suất có điều kiện. Hiểu Bayes giúp bạn đọc đúng precision/recall ở P1 và không bị đánh lừa bởi những con số "chính xác 99%".</p>
-</div>
-<h3>Xác suất có điều kiện</h3>
-<p>P(A | B) là xác suất A <strong>khi đã biết</strong> B xảy ra:</p>
-<div class="hl"><pre><span></span><code>P(A | B) = P(A và B) / P(B)
-</code></pre></div>
-
-<p>Biết B nghĩa là thu hẹp "thế giới" về những trường hợp B đúng, rồi đếm trong đó bao nhiêu A cũng đúng.</p>
-<h3>Công thức Bayes</h3>
-<p>Bayes đảo chiều điều kiện, từ thứ dễ đo sang thứ ta cần:</p>
-<div class="hl"><pre><span></span><code>P(A | B) = P(B | A) · P(A) / P(B)
-P(B) = P(B | A)·P(A) + P(B | không A)·P(không A)
-</code></pre></div>
-
-<ul>
-<li>P(A): <strong>prior</strong>, niềm tin ban đầu (tỉ lệ bệnh trong dân số)</li>
-<li>P(B | A): <strong>likelihood</strong>, độ nhạy của xét nghiệm</li>
-<li>P(A | B): <strong>posterior</strong>, niềm tin sau khi thấy bằng chứng</li>
-</ul>
-<div class="box example">
-<div class="box-h">Ví dụ từng bước</div>
-<p>Bệnh có tỉ lệ 2%. Xét nghiệm phát hiện đúng 90% người bệnh, nhưng báo nhầm dương tính 10% người khỏe. Một người có kết quả dương tính: khả năng họ bị bệnh là bao nhiêu?</p>
-<p>Cách dễ nhất là <strong>đếm người</strong> thay vì nhân xác suất:</p>
-<figure class="fig"><img src="../assets/fig/p0-2-bayes.svg" alt="Hình dung 10.000 người. Người khỏe đông gấp 49 lần, nên 10% báo nhầm của họ (980 người) lấn át 180 người bệnh thật." loading="lazy"><figcaption>Hình dung 10.000 người. Người khỏe đông gấp 49 lần, nên 10% báo nhầm của họ (980 người) lấn át 180 người bệnh thật.</figcaption></figure>
-<p>Bằng công thức: 0.9 × 0.02 / (0.9 × 0.02 + 0.1 × 0.98) ≈ <strong>0.155</strong>. Chỉ 15.5%, dù xét nghiệm "đúng 90%". Bài tập 5 cho bạn tự tính một trường hợp khác.</p>
-</div>
-<p>Bài học cho ML: khi lớp cần tìm <strong>hiếm</strong> (gian lận, bệnh hiếm, lỗi sản phẩm), một model có tỉ lệ báo nhầm nhỏ vẫn sinh ra phần lớn cảnh báo là nhầm. Đó là lý do ta cần precision chứ không chỉ accuracy.</p>
-<div class="box check">
-<div class="box-h">Tự kiểm tra nhanh</div>
-<p>20% email là spam. Từ "khuyến mãi" xuất hiện trong 60% email spam và 5% email thường. Một email có từ "khuyến mãi":</p>
-<div class="ans" id="p0-2-t-b254-a1">
-<div class="ans-fields"><label>P(spam khi có từ đó)<input inputmode="decimal" data-ans="0.75" data-tol="0.001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div>
-<div aria-live="polite" class="ans-fb"></div>
-</div>
-</div>
-<h2 id="lt-6">Log, exp và maximum likelihood</h2>
-<div class="box why">
-<div class="box-h">Vì sao cần học</div>
-<p>Gần như mọi loss phân loại (cross-entropy, negative log-likelihood) và mọi model ngôn ngữ đều được train bằng cùng một nguyên lý: chọn tham số làm dữ liệu quan sát được "có khả năng xảy ra nhất". Mục này cho thấy vì sao nguyên lý đó dẫn tới công thức loss có log.</p>
-</div>
-<h3>Log và exp</h3>
-<table>
-<thead>
-<tr>
-<th>Tính chất</th>
-<th>Ý nghĩa trong ML</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>log(a · b) = log a + log b</td>
-<td>tích nhiều xác suất thành tổng, không tràn số</td>
-</tr>
-<tr>
-<td>log(aⁿ) = n · log a</td>
-<td>số mũ thành hệ số</td>
-</tr>
-<tr>
-<td>log tăng đơn điệu</td>
-<td>cực đại của f và của log f ở cùng chỗ</td>
-</tr>
-<tr>
-<td>log 1 = 0, log p &lt; 0 khi p &lt; 1</td>
-<td>−log p ≥ 0, càng lớn khi p càng nhỏ</td>
-</tr>
-<tr>
-<td>e^(log x) = x</td>
-<td>exp và log là hai phép ngược nhau</td>
-</tr>
-</tbody>
-</table>
-<p>Ví dụ: −log(0.9) ≈ 0.105 (đoán đúng khá chắc, loss nhỏ), −log(0.1) ≈ 2.303 (gán xác suất thấp cho đáp án đúng, loss lớn).</p>
-<h3>Maximum likelihood qua ví dụ đồng xu</h3>
-<p>Tung một đồng xu 10 lần, được 7 ngửa 3 sấp. Xác suất ngửa p bằng bao nhiêu thì hợp lý nhất?</p>
-<p><strong>Likelihood</strong> là xác suất thu được đúng dữ liệu này nếu xác suất ngửa là p:</p>
-<div class="hl"><pre><span></span><code>L(p) = p⁷ · (1 − p)³
-</code></pre></div>
-
-<p>Thử vài giá trị: L(0.5) ≈ 0.00098, L(0.7) ≈ 0.00222, L(0.9) ≈ 0.00048. Giá trị lớn nhất ở <strong>p = 0.7</strong>, đúng bằng tỉ lệ ngửa quan sát được.</p>
-<figure class="fig"><img src="../assets/fig/p0-2-mle.svg" alt="Trái: likelihood đạt đỉnh tại p = 0.7. Phải: lấy −log biến bài toán tìm đỉnh thành tìm đáy, và đáy vẫn ở p = 0.7. Đây chính là một &quot;loss&quot;." loading="lazy"><figcaption>Trái: likelihood đạt đỉnh tại p = 0.7. Phải: lấy −log biến bài toán tìm đỉnh thành tìm đáy, và đáy vẫn ở p = 0.7. Đây chính là một &quot;loss&quot;.</figcaption></figure>
-
-<h3>Từ likelihood tới loss</h3>
-<p>Với n mẫu độc lập, likelihood là tích n xác suất. Tích nhiều số nhỏ nhanh chóng tràn về 0 trên máy tính (tích 1.100 số 0.5 đã thành đúng 0.0). Nên ta lấy log để biến tích thành tổng, rồi đổi dấu để thành bài toán <strong>cực tiểu</strong>:</p>
-<div class="hl"><pre><span></span><code>max Π p(yᵢ | xᵢ)   ⟺   min −Σ log p(yᵢ | xᵢ)
-</code></pre></div>
-
-<p>Vế phải là <strong>negative log-likelihood</strong>, và với phân loại nó chính là <strong>cross-entropy loss</strong>: với mỗi mẫu, lấy xác suất model gán cho đáp án đúng, cộng −log của nó. Ở ví dụ đồng xu, NLL tại p = 0.7 là 6.109, tại p = 0.5 là 6.931: p = 0.7 có loss thấp hơn.</p>
-<div class="keep">
-<p><strong>Ghi nhớ:</strong> log biến tích thành tổng và giữ nguyên vị trí cực trị. Vì vậy loss gần như luôn có log, và "train model" nghĩa là "làm dữ liệu thật có xác suất cao nhất dưới model".</p>
-</div>
-<details class="fold deep">
-<summary>Đào sâu thêm</summary>
-<p><strong>Tính softmax cho ổn định.</strong> Softmax tính eˣⁱ / Σ eˣʲ. Với x = (1000, 1001, 1002), e¹⁰⁰⁰ tràn thành vô cùng và kết quả là <code>nan</code>. Mẹo: trừ đi giá trị lớn nhất trước (eˣ⁻ᵐ / Σ eˣʲ⁻ᵐ cho cùng kết quả vì e⁻ᵐ triệt tiêu ở tử và mẫu), được (0.090, 0.245, 0.665). PyTorch làm sẵn điều này trong <code>F.cross_entropy</code>, và đó là lý do bạn nên đưa <strong>logits</strong> vào hàm loss thay vì tự tính softmax rồi lấy log.</p>
-</details>
-<div class="box check">
-<div class="box-h">Tự kiểm tra nhanh</div>
-<p>Model phân loại 3 lớp gán xác suất cho đáp án đúng của 2 mẫu lần lượt là 0.9 và 0.5.</p>
-<div class="ans" id="p0-2-t-b300-a1">
-<div class="ans-fields"><label>Tổng NLL (log tự nhiên)<input inputmode="decimal" data-ans="0.7985" data-tol="0.001" autocomplete="off"></label><label>NLL trung bình<input inputmode="decimal" data-ans="0.3992" data-tol="0.001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div>
-<div aria-live="polite" class="ans-fb"></div>
-</div>
-</div>
-<h2 id="lt-7">Tóm tắt bài và thuật ngữ</h2>
+<h2 id="lt-4">Tóm tắt bài và thuật ngữ</h2>
 <table>
 <thead>
 <tr>
 <th>Chủ đề</th>
-<th>Công thức cốt lõi</th>
-<th>Dùng ở đâu</th>
+<th>Điều cần nhớ</th>
+<th>Lệnh tiêu biểu</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>Tích vô hướng</td>
-<td>u·v = Σuᵢvᵢ = ‖u‖‖v‖cos θ</td>
-<td>neuron, cosine similarity, attention</td>
+<td>Mảng</td>
+<td>shape là thứ cần kiểm tra nhiều nhất; slicing là view</td>
+<td><code>x.shape</code>, <code>x.reshape(-1)</code>, <code>x.copy()</code></td>
 </tr>
 <tr>
-<td>Nhân ma trận</td>
-<td>(m, n) @ (n, p) → (m, p)</td>
-<td>lớp Linear, cả batch một lúc</td>
+<td>axis</td>
+<td><code>axis=k</code> là trục biến mất</td>
+<td><code>X.mean(axis=0)</code></td>
 </tr>
 <tr>
-<td>Đạo hàm</td>
-<td>độ dốc, f′(x) ≈ (f(x+h) − f(x−h))/2h</td>
-<td>gradient check</td>
+<td>Ghép mảng</td>
+<td><code>concatenate</code> nối trục có sẵn, <code>stack</code> tạo trục mới</td>
+<td><code>np.stack(images)</code></td>
 </tr>
 <tr>
-<td>Gradient descent</td>
-<td>w ← w − η·∂L/∂w</td>
-<td>mọi thuật toán train</td>
+<td>Broadcasting</td>
+<td>căn phải, so từng cặp, bằng nhau hoặc bằng 1</td>
+<td><code>A[:, None] - B[None, :]</code></td>
 </tr>
 <tr>
-<td>Dây chuyền</td>
-<td>∂L/∂w = ∂L/∂a · ∂a/∂w</td>
-<td>backpropagation</td>
-</tr>
-<tr>
-<td>Thống kê</td>
-<td>E[X], Var, σ, quy tắc 68–95</td>
-<td>chuẩn hóa, khởi tạo, phát hiện ngoại lai</td>
-</tr>
-<tr>
-<td>Bayes</td>
-<td>P(A|B) = P(B|A)P(A)/P(B)</td>
-<td>precision, lớp hiếm</td>
-</tr>
-<tr>
-<td>Maximum likelihood</td>
-<td>min −Σ log p(yᵢ|xᵢ)</td>
-<td>cross-entropy, model ngôn ngữ</td>
+<td>Vector hóa</td>
+<td>thay vòng <code>for</code> bằng phép trên cả mảng</td>
+<td><code>np.where</code>, <code>argsort</code>, <code>cumsum</code></td>
 </tr>
 </tbody>
 </table>
@@ -544,183 +362,221 @@ P(B) = P(B | A)·P(A) + P(B | không A)·P(không A)
 </thead>
 <tbody>
 <tr>
-<td>dot product</td>
-<td>tích vô hướng</td>
+<td>array / ndarray</td>
+<td>mảng nhiều chiều của numpy, mọi phần tử cùng kiểu</td>
 </tr>
 <tr>
-<td>norm L1 / L2</td>
-<td>tổng giá trị tuyệt đối / độ dài Euclid</td>
+<td>shape</td>
+<td>số phần tử theo từng trục, ví dụ <code>(3, 4)</code></td>
 </tr>
 <tr>
-<td>cosine similarity</td>
-<td>độ giống về hướng, từ −1 đến 1</td>
+<td>dtype</td>
+<td>kiểu số của mảng: <code>int64</code>, <code>float32</code>, <code>bool</code>...</td>
 </tr>
 <tr>
-<td>matrix multiplication</td>
-<td>nhân ma trận, ký hiệu <code>@</code></td>
+<td>axis</td>
+<td>một trục của mảng; <code>axis=0</code> là trục hàng</td>
 </tr>
 <tr>
-<td>transpose</td>
-<td>chuyển vị, đổi hàng thành cột</td>
+<td>view / copy</td>
+<td>view dùng chung bộ nhớ với mảng gốc, copy thì độc lập</td>
 </tr>
 <tr>
-<td>derivative / partial derivative</td>
-<td>đạo hàm / đạo hàm riêng</td>
+<td>broadcasting</td>
+<td>cơ chế tự kéo dài trục độ dài 1 khi tính giữa hai mảng khác shape</td>
 </tr>
 <tr>
-<td>gradient</td>
-<td>vector các đạo hàm riêng, hướng tăng nhanh nhất</td>
-</tr>
-<tr>
-<td>learning rate</td>
-<td>độ dài bước cập nhật η</td>
-</tr>
-<tr>
-<td>chain rule</td>
-<td>quy tắc dây chuyền</td>
-</tr>
-<tr>
-<td>expectation / variance</td>
-<td>kỳ vọng / phương sai</td>
-</tr>
-<tr>
-<td>prior / likelihood / posterior</td>
-<td>niềm tin trước / khả năng của dữ liệu / niềm tin sau</td>
-</tr>
-<tr>
-<td>maximum likelihood (MLE)</td>
-<td>chọn tham số làm dữ liệu có xác suất cao nhất</td>
-</tr>
-<tr>
-<td>negative log-likelihood (NLL)</td>
-<td>−Σ log p, tên khác của cross-entropy khi phân loại</td>
-</tr>
-<tr>
-<td>logits</td>
-<td>điểm thô trước softmax</td>
+<td>vectorization</td>
+<td>viết phép tính trên cả mảng thay vì từng phần tử</td>
 </tr>
 </tbody>
-</table></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p0.2:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 5</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Nhân ma trận bằng tay</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>A = <code>[[1, 2, 0], [0, 1, 3]]</code> (2×3), B = <code>[[1, 0], [2, 1], [0, 4]]</code> (3×2). Tính C = A @ B.</p>
-<div class="ans" id="p0-2-e1-a1"><div class="ans-fields"><label>C[0,0]<input inputmode="decimal" data-ans="5.0" data-tol="0.0" autocomplete="off"></label><label>C[0,1]<input inputmode="decimal" data-ans="2.0" data-tol="0.0" autocomplete="off"></label><label>C[1,1]<input inputmode="decimal" data-ans="13.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
-
-<details class="fold solution">
-<summary>Lời giải</summary>
-<p>C[0,0] = hàng 1 của A · cột 1 của B = 1·1 + 2·2 + 0·0 = 5. C[0,1] = 1·0 + 2·1 + 0·4 = 2. C[1,1] = 0·0 + 1·1 + 3·4 = 13. Kết quả C = [[5, 2], [2, 13]], shape (2, 2).</p>
-</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 2</span><h3>Cosine similarity</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>u = [6, 8], v = [8, −6].</p>
-<div class="ans" id="p0-2-e2-a1"><div class="ans-fields"><label>u · v<input inputmode="decimal" data-ans="0.0" data-tol="0.0" autocomplete="off"></label><label>‖u‖<input inputmode="decimal" data-ans="10.0" data-tol="0.0" autocomplete="off"></label><label>cos(u, v)<input inputmode="decimal" data-ans="0.0" data-tol="0.001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
-
-<details class="fold solution">
-<summary>Lời giải</summary>
-<p>u · v = 48 − 48 = 0. ‖u‖ = ‖v‖ = √(36 + 64) = 10. cos = 0: hai vector <strong>vuông góc</strong>, không giống nhau chút nào về hướng dù có cùng độ dài.</p>
-</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 3</span><h3>Gradient của MSE</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>L(w, b) = (w·x + b − y)² với x = 2, y = 7. Tính gradient tại w = 1, b = 1.</p>
-<div class="ans" id="p0-2-e3-a1"><div class="ans-fields"><label>∂L/∂w<input inputmode="decimal" data-ans="-16.0" data-tol="0.0" autocomplete="off"></label><label>∂L/∂b<input inputmode="decimal" data-ans="-8.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+</table></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p0.2:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class=ex-lead><p>Làm bằng giấy bút trước, rồi kiểm tra lại bằng code nếu muốn.</p></div><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 2</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Đoán shape</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Cho <code>a = np.zeros((4, 3))</code>, <code>b = np.ones(3)</code>, <code>x = np.zeros((2, 3, 4))</code>.</p>
+<ol>
+<li><code>(a + b).shape</code> có bao nhiêu hàng, bao nhiêu cột?</li>
+<li><code>x.reshape(-1, 4).shape[0]</code> bằng bao nhiêu?</li>
+<li><code>x.sum(axis=1).shape</code> có dạng <code>(p, q)</code>. Tìm p, q.</li>
+</ol>
+<div class="ans" id="p0-2-e1-a1"><div class="ans-fields"><label>(a+b) số hàng<input inputmode="decimal" data-ans="4.0" data-tol="0.0" autocomplete="off"></label><label>(a+b) số cột<input inputmode="decimal" data-ans="3.0" data-tol="0.0" autocomplete="off"></label><label>reshape: số hàng<input inputmode="decimal" data-ans="6.0" data-tol="0.0" autocomplete="off"></label><label>p<input inputmode="decimal" data-ans="2.0" data-tol="0.0" autocomplete="off"></label><label>q<input inputmode="decimal" data-ans="4.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
 
 <details class="fold hint">
 <summary>Gợi ý</summary>
-<p>Đặt e = w·x + b − y. Theo quy tắc dây chuyền: ∂L/∂w = 2e · x và ∂L/∂b = 2e.</p>
+<p>Với <code>reshape(-1, 4)</code>, tổng số phần tử giữ nguyên: 2·3·4 = 24, chia cho 4. Với <code>sum(axis=1)</code>, trục thứ hai (độ dài 3) bị gộp mất.</p>
 </details>
 <details class="fold solution">
 <summary>Lời giải</summary>
-<p>e = 1·2 + 1 − 7 = −4. ∂L/∂w = 2·(−4)·2 = −16, ∂L/∂b = 2·(−4) = −8. Gradient âm nghĩa là tăng w và b sẽ làm loss giảm, đúng vì dự đoán 3 đang thấp hơn 7.</p>
-</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 4</span><h3>Trung bình và độ lệch chuẩn</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Dữ liệu: 2, 4, 4, 4, 5, 5, 7, 9. Dùng công thức chia cho n (như <code>np.std</code> mặc định).</p>
-<div class="ans" id="p0-2-e4-a1"><div class="ans-fields"><label>Trung bình<input inputmode="decimal" data-ans="5.0" data-tol="0.0" autocomplete="off"></label><label>Độ lệch chuẩn<input inputmode="decimal" data-ans="2.0" data-tol="0.001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+<p><code>b</code> shape (3,) khớp với trục cuối của <code>a</code> nên kết quả (4, 3). <code>reshape(-1, 4)</code> cho (6, 4). <code>sum(axis=1)</code> bỏ trục độ dài 3, còn (2, 4).</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 2</span><h3>Tính theo trục</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p><code>a = np.arange(6).reshape(2, 3)</code>, tức là <code>[[0, 1, 2], [3, 4, 5]]</code>.</p>
+<div class="ans" id="p0-2-e2-a1"><div class="ans-fields"><label>a.sum(axis=0)[2]<input inputmode="decimal" data-ans="7.0" data-tol="0.0" autocomplete="off"></label><label>a.mean(axis=1)[1]<input inputmode="decimal" data-ans="4.0" data-tol="0.0" autocomplete="off"></label><label>a.max(axis=0).sum()<input inputmode="decimal" data-ans="12.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
 
 <details class="fold solution">
 <summary>Lời giải</summary>
-<p>Tổng 40, chia 8 được 5. Bình phương độ lệch: 9, 1, 1, 1, 0, 0, 4, 16, tổng 32, chia 8 được phương sai 4, độ lệch chuẩn 2.</p>
-</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 5</span><h3>Xét nghiệm và Bayes</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Một bệnh có ở 1% dân số. Xét nghiệm phát hiện đúng 99% người bệnh, nhưng cũng báo dương tính nhầm 5% người khỏe. Một người có kết quả dương tính. Xác suất người đó thật sự mắc bệnh là bao nhiêu?</p>
-<div class="ans" id="p0-2-e5-a1"><div class="ans-fields"><label>P(bệnh khi dương tính)<input inputmode="decimal" data-ans="0.1667" data-tol="0.002" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+<p><code>sum(axis=0)</code> cộng dọc các hàng: [3, 5, 7], phần tử thứ 3 là 7. <code>mean(axis=1)</code> lấy trung bình mỗi hàng: [1, 4]. <code>max(axis=0)</code> lấy max mỗi cột: [3, 4, 5], tổng 12.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 3</span><h3>One-hot không dùng vòng for</h3><span class="ex-tag code">code</span></div><div class="prose"><p>Viết hàm <code>one_hot(y, k)</code> nhận mảng nhãn số nguyên <code>y</code> shape (n,) và trả về ma trận (n, k), hàng i có số 1 ở cột <code>y[i]</code>. Không dùng vòng <code>for</code>.</p>
+<div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">numpy</span><span class="tk-w"> </span><span class="tk-k">as</span><span class="tk-w"> </span><span class="tk-nn">np</span>
+
+<span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">one_hot</span><span class="tk-p">(</span><span class="tk-n">y</span><span class="tk-p">,</span> <span class="tk-n">k</span><span class="tk-p">):</span>
+    <span class="tk-c1"># TODO: viết code của bạn ở đây, không dùng vòng for</span>
+    <span class="tk-o">...</span>
+
+<span class="tk-n">y</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">array</span><span class="tk-p">([</span><span class="tk-mi">2</span><span class="tk-p">,</span> <span class="tk-mi">0</span><span class="tk-p">,</span> <span class="tk-mi">1</span><span class="tk-p">])</span>
+<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-n">one_hot</span><span class="tk-p">(</span><span class="tk-n">y</span><span class="tk-p">,</span> <span class="tk-mi">3</span><span class="tk-p">))</span>
+<span class="tk-c1"># kết quả mong muốn:</span>
+<span class="tk-c1"># [[0. 0. 1.]</span>
+<span class="tk-c1">#  [1. 0. 0.]</span>
+<span class="tk-c1">#  [0. 1. 0.]]</span>
+</code></pre></div>
+
+<div class="run" data-mode="py" data-group="e3"><div class="run-bar"><span class="run-lbl">Code của bạn</span></div><pre class="run-out run-empty">Viết code vào chỗ trống rồi bấm Chạy.</pre></div>
 
 <details class="fold hint">
 <summary>Gợi ý</summary>
-<p>P(dương tính) = P(dương | bệnh)·P(bệnh) + P(dương | khỏe)·P(khỏe).</p>
+<p>Ma trận đơn vị <code>np.eye(k)</code> có hàng j chính là one-hot của j. Bạn chỉ cần chọn đúng các hàng.</p>
 </details>
-<details class="fold solution">
-<summary>Lời giải</summary>
-<p>Tử số: 0.99 × 0.01 = 0.0099. Mẫu số: 0.0099 + 0.05 × 0.99 = 0.0594. Kết quả ≈ 0.167, chỉ khoảng 1/6. Bài học cho ML: khi lớp dương hiếm, precision thấp dù recall cao. Bạn sẽ gặp lại ở bài đánh giá model.</p>
-</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 6</span><h3>Kiểm tra gradient bằng số</h3><span class="ex-tag code">code</span></div><div class="prose"><p>Viết <code>numeric_grad(f, w, h=1e-5)</code> trả về gradient số của hàm <code>f</code> tại vector <code>w</code>. Dùng nó kiểm tra gradient giải tích của loss logistic L(w) = −[y·log σ(w·x) + (1−y)·log(1 − σ(w·x))], biết ∇L = (σ(w·x) − y)·x.</p>
+<details class="fold code">
+<summary>Code tham khảo</summary>
+<div class="hl"><pre><span></span><code><span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">one_hot</span><span class="tk-p">(</span><span class="tk-n">y</span><span class="tk-p">,</span> <span class="tk-n">k</span><span class="tk-p">):</span>
+    <span class="tk-k">return</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">eye</span><span class="tk-p">(</span><span class="tk-n">k</span><span class="tk-p">)[</span><span class="tk-n">y</span><span class="tk-p">]</span>
+
+<span class="tk-c1"># cách khác, không tạo ma trận k×k:</span>
+<span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">one_hot2</span><span class="tk-p">(</span><span class="tk-n">y</span><span class="tk-p">,</span> <span class="tk-n">k</span><span class="tk-p">):</span>
+    <span class="tk-n">out</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">zeros</span><span class="tk-p">((</span><span class="tk-nb">len</span><span class="tk-p">(</span><span class="tk-n">y</span><span class="tk-p">),</span> <span class="tk-n">k</span><span class="tk-p">))</span>
+    <span class="tk-n">out</span><span class="tk-p">[</span><span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">arange</span><span class="tk-p">(</span><span class="tk-nb">len</span><span class="tk-p">(</span><span class="tk-n">y</span><span class="tk-p">)),</span> <span class="tk-n">y</span><span class="tk-p">]</span> <span class="tk-o">=</span> <span class="tk-mi">1</span>
+    <span class="tk-k">return</span> <span class="tk-n">out</span>
+</code></pre></div>
+
+<div class="run" data-group="e3" data-mode="py">
+<div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span></div>
+<pre class="run-out run-empty">(chạy xong, không in ra gì)</pre>
+</div>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 4</span><h3>Khoảng cách từng cặp</h3><span class="ex-tag code">code</span></div><div class="prose"><p>Viết <code>pairwise_dist(A, B)</code> với A shape (n, d), B shape (m, d), trả về (n, m) khoảng cách Euclid. Sau đó đo thời gian so với bản hai vòng <code>for</code> trên n = m = 500, d = 64.</p>
+<details class="fold code">
+<summary>Code tham khảo</summary>
+<div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">time</span>
+<span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">numpy</span><span class="tk-w"> </span><span class="tk-k">as</span><span class="tk-w"> </span><span class="tk-nn">np</span>
+
+<span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">pairwise_dist</span><span class="tk-p">(</span><span class="tk-n">A</span><span class="tk-p">,</span> <span class="tk-n">B</span><span class="tk-p">):</span>
+    <span class="tk-k">return</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">sqrt</span><span class="tk-p">(((</span><span class="tk-n">A</span><span class="tk-p">[:,</span> <span class="tk-kc">None</span><span class="tk-p">,</span> <span class="tk-p">:]</span> <span class="tk-o">-</span> <span class="tk-n">B</span><span class="tk-p">[</span><span class="tk-kc">None</span><span class="tk-p">,</span> <span class="tk-p">:,</span> <span class="tk-p">:])</span> <span class="tk-o">**</span> <span class="tk-mi">2</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">sum</span><span class="tk-p">(</span><span class="tk-o">-</span><span class="tk-mi">1</span><span class="tk-p">))</span>
+
+<span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">pairwise_loop</span><span class="tk-p">(</span><span class="tk-n">A</span><span class="tk-p">,</span> <span class="tk-n">B</span><span class="tk-p">):</span>
+    <span class="tk-n">D</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">zeros</span><span class="tk-p">((</span><span class="tk-nb">len</span><span class="tk-p">(</span><span class="tk-n">A</span><span class="tk-p">),</span> <span class="tk-nb">len</span><span class="tk-p">(</span><span class="tk-n">B</span><span class="tk-p">)))</span>
+    <span class="tk-k">for</span> <span class="tk-n">i</span> <span class="tk-ow">in</span> <span class="tk-nb">range</span><span class="tk-p">(</span><span class="tk-nb">len</span><span class="tk-p">(</span><span class="tk-n">A</span><span class="tk-p">)):</span>
+        <span class="tk-k">for</span> <span class="tk-n">j</span> <span class="tk-ow">in</span> <span class="tk-nb">range</span><span class="tk-p">(</span><span class="tk-nb">len</span><span class="tk-p">(</span><span class="tk-n">B</span><span class="tk-p">)):</span>
+            <span class="tk-n">D</span><span class="tk-p">[</span><span class="tk-n">i</span><span class="tk-p">,</span> <span class="tk-n">j</span><span class="tk-p">]</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">sqrt</span><span class="tk-p">(((</span><span class="tk-n">A</span><span class="tk-p">[</span><span class="tk-n">i</span><span class="tk-p">]</span> <span class="tk-o">-</span> <span class="tk-n">B</span><span class="tk-p">[</span><span class="tk-n">j</span><span class="tk-p">])</span> <span class="tk-o">**</span> <span class="tk-mi">2</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">sum</span><span class="tk-p">())</span>
+    <span class="tk-k">return</span> <span class="tk-n">D</span>
+
+<span class="tk-n">A</span><span class="tk-p">,</span> <span class="tk-n">B</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">random</span><span class="tk-o">.</span><span class="tk-n">rand</span><span class="tk-p">(</span><span class="tk-mi">500</span><span class="tk-p">,</span> <span class="tk-mi">64</span><span class="tk-p">),</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">random</span><span class="tk-o">.</span><span class="tk-n">rand</span><span class="tk-p">(</span><span class="tk-mi">500</span><span class="tk-p">,</span> <span class="tk-mi">64</span><span class="tk-p">)</span>
+<span class="tk-n">t</span> <span class="tk-o">=</span> <span class="tk-n">time</span><span class="tk-o">.</span><span class="tk-n">time</span><span class="tk-p">();</span> <span class="tk-n">D1</span> <span class="tk-o">=</span> <span class="tk-n">pairwise_dist</span><span class="tk-p">(</span><span class="tk-n">A</span><span class="tk-p">,</span> <span class="tk-n">B</span><span class="tk-p">);</span> <span class="tk-n">t1</span> <span class="tk-o">=</span> <span class="tk-n">time</span><span class="tk-o">.</span><span class="tk-n">time</span><span class="tk-p">()</span> <span class="tk-o">-</span> <span class="tk-n">t</span>
+<span class="tk-n">t</span> <span class="tk-o">=</span> <span class="tk-n">time</span><span class="tk-o">.</span><span class="tk-n">time</span><span class="tk-p">();</span> <span class="tk-n">D2</span> <span class="tk-o">=</span> <span class="tk-n">pairwise_loop</span><span class="tk-p">(</span><span class="tk-n">A</span><span class="tk-p">,</span> <span class="tk-n">B</span><span class="tk-p">);</span> <span class="tk-n">t2</span> <span class="tk-o">=</span> <span class="tk-n">time</span><span class="tk-o">.</span><span class="tk-n">time</span><span class="tk-p">()</span> <span class="tk-o">-</span> <span class="tk-n">t</span>
+<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">allclose</span><span class="tk-p">(</span><span class="tk-n">D1</span><span class="tk-p">,</span> <span class="tk-n">D2</span><span class="tk-p">),</span> <span class="tk-sa">f</span><span class="tk-s2">"nhanh hơn </span><span class="tk-si">{</span><span class="tk-n">t2</span><span class="tk-w"> </span><span class="tk-o">/</span><span class="tk-w"> </span><span class="tk-n">t1</span><span class="tk-si">:</span><span class="tk-s2">.0f</span><span class="tk-si">}</span><span class="tk-s2"> lần"</span><span class="tk-p">)</span>
+</code></pre></div>
+
+<div class="run" data-group="e4" data-mode="py">
+<div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span></div>
+<pre class="run-out">True nhanh hơn 5 lần</pre>
+</div>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 5</span><h3>Softmax ổn định số</h3><span class="ex-tag code">code</span></div><div class="prose"><p>Viết <code>softmax(Z)</code> cho ma trận <code>Z</code> shape (n, k): mỗi hàng là điểm (logit) của một mẫu, kết quả mỗi hàng là xác suất cộng lại bằng 1. Hàm phải chạy đúng cả với logit rất lớn như <code>[1000, 1001, 1002]</code>, và không dùng vòng <code>for</code>.</p>
+<details class="fold hint">
+<summary>Gợi ý</summary>
+<p><code>exp(1000)</code> tràn số thành <code>inf</code>. Softmax không đổi khi trừ cùng một số khỏi cả hàng, nên trừ giá trị lớn nhất <strong>của từng hàng</strong> trước (<code>max(axis=1, keepdims=True)</code> giữ shape (n, 1) để broadcasting đúng).</p>
+</details>
 <details class="fold code">
 <summary>Code tham khảo</summary>
 <div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">numpy</span><span class="tk-w"> </span><span class="tk-k">as</span><span class="tk-w"> </span><span class="tk-nn">np</span>
 
-<span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">numeric_grad</span><span class="tk-p">(</span><span class="tk-n">f</span><span class="tk-p">,</span> <span class="tk-n">w</span><span class="tk-p">,</span> <span class="tk-n">h</span><span class="tk-o">=</span><span class="tk-mf">1e-5</span><span class="tk-p">):</span>
-    <span class="tk-n">g</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">zeros_like</span><span class="tk-p">(</span><span class="tk-n">w</span><span class="tk-p">)</span>
-    <span class="tk-k">for</span> <span class="tk-n">i</span> <span class="tk-ow">in</span> <span class="tk-nb">range</span><span class="tk-p">(</span><span class="tk-nb">len</span><span class="tk-p">(</span><span class="tk-n">w</span><span class="tk-p">)):</span>
-        <span class="tk-n">e</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">zeros_like</span><span class="tk-p">(</span><span class="tk-n">w</span><span class="tk-p">);</span> <span class="tk-n">e</span><span class="tk-p">[</span><span class="tk-n">i</span><span class="tk-p">]</span> <span class="tk-o">=</span> <span class="tk-n">h</span>
-        <span class="tk-n">g</span><span class="tk-p">[</span><span class="tk-n">i</span><span class="tk-p">]</span> <span class="tk-o">=</span> <span class="tk-p">(</span><span class="tk-n">f</span><span class="tk-p">(</span><span class="tk-n">w</span> <span class="tk-o">+</span> <span class="tk-n">e</span><span class="tk-p">)</span> <span class="tk-o">-</span> <span class="tk-n">f</span><span class="tk-p">(</span><span class="tk-n">w</span> <span class="tk-o">-</span> <span class="tk-n">e</span><span class="tk-p">))</span> <span class="tk-o">/</span> <span class="tk-p">(</span><span class="tk-mi">2</span> <span class="tk-o">*</span> <span class="tk-n">h</span><span class="tk-p">)</span>
-    <span class="tk-k">return</span> <span class="tk-n">g</span>
+<span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">softmax</span><span class="tk-p">(</span><span class="tk-n">Z</span><span class="tk-p">):</span>
+    <span class="tk-n">Z</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">asarray</span><span class="tk-p">(</span><span class="tk-n">Z</span><span class="tk-p">,</span> <span class="tk-n">dtype</span><span class="tk-o">=</span><span class="tk-nb">float</span><span class="tk-p">)</span>
+    <span class="tk-n">E</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">exp</span><span class="tk-p">(</span><span class="tk-n">Z</span> <span class="tk-o">-</span> <span class="tk-n">Z</span><span class="tk-o">.</span><span class="tk-n">max</span><span class="tk-p">(</span><span class="tk-n">axis</span><span class="tk-o">=-</span><span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-n">keepdims</span><span class="tk-o">=</span><span class="tk-kc">True</span><span class="tk-p">))</span>   <span class="tk-c1"># trừ max từng hàng: số lớn nhất thành 0, exp không tràn</span>
+    <span class="tk-k">return</span> <span class="tk-n">E</span> <span class="tk-o">/</span> <span class="tk-n">E</span><span class="tk-o">.</span><span class="tk-n">sum</span><span class="tk-p">(</span><span class="tk-n">axis</span><span class="tk-o">=-</span><span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-n">keepdims</span><span class="tk-o">=</span><span class="tk-kc">True</span><span class="tk-p">)</span>
 
-<span class="tk-n">sigmoid</span> <span class="tk-o">=</span> <span class="tk-k">lambda</span> <span class="tk-n">z</span><span class="tk-p">:</span> <span class="tk-mi">1</span> <span class="tk-o">/</span> <span class="tk-p">(</span><span class="tk-mi">1</span> <span class="tk-o">+</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">exp</span><span class="tk-p">(</span><span class="tk-o">-</span><span class="tk-n">z</span><span class="tk-p">))</span>
-<span class="tk-n">x</span><span class="tk-p">,</span> <span class="tk-n">y</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">array</span><span class="tk-p">([</span><span class="tk-mf">0.5</span><span class="tk-p">,</span> <span class="tk-o">-</span><span class="tk-mf">1.2</span><span class="tk-p">,</span> <span class="tk-mf">2.0</span><span class="tk-p">]),</span> <span class="tk-mf">1.0</span>
-<span class="tk-n">loss</span> <span class="tk-o">=</span> <span class="tk-k">lambda</span> <span class="tk-n">w</span><span class="tk-p">:</span> <span class="tk-o">-</span><span class="tk-p">(</span><span class="tk-n">y</span> <span class="tk-o">*</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">log</span><span class="tk-p">(</span><span class="tk-n">sigmoid</span><span class="tk-p">(</span><span class="tk-n">w</span> <span class="tk-o">@</span> <span class="tk-n">x</span><span class="tk-p">))</span> <span class="tk-o">+</span> <span class="tk-p">(</span><span class="tk-mi">1</span> <span class="tk-o">-</span> <span class="tk-n">y</span><span class="tk-p">)</span> <span class="tk-o">*</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">log</span><span class="tk-p">(</span><span class="tk-mi">1</span> <span class="tk-o">-</span> <span class="tk-n">sigmoid</span><span class="tk-p">(</span><span class="tk-n">w</span> <span class="tk-o">@</span> <span class="tk-n">x</span><span class="tk-p">)))</span>
-<span class="tk-n">w</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">array</span><span class="tk-p">([</span><span class="tk-mf">0.1</span><span class="tk-p">,</span> <span class="tk-mf">0.3</span><span class="tk-p">,</span> <span class="tk-o">-</span><span class="tk-mf">0.2</span><span class="tk-p">])</span>
-<span class="tk-n">analytic</span> <span class="tk-o">=</span> <span class="tk-p">(</span><span class="tk-n">sigmoid</span><span class="tk-p">(</span><span class="tk-n">w</span> <span class="tk-o">@</span> <span class="tk-n">x</span><span class="tk-p">)</span> <span class="tk-o">-</span> <span class="tk-n">y</span><span class="tk-p">)</span> <span class="tk-o">*</span> <span class="tk-n">x</span>
-<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">abs</span><span class="tk-p">(</span><span class="tk-n">numeric_grad</span><span class="tk-p">(</span><span class="tk-n">loss</span><span class="tk-p">,</span> <span class="tk-n">w</span><span class="tk-p">)</span> <span class="tk-o">-</span> <span class="tk-n">analytic</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">max</span><span class="tk-p">())</span>   <span class="tk-c1"># cỡ 1e-10</span>
+<span class="tk-n">P</span> <span class="tk-o">=</span> <span class="tk-n">softmax</span><span class="tk-p">([[</span><span class="tk-mf">1.</span><span class="tk-p">,</span> <span class="tk-mf">2.</span><span class="tk-p">,</span> <span class="tk-mf">3.</span><span class="tk-p">],</span> <span class="tk-p">[</span><span class="tk-mf">1000.</span><span class="tk-p">,</span> <span class="tk-mf">1001.</span><span class="tk-p">,</span> <span class="tk-mf">1002.</span><span class="tk-p">]])</span>
+<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-n">P</span><span class="tk-o">.</span><span class="tk-n">round</span><span class="tk-p">(</span><span class="tk-mi">3</span><span class="tk-p">))</span>          <span class="tk-c1"># hai hàng giống nhau: chỉ chênh lệch giữa các logit là quan trọng</span>
+<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-n">P</span><span class="tk-o">.</span><span class="tk-n">sum</span><span class="tk-p">(</span><span class="tk-n">axis</span><span class="tk-o">=</span><span class="tk-mi">1</span><span class="tk-p">))</span>       <span class="tk-c1"># mỗi hàng cộng lại bằng 1</span>
 </code></pre></div>
 
-<div class="run" data-group="e6" data-mode="py">
+<div class="run" data-group="e5" data-mode="py">
 <div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span></div>
-<pre class="run-out">1.2864820320146464e-11</pre>
+<pre class="run-out">[[0.09  0.245 0.665]&#10; [0.09  0.245 0.665]]&#10;[1. 1.]</pre>
 </div>
-</details></div></article><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p0.2:b">Tôi đã xong phần bài tập</label><button class="btn" type="button" data-goto="thuc-hanh">Sang thực hành <span class="arr">→</span></button></div></section><section class="panel" id="thuc-hanh" role="tabpanel" hidden><div class="prose"><h2>Notebook "toán bằng code"</h2>
-<p>Mỗi khái niệm trong bài một ô code kiểm chứng. Đây là cách học toán hiệu quả nhất cho kỹ sư: không tin công thức cho tới khi code xác nhận.</p>
-<p><strong>Các bước</strong></p>
+</details></div></article><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p0.2:b">Tôi đã xong phần bài tập</label><button class="btn" type="button" data-goto="thuc-hanh">Sang thực hành <span class="arr">→</span></button></div></section><section class="panel" id="thuc-hanh" role="tabpanel" hidden><div class="prose"><h2>Bộ hàm numpy không vòng for</h2>
+<p>Bạn viết một file <code>npkit.py</code> gồm các hàm sẽ dùng lại suốt lộ trình, mỗi hàm không có vòng <code>for</code> duyệt từng phần tử, rồi chạy ô kiểm tra tự động bên dưới.</p>
+<p><strong>Các hàm cần viết</strong></p>
 <ol>
-<li><strong>Nhân ma trận:</strong> tự viết <code>matmul(A, B)</code> bằng ba vòng for, so với <code>A @ B</code> trên ma trận ngẫu nhiên (5, 7) @ (7, 3). In shape và sai số lớn nhất.</li>
-<li><strong>Cosine similarity:</strong> viết hàm, kiểm tra hai vector cùng hướng cho 1, ngược hướng cho −1, vuông góc cho 0.</li>
-<li><strong>Gradient số:</strong> dùng <code>numeric_grad</code> từ bài tập 6 để kiểm tra đạo hàm của σ(x), x³ và MSE.</li>
-<li><strong>Gaussian:</strong> rút 100.000 mẫu <code>np.random.randn</code>, vẽ histogram, đo tỉ lệ nằm trong ±1σ và ±2σ (phải gần 68% và 95%).</li>
-<li><strong>Cộng phương sai:</strong> rút X, Y độc lập chuẩn, kiểm tra Var(0.6X + 0.8Y) ≈ 1.</li>
-<li><strong>Bayes bằng mô phỏng:</strong> mô phỏng 1.000.000 người theo bài tập 5, đếm tỉ lệ người bệnh trong nhóm dương tính, so với công thức.</li>
+<li><code>standardize(X)</code>: chuẩn hóa từng cột về trung bình 0, độ lệch chuẩn 1.</li>
+<li><code>one_hot(y, k)</code>: nhãn số nguyên → ma trận one-hot.</li>
+<li><code>softmax(Z)</code>: softmax từng hàng, ổn định số.</li>
+<li><code>topk(scores, k)</code>: chỉ số của <code>k</code> phần tử lớn nhất trong mỗi hàng, sắp giảm dần.</li>
+<li><code>accuracy(pred, true)</code>: tỉ lệ đúng.</li>
+<li><code>pairwise_dist(A, B)</code>: ma trận khoảng cách Euclid.</li>
 </ol>
+<p><strong>Ô kiểm tra (chép nguyên vào notebook)</strong></p>
+<div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">numpy</span><span class="tk-w"> </span><span class="tk-k">as</span><span class="tk-w"> </span><span class="tk-nn">np</span>
+<span class="tk-n">rng</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">random</span><span class="tk-o">.</span><span class="tk-n">default_rng</span><span class="tk-p">(</span><span class="tk-mi">0</span><span class="tk-p">)</span>
+<span class="tk-n">X</span> <span class="tk-o">=</span> <span class="tk-n">rng</span><span class="tk-o">.</span><span class="tk-n">normal</span><span class="tk-p">(</span><span class="tk-mi">5</span><span class="tk-p">,</span> <span class="tk-mi">3</span><span class="tk-p">,</span> <span class="tk-n">size</span><span class="tk-o">=</span><span class="tk-p">(</span><span class="tk-mi">100</span><span class="tk-p">,</span> <span class="tk-mi">4</span><span class="tk-p">))</span>
+<span class="tk-n">Z</span> <span class="tk-o">=</span> <span class="tk-n">standardize</span><span class="tk-p">(</span><span class="tk-n">X</span><span class="tk-p">)</span>
+<span class="tk-k">assert</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">allclose</span><span class="tk-p">(</span><span class="tk-n">Z</span><span class="tk-o">.</span><span class="tk-n">mean</span><span class="tk-p">(</span><span class="tk-mi">0</span><span class="tk-p">),</span> <span class="tk-mi">0</span><span class="tk-p">)</span> <span class="tk-ow">and</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">allclose</span><span class="tk-p">(</span><span class="tk-n">Z</span><span class="tk-o">.</span><span class="tk-n">std</span><span class="tk-p">(</span><span class="tk-mi">0</span><span class="tk-p">),</span> <span class="tk-mi">1</span><span class="tk-p">)</span>
+<span class="tk-k">assert</span> <span class="tk-p">(</span><span class="tk-n">one_hot</span><span class="tk-p">(</span><span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">array</span><span class="tk-p">([</span><span class="tk-mi">2</span><span class="tk-p">,</span> <span class="tk-mi">0</span><span class="tk-p">]),</span> <span class="tk-mi">3</span><span class="tk-p">)</span> <span class="tk-o">==</span> <span class="tk-p">[[</span><span class="tk-mi">0</span><span class="tk-p">,</span> <span class="tk-mi">0</span><span class="tk-p">,</span> <span class="tk-mi">1</span><span class="tk-p">],</span> <span class="tk-p">[</span><span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-mi">0</span><span class="tk-p">,</span> <span class="tk-mi">0</span><span class="tk-p">]])</span><span class="tk-o">.</span><span class="tk-n">all</span><span class="tk-p">()</span>
+<span class="tk-k">assert</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">allclose</span><span class="tk-p">(</span><span class="tk-n">softmax</span><span class="tk-p">(</span><span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">array</span><span class="tk-p">([[</span><span class="tk-mf">1000.</span><span class="tk-p">,</span> <span class="tk-mf">1000.</span><span class="tk-p">]])),</span> <span class="tk-mf">0.5</span><span class="tk-p">)</span>
+<span class="tk-k">assert</span> <span class="tk-p">(</span><span class="tk-n">topk</span><span class="tk-p">(</span><span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">array</span><span class="tk-p">([[</span><span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-mi">9</span><span class="tk-p">,</span> <span class="tk-mi">3</span><span class="tk-p">,</span> <span class="tk-mi">7</span><span class="tk-p">]]),</span> <span class="tk-mi">2</span><span class="tk-p">)</span> <span class="tk-o">==</span> <span class="tk-p">[[</span><span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-mi">3</span><span class="tk-p">]])</span><span class="tk-o">.</span><span class="tk-n">all</span><span class="tk-p">()</span>
+<span class="tk-k">assert</span> <span class="tk-n">accuracy</span><span class="tk-p">(</span><span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">array</span><span class="tk-p">([</span><span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-mi">0</span><span class="tk-p">,</span> <span class="tk-mi">1</span><span class="tk-p">]),</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">array</span><span class="tk-p">([</span><span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-mi">1</span><span class="tk-p">]))</span> <span class="tk-o">==</span> <span class="tk-mi">2</span> <span class="tk-o">/</span> <span class="tk-mi">3</span>
+<span class="tk-k">assert</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">allclose</span><span class="tk-p">(</span><span class="tk-n">pairwise_dist</span><span class="tk-p">(</span><span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">array</span><span class="tk-p">([[</span><span class="tk-mf">0.</span><span class="tk-p">,</span> <span class="tk-mf">0.</span><span class="tk-p">]]),</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">array</span><span class="tk-p">([[</span><span class="tk-mf">3.</span><span class="tk-p">,</span> <span class="tk-mf">4.</span><span class="tk-p">]])),</span> <span class="tk-mi">5</span><span class="tk-p">)</span>
+<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-s2">"Qua hết kiểm tra"</span><span class="tk-p">)</span>
+</code></pre></div>
+
+<p>Sau đó đo thời gian <code>standardize</code> với bản vòng <code>for</code> trên <code>X</code> shape (100.000, 20).</p>
 <p><strong>Xong khi</strong></p>
 <ul>
-<li>Gradient giải tích và gradient số khớp nhau đến 1e-6 cho cả ba hàm.</li>
-<li>Tỉ lệ trong ±1σ nằm trong khoảng 0.68 ± 0.01.</li>
-<li>Kết quả mô phỏng Bayes lệch công thức không quá 0.01.</li>
+<li>Ô kiểm tra in "Qua hết kiểm tra".</li>
+<li>Bản vector hóa nhanh hơn bản vòng <code>for</code> ít nhất 20 lần (con số cụ thể tùy máy).</li>
 </ul>
 <details class="fold code">
 <summary>Code tham khảo</summary>
-<div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">numpy</span><span class="tk-w"> </span><span class="tk-k">as</span><span class="tk-w"> </span><span class="tk-nn">np</span>
-<span class="tk-n">rng</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">random</span><span class="tk-o">.</span><span class="tk-n">default_rng</span><span class="tk-p">(</span><span class="tk-mi">0</span><span class="tk-p">)</span>
+<div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">time</span>
+<span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">numpy</span><span class="tk-w"> </span><span class="tk-k">as</span><span class="tk-w"> </span><span class="tk-nn">np</span>
 
-<span class="tk-c1"># 1. matmul</span>
-<span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">matmul</span><span class="tk-p">(</span><span class="tk-n">A</span><span class="tk-p">,</span> <span class="tk-n">B</span><span class="tk-p">):</span>
-    <span class="tk-n">m</span><span class="tk-p">,</span> <span class="tk-n">n</span> <span class="tk-o">=</span> <span class="tk-n">A</span><span class="tk-o">.</span><span class="tk-n">shape</span><span class="tk-p">;</span> <span class="tk-n">n2</span><span class="tk-p">,</span> <span class="tk-n">p</span> <span class="tk-o">=</span> <span class="tk-n">B</span><span class="tk-o">.</span><span class="tk-n">shape</span>
-    <span class="tk-k">assert</span> <span class="tk-n">n</span> <span class="tk-o">==</span> <span class="tk-n">n2</span><span class="tk-p">,</span> <span class="tk-s2">"số cột A phải bằng số hàng B"</span>
-    <span class="tk-n">C</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">zeros</span><span class="tk-p">((</span><span class="tk-n">m</span><span class="tk-p">,</span> <span class="tk-n">p</span><span class="tk-p">))</span>
-    <span class="tk-k">for</span> <span class="tk-n">i</span> <span class="tk-ow">in</span> <span class="tk-nb">range</span><span class="tk-p">(</span><span class="tk-n">m</span><span class="tk-p">):</span>
-        <span class="tk-k">for</span> <span class="tk-n">j</span> <span class="tk-ow">in</span> <span class="tk-nb">range</span><span class="tk-p">(</span><span class="tk-n">p</span><span class="tk-p">):</span>
-            <span class="tk-k">for</span> <span class="tk-n">k</span> <span class="tk-ow">in</span> <span class="tk-nb">range</span><span class="tk-p">(</span><span class="tk-n">n</span><span class="tk-p">):</span>
-                <span class="tk-n">C</span><span class="tk-p">[</span><span class="tk-n">i</span><span class="tk-p">,</span> <span class="tk-n">j</span><span class="tk-p">]</span> <span class="tk-o">+=</span> <span class="tk-n">A</span><span class="tk-p">[</span><span class="tk-n">i</span><span class="tk-p">,</span> <span class="tk-n">k</span><span class="tk-p">]</span> <span class="tk-o">*</span> <span class="tk-n">B</span><span class="tk-p">[</span><span class="tk-n">k</span><span class="tk-p">,</span> <span class="tk-n">j</span><span class="tk-p">]</span>
-    <span class="tk-k">return</span> <span class="tk-n">C</span>
-<span class="tk-n">A</span><span class="tk-p">,</span> <span class="tk-n">B</span> <span class="tk-o">=</span> <span class="tk-n">rng</span><span class="tk-o">.</span><span class="tk-n">random</span><span class="tk-p">((</span><span class="tk-mi">5</span><span class="tk-p">,</span> <span class="tk-mi">7</span><span class="tk-p">)),</span> <span class="tk-n">rng</span><span class="tk-o">.</span><span class="tk-n">random</span><span class="tk-p">((</span><span class="tk-mi">7</span><span class="tk-p">,</span> <span class="tk-mi">3</span><span class="tk-p">))</span>
-<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-s2">"matmul"</span><span class="tk-p">,</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">abs</span><span class="tk-p">(</span><span class="tk-n">matmul</span><span class="tk-p">(</span><span class="tk-n">A</span><span class="tk-p">,</span> <span class="tk-n">B</span><span class="tk-p">)</span> <span class="tk-o">-</span> <span class="tk-n">A</span> <span class="tk-o">@</span> <span class="tk-n">B</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">max</span><span class="tk-p">())</span>
+<span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">standardize</span><span class="tk-p">(</span><span class="tk-n">X</span><span class="tk-p">):</span>
+    <span class="tk-k">return</span> <span class="tk-p">(</span><span class="tk-n">X</span> <span class="tk-o">-</span> <span class="tk-n">X</span><span class="tk-o">.</span><span class="tk-n">mean</span><span class="tk-p">(</span><span class="tk-n">axis</span><span class="tk-o">=</span><span class="tk-mi">0</span><span class="tk-p">))</span> <span class="tk-o">/</span> <span class="tk-n">X</span><span class="tk-o">.</span><span class="tk-n">std</span><span class="tk-p">(</span><span class="tk-n">axis</span><span class="tk-o">=</span><span class="tk-mi">0</span><span class="tk-p">)</span>
 
-<span class="tk-c1"># 4. Gaussian</span>
-<span class="tk-n">z</span> <span class="tk-o">=</span> <span class="tk-n">rng</span><span class="tk-o">.</span><span class="tk-n">standard_normal</span><span class="tk-p">(</span><span class="tk-mi">100_000</span><span class="tk-p">)</span>
-<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-s2">"±1σ:"</span><span class="tk-p">,</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">mean</span><span class="tk-p">(</span><span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">abs</span><span class="tk-p">(</span><span class="tk-n">z</span><span class="tk-p">)</span> <span class="tk-o">&lt;</span> <span class="tk-mi">1</span><span class="tk-p">),</span> <span class="tk-s2">"±2σ:"</span><span class="tk-p">,</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">mean</span><span class="tk-p">(</span><span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">abs</span><span class="tk-p">(</span><span class="tk-n">z</span><span class="tk-p">)</span> <span class="tk-o">&lt;</span> <span class="tk-mi">2</span><span class="tk-p">))</span>
+<span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">one_hot</span><span class="tk-p">(</span><span class="tk-n">y</span><span class="tk-p">,</span> <span class="tk-n">k</span><span class="tk-p">):</span>
+    <span class="tk-k">return</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">eye</span><span class="tk-p">(</span><span class="tk-n">k</span><span class="tk-p">)[</span><span class="tk-n">y</span><span class="tk-p">]</span>
 
-<span class="tk-c1"># 5. cộng phương sai</span>
-<span class="tk-n">X</span><span class="tk-p">,</span> <span class="tk-n">Y</span> <span class="tk-o">=</span> <span class="tk-n">rng</span><span class="tk-o">.</span><span class="tk-n">standard_normal</span><span class="tk-p">(</span><span class="tk-mi">1_000_000</span><span class="tk-p">),</span> <span class="tk-n">rng</span><span class="tk-o">.</span><span class="tk-n">standard_normal</span><span class="tk-p">(</span><span class="tk-mi">1_000_000</span><span class="tk-p">)</span>
-<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-s2">"Var:"</span><span class="tk-p">,</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">var</span><span class="tk-p">(</span><span class="tk-mf">0.6</span> <span class="tk-o">*</span> <span class="tk-n">X</span> <span class="tk-o">+</span> <span class="tk-mf">0.8</span> <span class="tk-o">*</span> <span class="tk-n">Y</span><span class="tk-p">))</span>
+<span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">softmax</span><span class="tk-p">(</span><span class="tk-n">Z</span><span class="tk-p">):</span>
+    <span class="tk-n">E</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">exp</span><span class="tk-p">(</span><span class="tk-n">Z</span> <span class="tk-o">-</span> <span class="tk-n">Z</span><span class="tk-o">.</span><span class="tk-n">max</span><span class="tk-p">(</span><span class="tk-n">axis</span><span class="tk-o">=-</span><span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-n">keepdims</span><span class="tk-o">=</span><span class="tk-kc">True</span><span class="tk-p">))</span>
+    <span class="tk-k">return</span> <span class="tk-n">E</span> <span class="tk-o">/</span> <span class="tk-n">E</span><span class="tk-o">.</span><span class="tk-n">sum</span><span class="tk-p">(</span><span class="tk-n">axis</span><span class="tk-o">=-</span><span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-n">keepdims</span><span class="tk-o">=</span><span class="tk-kc">True</span><span class="tk-p">)</span>
 
-<span class="tk-c1"># 6. Bayes</span>
-<span class="tk-n">n</span> <span class="tk-o">=</span> <span class="tk-mi">1_000_000</span>
-<span class="tk-n">sick</span> <span class="tk-o">=</span> <span class="tk-n">rng</span><span class="tk-o">.</span><span class="tk-n">random</span><span class="tk-p">(</span><span class="tk-n">n</span><span class="tk-p">)</span> <span class="tk-o">&lt;</span> <span class="tk-mf">0.01</span>
-<span class="tk-n">positive</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">where</span><span class="tk-p">(</span><span class="tk-n">sick</span><span class="tk-p">,</span> <span class="tk-n">rng</span><span class="tk-o">.</span><span class="tk-n">random</span><span class="tk-p">(</span><span class="tk-n">n</span><span class="tk-p">)</span> <span class="tk-o">&lt;</span> <span class="tk-mf">0.99</span><span class="tk-p">,</span> <span class="tk-n">rng</span><span class="tk-o">.</span><span class="tk-n">random</span><span class="tk-p">(</span><span class="tk-n">n</span><span class="tk-p">)</span> <span class="tk-o">&lt;</span> <span class="tk-mf">0.05</span><span class="tk-p">)</span>
-<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-s2">"P(bệnh | +) mô phỏng:"</span><span class="tk-p">,</span> <span class="tk-n">sick</span><span class="tk-p">[</span><span class="tk-n">positive</span><span class="tk-p">]</span><span class="tk-o">.</span><span class="tk-n">mean</span><span class="tk-p">())</span>
+<span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">topk</span><span class="tk-p">(</span><span class="tk-n">scores</span><span class="tk-p">,</span> <span class="tk-n">k</span><span class="tk-p">):</span>
+    <span class="tk-k">return</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">argsort</span><span class="tk-p">(</span><span class="tk-o">-</span><span class="tk-n">scores</span><span class="tk-p">,</span> <span class="tk-n">axis</span><span class="tk-o">=-</span><span class="tk-mi">1</span><span class="tk-p">)[</span><span class="tk-o">...</span><span class="tk-p">,</span> <span class="tk-p">:</span><span class="tk-n">k</span><span class="tk-p">]</span>
+
+<span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">accuracy</span><span class="tk-p">(</span><span class="tk-n">pred</span><span class="tk-p">,</span> <span class="tk-n">true</span><span class="tk-p">):</span>
+    <span class="tk-k">return</span> <span class="tk-p">(</span><span class="tk-n">pred</span> <span class="tk-o">==</span> <span class="tk-n">true</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">mean</span><span class="tk-p">()</span>
+
+<span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">pairwise_dist</span><span class="tk-p">(</span><span class="tk-n">A</span><span class="tk-p">,</span> <span class="tk-n">B</span><span class="tk-p">):</span>
+    <span class="tk-k">return</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">sqrt</span><span class="tk-p">(((</span><span class="tk-n">A</span><span class="tk-p">[:,</span> <span class="tk-kc">None</span><span class="tk-p">,</span> <span class="tk-p">:]</span> <span class="tk-o">-</span> <span class="tk-n">B</span><span class="tk-p">[</span><span class="tk-kc">None</span><span class="tk-p">,</span> <span class="tk-p">:,</span> <span class="tk-p">:])</span> <span class="tk-o">**</span> <span class="tk-mi">2</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">sum</span><span class="tk-p">(</span><span class="tk-o">-</span><span class="tk-mi">1</span><span class="tk-p">))</span>
+
+<span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">standardize_loop</span><span class="tk-p">(</span><span class="tk-n">X</span><span class="tk-p">):</span>
+    <span class="tk-n">out</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">empty_like</span><span class="tk-p">(</span><span class="tk-n">X</span><span class="tk-p">)</span>
+    <span class="tk-k">for</span> <span class="tk-n">j</span> <span class="tk-ow">in</span> <span class="tk-nb">range</span><span class="tk-p">(</span><span class="tk-n">X</span><span class="tk-o">.</span><span class="tk-n">shape</span><span class="tk-p">[</span><span class="tk-mi">1</span><span class="tk-p">]):</span>
+        <span class="tk-n">col</span> <span class="tk-o">=</span> <span class="tk-p">[</span><span class="tk-n">X</span><span class="tk-p">[</span><span class="tk-n">i</span><span class="tk-p">,</span> <span class="tk-n">j</span><span class="tk-p">]</span> <span class="tk-k">for</span> <span class="tk-n">i</span> <span class="tk-ow">in</span> <span class="tk-nb">range</span><span class="tk-p">(</span><span class="tk-n">X</span><span class="tk-o">.</span><span class="tk-n">shape</span><span class="tk-p">[</span><span class="tk-mi">0</span><span class="tk-p">])]</span>
+        <span class="tk-n">m</span> <span class="tk-o">=</span> <span class="tk-nb">sum</span><span class="tk-p">(</span><span class="tk-n">col</span><span class="tk-p">)</span> <span class="tk-o">/</span> <span class="tk-nb">len</span><span class="tk-p">(</span><span class="tk-n">col</span><span class="tk-p">)</span>
+        <span class="tk-n">s</span> <span class="tk-o">=</span> <span class="tk-p">(</span><span class="tk-nb">sum</span><span class="tk-p">((</span><span class="tk-n">v</span> <span class="tk-o">-</span> <span class="tk-n">m</span><span class="tk-p">)</span> <span class="tk-o">**</span> <span class="tk-mi">2</span> <span class="tk-k">for</span> <span class="tk-n">v</span> <span class="tk-ow">in</span> <span class="tk-n">col</span><span class="tk-p">)</span> <span class="tk-o">/</span> <span class="tk-nb">len</span><span class="tk-p">(</span><span class="tk-n">col</span><span class="tk-p">))</span> <span class="tk-o">**</span> <span class="tk-mf">0.5</span>
+        <span class="tk-k">for</span> <span class="tk-n">i</span> <span class="tk-ow">in</span> <span class="tk-nb">range</span><span class="tk-p">(</span><span class="tk-n">X</span><span class="tk-o">.</span><span class="tk-n">shape</span><span class="tk-p">[</span><span class="tk-mi">0</span><span class="tk-p">]):</span>
+            <span class="tk-n">out</span><span class="tk-p">[</span><span class="tk-n">i</span><span class="tk-p">,</span> <span class="tk-n">j</span><span class="tk-p">]</span> <span class="tk-o">=</span> <span class="tk-p">(</span><span class="tk-n">X</span><span class="tk-p">[</span><span class="tk-n">i</span><span class="tk-p">,</span> <span class="tk-n">j</span><span class="tk-p">]</span> <span class="tk-o">-</span> <span class="tk-n">m</span><span class="tk-p">)</span> <span class="tk-o">/</span> <span class="tk-n">s</span>
+    <span class="tk-k">return</span> <span class="tk-n">out</span>
+
+<span class="tk-n">X</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">random</span><span class="tk-o">.</span><span class="tk-n">default_rng</span><span class="tk-p">(</span><span class="tk-mi">1</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">normal</span><span class="tk-p">(</span><span class="tk-n">size</span><span class="tk-o">=</span><span class="tk-p">(</span><span class="tk-mi">100_000</span><span class="tk-p">,</span> <span class="tk-mi">20</span><span class="tk-p">))</span>
+<span class="tk-n">t</span> <span class="tk-o">=</span> <span class="tk-n">time</span><span class="tk-o">.</span><span class="tk-n">time</span><span class="tk-p">();</span> <span class="tk-n">A</span> <span class="tk-o">=</span> <span class="tk-n">standardize</span><span class="tk-p">(</span><span class="tk-n">X</span><span class="tk-p">);</span> <span class="tk-n">t1</span> <span class="tk-o">=</span> <span class="tk-n">time</span><span class="tk-o">.</span><span class="tk-n">time</span><span class="tk-p">()</span> <span class="tk-o">-</span> <span class="tk-n">t</span>
+<span class="tk-n">t</span> <span class="tk-o">=</span> <span class="tk-n">time</span><span class="tk-o">.</span><span class="tk-n">time</span><span class="tk-p">();</span> <span class="tk-n">B</span> <span class="tk-o">=</span> <span class="tk-n">standardize_loop</span><span class="tk-p">(</span><span class="tk-n">X</span><span class="tk-p">);</span> <span class="tk-n">t2</span> <span class="tk-o">=</span> <span class="tk-n">time</span><span class="tk-o">.</span><span class="tk-n">time</span><span class="tk-p">()</span> <span class="tk-o">-</span> <span class="tk-n">t</span>
+<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">allclose</span><span class="tk-p">(</span><span class="tk-n">A</span><span class="tk-p">,</span> <span class="tk-n">B</span><span class="tk-p">),</span> <span class="tk-sa">f</span><span class="tk-s2">"nhanh hơn </span><span class="tk-si">{</span><span class="tk-n">t2</span><span class="tk-w"> </span><span class="tk-o">/</span><span class="tk-w"> </span><span class="tk-n">t1</span><span class="tk-si">:</span><span class="tk-s2">.0f</span><span class="tk-si">}</span><span class="tk-s2"> lần"</span><span class="tk-p">)</span>
 </code></pre></div>
 
 </details></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p0.2:p">Tôi đã xong phần thực hành</label></div></section>
-      <div class="donewhen"><b>Xong bài khi</b>Gradient giải tích và gradient số của bạn khớp nhau đến 1e-6.</div>
-      <nav class="pn" aria-label="Bài trước, bài sau"><a href="p0-1.html"><span class="dir">← Bài trước · P0.1</span><span class="tt">Python cho ML: numpy, pandas, matplotlib</span></a><a class="nx" href="p0-3.html"><span class="dir">Bài sau · P0.3 →</span><span class="tt">Công cụ: Git, GitHub, terminal, Colab</span></a></nav>
+      <div class="donewhen"><b>Xong bài khi</b>Mọi hàm qua kiểm tra, và bản vector hóa nhanh hơn bản vòng for ít nhất 20 lần.</div>
+      <nav class="pn" aria-label="Bài trước, bài sau"><a href="p0-1.html"><span class="dir">← Bài trước · P0.1</span><span class="tt">Python từ số 0</span></a><a class="nx" href="p0-3.html"><span class="dir">Bài sau · P0.3 →</span><span class="tt">pandas: làm sạch và tổng hợp bảng dữ liệu</span></a></nav>
     </div>
     <aside class="aside">
       <div class="abox"><h4>Tiến độ bài này</h4><div class="ring"><svg viewBox="0 0 64 64" aria-hidden="true"><circle class="bg" cx="32" cy="32" r="28"/><circle class="fg" cx="32" cy="32" r="28" stroke-dasharray="176" stroke-dashoffset="176"/></svg><div><b id="ring-n">0/3</b><span id="ring-sub">phần đã xong</span></div></div></div>
-      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Vector và tích vô hướng</a></li><li><a href="#lt-2">Ma trận và phép nhân ma trận</a></li><li><a href="#lt-3">Đạo hàm, gradient và quy tắc dây chuyền</a></li><li><a href="#lt-4">Xác suất và thống kê cơ bản</a></li><li><a href="#lt-5">Bayes và xác suất có điều kiện</a></li><li><a href="#lt-6">Log, exp và maximum likelihood</a></li><li><a href="#lt-7">Tóm tắt bài và thuật ngữ</a></li></ol></div>
+      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">Mảng numpy: shape, dtype, indexing</a></li><li><a href="#lt-2">Broadcasting</a></li><li><a href="#lt-3">Vector hóa thay vòng for</a></li><li><a href="#lt-4">Tóm tắt bài và thuật ngữ</a></li></ol></div>
       <div class="abox"><h4>Notebook</h4><div style="display:grid;gap:8px"><a class="dl" href="https://colab.research.google.com/github/truonghuu344/ai-engineer-roadmap/blob/main/notebooks/ly-thuyet/p0-2.ipynb" target="_blank" rel="noopener"><span class="ext">COLAB</span><span>Chạy toàn bộ code của bài<span style="display:block;font:400 12px var(--f-mono);color:var(--muted)">notebook có sẵn kết quả</span></span></a></div></div>
-      <div class="abox"><h4>Cùng giai đoạn</h4><ul><li><a href="p0-1.html">Python cho ML: numpy, pandas, matplotlib</a></li><li><span class=cur>Toán cho AI: đại số tuyến tính, giải tích, xác suất</span></li><li><a href="p0-3.html">Công cụ: Git, GitHub, terminal, Colab</a></li></ul></div>
+      <div class="abox"><h4>Cùng giai đoạn</h4><ul><li><a href="p0-1.html">Python từ số 0</a></li><li><span class=cur>numpy: mảng, broadcasting, vector hóa</span></li><li><a href="p0-3.html">pandas: làm sạch và tổng hợp bảng dữ liệu</a></li><li><a href="p0-4.html">matplotlib: vẽ để hiểu dữ liệu và kết quả train</a></li><li><a href="p0-5.html">Toán cho AI: đại số tuyến tính, giải tích, xác suất</a></li><li><a href="p0-6.html">PyTorch cơ bản: tensor, autograd, nn.Module</a></li><li><a href="p0-7.html">Công cụ: Git, GitHub, terminal, Colab</a></li></ul></div>
     </aside>
   </div>
 </main>

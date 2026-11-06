@@ -17,7 +17,7 @@
 <link rel="stylesheet" href="../assets/lesson.css">
 </head>
 <body data-mid="p2.1">
-<header class="sh"><div class="sh-in"><a class="sh-brand" href="../index.html"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="var(--ink)"/><circle cx="9" cy="22" r="2.6" fill="var(--accent-soft)"/><circle cx="16" cy="10" r="2.6" fill="var(--accent-soft)"/><circle cx="23" cy="19" r="2.6" fill="#FF9361"/><path d="M9 22 L16 10 L23 19" stroke="var(--accent-soft)" stroke-width="1.8" fill="none"/></svg><span>AI Engineer<small>lộ trình tự học</small></span></a><nav class="sh-nav" id="sh-nav" aria-label="Chính"><a href="../index.html">Trang chủ</a><a href="../bai-hoc.html" aria-current="page">Bài học</a><a href="../lo-trinh.html">Lộ trình</a><a href="../notebooks.html">Notebook</a><a class="sh-cta-m" href="../bai01.html" data-next-lesson>Học tiếp →</a></nav><a class="sh-cta" href="../bai01.html" data-next-lesson>Học tiếp <span class="arr">→</span></a><button class="sh-burger" type="button" aria-expanded="false" aria-controls="sh-nav">Menu</button></div></header>
+<header class="sh"><div class="sh-in"><a class="sh-brand" href="../index.html"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="var(--ink)"/><circle cx="9" cy="22" r="2.6" fill="var(--accent-soft)"/><circle cx="16" cy="10" r="2.6" fill="var(--accent-soft)"/><circle cx="23" cy="19" r="2.6" fill="#FF9361"/><path d="M9 22 L16 10 L23 19" stroke="var(--accent-soft)" stroke-width="1.8" fill="none"/></svg><span>AI Engineer<small>lộ trình tự học</small></span></a><nav class="sh-nav" id="sh-nav" aria-label="Chính"><a href="../index.html">Trang chủ</a><a href="../bai-hoc.html" aria-current="page">Bài học</a><a href="../lo-trinh.html">Lộ trình</a><a href="../notebooks.html">Notebook</a><a class="sh-cta-m" href="../bai/p0-1.html" data-next-lesson>Học tiếp →</a></nav><a class="sh-cta" href="../bai/p0-1.html" data-next-lesson>Học tiếp <span class="arr">→</span></a><button class="sh-burger" type="button" aria-expanded="false" aria-controls="sh-nav">Menu</button></div></header>
 
 <main class="container">
   <div class="crumbs"><a href="../bai-hoc.html">Bài học</a><span>/</span><a href="../bai-hoc.html#p2">P2 · Deep Learning nền tảng</a><span>/</span><span>P2.1</span></div>
@@ -104,7 +104,7 @@ p = softmax(logits)
 <p>Mạng nơ-ron chỉ làm việc với tensor số thực. Biết chính xác ảnh, nhãn, batch được xếp thành shape nào giúp bạn đọc mọi lỗi "shape mismatch" và viết được model của riêng mình.</p>
 </div>
 <h3>Tensor và shape</h3>
-<p>Tensor là mảng nhiều chiều, giống mảng numpy (P0.1) nhưng chạy được trên GPU và tự tính gradient.</p>
+<p>Tensor là mảng nhiều chiều, giống mảng numpy (P0.2) nhưng chạy được trên GPU và tự tính gradient. Cách dùng tensor, autograd và <code>nn.Module</code> đã luyện ở P0.6; bài này đi vào <strong>vì sao</strong> mạng học được.</p>
 <table>
 <thead>
 <tr>
@@ -338,7 +338,7 @@ p = softmax(logits)
 <p>Mạng có hàng triệu tham số, và mỗi bước train cần đạo hàm của loss theo <strong>từng</strong> tham số. Backprop tính tất cả trong một lượt đi ngược, tốn chi phí cỡ bằng một lượt forward. Không có nó thì deep learning không tồn tại.</p>
 </div>
 <h3>Đồ thị tính toán</h3>
-<p>Mỗi phép tính trong forward là một nút. Backward đi ngược từ loss, ở mỗi nút nhân gradient đi tới với đạo hàm cục bộ của nút đó (quy tắc dây chuyền, P0.2).</p>
+<p>Mỗi phép tính trong forward là một nút. Backward đi ngược từ loss, ở mỗi nút nhân gradient đi tới với đạo hàm cục bộ của nút đó (quy tắc dây chuyền, P0.5).</p>
 <div class="box example">
 <div class="box-h">Ví dụ từng bước</div>
 <p>Mạng nhỏ: x = (1, 2), W₁ = [[0.5, −0.5], [0.25, 0.75]], ReLU, w₂ = (1, −1), không bias, đáp án y = 1, loss MSE.</p>

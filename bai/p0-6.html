@@ -1,0 +1,903 @@
+<!doctype html>
+<html lang="vi" data-root="../">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>P0.6 · PyTorch cơ bản: tensor, autograd, nn.Module · AI Engineer</title>
+<meta name="description" content="PyTorch cơ bản: tensor, autograd, nn.Module: lý thuyết, bài tập và thực hành. Tensor: tạo, shape, dtype, chuyển qua lại với numpy, dim thay cho axis; Thiết bị: CPU, GPU (cuda), Apple (mps) và .to(device)">
+<meta property="og:title" content="P0.6 · PyTorch cơ bản: tensor, autograd, nn.Module · AI Engineer">
+<meta property="og:description" content="PyTorch cơ bản: tensor, autograd, nn.Module: lý thuyết, bài tập và thực hành. Tensor: tạo, shape, dtype, chuyển qua lại với numpy, dim thay cho axis; Thiết bị: CPU, GPU (cuda), Apple (mps) và .to(device)">
+<meta name="theme-color" content="#F4F6FB">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23131A33'/%3E%3Cpath d='M9 22 L16 10 L23 19' stroke='%23E5E9FB' stroke-width='2' fill='none'/%3E%3Ccircle cx='9' cy='22' r='3' fill='%23E5E9FB'/%3E%3Ccircle cx='16' cy='10' r='3' fill='%23E5E9FB'/%3E%3Ccircle cx='23' cy='19' r='3' fill='%23FF9361'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../assets/chrome.css">
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/lesson.css">
+</head>
+<body data-mid="p0.6">
+<header class="sh"><div class="sh-in"><a class="sh-brand" href="../index.html"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="var(--ink)"/><circle cx="9" cy="22" r="2.6" fill="var(--accent-soft)"/><circle cx="16" cy="10" r="2.6" fill="var(--accent-soft)"/><circle cx="23" cy="19" r="2.6" fill="#FF9361"/><path d="M9 22 L16 10 L23 19" stroke="var(--accent-soft)" stroke-width="1.8" fill="none"/></svg><span>AI Engineer<small>lộ trình tự học</small></span></a><nav class="sh-nav" id="sh-nav" aria-label="Chính"><a href="../index.html">Trang chủ</a><a href="../bai-hoc.html" aria-current="page">Bài học</a><a href="../lo-trinh.html">Lộ trình</a><a href="../notebooks.html">Notebook</a><a class="sh-cta-m" href="../bai/p0-1.html" data-next-lesson>Học tiếp →</a></nav><a class="sh-cta" href="../bai/p0-1.html" data-next-lesson>Học tiếp <span class="arr">→</span></a><button class="sh-burger" type="button" aria-expanded="false" aria-controls="sh-nav">Menu</button></div></header>
+
+<main class="container">
+  <div class="crumbs"><a href="../bai-hoc.html">Bài học</a><span>/</span><a href="../bai-hoc.html#p0">P0 · Nền móng</a><span>/</span><span>P0.6</span></div>
+  <section class="lhero"><div class="code">P0.6</div><h1>PyTorch cơ bản: tensor, autograd, nn.Module</h1><div class="lmeta"><span class="m">Giai đoạn P0 · Nền móng</span><span class="m">Tuần 1–3</span><span class="chip ready"><span class="dot"></span>Có nội dung đầy đủ</span></div>
+    <div class="intro"><p>PyTorch là thư viện deep learning phổ biến nhất trong nghiên cứu và ngày càng phổ biến trong sản phẩm. Bài này dạy <strong>cách dùng</strong> PyTorch, từng mảnh một: tensor (mảng số của PyTorch), chạy trên GPU, <strong>autograd</strong> (tự tính đạo hàm), rồi ghép thành model, loss, optimizer và vòng train. Bạn cần numpy (P0.2) và ý nghĩa của đạo hàm (P0.5). Còn <strong>vì sao</strong> mạng nơ-ron học được thì để dành cho P2.1; ở đây ta luyện tay cho quen.</p>
+<p>PyTorch cần máy tính thật để chạy nên các đoạn code trong bài hiện kết quả đã chạy sẵn. Muốn tự sửa và chạy lại, bấm nút <strong>COLAB</strong> ở cột bên phải: Colab có sẵn PyTorch, không cần cài gì.</p></div></section>
+  
+  <div class="tabs" role="tablist" aria-label="Phần của bài"><button class="tab" role="tab" type="button" data-tab="ly-thuyet" aria-controls="ly-thuyet"><span class="ok">✓</span>Lý thuyết <span class="n">11 mục</span></button><button class="tab" role="tab" type="button" data-tab="bai-tap" aria-controls="bai-tap"><span class="ok">✓</span>Bài tập <span class="n">5 bài</span></button><button class="tab" role="tab" type="button" data-tab="thuc-hanh" aria-controls="thuc-hanh"><span class="ok">✓</span>Thực hành</button></div>
+  <div class="lgrid" style="margin-top:22px">
+    <div><section class="panel" id="ly-thuyet" role="tabpanel"><div class="prose"><h2 id="lt-1">PyTorch là gì</h2>
+<div class="box why">
+<div class="box-h">Vì sao cần học</div>
+<p>numpy tính nhanh trên CPU nhưng không chạy trên GPU và không biết tính đạo hàm. Train một mạng nơ-ron cần cả hai: hàng tỉ phép nhân (GPU nhanh hơn CPU hàng chục lần), và đạo hàm của loss theo hàng triệu tham số (tính tay là không thể). PyTorch cho bạn đúng ba thứ: <strong>tensor</strong> giống mảng numpy, chạy được trên GPU; <strong>autograd</strong> tự tính đạo hàm; và các <strong>khối dựng sẵn</strong> (lớp, hàm loss, thuật toán tối ưu) để ghép model.</p>
+</div>
+<div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">torch</span>
+<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">__version__</span><span class="tk-p">)</span>
+</code></pre></div>
+
+<div class="run" data-mode="static" data-group="t"><div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span><span class="run-note">đã chạy sẵn cần PyTorch</span><a class="run-colab" href="https://colab.research.google.com/github/truonghuu344/ai-engineer-roadmap/blob/main/notebooks/ly-thuyet/p0-6.ipynb" target="_blank" rel="noopener">Mở trên Colab ↗</a></div><pre class="run-out">2.15.0+cu132</pre></div>
+
+<h2 id="lt-2">Tensor</h2>
+<p><strong>Tensor</strong> là mảng nhiều chiều của PyTorch. Cách tạo và cách xem gần giống hệt numpy:</p>
+<div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">torch</span>
+<span class="tk-n">x</span> <span class="tk-o">=</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">tensor</span><span class="tk-p">([[</span><span class="tk-mf">1.</span><span class="tk-p">,</span> <span class="tk-mf">2.</span><span class="tk-p">,</span> <span class="tk-mf">3.</span><span class="tk-p">],</span>
+                  <span class="tk-p">[</span><span class="tk-mf">4.</span><span class="tk-p">,</span> <span class="tk-mf">5.</span><span class="tk-p">,</span> <span class="tk-mf">6.</span><span class="tk-p">]])</span>        <span class="tk-c1"># từ list, giống np.array</span>
+<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-n">x</span><span class="tk-p">)</span>
+<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-n">x</span><span class="tk-o">.</span><span class="tk-n">shape</span><span class="tk-p">,</span> <span class="tk-n">x</span><span class="tk-o">.</span><span class="tk-n">dtype</span><span class="tk-p">,</span> <span class="tk-n">x</span><span class="tk-o">.</span><span class="tk-n">ndim</span><span class="tk-p">)</span>         <span class="tk-c1"># torch.Size([2, 3]) torch.float32 2</span>
+</code></pre></div>
+
+<div class="run" data-mode="static" data-group="t"><div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span><span class="run-note">đã chạy sẵn cần PyTorch</span><a class="run-colab" href="https://colab.research.google.com/github/truonghuu344/ai-engineer-roadmap/blob/main/notebooks/ly-thuyet/p0-6.ipynb" target="_blank" rel="noopener">Mở trên Colab ↗</a></div><pre class="run-out">tensor([[1., 2., 3.],&#10;        [4., 5., 6.]])&#10;torch.Size([2, 3]) torch.float32 2</pre></div>
+
+<div class="hl"><pre><span></span><code><span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">manual_seed</span><span class="tk-p">(</span><span class="tk-mi">0</span><span class="tk-p">)</span>                    <span class="tk-c1"># cố định số ngẫu nhiên để chạy lại ra giống nhau</span>
+<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">zeros</span><span class="tk-p">(</span><span class="tk-mi">2</span><span class="tk-p">,</span> <span class="tk-mi">3</span><span class="tk-p">))</span>                <span class="tk-c1"># toàn 0, shape (2, 3)</span>
+<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">arange</span><span class="tk-p">(</span><span class="tk-mi">0</span><span class="tk-p">,</span> <span class="tk-mi">10</span><span class="tk-p">,</span> <span class="tk-mi">2</span><span class="tk-p">))</span>           <span class="tk-c1"># 0 2 4 6 8, giống np.arange</span>
+<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">randn</span><span class="tk-p">(</span><span class="tk-mi">2</span><span class="tk-p">,</span> <span class="tk-mi">3</span><span class="tk-p">))</span>                <span class="tk-c1"># số ngẫu nhiên phân phối chuẩn</span>
+</code></pre></div>
+
+<div class="run" data-mode="static" data-group="t"><div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span><span class="run-note">đã chạy sẵn</span><a class="run-colab" href="https://colab.research.google.com/github/truonghuu344/ai-engineer-roadmap/blob/main/notebooks/ly-thuyet/p0-6.ipynb" target="_blank" rel="noopener">Mở trên Colab ↗</a></div><pre class="run-out">tensor([[0., 0., 0.],&#10;        [0., 0., 0.]])&#10;tensor([0, 2, 4, 6, 8])&#10;tensor([[ 1.5410, -0.2934, -2.1788],&#10;        [ 0.5684, -1.0845, -1.3986]])</pre></div>
+
+<h3>dtype: float32 là mặc định</h3>
+<div class="hl"><pre><span></span><code><span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">tensor</span><span class="tk-p">([</span><span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-mi">2</span><span class="tk-p">,</span> <span class="tk-mi">3</span><span class="tk-p">])</span><span class="tk-o">.</span><span class="tk-n">dtype</span><span class="tk-p">)</span>    <span class="tk-c1"># số nguyên → int64</span>
+<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">tensor</span><span class="tk-p">([</span><span class="tk-mf">1.</span><span class="tk-p">,</span> <span class="tk-mf">2.</span><span class="tk-p">])</span><span class="tk-o">.</span><span class="tk-n">dtype</span><span class="tk-p">)</span>     <span class="tk-c1"># số thực → float32 (numpy mặc định float64)</span>
+</code></pre></div>
+
+<div class="run" data-mode="static" data-group="t"><div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span><span class="run-note">đã chạy sẵn</span><a class="run-colab" href="https://colab.research.google.com/github/truonghuu344/ai-engineer-roadmap/blob/main/notebooks/ly-thuyet/p0-6.ipynb" target="_blank" rel="noopener">Mở trên Colab ↗</a></div><pre class="run-out">torch.int64&#10;torch.float32</pre></div>
+
+<p>Deep learning dùng <code>float32</code> vì nó tốn một nửa bộ nhớ so với <code>float64</code> mà vẫn đủ chính xác. Trọng số của model là <code>float32</code>, nên dữ liệu đưa vào cũng phải là <code>float32</code>.</p>
+<h3>Qua lại với numpy</h3>
+<div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">numpy</span><span class="tk-w"> </span><span class="tk-k">as</span><span class="tk-w"> </span><span class="tk-nn">np</span>
+<span class="tk-n">a</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">array</span><span class="tk-p">([</span><span class="tk-mf">1.5</span><span class="tk-p">,</span> <span class="tk-mf">2.5</span><span class="tk-p">,</span> <span class="tk-mf">3.5</span><span class="tk-p">])</span>
+<span class="tk-n">t</span> <span class="tk-o">=</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">from_numpy</span><span class="tk-p">(</span><span class="tk-n">a</span><span class="tk-p">)</span>                 <span class="tk-c1"># numpy → tensor (dùng chung bộ nhớ với a)</span>
+<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-n">t</span><span class="tk-p">,</span> <span class="tk-n">t</span><span class="tk-o">.</span><span class="tk-n">dtype</span><span class="tk-p">)</span>                       <span class="tk-c1"># dtype vẫn là float64 như numpy</span>
+<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-n">t</span><span class="tk-o">.</span><span class="tk-n">float</span><span class="tk-p">()</span><span class="tk-o">.</span><span class="tk-n">dtype</span><span class="tk-p">)</span>                  <span class="tk-c1"># đổi sang float32</span>
+<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-n">t</span><span class="tk-o">.</span><span class="tk-n">numpy</span><span class="tk-p">())</span>                        <span class="tk-c1"># tensor → numpy</span>
+<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-n">t</span><span class="tk-o">.</span><span class="tk-n">sum</span><span class="tk-p">()</span><span class="tk-o">.</span><span class="tk-n">item</span><span class="tk-p">())</span>                   <span class="tk-c1"># tensor 1 phần tử → số Python thường</span>
+</code></pre></div>
+
+<div class="run" data-mode="static" data-group="t"><div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span><span class="run-note">đã chạy sẵn</span><a class="run-colab" href="https://colab.research.google.com/github/truonghuu344/ai-engineer-roadmap/blob/main/notebooks/ly-thuyet/p0-6.ipynb" target="_blank" rel="noopener">Mở trên Colab ↗</a></div><pre class="run-out">tensor([1.5000, 2.5000, 3.5000], dtype=torch.float64) torch.float64&#10;torch.float32&#10;[1.5 2.5 3.5]&#10;7.5</pre></div>
+
+<p><code>.item()</code> dùng nhiều nhất khi in loss: <code>loss</code> là tensor một phần tử, <code>loss.item()</code> là số để in hoặc ghi lại.</p>
+<div class="box pitfall">
+<div class="box-h">Lỗi hay gặp</div>
+<p><strong>Đưa dữ liệu float64 vào model.</strong> Dữ liệu đọc bằng numpy hay pandas thường là <code>float64</code>. Đưa thẳng vào model sẽ báo lỗi kiểu:</p>
+<div class="hl"><pre><span></span><code>RuntimeError: mat1 and mat2 must have the same dtype, but got Double and Float
+</code></pre></div>
+
+<p><code>Double</code> là float64, <code>Float</code> là float32. Sửa: <code>torch.tensor(X, dtype=torch.float32)</code> hoặc <code>torch.from_numpy(X).float()</code>.</p>
+</div>
+<h2 id="lt-3">Phép tính: giống numpy, khác vài cái tên</h2>
+<p>Chỉ số, lát cắt, phép tính từng phần tử, broadcasting đều giống numpy (P0.2). Chỗ khác chủ yếu là tên gọi:</p>
+<table>
+<thead>
+<tr>
+<th>Việc</th>
+<th>numpy</th>
+<th>PyTorch</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Gộp theo trục</td>
+<td><code>x.sum(axis=0)</code></td>
+<td><code>x.sum(dim=0)</code></td>
+</tr>
+<tr>
+<td>Đổi shape</td>
+<td><code>x.reshape(2, -1)</code></td>
+<td><code>x.reshape(2, -1)</code> hoặc <code>x.view(2, -1)</code></td>
+</tr>
+<tr>
+<td>Thêm trục độ dài 1</td>
+<td><code>x[None]</code></td>
+<td><code>x.unsqueeze(0)</code> (hoặc <code>x[None]</code>)</td>
+</tr>
+<tr>
+<td>Bỏ trục độ dài 1</td>
+<td><code>x.squeeze()</code></td>
+<td><code>x.squeeze()</code></td>
+</tr>
+<tr>
+<td>Đổi thứ tự trục</td>
+<td><code>x.transpose(2, 0, 1)</code></td>
+<td><code>x.permute(2, 0, 1)</code></td>
+</tr>
+<tr>
+<td>Nối / xếp chồng</td>
+<td><code>np.concatenate</code>, <code>np.stack</code></td>
+<td><code>torch.cat</code>, <code>torch.stack</code></td>
+</tr>
+<tr>
+<td>Nhân ma trận</td>
+<td><code>A @ B</code></td>
+<td><code>A @ B</code></td>
+</tr>
+</tbody>
+</table>
+<div class="hl"><pre><span></span><code><span class="tk-n">x</span> <span class="tk-o">=</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">arange</span><span class="tk-p">(</span><span class="tk-mf">6.</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">reshape</span><span class="tk-p">(</span><span class="tk-mi">2</span><span class="tk-p">,</span> <span class="tk-mi">3</span><span class="tk-p">)</span>
+<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-n">x</span><span class="tk-o">.</span><span class="tk-n">sum</span><span class="tk-p">(</span><span class="tk-n">dim</span><span class="tk-o">=</span><span class="tk-mi">0</span><span class="tk-p">))</span>                     <span class="tk-c1"># cộng dọc 2 hàng → 3 số</span>
+<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-n">x</span><span class="tk-o">.</span><span class="tk-n">mean</span><span class="tk-p">(</span><span class="tk-n">dim</span><span class="tk-o">=</span><span class="tk-mi">1</span><span class="tk-p">))</span>                    <span class="tk-c1"># trung bình mỗi hàng → 2 số</span>
+<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-n">x</span> <span class="tk-o">@</span> <span class="tk-n">x</span><span class="tk-o">.</span><span class="tk-n">T</span><span class="tk-p">)</span>                          <span class="tk-c1"># (2, 3) @ (3, 2) → (2, 2)</span>
+<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-n">x</span><span class="tk-o">.</span><span class="tk-n">argmax</span><span class="tk-p">(</span><span class="tk-n">dim</span><span class="tk-o">=</span><span class="tk-mi">1</span><span class="tk-p">))</span>                  <span class="tk-c1"># vị trí lớn nhất mỗi hàng</span>
+</code></pre></div>
+
+<div class="run" data-mode="static" data-group="t"><div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span><span class="run-note">đã chạy sẵn</span><a class="run-colab" href="https://colab.research.google.com/github/truonghuu344/ai-engineer-roadmap/blob/main/notebooks/ly-thuyet/p0-6.ipynb" target="_blank" rel="noopener">Mở trên Colab ↗</a></div><pre class="run-out">tensor([3., 5., 7.])&#10;tensor([1., 4.])&#10;tensor([[ 5., 14.],&#10;        [14., 50.]])&#10;tensor([2, 2])</pre></div>
+
+<p>Ví dụ hay gặp với ảnh: ảnh đọc từ file có shape <code>(cao, rộng, kênh màu)</code>, còn PyTorch muốn <code>(kênh, cao, rộng)</code>, và model nhận cả <strong>batch</strong> nhiều ảnh:</p>
+<div class="hl"><pre><span></span><code><span class="tk-n">img</span> <span class="tk-o">=</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">rand</span><span class="tk-p">(</span><span class="tk-mi">32</span><span class="tk-p">,</span> <span class="tk-mi">32</span><span class="tk-p">,</span> <span class="tk-mi">3</span><span class="tk-p">)</span>             <span class="tk-c1"># ảnh 32x32, 3 kênh màu, kiểu "cao, rộng, kênh"</span>
+<span class="tk-n">chw</span> <span class="tk-o">=</span> <span class="tk-n">img</span><span class="tk-o">.</span><span class="tk-n">permute</span><span class="tk-p">(</span><span class="tk-mi">2</span><span class="tk-p">,</span> <span class="tk-mi">0</span><span class="tk-p">,</span> <span class="tk-mi">1</span><span class="tk-p">)</span>              <span class="tk-c1"># đổi thành (3, 32, 32)</span>
+<span class="tk-n">batch</span> <span class="tk-o">=</span> <span class="tk-n">chw</span><span class="tk-o">.</span><span class="tk-n">unsqueeze</span><span class="tk-p">(</span><span class="tk-mi">0</span><span class="tk-p">)</span>                <span class="tk-c1"># thêm trục batch: (1, 3, 32, 32)</span>
+<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-n">chw</span><span class="tk-o">.</span><span class="tk-n">shape</span><span class="tk-p">,</span> <span class="tk-n">batch</span><span class="tk-o">.</span><span class="tk-n">shape</span><span class="tk-p">)</span>
+</code></pre></div>
+
+<div class="run" data-mode="static" data-group="t"><div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span><span class="run-note">đã chạy sẵn</span><a class="run-colab" href="https://colab.research.google.com/github/truonghuu344/ai-engineer-roadmap/blob/main/notebooks/ly-thuyet/p0-6.ipynb" target="_blank" rel="noopener">Mở trên Colab ↗</a></div><pre class="run-out">torch.Size([3, 32, 32]) torch.Size([1, 3, 32, 32])</pre></div>
+
+<p>Shape <code>(N, C, H, W)</code>: số ảnh, số kênh, cao, rộng. Bạn sẽ gặp nó ở mọi model ảnh từ P2.</p>
+<h2 id="lt-4">Thiết bị: CPU và GPU</h2>
+<p>Tensor nằm trên một <strong>thiết bị</strong> (device). Muốn tính trên GPU, chuyển cả model lẫn dữ liệu sang đó bằng <code>.to(device)</code>:</p>
+<div class="hl"><pre><span></span><code><span class="tk-k">if</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">cuda</span><span class="tk-o">.</span><span class="tk-n">is_available</span><span class="tk-p">():</span>
+    <span class="tk-n">device</span> <span class="tk-o">=</span> <span class="tk-s2">"cuda"</span>                     <span class="tk-c1"># GPU NVIDIA (Colab: Runtime → Change runtime type → T4 GPU)</span>
+<span class="tk-k">elif</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">backends</span><span class="tk-o">.</span><span class="tk-n">mps</span><span class="tk-o">.</span><span class="tk-n">is_available</span><span class="tk-p">():</span>
+    <span class="tk-n">device</span> <span class="tk-o">=</span> <span class="tk-s2">"mps"</span>                      <span class="tk-c1"># GPU của máy Mac chip Apple</span>
+<span class="tk-k">else</span><span class="tk-p">:</span>
+    <span class="tk-n">device</span> <span class="tk-o">=</span> <span class="tk-s2">"cpu"</span>
+<span class="tk-n">x</span> <span class="tk-o">=</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">randn</span><span class="tk-p">(</span><span class="tk-mi">3</span><span class="tk-p">,</span> <span class="tk-mi">3</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">to</span><span class="tk-p">(</span><span class="tk-n">device</span><span class="tk-p">)</span>
+<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-n">device</span><span class="tk-p">,</span> <span class="tk-n">x</span><span class="tk-o">.</span><span class="tk-n">device</span><span class="tk-p">)</span>
+</code></pre></div>
+
+<div class="run" data-mode="static" data-group="t"><div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span><span class="run-note">đã chạy sẵn</span><a class="run-colab" href="https://colab.research.google.com/github/truonghuu344/ai-engineer-roadmap/blob/main/notebooks/ly-thuyet/p0-6.ipynb" target="_blank" rel="noopener">Mở trên Colab ↗</a></div><pre class="run-out">cpu cpu</pre></div>
+
+<p>Đoạn chọn thiết bị này đứng đầu mọi notebook train. Viết như vậy thì cùng một code chạy được trên laptop (CPU) và trên Colab (GPU).</p>
+<div class="box pitfall">
+<div class="box-h">Lỗi hay gặp</div>
+<p><strong>Tensor nằm ở hai thiết bị khác nhau.</strong> Model đã <code>.to("cuda")</code> mà dữ liệu còn ở CPU sẽ báo <code>Expected all tensors to be on the same device</code>. Trong vòng train, mỗi batch lấy ra đều phải <code>.to(device)</code>.</p>
+</div>
+<h2 id="lt-5">autograd: tự tính đạo hàm</h2>
+<p>Đây là phần "phép màu" của PyTorch. Đánh dấu một tensor bằng <code>requires_grad=True</code>, tính một biểu thức từ nó, gọi <code>.backward()</code>: PyTorch tính đạo hàm của kết quả theo tensor đó và cất vào <code>.grad</code>.</p>
+<div class="hl"><pre><span></span><code><span class="tk-n">w</span> <span class="tk-o">=</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">tensor</span><span class="tk-p">(</span><span class="tk-mf">2.0</span><span class="tk-p">,</span> <span class="tk-n">requires_grad</span><span class="tk-o">=</span><span class="tk-kc">True</span><span class="tk-p">)</span>
+<span class="tk-n">y</span> <span class="tk-o">=</span> <span class="tk-n">w</span> <span class="tk-o">**</span> <span class="tk-mi">2</span> <span class="tk-o">+</span> <span class="tk-mi">3</span> <span class="tk-o">*</span> <span class="tk-n">w</span>                      <span class="tk-c1"># y = w² + 3w</span>
+<span class="tk-n">y</span><span class="tk-o">.</span><span class="tk-n">backward</span><span class="tk-p">()</span>                            <span class="tk-c1"># tính dy/dw</span>
+<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-n">y</span><span class="tk-o">.</span><span class="tk-n">item</span><span class="tk-p">(),</span> <span class="tk-n">w</span><span class="tk-o">.</span><span class="tk-n">grad</span><span class="tk-o">.</span><span class="tk-n">item</span><span class="tk-p">())</span>          <span class="tk-c1"># y = 10; dy/dw = 2w + 3 = 7 tại w = 2</span>
+</code></pre></div>
+
+<div class="run" data-mode="static" data-group="t"><div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span><span class="run-note">đã chạy sẵn</span><a class="run-colab" href="https://colab.research.google.com/github/truonghuu344/ai-engineer-roadmap/blob/main/notebooks/ly-thuyet/p0-6.ipynb" target="_blank" rel="noopener">Mở trên Colab ↗</a></div><pre class="run-out">10.0 7.0</pre></div>
+
+<p>Kiểm tra bằng tay (P0.5): đạo hàm của <code>w² + 3w</code> là <code>2w + 3</code>, tại <code>w = 2</code> bằng 7. Khớp.</p>
+<h3>Đạo hàm của một loss</h3>
+<p>Với model đơn giản nhất <code>dự đoán = w·x + b</code> và một mẫu <code>(x, y)</code>, loss bình phương là <code>(w·x + b − y)²</code>:</p>
+<div class="hl"><pre><span></span><code><span class="tk-n">w</span> <span class="tk-o">=</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">tensor</span><span class="tk-p">(</span><span class="tk-mf">1.0</span><span class="tk-p">,</span> <span class="tk-n">requires_grad</span><span class="tk-o">=</span><span class="tk-kc">True</span><span class="tk-p">)</span>
+<span class="tk-n">b</span> <span class="tk-o">=</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">tensor</span><span class="tk-p">(</span><span class="tk-mf">0.0</span><span class="tk-p">,</span> <span class="tk-n">requires_grad</span><span class="tk-o">=</span><span class="tk-kc">True</span><span class="tk-p">)</span>
+<span class="tk-n">x</span><span class="tk-p">,</span> <span class="tk-n">y</span> <span class="tk-o">=</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">tensor</span><span class="tk-p">(</span><span class="tk-mf">2.0</span><span class="tk-p">),</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">tensor</span><span class="tk-p">(</span><span class="tk-mf">5.0</span><span class="tk-p">)</span>
+
+<span class="tk-n">pred</span> <span class="tk-o">=</span> <span class="tk-n">w</span> <span class="tk-o">*</span> <span class="tk-n">x</span> <span class="tk-o">+</span> <span class="tk-n">b</span>                        <span class="tk-c1"># 2</span>
+<span class="tk-n">loss</span> <span class="tk-o">=</span> <span class="tk-p">(</span><span class="tk-n">pred</span> <span class="tk-o">-</span> <span class="tk-n">y</span><span class="tk-p">)</span> <span class="tk-o">**</span> <span class="tk-mi">2</span>                  <span class="tk-c1"># (2 - 5)² = 9</span>
+<span class="tk-n">loss</span><span class="tk-o">.</span><span class="tk-n">backward</span><span class="tk-p">()</span>
+<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-n">loss</span><span class="tk-o">.</span><span class="tk-n">item</span><span class="tk-p">(),</span> <span class="tk-n">w</span><span class="tk-o">.</span><span class="tk-n">grad</span><span class="tk-o">.</span><span class="tk-n">item</span><span class="tk-p">(),</span> <span class="tk-n">b</span><span class="tk-o">.</span><span class="tk-n">grad</span><span class="tk-o">.</span><span class="tk-n">item</span><span class="tk-p">())</span>
+</code></pre></div>
+
+<div class="run" data-mode="static" data-group="t"><div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span><span class="run-note">đã chạy sẵn</span><a class="run-colab" href="https://colab.research.google.com/github/truonghuu344/ai-engineer-roadmap/blob/main/notebooks/ly-thuyet/p0-6.ipynb" target="_blank" rel="noopener">Mở trên Colab ↗</a></div><pre class="run-out">9.0 -12.0 -6.0</pre></div>
+
+<figure class="fig"><img src="../assets/fig/p0-6-graph.svg" alt="Khi tính forward, PyTorch ghi lại từng phép tính thành một đồ thị. backward() đi ngược đồ thị, nhân đạo hàm từng bước (quy tắc dây chuyền) để ra gradient của loss theo w và b." loading="lazy"><figcaption>Khi tính forward, PyTorch ghi lại từng phép tính thành một đồ thị. backward() đi ngược đồ thị, nhân đạo hàm từng bước (quy tắc dây chuyền) để ra gradient của loss theo w và b.</figcaption></figure>
+
+<p>Bằng tay: <code>∂loss/∂w = 2·(pred − y)·x = 2·(−3)·2 = −12</code>, <code>∂loss/∂b = 2·(pred − y) = −6</code>. Gradient âm nghĩa là <strong>tăng</strong> <code>w</code> thì loss giảm, đúng vì dự đoán 2 đang nhỏ hơn đáp án 5.</p>
+<h3>Gradient cộng dồn</h3>
+<div class="hl"><pre><span></span><code><span class="tk-n">w</span> <span class="tk-o">=</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">tensor</span><span class="tk-p">(</span><span class="tk-mf">2.0</span><span class="tk-p">,</span> <span class="tk-n">requires_grad</span><span class="tk-o">=</span><span class="tk-kc">True</span><span class="tk-p">)</span>
+<span class="tk-k">for</span> <span class="tk-n">i</span> <span class="tk-ow">in</span> <span class="tk-nb">range</span><span class="tk-p">(</span><span class="tk-mi">3</span><span class="tk-p">):</span>
+    <span class="tk-n">y</span> <span class="tk-o">=</span> <span class="tk-n">w</span> <span class="tk-o">**</span> <span class="tk-mi">2</span> <span class="tk-o">+</span> <span class="tk-mi">3</span> <span class="tk-o">*</span> <span class="tk-n">w</span>
+    <span class="tk-n">y</span><span class="tk-o">.</span><span class="tk-n">backward</span><span class="tk-p">()</span>
+    <span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-s2">"lần"</span><span class="tk-p">,</span> <span class="tk-n">i</span> <span class="tk-o">+</span> <span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-s2">"w.grad ="</span><span class="tk-p">,</span> <span class="tk-n">w</span><span class="tk-o">.</span><span class="tk-n">grad</span><span class="tk-o">.</span><span class="tk-n">item</span><span class="tk-p">())</span>   <span class="tk-c1"># 7, 14, 21: cộng dồn chứ không ghi đè!</span>
+<span class="tk-c1"># xóa gradient về 0</span>
+<span class="tk-n">w</span><span class="tk-o">.</span><span class="tk-n">grad</span><span class="tk-o">.</span><span class="tk-n">zero_</span><span class="tk-p">()</span>
+<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-s2">"sau zero_:"</span><span class="tk-p">,</span> <span class="tk-n">w</span><span class="tk-o">.</span><span class="tk-n">grad</span><span class="tk-o">.</span><span class="tk-n">item</span><span class="tk-p">())</span>
+</code></pre></div>
+
+<div class="run" data-mode="static" data-group="t"><div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span><span class="run-note">đã chạy sẵn</span><a class="run-colab" href="https://colab.research.google.com/github/truonghuu344/ai-engineer-roadmap/blob/main/notebooks/ly-thuyet/p0-6.ipynb" target="_blank" rel="noopener">Mở trên Colab ↗</a></div><pre class="run-out">lần 1 w.grad = 7.0&#10;lần 2 w.grad = 14.0&#10;lần 3 w.grad = 21.0&#10;sau zero_: 0.0</pre></div>
+
+<p>PyTorch <strong>cộng</strong> gradient mới vào <code>.grad</code> cũ thay vì ghi đè. Vì vậy mỗi bước train phải xóa gradient trước (<code>optimizer.zero_grad()</code>). Quên bước này là lỗi kinh điển: model vẫn chạy, không báo lỗi gì, chỉ học sai.</p>
+<h3>Tắt autograd khi không cần</h3>
+<p>Khi cập nhật tham số hoặc khi chỉ dự đoán (không train), bọc code trong <code>with torch.no_grad():</code> để PyTorch không ghi đồ thị: nhanh hơn, tốn ít bộ nhớ hơn. Muốn lấy một tensor ra khỏi đồ thị (để vẽ, để chuyển sang numpy) thì dùng <code>.detach()</code>: <code>loss.detach().numpy()</code>.</p>
+<h2 id="lt-6">Tự train bằng autograd</h2>
+<p>Ghép mọi thứ: tìm <code>w</code>, <code>b</code> cho dữ liệu được tạo theo <code>y = 2x + 1</code> cộng chút nhiễu. Mỗi bước: dự đoán, tính loss, tính gradient, đi một bước ngược hướng gradient (gradient descent, P0.5), xóa gradient.</p>
+<div class="hl"><pre><span></span><code><span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">manual_seed</span><span class="tk-p">(</span><span class="tk-mi">0</span><span class="tk-p">)</span>
+<span class="tk-n">X</span> <span class="tk-o">=</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">rand</span><span class="tk-p">(</span><span class="tk-mi">100</span><span class="tk-p">)</span> <span class="tk-o">*</span> <span class="tk-mi">10</span>                       <span class="tk-c1"># 100 giá trị x từ 0 tới 10</span>
+<span class="tk-n">Y</span> <span class="tk-o">=</span> <span class="tk-mi">2</span> <span class="tk-o">*</span> <span class="tk-n">X</span> <span class="tk-o">+</span> <span class="tk-mi">1</span> <span class="tk-o">+</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">randn</span><span class="tk-p">(</span><span class="tk-mi">100</span><span class="tk-p">)</span> <span class="tk-o">*</span> <span class="tk-mf">0.5</span>         <span class="tk-c1"># đáp án thật: w = 2, b = 1, cộng nhiễu</span>
+
+<span class="tk-n">w</span> <span class="tk-o">=</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">tensor</span><span class="tk-p">(</span><span class="tk-mf">0.0</span><span class="tk-p">,</span> <span class="tk-n">requires_grad</span><span class="tk-o">=</span><span class="tk-kc">True</span><span class="tk-p">)</span>
+<span class="tk-n">b</span> <span class="tk-o">=</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">tensor</span><span class="tk-p">(</span><span class="tk-mf">0.0</span><span class="tk-p">,</span> <span class="tk-n">requires_grad</span><span class="tk-o">=</span><span class="tk-kc">True</span><span class="tk-p">)</span>
+<span class="tk-n">lr</span> <span class="tk-o">=</span> <span class="tk-mf">0.01</span>                                      <span class="tk-c1"># learning rate: độ dài mỗi bước</span>
+
+<span class="tk-k">for</span> <span class="tk-n">step</span> <span class="tk-ow">in</span> <span class="tk-nb">range</span><span class="tk-p">(</span><span class="tk-mi">1001</span><span class="tk-p">):</span>
+    <span class="tk-n">pred</span> <span class="tk-o">=</span> <span class="tk-n">w</span> <span class="tk-o">*</span> <span class="tk-n">X</span> <span class="tk-o">+</span> <span class="tk-n">b</span>
+    <span class="tk-n">loss</span> <span class="tk-o">=</span> <span class="tk-p">((</span><span class="tk-n">pred</span> <span class="tk-o">-</span> <span class="tk-n">Y</span><span class="tk-p">)</span> <span class="tk-o">**</span> <span class="tk-mi">2</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">mean</span><span class="tk-p">()</span>            <span class="tk-c1"># MSE: trung bình bình phương sai số</span>
+    <span class="tk-n">loss</span><span class="tk-o">.</span><span class="tk-n">backward</span><span class="tk-p">()</span>                            <span class="tk-c1"># tính w.grad, b.grad</span>
+    <span class="tk-k">with</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">no_grad</span><span class="tk-p">():</span>                      <span class="tk-c1"># cập nhật tham số, không ghi đồ thị</span>
+        <span class="tk-n">w</span> <span class="tk-o">-=</span> <span class="tk-n">lr</span> <span class="tk-o">*</span> <span class="tk-n">w</span><span class="tk-o">.</span><span class="tk-n">grad</span>
+        <span class="tk-n">b</span> <span class="tk-o">-=</span> <span class="tk-n">lr</span> <span class="tk-o">*</span> <span class="tk-n">b</span><span class="tk-o">.</span><span class="tk-n">grad</span>
+    <span class="tk-n">w</span><span class="tk-o">.</span><span class="tk-n">grad</span><span class="tk-o">.</span><span class="tk-n">zero_</span><span class="tk-p">();</span> <span class="tk-n">b</span><span class="tk-o">.</span><span class="tk-n">grad</span><span class="tk-o">.</span><span class="tk-n">zero_</span><span class="tk-p">()</span>             <span class="tk-c1"># xóa gradient cho bước sau</span>
+    <span class="tk-k">if</span> <span class="tk-n">step</span> <span class="tk-o">%</span> <span class="tk-mi">200</span> <span class="tk-o">==</span> <span class="tk-mi">0</span><span class="tk-p">:</span>
+        <span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-sa">f</span><span class="tk-s2">"bước </span><span class="tk-si">{</span><span class="tk-n">step</span><span class="tk-si">:</span><span class="tk-s2">4d</span><span class="tk-si">}</span><span class="tk-s2">: loss = </span><span class="tk-si">{</span><span class="tk-n">loss</span><span class="tk-o">.</span><span class="tk-n">item</span><span class="tk-p">()</span><span class="tk-si">:</span><span class="tk-s2">.3f</span><span class="tk-si">}</span><span class="tk-s2">, w = </span><span class="tk-si">{</span><span class="tk-n">w</span><span class="tk-o">.</span><span class="tk-n">item</span><span class="tk-p">()</span><span class="tk-si">:</span><span class="tk-s2">.3f</span><span class="tk-si">}</span><span class="tk-s2">, b = </span><span class="tk-si">{</span><span class="tk-n">b</span><span class="tk-o">.</span><span class="tk-n">item</span><span class="tk-p">()</span><span class="tk-si">:</span><span class="tk-s2">.3f</span><span class="tk-si">}</span><span class="tk-s2">"</span><span class="tk-p">)</span>
+</code></pre></div>
+
+<div class="run" data-mode="static" data-group="t"><div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span><span class="run-note">đã chạy sẵn</span><a class="run-colab" href="https://colab.research.google.com/github/truonghuu344/ai-engineer-roadmap/blob/main/notebooks/ly-thuyet/p0-6.ipynb" target="_blank" rel="noopener">Mở trên Colab ↗</a></div><pre class="run-out">bước    0: loss = 149.308, w = 1.389, b = 0.215&#10;bước  200: loss = 0.222, w = 2.011, b = 0.867&#10;bước  400: loss = 0.201, w = 1.982, b = 1.060&#10;bước  600: loss = 0.198, w = 1.971, b = 1.129&#10;bước  800: loss = 0.198, w = 1.968, b = 1.153&#10;bước 1000: loss = 0.198, w = 1.966, b = 1.161</pre></div>
+
+<p>Loss giảm dần, <code>w</code> tiến về khoảng 2 và <code>b</code> về khoảng 1: model tự tìm ra quy luật từ dữ liệu. Đây là toàn bộ ý tưởng của "học máy"; phần còn lại của PyTorch chỉ giúp viết gọn và chạy nhanh hơn.</p>
+<h2 id="lt-7">nn.Module, loss và optimizer</h2>
+<p>Viết tay <code>w</code>, <code>b</code> như trên ổn với 2 tham số, nhưng mạng thật có hàng triệu. PyTorch đóng gói sẵn:</p>
+<ul>
+<li><code>torch.nn</code> có các <strong>lớp</strong> (layer) chứa tham số: <code>nn.Linear(vào, ra)</code> là phép <code>x @ W.T + b</code>.</li>
+<li>Hàm loss: <code>nn.MSELoss()</code> cho hồi quy, <code>nn.CrossEntropyLoss()</code> cho phân loại.</li>
+<li><code>torch.optim</code> có các thuật toán cập nhật tham số: <code>SGD</code>, <code>Adam</code>...</li>
+</ul>
+<div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">torch.nn</span><span class="tk-w"> </span><span class="tk-k">as</span><span class="tk-w"> </span><span class="tk-nn">nn</span>
+<span class="tk-n">lin</span> <span class="tk-o">=</span> <span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">Linear</span><span class="tk-p">(</span><span class="tk-mi">3</span><span class="tk-p">,</span> <span class="tk-mi">2</span><span class="tk-p">)</span>                          <span class="tk-c1"># 3 đầu vào, 2 đầu ra</span>
+<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-n">lin</span><span class="tk-o">.</span><span class="tk-n">weight</span><span class="tk-o">.</span><span class="tk-n">shape</span><span class="tk-p">,</span> <span class="tk-n">lin</span><span class="tk-o">.</span><span class="tk-n">bias</span><span class="tk-o">.</span><span class="tk-n">shape</span><span class="tk-p">)</span>        <span class="tk-c1"># W: (2, 3), b: (2,)</span>
+<span class="tk-n">n_params</span> <span class="tk-o">=</span> <span class="tk-nb">sum</span><span class="tk-p">(</span><span class="tk-n">p</span><span class="tk-o">.</span><span class="tk-n">numel</span><span class="tk-p">()</span> <span class="tk-k">for</span> <span class="tk-n">p</span> <span class="tk-ow">in</span> <span class="tk-n">lin</span><span class="tk-o">.</span><span class="tk-n">parameters</span><span class="tk-p">())</span>
+<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-s2">"số tham số:"</span><span class="tk-p">,</span> <span class="tk-n">n_params</span><span class="tk-p">)</span>                 <span class="tk-c1"># 3*2 + 2 = 8</span>
+<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-n">lin</span><span class="tk-p">(</span><span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">randn</span><span class="tk-p">(</span><span class="tk-mi">4</span><span class="tk-p">,</span> <span class="tk-mi">3</span><span class="tk-p">))</span><span class="tk-o">.</span><span class="tk-n">shape</span><span class="tk-p">)</span>            <span class="tk-c1"># batch 4 mẫu → (4, 2)</span>
+</code></pre></div>
+
+<div class="run" data-mode="static" data-group="t"><div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span><span class="run-note">đã chạy sẵn cần PyTorch</span><a class="run-colab" href="https://colab.research.google.com/github/truonghuu344/ai-engineer-roadmap/blob/main/notebooks/ly-thuyet/p0-6.ipynb" target="_blank" rel="noopener">Mở trên Colab ↗</a></div><pre class="run-out">torch.Size([2, 3]) torch.Size([2])&#10;số tham số: 8&#10;torch.Size([4, 2])</pre></div>
+
+<p>Một <strong>model</strong> là một class kế thừa <code>nn.Module</code>, gồm hai phần: <code>__init__</code> khai báo các lớp, <code>forward</code> mô tả dữ liệu đi qua chúng thế nào (cách viết class đã gặp ở P0.1):</p>
+<div class="hl"><pre><span></span><code><span class="tk-k">class</span><span class="tk-w"> </span><span class="tk-nc">MLP</span><span class="tk-p">(</span><span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">Module</span><span class="tk-p">):</span>
+    <span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-fm">__init__</span><span class="tk-p">(</span><span class="tk-bp">self</span><span class="tk-p">):</span>
+        <span class="tk-nb">super</span><span class="tk-p">()</span><span class="tk-o">.</span><span class="tk-fm">__init__</span><span class="tk-p">()</span>                     <span class="tk-c1"># dòng bắt buộc đầu tiên</span>
+        <span class="tk-bp">self</span><span class="tk-o">.</span><span class="tk-n">l1</span> <span class="tk-o">=</span> <span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">Linear</span><span class="tk-p">(</span><span class="tk-mi">2</span><span class="tk-p">,</span> <span class="tk-mi">16</span><span class="tk-p">)</span>
+        <span class="tk-bp">self</span><span class="tk-o">.</span><span class="tk-n">l2</span> <span class="tk-o">=</span> <span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">Linear</span><span class="tk-p">(</span><span class="tk-mi">16</span><span class="tk-p">,</span> <span class="tk-mi">2</span><span class="tk-p">)</span>
+    <span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">forward</span><span class="tk-p">(</span><span class="tk-bp">self</span><span class="tk-p">,</span> <span class="tk-n">x</span><span class="tk-p">):</span>
+        <span class="tk-n">h</span> <span class="tk-o">=</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">relu</span><span class="tk-p">(</span><span class="tk-bp">self</span><span class="tk-o">.</span><span class="tk-n">l1</span><span class="tk-p">(</span><span class="tk-n">x</span><span class="tk-p">))</span>             <span class="tk-c1"># lớp 1 rồi ReLU (giữ số dương, số âm thành 0)</span>
+        <span class="tk-k">return</span> <span class="tk-bp">self</span><span class="tk-o">.</span><span class="tk-n">l2</span><span class="tk-p">(</span><span class="tk-n">h</span><span class="tk-p">)</span>                      <span class="tk-c1"># lớp 2: 2 điểm số, một cho mỗi lớp</span>
+
+<span class="tk-n">model</span> <span class="tk-o">=</span> <span class="tk-n">MLP</span><span class="tk-p">()</span>
+<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-n">model</span><span class="tk-p">)</span>
+<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-s2">"số tham số:"</span><span class="tk-p">,</span> <span class="tk-nb">sum</span><span class="tk-p">(</span><span class="tk-n">p</span><span class="tk-o">.</span><span class="tk-n">numel</span><span class="tk-p">()</span> <span class="tk-k">for</span> <span class="tk-n">p</span> <span class="tk-ow">in</span> <span class="tk-n">model</span><span class="tk-o">.</span><span class="tk-n">parameters</span><span class="tk-p">()))</span>   <span class="tk-c1"># (2*16+16) + (16*2+2) = 82</span>
+</code></pre></div>
+
+<div class="run" data-mode="static" data-group="t"><div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span><span class="run-note">đã chạy sẵn</span><a class="run-colab" href="https://colab.research.google.com/github/truonghuu344/ai-engineer-roadmap/blob/main/notebooks/ly-thuyet/p0-6.ipynb" target="_blank" rel="noopener">Mở trên Colab ↗</a></div><pre class="run-out">MLP(&#10;  (l1): Linear(in_features=2, out_features=16, bias=True)&#10;  (l2): Linear(in_features=16, out_features=2, bias=True)&#10;)&#10;số tham số: 82</pre></div>
+
+<p>Gọi <code>model(x)</code> là PyTorch tự gọi <code>forward(x)</code>. Với model chỉ xếp các lớp nối tiếp, viết ngắn hơn bằng <code>nn.Sequential(nn.Linear(2, 16), nn.ReLU(), nn.Linear(16, 2))</code>.</p>
+<h3>Vòng train 5 dòng</h3>
+<p>Mọi vòng train PyTorch, từ hồi quy tuyến tính tới model ngôn ngữ lớn, đều có năm dòng này:</p>
+<div class="hl"><pre><span></span><code><span class="tk-n">loss_fn</span> <span class="tk-o">=</span> <span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">CrossEntropyLoss</span><span class="tk-p">()</span>
+<span class="tk-n">optimizer</span> <span class="tk-o">=</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">optim</span><span class="tk-o">.</span><span class="tk-n">SGD</span><span class="tk-p">(</span><span class="tk-n">model</span><span class="tk-o">.</span><span class="tk-n">parameters</span><span class="tk-p">(),</span> <span class="tk-n">lr</span><span class="tk-o">=</span><span class="tk-mf">0.1</span><span class="tk-p">)</span>    <span class="tk-c1"># model MLP ở trên</span>
+<span class="tk-n">xb</span> <span class="tk-o">=</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">randn</span><span class="tk-p">(</span><span class="tk-mi">8</span><span class="tk-p">,</span> <span class="tk-mi">2</span><span class="tk-p">)</span>                                      <span class="tk-c1"># một batch giả: 8 mẫu, mỗi mẫu 2 số</span>
+<span class="tk-n">yb</span> <span class="tk-o">=</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">randint</span><span class="tk-p">(</span><span class="tk-mi">0</span><span class="tk-p">,</span> <span class="tk-mi">2</span><span class="tk-p">,</span> <span class="tk-p">(</span><span class="tk-mi">8</span><span class="tk-p">,))</span>                              <span class="tk-c1"># nhãn 0 hoặc 1</span>
+
+<span class="tk-k">for</span> <span class="tk-n">step</span> <span class="tk-ow">in</span> <span class="tk-nb">range</span><span class="tk-p">(</span><span class="tk-mi">3</span><span class="tk-p">):</span>
+    <span class="tk-n">optimizer</span><span class="tk-o">.</span><span class="tk-n">zero_grad</span><span class="tk-p">()</span>          <span class="tk-c1"># 1. xóa gradient cũ</span>
+    <span class="tk-n">pred</span> <span class="tk-o">=</span> <span class="tk-n">model</span><span class="tk-p">(</span><span class="tk-n">xb</span><span class="tk-p">)</span>               <span class="tk-c1"># 2. forward: dự đoán</span>
+    <span class="tk-n">loss</span> <span class="tk-o">=</span> <span class="tk-n">loss_fn</span><span class="tk-p">(</span><span class="tk-n">pred</span><span class="tk-p">,</span> <span class="tk-n">yb</span><span class="tk-p">)</span>       <span class="tk-c1"># 3. tính loss</span>
+    <span class="tk-n">loss</span><span class="tk-o">.</span><span class="tk-n">backward</span><span class="tk-p">()</span>                <span class="tk-c1"># 4. backward: tính gradient</span>
+    <span class="tk-n">optimizer</span><span class="tk-o">.</span><span class="tk-n">step</span><span class="tk-p">()</span>               <span class="tk-c1"># 5. cập nhật tham số theo gradient</span>
+    <span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-n">step</span><span class="tk-p">,</span> <span class="tk-n">loss</span><span class="tk-o">.</span><span class="tk-n">item</span><span class="tk-p">())</span>       <span class="tk-c1"># loss giảm dần trên batch này</span>
+</code></pre></div>
+
+<div class="run" data-mode="static" data-group="t"><div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span><span class="run-note">đã chạy sẵn</span><a class="run-colab" href="https://colab.research.google.com/github/truonghuu344/ai-engineer-roadmap/blob/main/notebooks/ly-thuyet/p0-6.ipynb" target="_blank" rel="noopener">Mở trên Colab ↗</a></div><pre class="run-out">0 0.7276450395584106&#10;1 0.6813852787017822&#10;2 0.647287905216217</pre></div>
+
+<div class="box pitfall">
+<div class="box-h">Lỗi hay gặp</div>
+<p><strong>Sai kiểu nhãn cho CrossEntropyLoss.</strong> <code>nn.CrossEntropyLoss</code> muốn: dự đoán là <strong>điểm thô</strong> (logit) shape <code>(N, số lớp)</code>, chưa qua softmax; nhãn là <strong>số nguyên</strong> (<code>int64</code>) shape <code>(N,)</code>, mỗi số là chỉ số lớp. Nhãn kiểu float, hay nhãn dạng one-hot shape <code>(N, số lớp)</code> dù không phải lúc nào cũng báo lỗi nhưng cho kết quả khác ý bạn. Tự áp softmax trước khi đưa vào loss cũng sai, vì loss này đã tự làm softmax bên trong.</p>
+</div>
+<h2 id="lt-8">Dataset và DataLoader</h2>
+<p>Train trên cả bộ dữ liệu một lúc thì tốn bộ nhớ; thường chia thành các <strong>batch</strong> nhỏ (32, 64 mẫu). <code>DataLoader</code> làm việc đó: chia batch, xáo thứ tự mỗi epoch, ghép mẫu thành tensor (đúng như <code>np.stack</code> ở P0.2).</p>
+<div class="hl"><pre><span></span><code><span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">torch.utils.data</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">TensorDataset</span><span class="tk-p">,</span> <span class="tk-n">DataLoader</span>
+
+<span class="tk-n">X</span> <span class="tk-o">=</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">randn</span><span class="tk-p">(</span><span class="tk-mi">100</span><span class="tk-p">,</span> <span class="tk-mi">2</span><span class="tk-p">)</span>
+<span class="tk-n">y</span> <span class="tk-o">=</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">randint</span><span class="tk-p">(</span><span class="tk-mi">0</span><span class="tk-p">,</span> <span class="tk-mi">2</span><span class="tk-p">,</span> <span class="tk-p">(</span><span class="tk-mi">100</span><span class="tk-p">,))</span>                <span class="tk-c1"># nhãn 0 hoặc 1</span>
+<span class="tk-n">ds</span> <span class="tk-o">=</span> <span class="tk-n">TensorDataset</span><span class="tk-p">(</span><span class="tk-n">X</span><span class="tk-p">,</span> <span class="tk-n">y</span><span class="tk-p">)</span>                       <span class="tk-c1"># ds[i] trả về cặp (X[i], y[i])</span>
+<span class="tk-n">loader</span> <span class="tk-o">=</span> <span class="tk-n">DataLoader</span><span class="tk-p">(</span><span class="tk-n">ds</span><span class="tk-p">,</span> <span class="tk-n">batch_size</span><span class="tk-o">=</span><span class="tk-mi">32</span><span class="tk-p">,</span> <span class="tk-n">shuffle</span><span class="tk-o">=</span><span class="tk-kc">True</span><span class="tk-p">)</span>
+<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-nb">len</span><span class="tk-p">(</span><span class="tk-n">ds</span><span class="tk-p">),</span> <span class="tk-nb">len</span><span class="tk-p">(</span><span class="tk-n">loader</span><span class="tk-p">))</span>                    <span class="tk-c1"># 100 mẫu, 4 batch (32 + 32 + 32 + 4)</span>
+<span class="tk-k">for</span> <span class="tk-n">xb</span><span class="tk-p">,</span> <span class="tk-n">yb</span> <span class="tk-ow">in</span> <span class="tk-n">loader</span><span class="tk-p">:</span>
+    <span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-n">xb</span><span class="tk-o">.</span><span class="tk-n">shape</span><span class="tk-p">,</span> <span class="tk-n">yb</span><span class="tk-o">.</span><span class="tk-n">shape</span><span class="tk-p">)</span>
+</code></pre></div>
+
+<div class="run" data-mode="static" data-group="t"><div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span><span class="run-note">đã chạy sẵn cần PyTorch</span><a class="run-colab" href="https://colab.research.google.com/github/truonghuu344/ai-engineer-roadmap/blob/main/notebooks/ly-thuyet/p0-6.ipynb" target="_blank" rel="noopener">Mở trên Colab ↗</a></div><pre class="run-out">100 4&#10;torch.Size([32, 2]) torch.Size([32])&#10;torch.Size([32, 2]) torch.Size([32])&#10;torch.Size([32, 2]) torch.Size([32])&#10;torch.Size([4, 2]) torch.Size([4])</pre></div>
+
+<p>Với dữ liệu riêng (ảnh trong thư mục, file CSV), bạn tự viết một class có <code>__len__</code> và <code>__getitem__</code> như ở P0.1, kế thừa <code>torch.utils.data.Dataset</code>, rồi đưa vào <code>DataLoader</code> y như trên.</p>
+<h2 id="lt-9">Vòng train đầy đủ</h2>
+<p>Phân loại điểm trên mặt phẳng thành 2 lớp. Mỗi <strong>epoch</strong> là một lượt đi qua toàn bộ dữ liệu:</p>
+<div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">torch</span><span class="tk-o">,</span><span class="tk-w"> </span><span class="tk-nn">torch.nn</span><span class="tk-w"> </span><span class="tk-k">as</span><span class="tk-w"> </span><span class="tk-nn">nn</span>
+<span class="tk-kn">from</span><span class="tk-w"> </span><span class="tk-nn">torch.utils.data</span><span class="tk-w"> </span><span class="tk-kn">import</span> <span class="tk-n">TensorDataset</span><span class="tk-p">,</span> <span class="tk-n">DataLoader</span>
+
+<span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">manual_seed</span><span class="tk-p">(</span><span class="tk-mi">0</span><span class="tk-p">)</span>
+<span class="tk-n">n</span> <span class="tk-o">=</span> <span class="tk-mi">400</span>
+<span class="tk-n">X</span> <span class="tk-o">=</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">randn</span><span class="tk-p">(</span><span class="tk-n">n</span><span class="tk-p">,</span> <span class="tk-mi">2</span><span class="tk-p">)</span>
+<span class="tk-n">y</span> <span class="tk-o">=</span> <span class="tk-p">((</span><span class="tk-n">X</span><span class="tk-p">[:,</span> <span class="tk-mi">0</span><span class="tk-p">]</span> <span class="tk-o">**</span> <span class="tk-mi">2</span> <span class="tk-o">+</span> <span class="tk-n">X</span><span class="tk-p">[:,</span> <span class="tk-mi">1</span><span class="tk-p">]</span> <span class="tk-o">**</span> <span class="tk-mi">2</span><span class="tk-p">)</span> <span class="tk-o">&gt;</span> <span class="tk-mf">1.2</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">long</span><span class="tk-p">()</span>   <span class="tk-c1"># lớp 1 nếu điểm nằm ngoài vòng tròn</span>
+<span class="tk-n">train_ds</span> <span class="tk-o">=</span> <span class="tk-n">TensorDataset</span><span class="tk-p">(</span><span class="tk-n">X</span><span class="tk-p">[:</span><span class="tk-mi">300</span><span class="tk-p">],</span> <span class="tk-n">y</span><span class="tk-p">[:</span><span class="tk-mi">300</span><span class="tk-p">])</span>
+<span class="tk-n">val_X</span><span class="tk-p">,</span> <span class="tk-n">val_y</span> <span class="tk-o">=</span> <span class="tk-n">X</span><span class="tk-p">[</span><span class="tk-mi">300</span><span class="tk-p">:],</span> <span class="tk-n">y</span><span class="tk-p">[</span><span class="tk-mi">300</span><span class="tk-p">:]</span>                     <span class="tk-c1"># 100 điểm giữ riêng để kiểm tra</span>
+
+<span class="tk-n">model</span> <span class="tk-o">=</span> <span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">Sequential</span><span class="tk-p">(</span><span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">Linear</span><span class="tk-p">(</span><span class="tk-mi">2</span><span class="tk-p">,</span> <span class="tk-mi">16</span><span class="tk-p">),</span> <span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">ReLU</span><span class="tk-p">(),</span> <span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">Linear</span><span class="tk-p">(</span><span class="tk-mi">16</span><span class="tk-p">,</span> <span class="tk-mi">2</span><span class="tk-p">))</span>
+<span class="tk-n">loss_fn</span> <span class="tk-o">=</span> <span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">CrossEntropyLoss</span><span class="tk-p">()</span>
+<span class="tk-n">optimizer</span> <span class="tk-o">=</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">optim</span><span class="tk-o">.</span><span class="tk-n">Adam</span><span class="tk-p">(</span><span class="tk-n">model</span><span class="tk-o">.</span><span class="tk-n">parameters</span><span class="tk-p">(),</span> <span class="tk-n">lr</span><span class="tk-o">=</span><span class="tk-mf">0.01</span><span class="tk-p">)</span>
+<span class="tk-n">loader</span> <span class="tk-o">=</span> <span class="tk-n">DataLoader</span><span class="tk-p">(</span><span class="tk-n">train_ds</span><span class="tk-p">,</span> <span class="tk-n">batch_size</span><span class="tk-o">=</span><span class="tk-mi">32</span><span class="tk-p">,</span> <span class="tk-n">shuffle</span><span class="tk-o">=</span><span class="tk-kc">True</span><span class="tk-p">)</span>
+
+<span class="tk-k">for</span> <span class="tk-n">epoch</span> <span class="tk-ow">in</span> <span class="tk-nb">range</span><span class="tk-p">(</span><span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-mi">61</span><span class="tk-p">):</span>
+    <span class="tk-n">model</span><span class="tk-o">.</span><span class="tk-n">train</span><span class="tk-p">()</span>
+    <span class="tk-k">for</span> <span class="tk-n">xb</span><span class="tk-p">,</span> <span class="tk-n">yb</span> <span class="tk-ow">in</span> <span class="tk-n">loader</span><span class="tk-p">:</span>
+        <span class="tk-n">optimizer</span><span class="tk-o">.</span><span class="tk-n">zero_grad</span><span class="tk-p">()</span>
+        <span class="tk-n">loss</span> <span class="tk-o">=</span> <span class="tk-n">loss_fn</span><span class="tk-p">(</span><span class="tk-n">model</span><span class="tk-p">(</span><span class="tk-n">xb</span><span class="tk-p">),</span> <span class="tk-n">yb</span><span class="tk-p">)</span>
+        <span class="tk-n">loss</span><span class="tk-o">.</span><span class="tk-n">backward</span><span class="tk-p">()</span>
+        <span class="tk-n">optimizer</span><span class="tk-o">.</span><span class="tk-n">step</span><span class="tk-p">()</span>
+    <span class="tk-k">if</span> <span class="tk-n">epoch</span> <span class="tk-ow">in</span> <span class="tk-p">(</span><span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-mi">3</span><span class="tk-p">,</span> <span class="tk-mi">10</span><span class="tk-p">,</span> <span class="tk-mi">30</span><span class="tk-p">,</span> <span class="tk-mi">60</span><span class="tk-p">):</span>
+        <span class="tk-n">model</span><span class="tk-o">.</span><span class="tk-n">eval</span><span class="tk-p">()</span>
+        <span class="tk-k">with</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">no_grad</span><span class="tk-p">():</span>
+            <span class="tk-n">acc</span> <span class="tk-o">=</span> <span class="tk-p">(</span><span class="tk-n">model</span><span class="tk-p">(</span><span class="tk-n">val_X</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">argmax</span><span class="tk-p">(</span><span class="tk-n">dim</span><span class="tk-o">=</span><span class="tk-mi">1</span><span class="tk-p">)</span> <span class="tk-o">==</span> <span class="tk-n">val_y</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">float</span><span class="tk-p">()</span><span class="tk-o">.</span><span class="tk-n">mean</span><span class="tk-p">()</span>
+        <span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-sa">f</span><span class="tk-s2">"epoch </span><span class="tk-si">{</span><span class="tk-n">epoch</span><span class="tk-si">}</span><span class="tk-s2">: loss batch cuối = </span><span class="tk-si">{</span><span class="tk-n">loss</span><span class="tk-o">.</span><span class="tk-n">item</span><span class="tk-p">()</span><span class="tk-si">:</span><span class="tk-s2">.3f</span><span class="tk-si">}</span><span class="tk-s2">, val accuracy = </span><span class="tk-si">{</span><span class="tk-n">acc</span><span class="tk-o">.</span><span class="tk-n">item</span><span class="tk-p">()</span><span class="tk-si">:</span><span class="tk-s2">.2f</span><span class="tk-si">}</span><span class="tk-s2">"</span><span class="tk-p">)</span>
+</code></pre></div>
+
+<div class="run" data-mode="static" data-group="t"><div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span><span class="run-note">đã chạy sẵn cần PyTorch</span><a class="run-colab" href="https://colab.research.google.com/github/truonghuu344/ai-engineer-roadmap/blob/main/notebooks/ly-thuyet/p0-6.ipynb" target="_blank" rel="noopener">Mở trên Colab ↗</a></div><pre class="run-out">epoch 1: loss batch cuối = 0.606, val accuracy = 0.61&#10;epoch 3: loss batch cuối = 0.531, val accuracy = 0.85&#10;epoch 10: loss batch cuối = 0.220, val accuracy = 0.98&#10;epoch 30: loss batch cuối = 0.066, val accuracy = 0.98&#10;epoch 60: loss batch cuối = 0.059, val accuracy = 0.98</pre></div>
+
+<p>Một đường thẳng không tách được điểm trong và ngoài vòng tròn, nhưng mạng có lớp ẩn và ReLU thì làm được: accuracy trên 100 điểm giữ riêng tăng nhanh trong vài epoch đầu rồi đứng ở mức cao, còn loss tiếp tục giảm. <code>model.train()</code> và <code>model.eval()</code> bật, tắt các lớp chỉ dùng khi train (Dropout, BatchNorm ở P2.2); tập thói quen gọi chúng ngay từ bây giờ.</p>
+<h2 id="lt-10">Lưu và nạp model</h2>
+<p>Model đã train chỉ là các tensor tham số. <code>state_dict()</code> là dict tên lớp → tensor:</p>
+<div class="hl"><pre><span></span><code><span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">save</span><span class="tk-p">(</span><span class="tk-n">model</span><span class="tk-o">.</span><span class="tk-n">state_dict</span><span class="tk-p">(),</span> <span class="tk-s2">"model.pt"</span><span class="tk-p">)</span>             <span class="tk-c1"># lưu ra file</span>
+
+<span class="tk-n">model2</span> <span class="tk-o">=</span> <span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">Sequential</span><span class="tk-p">(</span><span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">Linear</span><span class="tk-p">(</span><span class="tk-mi">2</span><span class="tk-p">,</span> <span class="tk-mi">16</span><span class="tk-p">),</span> <span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">ReLU</span><span class="tk-p">(),</span> <span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">Linear</span><span class="tk-p">(</span><span class="tk-mi">16</span><span class="tk-p">,</span> <span class="tk-mi">2</span><span class="tk-p">))</span>   <span class="tk-c1"># cùng kiến trúc</span>
+<span class="tk-n">model2</span><span class="tk-o">.</span><span class="tk-n">load_state_dict</span><span class="tk-p">(</span><span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">load</span><span class="tk-p">(</span><span class="tk-s2">"model.pt"</span><span class="tk-p">))</span>
+<span class="tk-n">model2</span><span class="tk-o">.</span><span class="tk-n">eval</span><span class="tk-p">()</span>
+<span class="tk-k">with</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">no_grad</span><span class="tk-p">():</span>
+    <span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">equal</span><span class="tk-p">(</span><span class="tk-n">model</span><span class="tk-p">(</span><span class="tk-n">val_X</span><span class="tk-p">),</span> <span class="tk-n">model2</span><span class="tk-p">(</span><span class="tk-n">val_X</span><span class="tk-p">)))</span>   <span class="tk-c1"># True: dự đoán giống hệt</span>
+<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-nb">list</span><span class="tk-p">(</span><span class="tk-n">model</span><span class="tk-o">.</span><span class="tk-n">state_dict</span><span class="tk-p">()</span><span class="tk-o">.</span><span class="tk-n">keys</span><span class="tk-p">()))</span>
+</code></pre></div>
+
+<div class="run" data-mode="static" data-group="t"><div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span><span class="run-note">đã chạy sẵn</span><a class="run-colab" href="https://colab.research.google.com/github/truonghuu344/ai-engineer-roadmap/blob/main/notebooks/ly-thuyet/p0-6.ipynb" target="_blank" rel="noopener">Mở trên Colab ↗</a></div><pre class="run-out">True&#10;[&#x27;0.weight&#x27;, &#x27;0.bias&#x27;, &#x27;2.weight&#x27;, &#x27;2.bias&#x27;]</pre></div>
+
+<p>File chỉ chứa tham số, không chứa code, nên khi nạp phải tạo model <strong>cùng kiến trúc</strong> trước. Ở P2.2 bạn sẽ lưu thêm trạng thái optimizer và số epoch để train tiếp được sau khi Colab bị ngắt.</p>
+<div class="box check">
+<div class="box-h">Tự kiểm tra nhanh</div>
+<div class="ans" id="p0-6-t-b366-a1">
+<div class="ans-fields"><label>Số tham số của nn.Linear(10, 4)<input inputmode="decimal" data-ans="44.0" data-tol="0.0" autocomplete="off"></label><label>w = 3, y = w² + 3w: dy/dw<input inputmode="decimal" data-ans="9.0" data-tol="0.0" autocomplete="off"></label><label>Gọi backward() 2 lần liên tiếp trên y = w² + 3w tại w = 3 mà không xóa: w.grad<input inputmode="decimal" data-ans="18.0" data-tol="0.0" autocomplete="off"></label><label>250 mẫu, batch_size = 64: số batch mỗi epoch<input inputmode="decimal" data-ans="4.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div>
+<div aria-live="polite" class="ans-fb"></div>
+</div>
+</div>
+<h2 id="lt-11">Tóm tắt bài và thuật ngữ</h2>
+<table>
+<thead>
+<tr>
+<th>Chủ đề</th>
+<th>Điều cần nhớ</th>
+<th>Lệnh tiêu biểu</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Tensor</td>
+<td>như mảng numpy; mặc định float32; <code>dim</code> thay cho <code>axis</code></td>
+<td><code>torch.tensor</code>, <code>.shape</code>, <code>.float()</code>, <code>.item()</code></td>
+</tr>
+<tr>
+<td>Shape</td>
+<td><code>(N, C, H, W)</code> cho ảnh; thêm, bớt, đổi trục</td>
+<td><code>unsqueeze</code>, <code>squeeze</code>, <code>permute</code>, <code>view</code></td>
+</tr>
+<tr>
+<td>Thiết bị</td>
+<td>model và dữ liệu cùng thiết bị</td>
+<td><code>device = "cuda" if ... else "cpu"</code>, <code>.to(device)</code></td>
+</tr>
+<tr>
+<td>autograd</td>
+<td><code>requires_grad</code>, <code>backward()</code>, đọc <code>.grad</code>; gradient cộng dồn</td>
+<td><code>loss.backward()</code>, <code>zero_grad()</code></td>
+</tr>
+<tr>
+<td>Model</td>
+<td>class kế thừa <code>nn.Module</code>: <code>__init__</code> khai báo, <code>forward</code> tính</td>
+<td><code>nn.Linear</code>, <code>nn.Sequential</code></td>
+</tr>
+<tr>
+<td>Vòng train</td>
+<td>zero_grad → forward → loss → backward → step</td>
+<td><code>optimizer.step()</code></td>
+</tr>
+<tr>
+<td>Dữ liệu</td>
+<td>chia batch, xáo mỗi epoch</td>
+<td><code>TensorDataset</code>, <code>DataLoader</code></td>
+</tr>
+<tr>
+<td>Lưu</td>
+<td>chỉ lưu tham số; nạp vào model cùng kiến trúc</td>
+<td><code>torch.save(model.state_dict())</code></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Thuật ngữ</th>
+<th>Nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>tensor</td>
+<td>mảng nhiều chiều của PyTorch</td>
+</tr>
+<tr>
+<td>device</td>
+<td>nơi tensor nằm và được tính: CPU, GPU (<code>cuda</code>, <code>mps</code>)</td>
+</tr>
+<tr>
+<td>autograd</td>
+<td>cơ chế tự tính đạo hàm của PyTorch</td>
+</tr>
+<tr>
+<td>gradient</td>
+<td>vector đạo hàm của loss theo từng tham số</td>
+</tr>
+<tr>
+<td>parameter</td>
+<td>tham số model học được (trọng số, bias)</td>
+</tr>
+<tr>
+<td>layer</td>
+<td>lớp: một khối tính toán có tham số, như <code>nn.Linear</code></td>
+</tr>
+<tr>
+<td>loss function</td>
+<td>hàm đo dự đoán sai bao nhiêu</td>
+</tr>
+<tr>
+<td>optimizer</td>
+<td>thuật toán cập nhật tham số từ gradient (SGD, Adam)</td>
+</tr>
+<tr>
+<td>learning rate</td>
+<td>độ dài mỗi bước cập nhật</td>
+</tr>
+<tr>
+<td>batch / epoch</td>
+<td>nhóm mẫu xử lý cùng lúc / một lượt qua toàn bộ dữ liệu</td>
+</tr>
+<tr>
+<td>logit</td>
+<td>điểm thô của mỗi lớp, chưa qua softmax</td>
+</tr>
+<tr>
+<td>state_dict</td>
+<td>dict chứa toàn bộ tham số của model</td>
+</tr>
+</tbody>
+</table></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p0.6:t">Tôi đã xong phần lý thuyết</label><button class="btn" type="button" data-goto="bai-tap">Làm bài tập <span class="arr">→</span></button></div></section><section class="panel" id="bai-tap" role="tabpanel" hidden><div class="ex-score" id="ex-score"><span>Ô tự chấm đã giải đúng</span><span class="bar"><i></i></span><b>0 / 3</b></div><article class="excard"><div class="ex-head"><span class="ex-num">Bài 1</span><h3>Đếm tham số</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p><code>model = nn.Sequential(nn.Linear(4, 16), nn.ReLU(), nn.Linear(16, 3))</code></p>
+<div class="ans" id="p0-6-e1-a1"><div class="ans-fields"><label>Số tham số lớp thứ nhất<input inputmode="decimal" data-ans="80.0" data-tol="0.0" autocomplete="off"></label><label>Số tham số lớp cuối<input inputmode="decimal" data-ans="51.0" data-tol="0.0" autocomplete="off"></label><label>Tổng số tham số (ReLU không có tham số)<input inputmode="decimal" data-ans="131.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+
+<details class="fold solution">
+<summary>Lời giải</summary>
+<p><code>nn.Linear(vào, ra)</code> có ma trận <code>vào × ra</code> cộng <code>ra</code> bias. Lớp 1: 4 × 16 + 16 = 80. Lớp 2: 16 × 3 + 3 = 51. Tổng 131. Kiểm tra: <code>sum(p.numel() for p in model.parameters())</code>.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 2</span><h3>Một bước gradient descent bằng tay</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p>Model <code>pred = w·x</code>, loss <code>(pred − y)²</code>, một mẫu <code>x = 2</code>, <code>y = 5</code>, đang có <code>w = 1</code>, learning rate <code>0.1</code>.</p>
+<div class="ans" id="p0-6-e2-a1"><div class="ans-fields"><label>Loss hiện tại<input inputmode="decimal" data-ans="9.0" data-tol="0.0" autocomplete="off"></label><label>d(loss)/dw<input inputmode="decimal" data-ans="-12.0" data-tol="0.0" autocomplete="off"></label><label>w sau một bước: w − lr · grad<input inputmode="decimal" data-ans="2.2" data-tol="0.001" autocomplete="off"></label><label>Loss sau bước đó (2 chữ số)<input inputmode="decimal" data-ans="0.36" data-tol="0.001" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+
+<details class="fold hint">
+<summary>Gợi ý</summary>
+<p>Đạo hàm của <code>(w·x − y)²</code> theo <code>w</code> là <code>2·(w·x − y)·x</code> (quy tắc dây chuyền).</p>
+</details>
+<details class="fold solution">
+<summary>Lời giải</summary>
+<p><code>pred = 2</code>, loss = 9, gradient = 2 · (2 − 5) · 2 = −12, <code>w</code> mới = 1 − 0,1 · (−12) = 2,2, dự đoán mới 4,4, loss = 0,36. Một bước giảm loss 25 lần. Kiểm tra bằng code:</p>
+<div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">torch</span>
+<span class="tk-n">w</span> <span class="tk-o">=</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">tensor</span><span class="tk-p">(</span><span class="tk-mf">1.0</span><span class="tk-p">,</span> <span class="tk-n">requires_grad</span><span class="tk-o">=</span><span class="tk-kc">True</span><span class="tk-p">)</span>
+<span class="tk-n">loss</span> <span class="tk-o">=</span> <span class="tk-p">(</span><span class="tk-n">w</span> <span class="tk-o">*</span> <span class="tk-mi">2</span> <span class="tk-o">-</span> <span class="tk-mi">5</span><span class="tk-p">)</span> <span class="tk-o">**</span> <span class="tk-mi">2</span>
+<span class="tk-n">loss</span><span class="tk-o">.</span><span class="tk-n">backward</span><span class="tk-p">()</span>
+<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-n">loss</span><span class="tk-o">.</span><span class="tk-n">item</span><span class="tk-p">(),</span> <span class="tk-n">w</span><span class="tk-o">.</span><span class="tk-n">grad</span><span class="tk-o">.</span><span class="tk-n">item</span><span class="tk-p">())</span>
+<span class="tk-k">with</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">no_grad</span><span class="tk-p">():</span>
+    <span class="tk-n">w</span> <span class="tk-o">-=</span> <span class="tk-mf">0.1</span> <span class="tk-o">*</span> <span class="tk-n">w</span><span class="tk-o">.</span><span class="tk-n">grad</span>
+<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-n">w</span><span class="tk-o">.</span><span class="tk-n">item</span><span class="tk-p">(),</span> <span class="tk-p">((</span><span class="tk-n">w</span> <span class="tk-o">*</span> <span class="tk-mi">2</span> <span class="tk-o">-</span> <span class="tk-mi">5</span><span class="tk-p">)</span> <span class="tk-o">**</span> <span class="tk-mi">2</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">item</span><span class="tk-p">())</span>
+</code></pre></div>
+
+<div class="run" data-group="e2" data-mode="static">
+<div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span><span class="run-note">đã chạy sẵn cần PyTorch</span><a class="run-colab" href="https://colab.research.google.com/github/truonghuu344/ai-engineer-roadmap/blob/main/notebooks/ly-thuyet/p0-6.ipynb" target="_blank" rel="noopener">Mở trên Colab ↗</a></div>
+<pre class="run-out">9.0 -12.0&#10;2.200000047683716 0.3599998950958252</pre>
+</div>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 3</span><h3>Đoán shape</h3><span class="ex-tag calc">tính tay</span></div><div class="prose"><p><code>x = torch.zeros(32, 3, 28, 28)</code> (32 ảnh, 3 kênh, 28 × 28).</p>
+<div class="ans" id="p0-6-e3-a1"><div class="ans-fields"><label>x.view(32, -1).shape[1]<input inputmode="decimal" data-ans="2352.0" data-tol="0.0" autocomplete="off"></label><label>x.permute(0, 2, 3, 1).shape[3]<input inputmode="decimal" data-ans="3.0" data-tol="0.0" autocomplete="off"></label><label>x.mean(dim=1).shape[1]<input inputmode="decimal" data-ans="28.0" data-tol="0.0" autocomplete="off"></label><label>x.unsqueeze(0).dim() (số trục)<input inputmode="decimal" data-ans="5.0" data-tol="0.0" autocomplete="off"></label><button class="btn-check" type="button">Kiểm tra</button></div><div class="ans-fb" aria-live="polite"></div></div>
+
+<details class="fold solution">
+<summary>Lời giải</summary>
+<p><code>view(32, -1)</code> duỗi mỗi ảnh thành 3 · 28 · 28 = 2352 số. <code>permute(0, 2, 3, 1)</code> đưa kênh xuống cuối: (32, 28, 28, 3). <code>mean(dim=1)</code> gộp trục kênh: (32, 28, 28). <code>unsqueeze(0)</code> thêm một trục ở đầu: 5 trục.</p>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 4</span><h3>Sửa ba lỗi</h3><span class="ex-tag code">code</span></div><div class="prose"><p>Đoạn code dưới có ba lỗi hay gặp. Chạy thử, đọc thông báo lỗi, sửa từng lỗi cho tới khi loss giảm đều.</p>
+<div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">numpy</span><span class="tk-w"> </span><span class="tk-k">as</span><span class="tk-w"> </span><span class="tk-nn">np</span><span class="tk-o">,</span><span class="tk-w"> </span><span class="tk-nn">torch</span><span class="tk-o">,</span><span class="tk-w"> </span><span class="tk-nn">torch.nn</span><span class="tk-w"> </span><span class="tk-k">as</span><span class="tk-w"> </span><span class="tk-nn">nn</span>
+<span class="tk-n">rng</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">random</span><span class="tk-o">.</span><span class="tk-n">default_rng</span><span class="tk-p">(</span><span class="tk-mi">0</span><span class="tk-p">)</span>
+<span class="tk-n">X</span> <span class="tk-o">=</span> <span class="tk-n">rng</span><span class="tk-o">.</span><span class="tk-n">normal</span><span class="tk-p">(</span><span class="tk-n">size</span><span class="tk-o">=</span><span class="tk-p">(</span><span class="tk-mi">200</span><span class="tk-p">,</span> <span class="tk-mi">3</span><span class="tk-p">))</span>                       <span class="tk-c1"># dữ liệu từ numpy</span>
+<span class="tk-n">y</span> <span class="tk-o">=</span> <span class="tk-p">(</span><span class="tk-n">X</span><span class="tk-p">[:,</span> <span class="tk-mi">0</span><span class="tk-p">]</span> <span class="tk-o">+</span> <span class="tk-n">X</span><span class="tk-p">[:,</span> <span class="tk-mi">1</span><span class="tk-p">]</span> <span class="tk-o">&gt;</span> <span class="tk-mi">0</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">astype</span><span class="tk-p">(</span><span class="tk-nb">float</span><span class="tk-p">)</span>           <span class="tk-c1"># nhãn 0/1</span>
+
+<span class="tk-n">model</span> <span class="tk-o">=</span> <span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">Linear</span><span class="tk-p">(</span><span class="tk-mi">3</span><span class="tk-p">,</span> <span class="tk-mi">2</span><span class="tk-p">)</span>
+<span class="tk-n">opt</span> <span class="tk-o">=</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">optim</span><span class="tk-o">.</span><span class="tk-n">SGD</span><span class="tk-p">(</span><span class="tk-n">model</span><span class="tk-o">.</span><span class="tk-n">parameters</span><span class="tk-p">(),</span> <span class="tk-n">lr</span><span class="tk-o">=</span><span class="tk-mf">0.5</span><span class="tk-p">)</span>
+<span class="tk-n">Xt</span><span class="tk-p">,</span> <span class="tk-n">yt</span> <span class="tk-o">=</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">from_numpy</span><span class="tk-p">(</span><span class="tk-n">X</span><span class="tk-p">),</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">from_numpy</span><span class="tk-p">(</span><span class="tk-n">y</span><span class="tk-p">)</span>
+<span class="tk-k">for</span> <span class="tk-n">step</span> <span class="tk-ow">in</span> <span class="tk-nb">range</span><span class="tk-p">(</span><span class="tk-mi">5</span><span class="tk-p">):</span>
+    <span class="tk-n">loss</span> <span class="tk-o">=</span> <span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">CrossEntropyLoss</span><span class="tk-p">()(</span><span class="tk-n">model</span><span class="tk-p">(</span><span class="tk-n">Xt</span><span class="tk-p">),</span> <span class="tk-n">yt</span><span class="tk-p">)</span>
+    <span class="tk-n">loss</span><span class="tk-o">.</span><span class="tk-n">backward</span><span class="tk-p">()</span>
+    <span class="tk-n">opt</span><span class="tk-o">.</span><span class="tk-n">step</span><span class="tk-p">()</span>
+    <span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-n">step</span><span class="tk-p">,</span> <span class="tk-nb">round</span><span class="tk-p">(</span><span class="tk-n">loss</span><span class="tk-o">.</span><span class="tk-n">item</span><span class="tk-p">(),</span> <span class="tk-mi">3</span><span class="tk-p">))</span>
+</code></pre></div>
+
+<div class="run" data-mode="py" data-group="e4"><div class="run-bar"><span class="run-lbl">Code của bạn</span></div><pre class="run-out run-empty">Viết code vào chỗ trống rồi bấm Chạy.</pre></div>
+
+<details class="fold hint">
+<summary>Gợi ý</summary>
+<p>Lỗi 1 là thông báo về <code>Double</code> và <code>Float</code>. Lỗi 2 ở kiểu của nhãn cho <code>CrossEntropyLoss</code>. Lỗi 3 không báo gì cả: thiếu một dòng trong "vòng train 5 dòng".</p>
+</details>
+<details class="fold code">
+<summary>Code tham khảo</summary>
+<div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">numpy</span><span class="tk-w"> </span><span class="tk-k">as</span><span class="tk-w"> </span><span class="tk-nn">np</span><span class="tk-o">,</span><span class="tk-w"> </span><span class="tk-nn">torch</span><span class="tk-o">,</span><span class="tk-w"> </span><span class="tk-nn">torch.nn</span><span class="tk-w"> </span><span class="tk-k">as</span><span class="tk-w"> </span><span class="tk-nn">nn</span>
+<span class="tk-n">rng</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">random</span><span class="tk-o">.</span><span class="tk-n">default_rng</span><span class="tk-p">(</span><span class="tk-mi">0</span><span class="tk-p">)</span>
+<span class="tk-n">X</span> <span class="tk-o">=</span> <span class="tk-n">rng</span><span class="tk-o">.</span><span class="tk-n">normal</span><span class="tk-p">(</span><span class="tk-n">size</span><span class="tk-o">=</span><span class="tk-p">(</span><span class="tk-mi">200</span><span class="tk-p">,</span> <span class="tk-mi">3</span><span class="tk-p">))</span>
+<span class="tk-n">y</span> <span class="tk-o">=</span> <span class="tk-p">(</span><span class="tk-n">X</span><span class="tk-p">[:,</span> <span class="tk-mi">0</span><span class="tk-p">]</span> <span class="tk-o">+</span> <span class="tk-n">X</span><span class="tk-p">[:,</span> <span class="tk-mi">1</span><span class="tk-p">]</span> <span class="tk-o">&gt;</span> <span class="tk-mi">0</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">astype</span><span class="tk-p">(</span><span class="tk-nb">float</span><span class="tk-p">)</span>
+
+<span class="tk-n">model</span> <span class="tk-o">=</span> <span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">Linear</span><span class="tk-p">(</span><span class="tk-mi">3</span><span class="tk-p">,</span> <span class="tk-mi">2</span><span class="tk-p">)</span>
+<span class="tk-n">opt</span> <span class="tk-o">=</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">optim</span><span class="tk-o">.</span><span class="tk-n">SGD</span><span class="tk-p">(</span><span class="tk-n">model</span><span class="tk-o">.</span><span class="tk-n">parameters</span><span class="tk-p">(),</span> <span class="tk-n">lr</span><span class="tk-o">=</span><span class="tk-mf">0.5</span><span class="tk-p">)</span>
+<span class="tk-n">Xt</span> <span class="tk-o">=</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">from_numpy</span><span class="tk-p">(</span><span class="tk-n">X</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">float</span><span class="tk-p">()</span>                    <span class="tk-c1"># sửa 1: float64 → float32</span>
+<span class="tk-n">yt</span> <span class="tk-o">=</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">from_numpy</span><span class="tk-p">(</span><span class="tk-n">y</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">long</span><span class="tk-p">()</span>                     <span class="tk-c1"># sửa 2: nhãn phải là số nguyên int64</span>
+<span class="tk-k">for</span> <span class="tk-n">step</span> <span class="tk-ow">in</span> <span class="tk-nb">range</span><span class="tk-p">(</span><span class="tk-mi">5</span><span class="tk-p">):</span>
+    <span class="tk-n">opt</span><span class="tk-o">.</span><span class="tk-n">zero_grad</span><span class="tk-p">()</span>                                 <span class="tk-c1"># sửa 3: xóa gradient cũ mỗi bước</span>
+    <span class="tk-n">loss</span> <span class="tk-o">=</span> <span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">CrossEntropyLoss</span><span class="tk-p">()(</span><span class="tk-n">model</span><span class="tk-p">(</span><span class="tk-n">Xt</span><span class="tk-p">),</span> <span class="tk-n">yt</span><span class="tk-p">)</span>
+    <span class="tk-n">loss</span><span class="tk-o">.</span><span class="tk-n">backward</span><span class="tk-p">()</span>
+    <span class="tk-n">opt</span><span class="tk-o">.</span><span class="tk-n">step</span><span class="tk-p">()</span>
+    <span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-n">step</span><span class="tk-p">,</span> <span class="tk-nb">round</span><span class="tk-p">(</span><span class="tk-n">loss</span><span class="tk-o">.</span><span class="tk-n">item</span><span class="tk-p">(),</span> <span class="tk-mi">3</span><span class="tk-p">))</span>
+</code></pre></div>
+
+<div class="run" data-group="e4" data-mode="py">
+<div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span></div>
+<pre class="run-out">0 0.975&#10;1 0.734&#10;2 0.571&#10;3 0.469&#10;4 0.406</pre>
+</div>
+</details></div></article><article class="excard"><div class="ex-head"><span class="ex-num">Bài 5</span><h3>Từ numpy sang PyTorch</h3><span class="ex-tag code">code</span></div><div class="prose"><p>Viết lại hai hàm <code>softmax(Z)</code> và <code>accuracy(logits, y)</code> bằng PyTorch (không dùng <code>torch.softmax</code> có sẵn), rồi so kết quả với bản numpy và với <code>torch.softmax</code>.</p>
+<details class="fold hint">
+<summary>Gợi ý</summary>
+<p>Thay <code>axis</code> bằng <code>dim</code>, <code>keepdims</code> bằng <code>keepdim</code>, <code>.max(axis=...)</code> của numpy bằng <code>.max(dim=...).values</code> (PyTorch trả về cả giá trị lẫn vị trí).</p>
+</details>
+<details class="fold code">
+<summary>Code tham khảo</summary>
+<div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">numpy</span><span class="tk-w"> </span><span class="tk-k">as</span><span class="tk-w"> </span><span class="tk-nn">np</span><span class="tk-o">,</span><span class="tk-w"> </span><span class="tk-nn">torch</span>
+
+<span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">softmax_np</span><span class="tk-p">(</span><span class="tk-n">Z</span><span class="tk-p">):</span>
+    <span class="tk-n">E</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">exp</span><span class="tk-p">(</span><span class="tk-n">Z</span> <span class="tk-o">-</span> <span class="tk-n">Z</span><span class="tk-o">.</span><span class="tk-n">max</span><span class="tk-p">(</span><span class="tk-n">axis</span><span class="tk-o">=</span><span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-n">keepdims</span><span class="tk-o">=</span><span class="tk-kc">True</span><span class="tk-p">))</span>
+    <span class="tk-k">return</span> <span class="tk-n">E</span> <span class="tk-o">/</span> <span class="tk-n">E</span><span class="tk-o">.</span><span class="tk-n">sum</span><span class="tk-p">(</span><span class="tk-n">axis</span><span class="tk-o">=</span><span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-n">keepdims</span><span class="tk-o">=</span><span class="tk-kc">True</span><span class="tk-p">)</span>
+
+<span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">softmax_t</span><span class="tk-p">(</span><span class="tk-n">Z</span><span class="tk-p">):</span>
+    <span class="tk-n">E</span> <span class="tk-o">=</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">exp</span><span class="tk-p">(</span><span class="tk-n">Z</span> <span class="tk-o">-</span> <span class="tk-n">Z</span><span class="tk-o">.</span><span class="tk-n">max</span><span class="tk-p">(</span><span class="tk-n">dim</span><span class="tk-o">=</span><span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-n">keepdim</span><span class="tk-o">=</span><span class="tk-kc">True</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">values</span><span class="tk-p">)</span>
+    <span class="tk-k">return</span> <span class="tk-n">E</span> <span class="tk-o">/</span> <span class="tk-n">E</span><span class="tk-o">.</span><span class="tk-n">sum</span><span class="tk-p">(</span><span class="tk-n">dim</span><span class="tk-o">=</span><span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-n">keepdim</span><span class="tk-o">=</span><span class="tk-kc">True</span><span class="tk-p">)</span>
+
+<span class="tk-k">def</span><span class="tk-w"> </span><span class="tk-nf">accuracy_t</span><span class="tk-p">(</span><span class="tk-n">logits</span><span class="tk-p">,</span> <span class="tk-n">y</span><span class="tk-p">):</span>
+    <span class="tk-k">return</span> <span class="tk-p">(</span><span class="tk-n">logits</span><span class="tk-o">.</span><span class="tk-n">argmax</span><span class="tk-p">(</span><span class="tk-n">dim</span><span class="tk-o">=</span><span class="tk-mi">1</span><span class="tk-p">)</span> <span class="tk-o">==</span> <span class="tk-n">y</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">float</span><span class="tk-p">()</span><span class="tk-o">.</span><span class="tk-n">mean</span><span class="tk-p">()</span><span class="tk-o">.</span><span class="tk-n">item</span><span class="tk-p">()</span>
+
+<span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">manual_seed</span><span class="tk-p">(</span><span class="tk-mi">0</span><span class="tk-p">)</span>
+<span class="tk-n">Z</span> <span class="tk-o">=</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">randn</span><span class="tk-p">(</span><span class="tk-mi">5</span><span class="tk-p">,</span> <span class="tk-mi">3</span><span class="tk-p">)</span> <span class="tk-o">*</span> <span class="tk-mi">10</span>
+<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">allclose</span><span class="tk-p">(</span><span class="tk-n">softmax_t</span><span class="tk-p">(</span><span class="tk-n">Z</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">numpy</span><span class="tk-p">(),</span> <span class="tk-n">softmax_np</span><span class="tk-p">(</span><span class="tk-n">Z</span><span class="tk-o">.</span><span class="tk-n">numpy</span><span class="tk-p">()),</span> <span class="tk-n">atol</span><span class="tk-o">=</span><span class="tk-mf">1e-6</span><span class="tk-p">))</span>
+<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">allclose</span><span class="tk-p">(</span><span class="tk-n">softmax_t</span><span class="tk-p">(</span><span class="tk-n">Z</span><span class="tk-p">),</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">softmax</span><span class="tk-p">(</span><span class="tk-n">Z</span><span class="tk-p">,</span> <span class="tk-n">dim</span><span class="tk-o">=</span><span class="tk-mi">1</span><span class="tk-p">)))</span>
+<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-n">accuracy_t</span><span class="tk-p">(</span><span class="tk-n">Z</span><span class="tk-p">,</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">tensor</span><span class="tk-p">([</span><span class="tk-mi">0</span><span class="tk-p">,</span> <span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-mi">2</span><span class="tk-p">,</span> <span class="tk-mi">0</span><span class="tk-p">,</span> <span class="tk-mi">1</span><span class="tk-p">])))</span>
+</code></pre></div>
+
+<div class="run" data-group="e5" data-mode="py">
+<div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span></div>
+<pre class="run-out">True&#10;True&#10;0.4000000059604645</pre>
+</div>
+</details></div></article><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p0.6:b">Tôi đã xong phần bài tập</label><button class="btn" type="button" data-goto="thuc-hanh">Sang thực hành <span class="arr">→</span></button></div></section><section class="panel" id="thuc-hanh" role="tabpanel" hidden><div class="prose"><h2>Hồi quy tuyến tính ba cách</h2>
+<p>Bạn giải cùng một bài toán ba lần, mỗi lần để PyTorch làm hộ nhiều hơn, rồi kiểm tra ba cách cho cùng đáp án. Sau bài này, mọi vòng train ở P2 sẽ chỉ là phiên bản lớn hơn của cách thứ ba.</p>
+<p><strong>Dữ liệu</strong>: <code>X</code> shape (500, 3), <code>y = X @ [2, -1, 0.5] + 3 + nhiễu</code>.</p>
+<p><strong>Các bước</strong></p>
+<ol>
+<li><strong>numpy, gradient tự tính:</strong> viết công thức gradient của MSE theo <code>w</code> (3 số) và <code>b</code> bằng tay, lặp gradient descent 500 bước.</li>
+<li><strong>PyTorch autograd:</strong> <code>w</code>, <code>b</code> là tensor <code>requires_grad=True</code>, dùng <code>backward()</code> thay cho công thức, cập nhật trong <code>torch.no_grad()</code>.</li>
+<li><strong>nn.Module + optimizer:</strong> <code>nn.Linear(3, 1)</code>, <code>nn.MSELoss()</code>, <code>torch.optim.SGD</code>, vòng train 5 dòng.</li>
+<li>In <code>w</code>, <code>b</code> của cả ba cách cạnh nhau và so với đáp án thật.</li>
+</ol>
+<p><strong>Xong khi</strong></p>
+<ul>
+<li>Ba cách cho <code>w</code>, <code>b</code> chênh nhau dưới <code>1e-4</code> (cùng learning rate, cùng số bước, cùng giá trị khởi đầu 0).</li>
+<li>Bạn giải thích được từng dòng của cách 3 tương ứng với dòng nào ở cách 1.</li>
+</ul>
+<details class="fold code">
+<summary>Code tham khảo</summary>
+<div class="hl"><pre><span></span><code><span class="tk-kn">import</span><span class="tk-w"> </span><span class="tk-nn">numpy</span><span class="tk-w"> </span><span class="tk-k">as</span><span class="tk-w"> </span><span class="tk-nn">np</span><span class="tk-o">,</span><span class="tk-w"> </span><span class="tk-nn">torch</span><span class="tk-o">,</span><span class="tk-w"> </span><span class="tk-nn">torch.nn</span><span class="tk-w"> </span><span class="tk-k">as</span><span class="tk-w"> </span><span class="tk-nn">nn</span>
+<span class="tk-n">rng</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">random</span><span class="tk-o">.</span><span class="tk-n">default_rng</span><span class="tk-p">(</span><span class="tk-mi">0</span><span class="tk-p">)</span>
+<span class="tk-n">X</span> <span class="tk-o">=</span> <span class="tk-n">rng</span><span class="tk-o">.</span><span class="tk-n">normal</span><span class="tk-p">(</span><span class="tk-n">size</span><span class="tk-o">=</span><span class="tk-p">(</span><span class="tk-mi">500</span><span class="tk-p">,</span> <span class="tk-mi">3</span><span class="tk-p">))</span><span class="tk-o">.</span><span class="tk-n">astype</span><span class="tk-p">(</span><span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">float32</span><span class="tk-p">)</span>
+<span class="tk-n">y</span> <span class="tk-o">=</span> <span class="tk-p">(</span><span class="tk-n">X</span> <span class="tk-o">@</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">array</span><span class="tk-p">([</span><span class="tk-mi">2</span><span class="tk-p">,</span> <span class="tk-o">-</span><span class="tk-mi">1</span><span class="tk-p">,</span> <span class="tk-mf">0.5</span><span class="tk-p">],</span> <span class="tk-n">dtype</span><span class="tk-o">=</span><span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">float32</span><span class="tk-p">)</span> <span class="tk-o">+</span> <span class="tk-mi">3</span> <span class="tk-o">+</span> <span class="tk-n">rng</span><span class="tk-o">.</span><span class="tk-n">normal</span><span class="tk-p">(</span><span class="tk-mi">0</span><span class="tk-p">,</span> <span class="tk-mf">0.1</span><span class="tk-p">,</span> <span class="tk-mi">500</span><span class="tk-p">))</span><span class="tk-o">.</span><span class="tk-n">astype</span><span class="tk-p">(</span><span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">float32</span><span class="tk-p">)</span>
+<span class="tk-n">lr</span><span class="tk-p">,</span> <span class="tk-n">steps</span> <span class="tk-o">=</span> <span class="tk-mf">0.1</span><span class="tk-p">,</span> <span class="tk-mi">500</span>
+
+<span class="tk-c1"># 1. numpy: gradient của MSE = mean((Xw + b - y)²) là 2/n · Xᵀ(err) và 2 · mean(err)</span>
+<span class="tk-n">w1</span><span class="tk-p">,</span> <span class="tk-n">b1</span> <span class="tk-o">=</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">zeros</span><span class="tk-p">(</span><span class="tk-mi">3</span><span class="tk-p">,</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">float32</span><span class="tk-p">),</span> <span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">float32</span><span class="tk-p">(</span><span class="tk-mi">0</span><span class="tk-p">)</span>
+<span class="tk-k">for</span> <span class="tk-n">_</span> <span class="tk-ow">in</span> <span class="tk-nb">range</span><span class="tk-p">(</span><span class="tk-n">steps</span><span class="tk-p">):</span>
+    <span class="tk-n">err</span> <span class="tk-o">=</span> <span class="tk-n">X</span> <span class="tk-o">@</span> <span class="tk-n">w1</span> <span class="tk-o">+</span> <span class="tk-n">b1</span> <span class="tk-o">-</span> <span class="tk-n">y</span>
+    <span class="tk-n">w1</span> <span class="tk-o">-=</span> <span class="tk-n">lr</span> <span class="tk-o">*</span> <span class="tk-mi">2</span> <span class="tk-o">*</span> <span class="tk-n">X</span><span class="tk-o">.</span><span class="tk-n">T</span> <span class="tk-o">@</span> <span class="tk-n">err</span> <span class="tk-o">/</span> <span class="tk-nb">len</span><span class="tk-p">(</span><span class="tk-n">y</span><span class="tk-p">)</span>
+    <span class="tk-n">b1</span> <span class="tk-o">-=</span> <span class="tk-n">lr</span> <span class="tk-o">*</span> <span class="tk-mi">2</span> <span class="tk-o">*</span> <span class="tk-n">err</span><span class="tk-o">.</span><span class="tk-n">mean</span><span class="tk-p">()</span>
+
+<span class="tk-c1"># 2. autograd</span>
+<span class="tk-n">Xt</span><span class="tk-p">,</span> <span class="tk-n">yt</span> <span class="tk-o">=</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">from_numpy</span><span class="tk-p">(</span><span class="tk-n">X</span><span class="tk-p">),</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">from_numpy</span><span class="tk-p">(</span><span class="tk-n">y</span><span class="tk-p">)</span>
+<span class="tk-n">w2</span> <span class="tk-o">=</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">zeros</span><span class="tk-p">(</span><span class="tk-mi">3</span><span class="tk-p">,</span> <span class="tk-n">requires_grad</span><span class="tk-o">=</span><span class="tk-kc">True</span><span class="tk-p">);</span> <span class="tk-n">b2</span> <span class="tk-o">=</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">zeros</span><span class="tk-p">((),</span> <span class="tk-n">requires_grad</span><span class="tk-o">=</span><span class="tk-kc">True</span><span class="tk-p">)</span>
+<span class="tk-k">for</span> <span class="tk-n">_</span> <span class="tk-ow">in</span> <span class="tk-nb">range</span><span class="tk-p">(</span><span class="tk-n">steps</span><span class="tk-p">):</span>
+    <span class="tk-n">loss</span> <span class="tk-o">=</span> <span class="tk-p">((</span><span class="tk-n">Xt</span> <span class="tk-o">@</span> <span class="tk-n">w2</span> <span class="tk-o">+</span> <span class="tk-n">b2</span> <span class="tk-o">-</span> <span class="tk-n">yt</span><span class="tk-p">)</span> <span class="tk-o">**</span> <span class="tk-mi">2</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">mean</span><span class="tk-p">()</span>
+    <span class="tk-n">loss</span><span class="tk-o">.</span><span class="tk-n">backward</span><span class="tk-p">()</span>
+    <span class="tk-k">with</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">no_grad</span><span class="tk-p">():</span>
+        <span class="tk-n">w2</span> <span class="tk-o">-=</span> <span class="tk-n">lr</span> <span class="tk-o">*</span> <span class="tk-n">w2</span><span class="tk-o">.</span><span class="tk-n">grad</span><span class="tk-p">;</span> <span class="tk-n">b2</span> <span class="tk-o">-=</span> <span class="tk-n">lr</span> <span class="tk-o">*</span> <span class="tk-n">b2</span><span class="tk-o">.</span><span class="tk-n">grad</span>
+    <span class="tk-n">w2</span><span class="tk-o">.</span><span class="tk-n">grad</span><span class="tk-o">.</span><span class="tk-n">zero_</span><span class="tk-p">();</span> <span class="tk-n">b2</span><span class="tk-o">.</span><span class="tk-n">grad</span><span class="tk-o">.</span><span class="tk-n">zero_</span><span class="tk-p">()</span>
+
+<span class="tk-c1"># 3. nn.Module + optimizer</span>
+<span class="tk-n">model</span> <span class="tk-o">=</span> <span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">Linear</span><span class="tk-p">(</span><span class="tk-mi">3</span><span class="tk-p">,</span> <span class="tk-mi">1</span><span class="tk-p">)</span>
+<span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">init</span><span class="tk-o">.</span><span class="tk-n">zeros_</span><span class="tk-p">(</span><span class="tk-n">model</span><span class="tk-o">.</span><span class="tk-n">weight</span><span class="tk-p">);</span> <span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">init</span><span class="tk-o">.</span><span class="tk-n">zeros_</span><span class="tk-p">(</span><span class="tk-n">model</span><span class="tk-o">.</span><span class="tk-n">bias</span><span class="tk-p">)</span>
+<span class="tk-n">opt</span> <span class="tk-o">=</span> <span class="tk-n">torch</span><span class="tk-o">.</span><span class="tk-n">optim</span><span class="tk-o">.</span><span class="tk-n">SGD</span><span class="tk-p">(</span><span class="tk-n">model</span><span class="tk-o">.</span><span class="tk-n">parameters</span><span class="tk-p">(),</span> <span class="tk-n">lr</span><span class="tk-o">=</span><span class="tk-n">lr</span><span class="tk-p">)</span>
+<span class="tk-n">loss_fn</span> <span class="tk-o">=</span> <span class="tk-n">nn</span><span class="tk-o">.</span><span class="tk-n">MSELoss</span><span class="tk-p">()</span>
+<span class="tk-k">for</span> <span class="tk-n">_</span> <span class="tk-ow">in</span> <span class="tk-nb">range</span><span class="tk-p">(</span><span class="tk-n">steps</span><span class="tk-p">):</span>
+    <span class="tk-n">opt</span><span class="tk-o">.</span><span class="tk-n">zero_grad</span><span class="tk-p">()</span>
+    <span class="tk-n">loss</span> <span class="tk-o">=</span> <span class="tk-n">loss_fn</span><span class="tk-p">(</span><span class="tk-n">model</span><span class="tk-p">(</span><span class="tk-n">Xt</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">squeeze</span><span class="tk-p">(</span><span class="tk-mi">1</span><span class="tk-p">),</span> <span class="tk-n">yt</span><span class="tk-p">)</span>
+    <span class="tk-n">loss</span><span class="tk-o">.</span><span class="tk-n">backward</span><span class="tk-p">()</span>
+    <span class="tk-n">opt</span><span class="tk-o">.</span><span class="tk-n">step</span><span class="tk-p">()</span>
+
+<span class="tk-n">w3</span><span class="tk-p">,</span> <span class="tk-n">b3</span> <span class="tk-o">=</span> <span class="tk-n">model</span><span class="tk-o">.</span><span class="tk-n">weight</span><span class="tk-o">.</span><span class="tk-n">detach</span><span class="tk-p">()</span><span class="tk-o">.</span><span class="tk-n">numpy</span><span class="tk-p">()</span><span class="tk-o">.</span><span class="tk-n">ravel</span><span class="tk-p">(),</span> <span class="tk-n">model</span><span class="tk-o">.</span><span class="tk-n">bias</span><span class="tk-o">.</span><span class="tk-n">item</span><span class="tk-p">()</span>
+<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-s2">"numpy   "</span><span class="tk-p">,</span> <span class="tk-n">w1</span><span class="tk-o">.</span><span class="tk-n">round</span><span class="tk-p">(</span><span class="tk-mi">4</span><span class="tk-p">),</span> <span class="tk-nb">round</span><span class="tk-p">(</span><span class="tk-nb">float</span><span class="tk-p">(</span><span class="tk-n">b1</span><span class="tk-p">),</span> <span class="tk-mi">4</span><span class="tk-p">))</span>
+<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-s2">"autograd"</span><span class="tk-p">,</span> <span class="tk-n">w2</span><span class="tk-o">.</span><span class="tk-n">detach</span><span class="tk-p">()</span><span class="tk-o">.</span><span class="tk-n">numpy</span><span class="tk-p">()</span><span class="tk-o">.</span><span class="tk-n">round</span><span class="tk-p">(</span><span class="tk-mi">4</span><span class="tk-p">),</span> <span class="tk-nb">round</span><span class="tk-p">(</span><span class="tk-n">b2</span><span class="tk-o">.</span><span class="tk-n">item</span><span class="tk-p">(),</span> <span class="tk-mi">4</span><span class="tk-p">))</span>
+<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-s2">"nn      "</span><span class="tk-p">,</span> <span class="tk-n">w3</span><span class="tk-o">.</span><span class="tk-n">round</span><span class="tk-p">(</span><span class="tk-mi">4</span><span class="tk-p">),</span> <span class="tk-nb">round</span><span class="tk-p">(</span><span class="tk-n">b3</span><span class="tk-p">,</span> <span class="tk-mi">4</span><span class="tk-p">))</span>
+<span class="tk-nb">print</span><span class="tk-p">(</span><span class="tk-s2">"chênh lớn nhất:"</span><span class="tk-p">,</span> <span class="tk-nb">max</span><span class="tk-p">(</span><span class="tk-n">np</span><span class="tk-o">.</span><span class="tk-n">abs</span><span class="tk-p">(</span><span class="tk-n">w1</span> <span class="tk-o">-</span> <span class="tk-n">w3</span><span class="tk-p">)</span><span class="tk-o">.</span><span class="tk-n">max</span><span class="tk-p">(),</span> <span class="tk-nb">abs</span><span class="tk-p">(</span><span class="tk-n">b1</span> <span class="tk-o">-</span> <span class="tk-n">b3</span><span class="tk-p">)))</span>
+</code></pre></div>
+
+</details></div><div class="panel-done"><label class="tick"><input type="checkbox" data-key="p0.6:p">Tôi đã xong phần thực hành</label></div></section>
+      <div class="donewhen"><b>Xong bài khi</b>Ba cách cho cùng tham số (chênh dưới 1e-4), và bạn giải thích được từng dòng của vòng train.</div>
+      <nav class="pn" aria-label="Bài trước, bài sau"><a href="p0-5.html"><span class="dir">← Bài trước · P0.5</span><span class="tt">Toán cho AI: đại số tuyến tính, giải tích, xác suất</span></a><a class="nx" href="p0-7.html"><span class="dir">Bài sau · P0.7 →</span><span class="tt">Công cụ: Git, GitHub, terminal, Colab</span></a></nav>
+    </div>
+    <aside class="aside">
+      <div class="abox"><h4>Tiến độ bài này</h4><div class="ring"><svg viewBox="0 0 64 64" aria-hidden="true"><circle class="bg" cx="32" cy="32" r="28"/><circle class="fg" cx="32" cy="32" r="28" stroke-dasharray="176" stroke-dashoffset="176"/></svg><div><b id="ring-n">0/3</b><span id="ring-sub">phần đã xong</span></div></div></div>
+      <div class="abox" id="toc-box"><h4>Mục lý thuyết</h4><ol class="toc"><li><a href="#lt-1">PyTorch là gì</a></li><li><a href="#lt-2">Tensor</a></li><li><a href="#lt-3">Phép tính: giống numpy, khác vài cái tên</a></li><li><a href="#lt-4">Thiết bị: CPU và GPU</a></li><li><a href="#lt-5">autograd: tự tính đạo hàm</a></li><li><a href="#lt-6">Tự train bằng autograd</a></li><li><a href="#lt-7">nn.Module, loss và optimizer</a></li><li><a href="#lt-8">Dataset và DataLoader</a></li><li><a href="#lt-9">Vòng train đầy đủ</a></li><li><a href="#lt-10">Lưu và nạp model</a></li><li><a href="#lt-11">Tóm tắt bài và thuật ngữ</a></li></ol></div>
+      <div class="abox"><h4>Notebook</h4><div style="display:grid;gap:8px"><a class="dl" href="https://colab.research.google.com/github/truonghuu344/ai-engineer-roadmap/blob/main/notebooks/ly-thuyet/p0-6.ipynb" target="_blank" rel="noopener"><span class="ext">COLAB</span><span>Chạy toàn bộ code của bài<span style="display:block;font:400 12px var(--f-mono);color:var(--muted)">notebook có sẵn kết quả</span></span></a></div></div>
+      <div class="abox"><h4>Cùng giai đoạn</h4><ul><li><a href="p0-1.html">Python từ số 0</a></li><li><a href="p0-2.html">numpy: mảng, broadcasting, vector hóa</a></li><li><a href="p0-3.html">pandas: làm sạch và tổng hợp bảng dữ liệu</a></li><li><a href="p0-4.html">matplotlib: vẽ để hiểu dữ liệu và kết quả train</a></li><li><a href="p0-5.html">Toán cho AI: đại số tuyến tính, giải tích, xác suất</a></li><li><span class=cur>PyTorch cơ bản: tensor, autograd, nn.Module</span></li><li><a href="p0-7.html">Công cụ: Git, GitHub, terminal, Colab</a></li></ul></div>
+    </aside>
+  </div>
+</main>
+<footer class="sf"><div class="sf-in"><div><a class="sh-brand" href="../index.html" style="margin:0"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="var(--ink)"/><circle cx="9" cy="22" r="2.6" fill="var(--accent-soft)"/><circle cx="16" cy="10" r="2.6" fill="var(--accent-soft)"/><circle cx="23" cy="19" r="2.6" fill="#FF9361"/><path d="M9 22 L16 10 L23 19" stroke="var(--accent-soft)" stroke-width="1.8" fill="none"/></svg><span>AI Engineer<small>lộ trình tự học</small></span></a><p>Lộ trình tự học AI Engineer bằng tiếng Việt: lý thuyết tương tác, bài tập tính tay và notebook có ô tự chấm.</p></div><div><h4>Học</h4><ul><li><a href="../bai-hoc.html">Tất cả bài học</a></li><li><a href="../lo-trinh.html">Lộ trình và tiến độ</a></li><li><a href="../notebooks.html">Notebook thực hành</a></li></ul></div><div><h4>Đã có nội dung</h4><ul><li><a href="../bai01.html">Bài 1 · Mạng nơ-ron</a></li><li><a href="../bai/p2-2.html">Lab 1 · CIFAR-10</a></li><li><a href="../diffusion-gd1.html">Diffusion GĐ 1</a></li></ul></div><div><h4>Dự án</h4><ul><li><a href="https://github.com/truonghuu344/ai-engineer-roadmap" target="_blank" rel="noopener">Mã nguồn trên GitHub</a></li><li><a href="../bai-hoc.html#p5">Dự án Diffusion</a></li><li><a href="../bai-hoc.html#p10">Portfolio và đi làm</a></li></ul></div></div><div class="sf-bottom"><span>© 2026 Vũ Hữu Trường · soạn cùng Claude</span><span>Tiến độ lưu trên trình duyệt của bạn</span></div></footer>
+<script src="../assets/data.js"></script>
+<script src="../assets/chrome.js"></script>
+<script>
+
+(function () {
+  const mid = document.body.dataset.mid; let d = AIE.load();
+  const EXK = "aie-ex-" + mid;
+  let solved = {}; try { solved = JSON.parse(localStorage.getItem(EXK) || "{}") || {}; } catch (e) {}
+  const saveSolved = () => { try { localStorage.setItem(EXK, JSON.stringify(solved)); } catch (e) {} };
+  const tabs = [...document.querySelectorAll(".tab")], panels = [...document.querySelectorAll(".panel")];
+  const boxes = [...document.querySelectorAll("input[data-key]")], ring = document.querySelector(".ring .fg"), rt = document.getElementById("ring-n");
+  const toc = document.getElementById("toc-box");
+  function show(id, scroll) {
+    tabs.forEach((t) => t.setAttribute("aria-selected", String(t.dataset.tab === id)));
+    panels.forEach((p) => { const on = p.id === id; if (on && p.hidden) { p.classList.remove("enter"); void p.offsetWidth; p.classList.add("enter"); } p.hidden = !on; });
+    if (toc) toc.hidden = id !== "ly-thuyet";
+    if (scroll) document.querySelector(".tabs").scrollIntoView({ block: "start" });
+    movePill();
+  }
+  const tabBar = document.querySelector(".tabs"), pill = document.createElement("span");
+  pill.className = "pill"; pill.setAttribute("aria-hidden", "true"); tabBar.prepend(pill); tabBar.classList.add("has-pill");
+  function movePill() {
+    const on = tabs.find((t) => t.getAttribute("aria-selected") === "true"); if (!on) return;
+    pill.style.width = on.offsetWidth + "px"; pill.style.transform = `translateX(${on.offsetLeft}px)`;
+  }
+  window.addEventListener("resize", movePill);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(movePill);
+  tabs.forEach((t) => t.addEventListener("click", () => { history.replaceState(null, "", "#" + t.dataset.tab); show(t.dataset.tab, true); }));
+  document.querySelectorAll("[data-goto]").forEach((b) => b.addEventListener("click", () => { history.replaceState(null, "", "#" + b.dataset.goto); show(b.dataset.goto, true); }));
+  const start = ["ly-thuyet", "bai-tap", "thuc-hanh"].includes(location.hash.slice(1)) ? location.hash.slice(1) : "ly-thuyet";
+  show(start, false);
+  requestAnimationFrame(() => tabBar.classList.add("fx-pill"));
+  window.addEventListener("hashchange", () => { const h = location.hash.slice(1); if (["ly-thuyet", "bai-tap", "thuc-hanh"].includes(h)) show(h, true); });
+  document.querySelectorAll(".toc a").forEach((a) => a.addEventListener("click", () => show("ly-thuyet", false)));
+
+  function render() {
+    let n = 0;
+    const skip = !!d[mid + ":skip"];
+    boxes.forEach((b) => { const on = skip || !!d[b.dataset.key]; b.checked = on; if (on) n++; });
+    const kmap = { t: "ly-thuyet", b: "bai-tap", p: "thuc-hanh" };
+    tabs.forEach((t) => { const k = Object.keys(kmap).find((x) => kmap[x] === t.dataset.tab); t.classList.toggle("is-done", skip || !!d[mid + ":" + k]); });
+    ring.style.strokeDashoffset = String(176 * (1 - n / 3)); rt.textContent = n + "/3";
+    document.getElementById("ring-sub").textContent = n === 3 ? "hoàn thành bài này" : "phần đã xong";
+    if (n === 3 && lastN !== null && lastN < 3) { const rg = document.querySelector(".ring"); rg.classList.remove("fx-full"); void rg.offsetWidth; rg.classList.add("fx-full"); AIE.confetti && AIE.confetti(innerWidth / 2, innerHeight * .35, 120); }
+    lastN = n;
+  }
+  let lastN = null;
+  boxes.forEach((b) => b.addEventListener("change", () => {
+    d = AIE.load(); if (b.checked) d[b.dataset.key] = true; else delete d[b.dataset.key]; AIE.save(d);
+    boxes.filter((x) => x.dataset.key === b.dataset.key).forEach((x) => (x.checked = b.checked)); render();
+  }));
+  render();
+
+  /* answer boxes */
+  const parse = (s) => parseFloat(String(s).trim().replace(",", ".").replace("−", "-"));
+  const allAns = [...document.querySelectorAll(".ans")], exAns = allAns.filter((a) => a.closest("#bai-tap"));
+  function score() {
+    const ok = exAns.filter((a) => solved[a.id]).length;
+    const el = document.getElementById("ex-score");
+    if (el) { el.querySelector("b").textContent = `${ok} / ${exAns.length}`; el.querySelector(".bar i").style.width = (exAns.length ? ok / exAns.length * 100 : 0) + "%"; }
+    document.querySelectorAll(".excard").forEach((c) => { const as = [...c.querySelectorAll(".ans")]; c.classList.toggle("solved", as.length > 0 && as.every((a) => solved[a.id])); });
+  }
+  allAns.forEach((box) => {
+    const inputs = [...box.querySelectorAll("input")], fb = box.querySelector(".ans-fb");
+    const mark = () => { box.classList.add("ok"); inputs.forEach((i) => { i.classList.add("ok"); if (!i.value) i.value = i.dataset.ans; }); fb.className = "ans-fb ok"; fb.textContent = "Chính xác."; };
+    if (solved[box.id]) mark();
+    const run = () => {
+      let all = true, empty = false;
+      inputs.forEach((i) => {
+        const v = parse(i.value);
+        if (i.value.trim() === "" || Number.isNaN(v)) { empty = true; all = false; i.classList.remove("ok", "bad"); return; }
+        const good = Math.abs(v - parseFloat(i.dataset.ans)) <= parseFloat(i.dataset.tol) + 1e-9;
+        i.classList.toggle("ok", good); i.classList.toggle("bad", !good); if (!good) all = false;
+      });
+      if (all) {
+        const first = !solved[box.id];
+        solved[box.id] = true; saveSolved(); mark(); box.classList.remove("pop"); void box.offsetWidth; box.classList.add("pop"); score();
+        if (first && AIE.confettiAt) {
+          if (box.closest("#bai-tap") && exAns.every((a) => solved[a.id])) AIE.confetti(innerWidth / 2, innerHeight * .35, 120);
+          else AIE.confettiAt(box.querySelector(".btn-check"), 28);
+        }
+      }
+      else { inputs.filter((i) => i.classList.contains("bad")).forEach((i) => { i.classList.remove("fx-shake"); void i.offsetWidth; i.classList.add("fx-shake"); });
+        fb.className = "ans-fb bad"; fb.textContent = empty ? "Điền đủ các ô bằng số (dấu chấm hoặc phẩy đều được)." : "Ô màu cam chưa đúng. Xem lại bước đó, hoặc mở gợi ý."; }
+    };
+    box.querySelector(".btn-check").addEventListener("click", run);
+    inputs.forEach((i) => i.addEventListener("keydown", (e) => { if (e.key === "Enter") run(); }));
+  });
+  score();
+
+  /* copy button on code blocks */
+  document.querySelectorAll(".hl").forEach((h) => {
+    const pre = h.querySelector("pre"); if (!pre || !navigator.clipboard) return;
+    const b = document.createElement("button"); b.type = "button"; b.className = "copy"; b.textContent = "Chép";
+    b.addEventListener("click", () => navigator.clipboard.writeText(pre.innerText.replace(/\n$/, "")).then(() => {
+      b.textContent = "Đã chép ✓"; b.classList.add("done"); setTimeout(() => { b.textContent = "Chép"; b.classList.remove("done"); }, 1600);
+    }).catch(() => {}));
+    h.appendChild(b);
+  });
+
+  /* runnable code: Pyodide (Python chạy ngay trong trình duyệt) */
+  const RUNS = [...document.querySelectorAll(".run")];
+  const HELPER = `
+import ast, sys, io, base64, traceback, os, warnings
+os.environ.setdefault("MPLBACKEND", "AGG")
+warnings.filterwarnings("ignore", message=".*non-interactive.*")
+import ast
+ACTION = {"manual_seed", "seed", "write_text", "write", "load_dotenv", "savefig", "set_title", "set_xlabel", "set_ylabel",
+          "legend", "plot", "scatter", "bar", "barh", "hist", "imshow", "append", "extend", "update", "add", "fit", "backward",
+          "step", "zero_grad", "mkdir", "makedirs", "sleep", "close", "flush", "print", "show", "axhline", "axvline", "text",
+          "tight_layout", "subplots_adjust", "set_xlim", "set_ylim", "grid", "insert", "remove", "clear", "sort", "shuffle",
+          "to_csv", "save", "load_state_dict", "train", "eval", "requires_grad_", "set_printoptions", "filterwarnings",
+          "use", "setdefault", "register_buffer", "rc", "add_node", "add_edge", "add_conditional_edges", "set_entry_point", "login", "mount", "seed_everything", "log", "finish", "init", "info", "debug", "warning", "put", "add_argument", "set_xticks", "set_yticks", "annotate", "fill_between", "suptitle", "figure", "subplot"}
+
+
+def legacy_numpy_repr():
+    import sys
+    if "numpy" in sys.modules:
+        sys.modules["numpy"].set_printoptions(legacy="1.25")     # in 0.87 thay vì np.float64(0.87)
+
+
+def transform(code):
+    lines = code.split("\\n")
+    tree = ast.parse(code)
+    n = len(tree.body)
+    for k, node in enumerate(tree.body):
+        if not isinstance(node, ast.Expr):
+            continue
+        v = node.value
+        if isinstance(v, ast.Constant) and isinstance(v.value, str):          # docstring / string literal alone
+            continue
+        if isinstance(v, ast.Await):
+            continue
+        name = None
+        if isinstance(v, ast.Call):
+            f = v.func
+            name = f.attr if isinstance(f, ast.Attribute) else (f.id if isinstance(f, ast.Name) else None)
+        tail = lines[node.end_lineno - 1][node.end_col_offset:]
+        commented = "#" in tail
+        last = k == n - 1
+        if name in ACTION:
+            continue
+        if last or commented:
+            node.value = ast.Call(func=ast.Name("__show__", ast.Load()), args=[v], keywords=[])
+    ast.fix_missing_locations(tree)
+    return tree
+
+def __aie_run(code, ns):
+    buf = io.StringIO(); so, se = sys.stdout, sys.stderr; sys.stdout = sys.stderr = buf; ok = True
+    def show(v):
+        if v is None: return
+        try:
+            import pandas as pd
+            if isinstance(v, (pd.DataFrame, pd.Series)):
+                print(v.to_string(max_rows=20)); return
+        except Exception:
+            pass
+        print(repr(v))
+    ns["__show__"] = show
+    try:
+        legacy_numpy_repr(); exec(compile(transform(code), "<cell>", "exec"), ns)
+    except BaseException:
+        ok = False
+        et, ev, tb = sys.exc_info(); lines = traceback.format_exception(et, ev, tb)
+        print("".join(l for l in lines if "<cell>" in l or l is lines[-1]), end="")
+    finally:
+        sys.stdout, sys.stderr = so, se
+    imgs = []
+    if "matplotlib.pyplot" in sys.modules:
+        plt = sys.modules["matplotlib.pyplot"]
+        for n in plt.get_fignums():
+            b = io.BytesIO(); plt.figure(n).savefig(b, format="png", dpi=100, bbox_inches="tight", facecolor="white")
+            imgs.append(base64.b64encode(b.getvalue()).decode())
+        plt.close("all")
+    return [buf.getvalue()[-20000:], imgs, ok]
+`;
+  let pyP = null; const NS = {}, done = new Set();
+  function loadPy() {
+    if (pyP) return pyP;
+    const base = window.AIE_PYODIDE || "https://cdn.jsdelivr.net/pyodide/v0.28.3/full/";
+    pyP = new Promise((res, rej) => {
+      if (window.loadPyodide) return res();
+      const s = document.createElement("script"); s.src = base + "pyodide.js"; s.onload = () => res(); s.onerror = () => rej(new Error("load"));
+      document.head.appendChild(s);
+    }).then(() => window.loadPyodide({ indexURL: base })).then((py) => { py.runPython(HELPER); return py; });
+    pyP.catch(() => { pyP = null; });
+    return pyP;
+  }
+  const codeOf = (r) => r.previousElementSibling.querySelector("pre").innerText.replace(/\n$/, "");
+  async function exec(py, r, code) {
+    const g = r.dataset.group;
+    if (!NS[g]) NS[g] = py.globals.get("dict")();
+    try { await py.loadPackagesFromImports(code); } catch (e) {}
+    const res = py.globals.get("__aie_run")(code, NS[g]); const [out, imgs, ok] = res.toJs(); res.destroy();
+    return { out, imgs, ok };
+  }
+  function paint(r, res) {
+    r.querySelectorAll(".run-out, img").forEach((x) => x.remove());
+    const pre = document.createElement("pre"); pre.className = "run-out" + (res.out ? "" : " run-empty");
+    pre.textContent = res.out || "(chạy xong, không in ra gì)"; r.appendChild(pre);
+    res.imgs.forEach((b) => { const im = document.createElement("img"); im.alt = "Hình do đoạn code vẽ"; im.src = "data:image/png;base64," + b; r.appendChild(im); });
+    r.classList.toggle("err", !res.ok);
+  }
+  RUNS.filter((r) => r.dataset.mode === "py" && r.previousElementSibling && r.previousElementSibling.classList.contains("hl")).forEach((r) => {
+    const hl = r.previousElementSibling, pre = hl.querySelector("pre"), orig = pre.innerHTML;
+    const bar = r.querySelector(".run-bar"), box = document.createElement("span"); box.className = "run-btns";
+    const st = document.createElement("span"); st.className = "run-status";
+    const mk = (t, cls) => { const b = document.createElement("button"); b.type = "button"; b.className = "run-btn " + cls; b.textContent = t; box.appendChild(b); return b; };
+    const ed = mk("Sửa code", ""), go = mk("▶ Chạy", "go");
+    bar.appendChild(st); bar.appendChild(box);
+    ed.addEventListener("click", () => {
+      if (pre.hasAttribute("contenteditable")) { pre.removeAttribute("contenteditable"); pre.innerHTML = orig; ed.textContent = "Sửa code"; return; }
+      try { pre.contentEditable = "plaintext-only"; } catch (e) { pre.contentEditable = "true"; }
+      if (pre.contentEditable !== "plaintext-only") pre.contentEditable = "true";
+      pre.spellcheck = false; pre.focus(); ed.textContent = "Khôi phục code gốc";
+    });
+    go.addEventListener("click", async () => {
+      go.disabled = true; st.textContent = pyP ? "Đang chạy…" : "Đang tải Python trong trình duyệt (lần đầu khoảng 10–30 giây)…";
+      try {
+        const py = await loadPy(); st.textContent = "Đang chạy…";
+        const same = RUNS.filter((x) => x.dataset.group === r.dataset.group && x.dataset.mode === "py");
+        for (const x of same.slice(0, same.indexOf(r))) if (!done.has(x)) { await exec(py, x, codeOf(x)); done.add(x); }
+        const res = await exec(py, r, codeOf(r)); done.add(r); paint(r, res); st.textContent = res.ok ? "" : "Có lỗi, xem bên dưới";
+      } catch (e) { console.error("aie-run", e); st.textContent = "Không tải được Python trong trình duyệt. Kiểm tra mạng rồi thử lại."; }
+      go.disabled = false;
+    });
+  });
+
+  /* highlight current theory section in the toc */
+  if (toc && "IntersectionObserver" in window) {
+    const links = [...toc.querySelectorAll("a")];
+    const io = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) links.forEach((a) => a.classList.toggle("on", a.getAttribute("href") === "#" + e.target.id)); }), { rootMargin: "-140px 0px -65% 0px" });
+    document.querySelectorAll("#ly-thuyet h2[id]").forEach((h) => io.observe(h));
+  }
+})();
+
+</script>
+</body>
+</html>

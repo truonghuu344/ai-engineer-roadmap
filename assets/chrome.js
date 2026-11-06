@@ -6,7 +6,28 @@
   const PARTS = [["t", "Lý thuyết"], ["b", "Bài tập"], ["p", "Thực hành"]];
   const ORDER = ["p0", "p1", "p2", "p3", "p4", "p5", "p6", "p7", "p8", "p9", "p10"];
 
-  function load() { try { const d = JSON.parse(localStorage.getItem(KEY) || "null"); return d && typeof d === "object" ? d : {}; } catch (e) { return {}; } }
+  /* v2 (11/2026): P0.1 cũ (numpy, pandas, matplotlib) tách thành P0.1 Python, P0.2 numpy, P0.3 pandas, P0.4 matplotlib; toán P0.2 → P0.5, công cụ P0.3 → P0.7 */
+  function migrate(d) {
+    if (d._v >= 2) return d;
+    const out = { _v: 2 };
+    for (const [k, v] of Object.entries(d)) {
+      const m = k.match(/^p0\.([123])(:.*)$/);
+      if (!m) { out[k] = v; continue; }
+      if (m[1] === "1") ["p0.1", "p0.2", "p0.3", "p0.4"].forEach((id) => { out[id + m[2]] = v; });
+      else out["p0." + (m[1] === "2" ? "5" : "7") + m[2]] = v;
+    }
+    try {
+      localStorage.setItem(KEY, JSON.stringify(out));
+      const ex = (id) => "aie-ex-" + id, g = (id) => localStorage.getItem(ex(id));
+      const e2 = g("p0.2"), e3 = g("p0.3");
+      ["p0.1", "p0.2", "p0.3"].forEach((id) => localStorage.removeItem(ex(id)));
+      if (e2) localStorage.setItem(ex("p0.5"), e2);
+      if (e3) localStorage.setItem(ex("p0.7"), e3);
+    } catch (e) {}
+    return out;
+  }
+  function load() { try { const d = JSON.parse(localStorage.getItem(KEY) || "null"); return d && typeof d === "object" ? migrate(d) : { _v: 2 }; } catch (e) { return {}; } }
+  load();                                   /* chuyển dữ liệu cũ ngay khi trang mở */
   function save(d) { try { localStorage.setItem(KEY, JSON.stringify(d)); } catch (e) {} }
   const phases = () => (typeof PHASES !== "undefined" ? PHASES : []);
   const slug = (id) => id.replace(".", "-");
@@ -15,7 +36,8 @@
   function next(d) {
     const P = phases(); if (!P.length) return null;
     const started = (pid) => { const ph = P.find((p) => p.id === pid); return ph && ph.modules.some((m) => d[m.id + ":skip"] || PARTS.some(([k]) => d[m.id + ":" + k])); };
-    const order = started("p0") || started("p1") ? ORDER : ORDER.slice(2);
+    const any = P.some((ph) => started(ph.id));
+    const order = !any || started("p0") || started("p1") ? ORDER : ORDER.slice(2);   /* người mới: bắt đầu từ P0.1 */
     for (const pid of order) {
       const ph = P.find((p) => p.id === pid);
       for (const m of ph.modules) {

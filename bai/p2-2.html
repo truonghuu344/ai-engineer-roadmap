@@ -17,7 +17,7 @@
 <link rel="stylesheet" href="../assets/lesson.css">
 </head>
 <body data-mid="p2.2">
-<header class="sh"><div class="sh-in"><a class="sh-brand" href="../index.html"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="var(--ink)"/><circle cx="9" cy="22" r="2.6" fill="var(--accent-soft)"/><circle cx="16" cy="10" r="2.6" fill="var(--accent-soft)"/><circle cx="23" cy="19" r="2.6" fill="#FF9361"/><path d="M9 22 L16 10 L23 19" stroke="var(--accent-soft)" stroke-width="1.8" fill="none"/></svg><span>AI Engineer<small>lộ trình tự học</small></span></a><nav class="sh-nav" id="sh-nav" aria-label="Chính"><a href="../index.html">Trang chủ</a><a href="../bai-hoc.html" aria-current="page">Bài học</a><a href="../lo-trinh.html">Lộ trình</a><a href="../notebooks.html">Notebook</a><a class="sh-cta-m" href="../bai01.html" data-next-lesson>Học tiếp →</a></nav><a class="sh-cta" href="../bai01.html" data-next-lesson>Học tiếp <span class="arr">→</span></a><button class="sh-burger" type="button" aria-expanded="false" aria-controls="sh-nav">Menu</button></div></header>
+<header class="sh"><div class="sh-in"><a class="sh-brand" href="../index.html"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="var(--ink)"/><circle cx="9" cy="22" r="2.6" fill="var(--accent-soft)"/><circle cx="16" cy="10" r="2.6" fill="var(--accent-soft)"/><circle cx="23" cy="19" r="2.6" fill="#FF9361"/><path d="M9 22 L16 10 L23 19" stroke="var(--accent-soft)" stroke-width="1.8" fill="none"/></svg><span>AI Engineer<small>lộ trình tự học</small></span></a><nav class="sh-nav" id="sh-nav" aria-label="Chính"><a href="../index.html">Trang chủ</a><a href="../bai-hoc.html" aria-current="page">Bài học</a><a href="../lo-trinh.html">Lộ trình</a><a href="../notebooks.html">Notebook</a><a class="sh-cta-m" href="../bai/p0-1.html" data-next-lesson>Học tiếp →</a></nav><a class="sh-cta" href="../bai/p0-1.html" data-next-lesson>Học tiếp <span class="arr">→</span></a><button class="sh-burger" type="button" aria-expanded="false" aria-controls="sh-nav">Menu</button></div></header>
 
 <main class="container">
   <div class="crumbs"><a href="../bai-hoc.html">Bài học</a><span>/</span><a href="../bai-hoc.html#p2">P2 · Deep Learning nền tảng</a><span>/</span><span>P2.2</span></div>
@@ -196,7 +196,7 @@ w ← w − η·m̂ / (√v̂ + ε)
 <div class="run" data-mode="static" data-group="t"><div class="run-bar"><span class="run-lbl">Kết quả khi chạy</span><span class="run-note">đã chạy sẵn cần PyTorch</span><a class="run-colab" href="https://colab.research.google.com/github/truonghuu344/ai-engineer-roadmap/blob/main/notebooks/ly-thuyet/p2-2.ipynb" target="_blank" rel="noopener">Mở trên Colab ↗</a></div><pre class="run-out">480 bước: lr bắt đầu 1.3e-05, đạt đỉnh 3.0e-04 ở bước 22, kết thúc 4.8e-09</pre></div>
 
 <h3>Khởi tạo trọng số</h3>
-<p>Trọng số ban đầu quá lớn thì kích hoạt "nổ" qua các lớp; quá nhỏ thì tín hiệu tắt dần. Ý tưởng: giữ phương sai đầu ra mỗi lớp xấp xỉ phương sai đầu vào (nhớ P0.2: tổng n số độc lập có phương sai gấp n lần).</p>
+<p>Trọng số ban đầu quá lớn thì kích hoạt "nổ" qua các lớp; quá nhỏ thì tín hiệu tắt dần. Ý tưởng: giữ phương sai đầu ra mỗi lớp xấp xỉ phương sai đầu vào (nhớ P0.5: tổng n số độc lập có phương sai gấp n lần).</p>
 <table>
 <thead>
 <tr>
