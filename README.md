@@ -12,6 +12,7 @@ Website tự học AI Engineer bằng tiếng Việt: 11 giai đoạn, 50 bài. 
 | `bai-hoc.html` | Danh mục 50 bài, tìm kiếm và lọc |
 | `bai/*.html` | Trang từng bài: đề cương lý thuyết, bài tập, thực hành, checklist |
 | `bai01.html`, `diffusion-gd1.html` | Bài có nội dung đầy đủ: lý thuyết tương tác, bài tính tay, kiểm tra |
+| `pytorch.html` | Khóa PyTorch từ cơ bản đến nâng cao, học trên Colab: 12 module, code giải thích từng dòng, 36 bài tập có lời giải, 3 dự án cho CV |
 | `lo-trinh.html` | Lộ trình, dòng thời gian, tiến độ |
 | `notebooks.html`, `notebooks/` | Notebook Colab có ô tự chấm (bài tập và lời giải) |
 | `assets/` | CSS, JS dùng chung và dữ liệu lộ trình (`data.js`) |
